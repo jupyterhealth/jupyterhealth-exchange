@@ -592,10 +592,47 @@ DEBUG = True
 
 ### Practitioner script: uploads observations for patients where the practitioner has the appropriate access
 
+#### Prerequisites
+
+* The database should be already seeded.
+* The Django server is running before you execute this script.
+* The target Practitioner, Organization, and Study records already exist..
+
+
+# Test Procedure
+
+Follow the steps below to validate the workflow end-to-end.
+
+1. **Select Parent Organization**
+   Choose **University of California, Berkeley** as the top-level organization.
+
+1. **Open the Target Sub-Organization**
+   Click **View** for **Berkeley Institute for Data Science (BIDS)**.
+
+1. **Create a New Study**
+
+   * Create a study under BIDS.
+   * Add the **iHealth** data source.
+   * Set the data scope to **blood glucose**.
+
+1. **Record the Study ID**
+   After creation, open the study details and copy the **Study ID** (e.g., `30006`).
+
+1. **Run the Practitioner Upload Script**
+   Execute the script below, replacing `<study_id>` with the ID from step 4.
+
+```bash
+python jhe/resources/practitioner_fhir_obs_upload.py \
+  --email mary@example.com \
+  --study-id <study_id>
+```
+
+
+
 ## Usage
 
 ```bash
-python script.py \
+python jhe/resources/practitioner_fhir_obs_upload.py \
   [--email <practitioner_email>] \
   [--password <practitioner_password>] \
   [--org-id <organization_id>] \
