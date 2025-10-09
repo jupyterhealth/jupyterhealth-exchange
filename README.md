@@ -1017,3 +1017,9 @@ An example Dockerfile is included to deploy the app using [gunicorn](https://gun
 1. Seed the database by running the Django management command `python manage.py seed_db`
 1. From the `jhe` directory, build the image `$ docker build .`
 1. Run the image `$ docker run -p 8000:8000 <image_id>`
+
+
+
+## MCP server Local Integration
+
+[JHE PostgreSQL MCP Setup Guide](/doc/mcp/README.md)
