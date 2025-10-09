@@ -588,46 +588,45 @@ DEBUG = True
     ...
 ```
 
+---
 
-
-### Practitioner script: uploads observations for patients where the practitioner has the appropriate access
+### Practitioner Script: Upload Observations for Authorized Patients
 
 #### Prerequisites
 
-* The database should be already seeded.
-* The Django server is running before you execute this script.
-* The target Practitioner, Organization, and Study records already exist..
+* The database must already be seeded
+* The Django server must be running, i.e., https://jhe.fly.dev or http://localhost:<port>
+* The target Practitioner, Organization, and Study records already exist
 
+---
 
-# Test Procedure
-
-Follow the steps below to validate the workflow end-to-end.
+## Test Procedure
 
 1. **Select Parent Organization**
-   Choose **University of California, Berkeley** as the top-level organization.
+   Choose **University of California, Berkeley**.
 
-1. **Open the Target Sub-Organization**
+2. **Open Sub-Organization**
    Click **View** for **Berkeley Institute for Data Science (BIDS)**.
 
-1. **Create a New Study**
+3. **Create a New Study**
 
-   * Create a study under BIDS.
+   * Under BIDS, create a study.
    * Add the **iHealth** data source.
    * Set the data scope to **blood glucose**.
 
-1. **Record the Study ID**
-   After creation, open the study details and copy the **Study ID** (e.g., `30006`).
+4. **Record the Study ID**
+   Open the newly created study and copy its **Study ID** (e.g. `30006`).
 
-1. **Run the Practitioner Upload Script**
-   Execute the script below, replacing `<study_id>` with the ID from step 4.
+5. **Run the Practitioner Upload Script**
+   Replace `<study_id>` with the ID from step 4:
 
-```bash
-python jhe/resources/practitioner_fhir_obs_upload.py \
-  --email mary@example.com \
-  --study-id <study_id>
-```
+   ```bash
+   python jhe/resources/practitioner_fhir_obs_upload.py \
+     --email mary@example.com \
+     --study-id <study_id>
+   ```
 
-
+---
 
 ## Usage
 
@@ -640,28 +639,34 @@ python jhe/resources/practitioner_fhir_obs_upload.py \
   [--patient-email <patient_email>]
 ```
 
+---
+
 ## Arguments & Defaults
 
-* `--email` — Practitioner login email. **Default:** `obs-upload@example.com`
-* `--password` — Practitioner password. **Default:** `Jhe1234!`
-* `--org-id` — Target organization ID. **Default:** `20003`
-* `--study-id` — Target study ID (must have iHealth data source + blood-glucose scope). **Default:** `30006`
-* `--patient-email` — Patient email to lookup/create/enroll. **Default:** `obs-upload-pat1@example.com`
+| Flag              | Description                                                  | Default                       |
+| ----------------- | ------------------------------------------------------------ | ----------------------------- |
+| `--email`         | Practitioner login email                                     | `obs-upload@example.com`      |
+| `--password`      | Practitioner password                                        | `Jhe1234!`                    |
+| `--org-id`        | Target organization ID                                       | `20003`                       |
+| `--study-id`      | Target study ID (uses iHealth data source + blood-glucose scope) | `30006`                       |
+| `--patient-email` | Patient email (lookup / create / enroll)                     | `obs-upload-pat1@example.com` |
 
-If you omit any flags, the default is used. You can pass only what you want to change.
+If omitted, the defaults will be used. You may override any or all flags.
+
+---
 
 ## Examples
 
-**Run with all defaults:**
+**With all defaults:**
 
 ```bash
-python script.py
+python practitioner_fhir_obs_upload.py
 ```
 
-**Run with all arguments specified:**
+**Specifying all arguments:**
 
 ```bash
-python script.py \
+python practitioner_fhir_obs_upload.py \
   --email practitioner@example.com \
   --password "Sup3r$ecret!" \
   --org-id 42 \
@@ -669,8 +674,7 @@ python script.py \
   --patient-email patient2@example.com
 ```
 
-
-
+---
 
 ## Running in Production
 
