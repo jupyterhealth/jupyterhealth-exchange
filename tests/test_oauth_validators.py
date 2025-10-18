@@ -11,7 +11,6 @@ from django.test import TestCase
 from core.models import (
     JheUser,
     Organization,
-    Practitioner,
     PractitionerOrganization,
     Study,
 )
