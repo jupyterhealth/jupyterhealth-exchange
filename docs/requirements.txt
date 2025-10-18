@@ -1,0 +1,8 @@
+# Documentation build requirements
+sphinx>=8.0
+pydata-sphinx-theme>=0.16
+sphinx-autobuild
+sphinx-copybutton
+sphinx-design  # For grid cards
+myst-parser  # For markdown support
+sphinxcontrib-httpdomain  # For API documentation

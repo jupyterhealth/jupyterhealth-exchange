@@ -27,6 +27,13 @@ grafana-django-saml2-auth = "*"
 pre-commit = "*"
 jsonschema = "*"
 
+# MCP Server dependencies
+mcp = ">=0.9.0"
+fastapi = "*"
+uvicorn = {extras = ["standard"], version = "*"}
+authlib = ">=1.3.0"
+sse-starlette = "*"
+
 
 [dev-packages]
 
