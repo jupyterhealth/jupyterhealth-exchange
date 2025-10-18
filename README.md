@@ -1009,14 +1009,22 @@ erDiagram
 
 For deployment options and a comprehensive guide take a look at the official [Django Deployment docs](https://docs.djangoproject.com/en/5.1/howto/deployment/)
 
-### Deploying with the included Dockerfile
+### Deploying with the published container image
 
 An example Dockerfile is included to deploy the app using [gunicorn](https://gunicorn.org/) and [WhiteNoise](https://whitenoise.readthedocs.io/en/stable/django.html) for static files.
+This image is published to `ghcr.io/jupyterhealth/jupyterhealth-exchange`.
 
 1. Create a new empty Postgres database
 1. Copy `dot_env_example.txt` to `.env` and update the `DB_*` parameters from (1)
    and generate a new value for `SECRET_KEY`, e.g. with `openssl rand -base64 32`.
+1. start a container with the image, mounting your `.env` file, with
+   ```
+   TAG=sha-abc1234
+   docker run --rm -it -v$PWD/.env:/code/.env ghcr.io/jupyterhealth/jupyterhealth-exchange:$TAG bash
+   ```
 1. Migrate the DB by running `python manage.py migrate`
 1. Seed the database by running the Django management command `python manage.py seed_db`
-1. From the `jhe` directory, build the image `$ docker build .`
-1. Run the image `$ docker run -p 8000:8000 <image_id>`
+1. exit your setup container and launch a new container running the JupyterHealth Exchange
+   ```
+   docker run -v$PWD/.env:/code/.env -p8000:8000 ghcr.io/jupyterhealth/jupyterhealth-exchange:$TAG
+   ```

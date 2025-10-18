@@ -2,8 +2,8 @@ ARG PYTHON_VERSION=3.12-slim-bullseye
 
 FROM python:${PYTHON_VERSION}
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
 # Install system dependencies for both Django and MCP server
 RUN apt-get update && apt-get install -y \
@@ -17,12 +17,16 @@ RUN mkdir -p /data
 
 WORKDIR /code
 
-# Install Python dependencies
-RUN pip install pipenv
+# Install Python dependencies with caching
 COPY Pipfile Pipfile.lock /code/
-RUN pipenv install --deploy --system
+ARG XDG_CACHE_DIR=/tmp/cache
+RUN --mount=type=cache,target=${XDG_CACHE_DIR} \
+    export PIP_CACHE_DIR=$XDG_CACHE_DIR/pip \
+ && export PIPENV_CACHE_DIR=$XDG_CACHE_DIR/pipenv \
+ && pip install pipenv \
+ && pipenv install --deploy --system \
+ && pip uninstall -y pipenv
 
-# Copy application code
 COPY . /code
 
 # Collect Django static files

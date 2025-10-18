@@ -4,9 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "==5.2"
+django = "==5.2.*"
 python-dotenv = "*"
-psycopg2 = "*"
+psycopg2-binary = "*"
 django-oauth-toolkit = "*"
 six = "*"
 requests = "*"
@@ -19,12 +19,10 @@ djangorestframework-camel-case = "*"
 pydantic = "*"
 pydantic-core = "*"
 pyhumps = "*"
-coverage = "*"
 django-allauth = "*"
 faker = "*"
 drf-spectacular = "*"
 grafana-django-saml2-auth = "*"
-pre-commit = "*"
 jsonschema = "*"
 
 # MCP Server dependencies
@@ -36,6 +34,8 @@ sse-starlette = "*"
 
 
 [dev-packages]
+coverage = "*"
+pre-commit = "*"
 
 [requires]
-python_version = "3.11"
+python_version = "3.12"

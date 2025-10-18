@@ -1,2 +1,5 @@
 fly.toml
 .git/
+.env
+docs/
+tests/
