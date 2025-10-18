@@ -45,13 +45,16 @@ class JHEOAuth2ValidatorTests(TestCase):
             email="patient@example.com", password="testpass", user_type="patient", identifier="patient123"
         )
 
-        # Create practitioner user
+        # Create practitioner user (Practitioner profile auto-created by JheUser.save())
         self.practitioner_user = JheUser.objects.create_user(
-            email="practitioner@example.com", password="testpass", user_type="practitioner", identifier="prac123"
+            email="practitioner@example.com",
+            password="testpass",
+            user_type="practitioner",
+            identifier="prac123",
+            first_name="Sam",
+            last_name="Altman",
         )
-        self.practitioner = Practitioner.objects.create(
-            jhe_user=self.practitioner_user, name_given="Sam", name_family="Altman"
-        )
+        self.practitioner = self.practitioner_user.practitioner_profile
 
         # Link practitioner to organizations with roles
         PractitionerOrganization.objects.create(
@@ -117,11 +120,15 @@ class JHEOAuth2ValidatorTests(TestCase):
 
     def test_practitioner_without_organizations_gets_empty_permissions(self):
         """Practitioner with no organization links should get empty permissions"""
-        # Create a practitioner with no organization links
+        # Create a practitioner with no organization links (Practitioner auto-created)
         lonely_user = JheUser.objects.create_user(
-            email="lonely@example.com", password="testpass", user_type="practitioner", identifier="lonely123"
+            email="lonely@example.com",
+            password="testpass",
+            user_type="practitioner",
+            identifier="lonely123",
+            first_name="Lonely",
+            last_name="Practitioner",
         )
-        Practitioner.objects.create(jhe_user=lonely_user, name_given="Lonely", name_family="Practitioner")
 
         request = self._create_mock_request(lonely_user)
         claims = self.validator.get_additional_claims(request)
