@@ -1,6 +1,7 @@
 """
 Study-related query tools with permission enforcement
 """
+
 import psycopg2
 from typing import List
 from mcp.types import TextContent
@@ -28,22 +29,22 @@ def get_study_count(auth: AuthContext) -> List[TextContent]:
             cursor.execute("SELECT COUNT(*) FROM core_study")
         else:
             # Count studies user can access via their practitioner organizations
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT COUNT(DISTINCT cs.id)
                 FROM core_study cs
                 JOIN core_organization co ON co.id = cs.organization_id
                 JOIN core_practitionerorganization cpo ON cpo.organization_id = co.id
                 JOIN core_practitioner cp ON cp.id = cpo.practitioner_id
                 WHERE cp.jhe_user_id = %s
-            """, (auth.user_id,))
+            """,
+                (auth.user_id,),
+            )
 
         result = cursor.fetchone()
         count = result[0] if result else 0
 
-        return [TextContent(
-            type="text",
-            text=f"You have access to {count} studies"
-        )]
+        return [TextContent(type="text", text=f"You have access to {count} studies")]
 
     finally:
         cursor.close()
@@ -66,15 +67,18 @@ def list_studies(auth: AuthContext) -> List[TextContent]:
     try:
         if auth.is_superuser:
             # Superusers see all studies
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT s.id, s.name, o.name as organization_name
                 FROM core_study s
                 JOIN core_organization o ON o.id = s.organization_id
                 ORDER BY s.id
-            """)
+            """
+            )
         else:
             # List studies user can access via their practitioner organizations
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT DISTINCT s.id, s.name, o.name as organization_name
                 FROM core_study s
                 JOIN core_organization o ON o.id = s.organization_id
@@ -82,25 +86,21 @@ def list_studies(auth: AuthContext) -> List[TextContent]:
                 JOIN core_practitioner cp ON cp.id = cpo.practitioner_id
                 WHERE cp.jhe_user_id = %s
                 ORDER BY s.id
-            """, (auth.user_id,))
+            """,
+                (auth.user_id,),
+            )
 
         rows = cursor.fetchall()
 
         if not rows:
-            return [TextContent(
-                type="text",
-                text="No studies found"
-            )]
+            return [TextContent(type="text", text="No studies found")]
 
         # Format results
         result_lines = [f"Accessible studies ({len(rows)}):\n"]
         for study_id, name, org_name in rows:
             result_lines.append(f"  Study {study_id}: {name} (Organization: {org_name})")
 
-        return [TextContent(
-            type="text",
-            text="\n".join(result_lines)
-        )]
+        return [TextContent(type="text", text="\n".join(result_lines))]
 
     finally:
         cursor.close()
@@ -123,17 +123,15 @@ def get_patient_demographics(auth: AuthContext, study_id: int) -> List[TextConte
     """
     # Check permission
     if not auth.can_access_study(study_id):
-        return [TextContent(
-            type="text",
-            text=f"❌ Access denied to study {study_id}"
-        )]
+        return [TextContent(type="text", text=f"❌ Access denied to study {study_id}")]
 
     conn = psycopg2.connect(DB_CONN)
     cursor = conn.cursor()
 
     try:
         # Query patient demographics with proper JHE schema
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
                 p.id,
                 EXTRACT(YEAR FROM AGE(p.birth_date)) as age,
@@ -143,15 +141,14 @@ def get_patient_demographics(auth: AuthContext, study_id: int) -> List[TextConte
             JOIN core_studypatient sp ON sp.patient_id = p.id
             WHERE sp.study_id = %s
             ORDER BY p.id
-        """, (study_id,))
+        """,
+            (study_id,),
+        )
 
         rows = cursor.fetchall()
 
         if not rows:
-            return [TextContent(
-                type="text",
-                text=f"No patients found in study {study_id}"
-            )]
+            return [TextContent(type="text", text=f"No patients found in study {study_id}")]
 
         # Format results
         result_lines = [f"Study {study_id} - {len(rows)} patient(s):\n"]
@@ -161,10 +158,7 @@ def get_patient_demographics(auth: AuthContext, study_id: int) -> List[TextConte
             email_str = email if email else "No email"
             result_lines.append(f"  Patient {patient_id}: Age {age_str}, Email: {email_str}")
 
-        return [TextContent(
-            type="text",
-            text="\n".join(result_lines)
-        )]
+        return [TextContent(type="text", text="\n".join(result_lines))]
 
     finally:
         cursor.close()
@@ -187,17 +181,15 @@ def get_study_metadata(auth: AuthContext, study_id: int) -> List[TextContent]:
     """
     # Check permission
     if not auth.can_access_study(study_id):
-        return [TextContent(
-            type="text",
-            text=f"❌ Access denied to study {study_id}"
-        )]
+        return [TextContent(type="text", text=f"❌ Access denied to study {study_id}")]
 
     conn = psycopg2.connect(DB_CONN)
     cursor = conn.cursor()
 
     try:
         # Query study metadata with organization and counts
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
                 s.id,
                 s.name,
@@ -211,15 +203,14 @@ def get_study_metadata(auth: AuthContext, study_id: int) -> List[TextContent]:
             FROM core_study s
             JOIN core_organization o ON o.id = s.organization_id
             WHERE s.id = %s
-        """, (study_id,))
+        """,
+            (study_id,),
+        )
 
         row = cursor.fetchone()
 
         if not row:
-            return [TextContent(
-                type="text",
-                text=f"Study {study_id} not found"
-            )]
+            return [TextContent(type="text", text=f"Study {study_id} not found")]
 
         study_id, name, description, org_name, org_type, patient_count, obs_count = row
 
@@ -232,10 +223,7 @@ Patients: {patient_count}
 Observations: {obs_count}
 """
 
-        return [TextContent(
-            type="text",
-            text=result.strip()
-        )]
+        return [TextContent(type="text", text=result.strip())]
 
     finally:
         cursor.close()
@@ -263,7 +251,8 @@ def get_patient_observations(auth: AuthContext, patient_id: int, limit: int = 10
     try:
         # First check if user has access to this patient via their studies
         if not auth.is_superuser:
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT COUNT(*)
                 FROM core_patient p
                 JOIN core_studypatient sp ON sp.patient_id = p.id
@@ -272,17 +261,17 @@ def get_patient_observations(auth: AuthContext, patient_id: int, limit: int = 10
                 JOIN core_practitionerorganization cpo ON cpo.organization_id = o.id
                 JOIN core_practitioner cp ON cp.id = cpo.practitioner_id
                 WHERE p.id = %s AND cp.jhe_user_id = %s
-            """, (patient_id, auth.user_id))
+            """,
+                (patient_id, auth.user_id),
+            )
 
             result = cursor.fetchone()
             if not result or result[0] == 0:
-                return [TextContent(
-                    type="text",
-                    text=f"❌ Access denied to patient {patient_id}"
-                )]
+                return [TextContent(type="text", text=f"❌ Access denied to patient {patient_id}")]
 
         # Fetch observations with FHIR/OMH data
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
                 o.id,
                 o.status,
@@ -298,18 +287,18 @@ def get_patient_observations(auth: AuthContext, patient_id: int, limit: int = 10
             WHERE o.subject_patient_id = %s
             ORDER BY o.last_updated DESC
             LIMIT %s
-        """, (patient_id, limit))
+        """,
+            (patient_id, limit),
+        )
 
         rows = cursor.fetchall()
 
         if not rows:
-            return [TextContent(
-                type="text",
-                text=f"No observations found for patient {patient_id}"
-            )]
+            return [TextContent(type="text", text=f"No observations found for patient {patient_id}")]
 
         # Format results
         import json
+
         result_lines = [f"Patient {patient_id} - {len(rows)} observation(s) (showing most recent {limit}):\n"]
 
         for idx, row in enumerate(rows, 1):
@@ -327,10 +316,7 @@ def get_patient_observations(auth: AuthContext, patient_id: int, limit: int = 10
                 formatted_json = json.dumps(value_data, indent=2)
                 result_lines.append(formatted_json)
 
-        return [TextContent(
-            type="text",
-            text="\n".join(result_lines)
-        )]
+        return [TextContent(type="text", text="\n".join(result_lines))]
 
     finally:
         cursor.close()

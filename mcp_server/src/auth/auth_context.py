@@ -5,6 +5,7 @@ This module reads user permissions from OAuth ID token claims instead of
 making API calls to JHE. This eliminates network overhead and enables
 offline operation.
 """
+
 from typing import Optional, List, Dict
 import jwt
 
@@ -56,29 +57,26 @@ class AuthContext:
             claims = jwt.decode(id_token, options={"verify_signature": False})
 
             # Extract standard OIDC claims
-            self.user_id = claims.get('user_id') or claims.get('sub')
-            self.email = claims.get('email')
+            self.user_id = claims.get("user_id") or claims.get("sub")
+            self.email = claims.get("email")
 
             # Extract custom claims
-            self.user_type = claims.get('user_type')
+            self.user_type = claims.get("user_type")
 
             # Check if user is superuser (special user_type or is_superuser claim)
-            self.is_superuser = (
-                self.user_type == 'superuser' or
-                claims.get('is_superuser', False)
-            )
+            self.is_superuser = self.user_type == "superuser" or claims.get("is_superuser", False)
 
             # Extract permissions from jhe_permissions custom claim
-            permissions = claims.get('jhe_permissions', {})
+            permissions = claims.get("jhe_permissions", {})
 
             # Get accessible studies
-            self.study_ids = permissions.get('studies', [])
+            self.study_ids = permissions.get("studies", [])
 
             # Get organizations with roles
-            organizations = permissions.get('organizations', [])
+            organizations = permissions.get("organizations", [])
             for org in organizations:
-                org_id = org.get('id')
-                role = org.get('role')
+                org_id = org.get("id")
+                role = org.get("role")
                 if org_id and role:
                     self.roles_by_org[org_id] = role
 
@@ -107,9 +105,7 @@ class AuthContext:
         """
         if not self.user_id:
             raise PermissionError(
-                "No user information available. "
-                "ID token may be missing or invalid. "
-                "Try re-authenticating."
+                "No user information available. " "ID token may be missing or invalid. " "Try re-authenticating."
             )
 
         return True
@@ -140,7 +136,7 @@ class AuthContext:
             Role string (manager, member, viewer) or None
         """
         if self.is_superuser:
-            return 'super_user'
+            return "super_user"
 
         return self.roles_by_org.get(org_id)
 
@@ -161,11 +157,10 @@ class AuthContext:
 
         # Define role permissions (from JHE core/permissions.py)
         role_permissions = {
-            'super_user': ['data_source.manage', 'organization.manage',
-                          'patient.manage', 'study.manage'],
-            'manager': ['organization.manage', 'patient.manage', 'study.manage'],
-            'member': ['patient.manage', 'study.manage'],
-            'viewer': []
+            "super_user": ["data_source.manage", "organization.manage", "patient.manage", "study.manage"],
+            "manager": ["organization.manage", "patient.manage", "study.manage"],
+            "member": ["patient.manage", "study.manage"],
+            "viewer": [],
         }
 
         permission = f"{resource}.{action}"

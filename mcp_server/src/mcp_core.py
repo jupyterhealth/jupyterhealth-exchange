@@ -8,6 +8,7 @@ Shared MCP server logic that can be used by multiple transport mechanisms:
 This module contains tool definitions, handlers, and business logic
 that is transport-agnostic.
 """
+
 from typing import Any, Callable, Optional
 from mcp.server import Server
 from mcp.types import Tool, TextContent, Resource
@@ -20,7 +21,7 @@ from tools import (
     get_study_metadata,
     get_patient_observations,
     get_jhe_schemas,
-    get_schema_resource
+    get_schema_resource,
 )
 
 
@@ -30,48 +31,30 @@ TOOL_DEFINITIONS = [
     Tool(
         name="get_study_count",
         description="Count total studies accessible to the authenticated user based on their role and organization permissions",
-        inputSchema={
-            "type": "object",
-            "properties": {},
-            "required": []
-        }
+        inputSchema={"type": "object", "properties": {}, "required": []},
     ),
     Tool(
         name="list_studies",
         description="List all studies accessible to the authenticated user with their IDs, names, and organizations",
-        inputSchema={
-            "type": "object",
-            "properties": {},
-            "required": []
-        }
+        inputSchema={"type": "object", "properties": {}, "required": []},
     ),
     Tool(
         name="get_patient_demographics",
         description="Get patient demographics for a specific study. Returns patient IDs, ages, and emails. Requires study_id parameter.",
         inputSchema={
             "type": "object",
-            "properties": {
-                "study_id": {
-                    "type": "integer",
-                    "description": "The study identifier (integer)"
-                }
-            },
-            "required": ["study_id"]
-        }
+            "properties": {"study_id": {"type": "integer", "description": "The study identifier (integer)"}},
+            "required": ["study_id"],
+        },
     ),
     Tool(
         name="get_study_metadata",
         description="Get metadata about a specific study including name, description, organization, patient count, and observation count",
         inputSchema={
             "type": "object",
-            "properties": {
-                "study_id": {
-                    "type": "integer",
-                    "description": "The study identifier (integer)"
-                }
-            },
-            "required": ["study_id"]
-        }
+            "properties": {"study_id": {"type": "integer", "description": "The study identifier (integer)"}},
+            "required": ["study_id"],
+        },
     ),
     Tool(
         name="get_patient_observations",
@@ -79,23 +62,21 @@ TOOL_DEFINITIONS = [
         inputSchema={
             "type": "object",
             "properties": {
-                "patient_id": {
-                    "type": "integer",
-                    "description": "The patient identifier (integer)"
-                },
+                "patient_id": {"type": "integer", "description": "The patient identifier (integer)"},
                 "limit": {
                     "type": "integer",
                     "description": "Maximum number of observations to return (default: 10)",
-                    "default": 10
-                }
+                    "default": 10,
+                },
             },
-            "required": ["patient_id"]
-        }
-    )
+            "required": ["patient_id"],
+        },
+    ),
 ]
 
 
 # ========== Authentication ==========
+
 
 def authenticate_stdio() -> Optional[tuple[str, Optional[str]]]:
     """
@@ -130,6 +111,7 @@ def authenticate_http(access_token: str) -> Optional[tuple[str, Optional[str]]]:
 
 # ========== Tool Execution ==========
 
+
 def execute_tool(name: str, arguments: Any, auth: AuthContext) -> list[TextContent]:
     """
     Execute a tool with the given arguments and authentication context
@@ -152,46 +134,31 @@ def execute_tool(name: str, arguments: Any, auth: AuthContext) -> list[TextConte
         elif name == "get_patient_demographics":
             study_id = arguments.get("study_id")
             if not study_id:
-                return [TextContent(
-                    type="text",
-                    text="❌ Missing required parameter: study_id"
-                )]
+                return [TextContent(type="text", text="❌ Missing required parameter: study_id")]
             return get_patient_demographics(auth, int(study_id))
 
         elif name == "get_study_metadata":
             study_id = arguments.get("study_id")
             if not study_id:
-                return [TextContent(
-                    type="text",
-                    text="❌ Missing required parameter: study_id"
-                )]
+                return [TextContent(type="text", text="❌ Missing required parameter: study_id")]
             return get_study_metadata(auth, int(study_id))
 
         elif name == "get_patient_observations":
             patient_id = arguments.get("patient_id")
             if not patient_id:
-                return [TextContent(
-                    type="text",
-                    text="❌ Missing required parameter: patient_id"
-                )]
+                return [TextContent(type="text", text="❌ Missing required parameter: patient_id")]
             limit = arguments.get("limit", 10)
             return get_patient_observations(auth, int(patient_id), int(limit))
 
         else:
-            return [TextContent(
-                type="text",
-                text=f"❌ Unknown tool: {name}"
-            )]
+            return [TextContent(type="text", text=f"❌ Unknown tool: {name}")]
 
     except Exception as e:
-        return [TextContent(
-            type="text",
-            text=f"❌ Error executing {name}: {str(e)}"
-        )]
+        return [TextContent(type="text", text=f"❌ Error executing {name}: {str(e)}")]
 
 
 def get_tool_handler(
-    auth_provider: Callable[[], Optional[tuple[str, Optional[str]]]]
+    auth_provider: Callable[[], Optional[tuple[str, Optional[str]]]],
 ) -> Callable[[str, Any], list[TextContent]]:
     """
     Create a tool handler function with authentication
@@ -202,16 +169,16 @@ def get_tool_handler(
     Returns:
         Handler function that can be used by MCP server
     """
+
     def handler(name: str, arguments: Any) -> list[TextContent]:
         """Execute tool with authentication"""
         # Get authentication
         tokens = auth_provider()
 
         if not tokens:
-            return [TextContent(
-                type="text",
-                text="❌ Authentication failed. Please check your credentials and try again."
-            )]
+            return [
+                TextContent(type="text", text="❌ Authentication failed. Please check your credentials and try again.")
+            ]
 
         access_token, id_token = tokens
 
@@ -222,10 +189,9 @@ def get_tool_handler(
         except PermissionError as e:
             # Token invalid or missing ID token claims
             TokenCache.clear_token()
-            return [TextContent(
-                type="text",
-                text=f"❌ Authentication error: {e}\nPlease try again to re-authenticate."
-            )]
+            return [
+                TextContent(type="text", text=f"❌ Authentication error: {e}\nPlease try again to re-authenticate.")
+            ]
 
         # Execute tool
         return execute_tool(name, arguments, auth)
@@ -234,6 +200,7 @@ def get_tool_handler(
 
 
 # ========== Schema Resources ==========
+
 
 def get_schema_resources() -> list[Resource]:
     """
@@ -246,21 +213,24 @@ def get_schema_resources() -> list[Resource]:
 
     resources = []
     for table_name, schema_info in schemas.items():
-        resources.append(Resource(
-            uri=f"schema://jupyterhealth/{table_name}",
-            name=f"{table_name.replace('_', ' ').title()} Schema",
-            mimeType="application/json",
-            description=schema_info.get("description", f"Schema for {table_name} table")
-        ))
+        resources.append(
+            Resource(
+                uri=f"schema://jupyterhealth/{table_name}",
+                name=f"{table_name.replace('_', ' ').title()} Schema",
+                mimeType="application/json",
+                description=schema_info.get("description", f"Schema for {table_name} table"),
+            )
+        )
 
     return resources
 
 
 # ========== Server Factory ==========
 
+
 def create_mcp_server(
     server_name: str = "jupyterhealth-mcp",
-    auth_provider: Optional[Callable[[], Optional[tuple[str, Optional[str]]]]] = None
+    auth_provider: Optional[Callable[[], Optional[tuple[str, Optional[str]]]]] = None,
 ) -> Server:
     """
     Create a configured MCP server instance

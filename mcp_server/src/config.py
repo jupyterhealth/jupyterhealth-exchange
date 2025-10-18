@@ -1,6 +1,7 @@
 """
 Configuration management for JHE Universal MCP Server
 """
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv

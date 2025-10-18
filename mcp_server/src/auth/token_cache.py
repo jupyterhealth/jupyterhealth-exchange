@@ -1,6 +1,7 @@
 """
 Secure token storage and retrieval
 """
+
 import json
 import time
 import secrets
@@ -24,11 +25,11 @@ class TokenCache:
             token_data: Token response from OAuth server
         """
         # Calculate expiry time
-        if 'expires_in' in token_data:
-            token_data['expires_at'] = time.time() + token_data['expires_in']
+        if "expires_in" in token_data:
+            token_data["expires_at"] = time.time() + token_data["expires_in"]
 
         # Write to file
-        with open(TOKEN_CACHE_PATH, 'w') as f:
+        with open(TOKEN_CACHE_PATH, "w") as f:
             json.dump(token_data, f, indent=2)
 
         # Set restrictive permissions (owner read/write only)
@@ -46,12 +47,12 @@ class TokenCache:
             return None
 
         try:
-            with open(TOKEN_CACHE_PATH, 'r') as f:
+            with open(TOKEN_CACHE_PATH, "r") as f:
                 token_data = json.load(f)
 
             # Check if token is expired
-            if 'expires_at' in token_data:
-                if time.time() >= token_data['expires_at']:
+            if "expires_at" in token_data:
+                if time.time() >= token_data["expires_at"]:
                     # Token expired, try refresh
                     return TokenCache.refresh_token(token_data)
 
@@ -68,16 +69,16 @@ class TokenCache:
 
         now = int(time.time())
         claims = {
-            'iss': CLIENT_ID,
-            'sub': CLIENT_ID,
-            'aud': JHE_TOKEN_URL,
-            'jti': secrets.token_urlsafe(16),
-            'exp': now + 300,
-            'iat': now
+            "iss": CLIENT_ID,
+            "sub": CLIENT_ID,
+            "aud": JHE_TOKEN_URL,
+            "jti": secrets.token_urlsafe(16),
+            "exp": now + 300,
+            "iat": now,
         }
 
         try:
-            return jwt.encode(claims, OIDC_RSA_PRIVATE_KEY, algorithm='RS256')
+            return jwt.encode(claims, OIDC_RSA_PRIVATE_KEY, algorithm="RS256")
         except Exception as e:
             print(f"Error creating client assertion: {e}")
             return None
@@ -93,15 +94,15 @@ class TokenCache:
         Returns:
             New token data if successful, None otherwise
         """
-        if 'refresh_token' not in token_data:
+        if "refresh_token" not in token_data:
             print("No refresh token available")
             return None
 
         try:
             refresh_data = {
-                'grant_type': 'refresh_token',
-                'refresh_token': token_data['refresh_token'],
-                'client_id': CLIENT_ID
+                "grant_type": "refresh_token",
+                "refresh_token": token_data["refresh_token"],
+                "client_id": CLIENT_ID,
             }
 
             # Use either private_key_jwt or client_secret
@@ -109,22 +110,18 @@ class TokenCache:
                 client_assertion = TokenCache._create_client_assertion()
                 if not client_assertion:
                     return None
-                refresh_data['client_assertion_type'] = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
-                refresh_data['client_assertion'] = client_assertion
+                refresh_data["client_assertion_type"] = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+                refresh_data["client_assertion"] = client_assertion
             elif CLIENT_SECRET:
-                refresh_data['client_secret'] = CLIENT_SECRET
+                refresh_data["client_secret"] = CLIENT_SECRET
 
-            response = requests.post(
-                JHE_TOKEN_URL,
-                data=refresh_data,
-                timeout=10
-            )
+            response = requests.post(JHE_TOKEN_URL, data=refresh_data, timeout=10)
 
             if response.status_code == 200:
                 new_token = response.json()
                 # Preserve refresh_token if not returned
-                if 'refresh_token' not in new_token and 'refresh_token' in token_data:
-                    new_token['refresh_token'] = token_data['refresh_token']
+                if "refresh_token" not in new_token and "refresh_token" in token_data:
+                    new_token["refresh_token"] = token_data["refresh_token"]
 
                 TokenCache.save_token(new_token)
                 print("✓ Token refreshed successfully")
@@ -153,8 +150,8 @@ class TokenCache:
         """
         token_data = TokenCache.load_token()
 
-        if token_data and 'access_token' in token_data:
-            return token_data['access_token']
+        if token_data and "access_token" in token_data:
+            return token_data["access_token"]
 
         return None
 
@@ -169,9 +166,9 @@ class TokenCache:
         """
         token_data = TokenCache.load_token()
 
-        if token_data and 'access_token' in token_data:
-            access_token = token_data['access_token']
-            id_token = token_data.get('id_token')  # May be None
+        if token_data and "access_token" in token_data:
+            access_token = token_data["access_token"]
+            id_token = token_data.get("id_token")  # May be None
             return (access_token, id_token)
 
         return None

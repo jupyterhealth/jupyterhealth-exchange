@@ -14,7 +14,7 @@ from datetime import timedelta
 from django.utils import timezone
 
 # Set up Django environment
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'jhe.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "jhe.settings")
 django.setup()
 
 from core.models import JheUser
@@ -52,11 +52,7 @@ def create_test_token_for_user(email):
     access_token, created = OAuthAccessToken.objects.get_or_create(
         user=user,
         application=app,
-        defaults={
-            "token": "test_access_token_" + user.email,
-            "expires": expires,
-            "scope": "openid"
-        }
+        defaults={"token": "test_access_token_" + user.email, "expires": expires, "scope": "openid"},
     )
 
     if not created:
@@ -109,16 +105,13 @@ def create_test_token_for_user(email):
 
     # Read private key from settings
     from django.conf import settings
-    private_key = settings.OAUTH2_PROVIDER.get('OIDC_RSA_PRIVATE_KEY')
+
+    private_key = settings.OAUTH2_PROVIDER.get("OIDC_RSA_PRIVATE_KEY")
 
     if private_key:
         try:
             # Sign the ID token
-            id_token_string = jose_jwt.encode(
-                all_claims,
-                private_key,
-                algorithm='RS256'
-            )
+            id_token_string = jose_jwt.encode(all_claims, private_key, algorithm="RS256")
 
             print(f"\n🔐 Signed ID Token (JWT):")
             print(id_token_string)
@@ -161,19 +154,19 @@ def main():
         print(f"   - User Type: {claims.get('user_type')}")
         print(f"   - User ID: {claims.get('user_id')}")
 
-        if 'jhe_permissions' in claims:
-            perms = claims['jhe_permissions']
+        if "jhe_permissions" in claims:
+            perms = claims["jhe_permissions"]
             print(f"   - Studies: {len(perms.get('studies', []))} accessible")
             print(f"   - Organizations: {len(perms.get('organizations', []))} memberships")
 
-            if perms.get('studies'):
+            if perms.get("studies"):
                 print(f"\n   📚 Accessible Study IDs:")
-                for study_id in perms['studies']:
+                for study_id in perms["studies"]:
                     print(f"      - Study {study_id}")
 
-            if perms.get('organizations'):
+            if perms.get("organizations"):
                 print(f"\n   🏢 Organization Memberships:")
-                for org in perms['organizations']:
+                for org in perms["organizations"]:
                     print(f"      - {org['name']} (Role: {org['role']})")
 
         print(f"\n🎯 Key Achievement:")

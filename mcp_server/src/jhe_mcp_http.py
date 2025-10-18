@@ -49,7 +49,7 @@ from auth import AuthContext
 app = FastAPI(
     title="JupyterHealth MCP Server",
     description="Model Context Protocol server for JupyterHealth Exchange with OAuth authentication",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Session management
@@ -58,8 +58,10 @@ sse_sessions: Dict[str, asyncio.Queue] = {}
 
 # ========== MCP Request Models ==========
 
+
 class MCPRequest(BaseModel):
     """MCP JSON-RPC request"""
+
     jsonrpc: str = "2.0"
     id: int | str | None = None
     method: str
@@ -68,6 +70,7 @@ class MCPRequest(BaseModel):
 
 # ========== MCP Message Handlers ==========
 
+
 async def handle_initialize(params: Dict[str, Any] | None, request_id: int | str | None) -> Dict[str, Any]:
     """Handle MCP initialize request"""
     return {
@@ -75,14 +78,9 @@ async def handle_initialize(params: Dict[str, Any] | None, request_id: int | str
         "id": request_id,
         "result": {
             "protocolVersion": "2024-11-05",
-            "capabilities": {
-                "tools": {}
-            },
-            "serverInfo": {
-                "name": "jupyterhealth-mcp-http",
-                "version": "1.0.0"
-            }
-        }
+            "capabilities": {"tools": {}},
+            "serverInfo": {"name": "jupyterhealth-mcp-http", "version": "1.0.0"},
+        },
     }
 
 
@@ -90,21 +88,11 @@ async def handle_tools_list(params: Dict[str, Any] | None, request_id: int | str
     """Handle tools/list request"""
     # Get tools from TOOL_DEFINITIONS
     tools = [
-        {
-            "name": tool.name,
-            "description": tool.description,
-            "inputSchema": tool.inputSchema
-        }
+        {"name": tool.name, "description": tool.description, "inputSchema": tool.inputSchema}
         for tool in TOOL_DEFINITIONS
     ]
 
-    return {
-        "jsonrpc": "2.0",
-        "id": request_id,
-        "result": {
-            "tools": tools
-        }
-    }
+    return {"jsonrpc": "2.0", "id": request_id, "result": {"tools": tools}}
 
 
 async def handle_tools_call(params: Dict[str, Any] | None, request_id: int | str | None) -> Dict[str, Any]:
@@ -113,10 +101,7 @@ async def handle_tools_call(params: Dict[str, Any] | None, request_id: int | str
         return {
             "jsonrpc": "2.0",
             "id": request_id,
-            "error": {
-                "code": -32602,
-                "message": "Invalid params: name is required"
-            }
+            "error": {"code": -32602, "message": "Invalid params: name is required"},
         }
 
     tool_name = params["name"]
@@ -126,14 +111,7 @@ async def handle_tools_call(params: Dict[str, Any] | None, request_id: int | str
         # Authenticate - triggers browser OAuth flow if no cached token
         tokens = authenticate_stdio()
         if not tokens:
-            return {
-                "jsonrpc": "2.0",
-                "id": request_id,
-                "error": {
-                    "code": -32001,
-                    "message": "Authentication failed"
-                }
-            }
+            return {"jsonrpc": "2.0", "id": request_id, "error": {"code": -32001, "message": "Authentication failed"}}
 
         # Create auth context
         access_token, id_token = tokens
@@ -143,29 +121,14 @@ async def handle_tools_call(params: Dict[str, Any] | None, request_id: int | str
         result = execute_tool(tool_name, arguments, auth)
 
         # Convert TextContent list to dict format
-        content = [
-            {
-                "type": content_item.type,
-                "text": content_item.text
-            }
-            for content_item in result
-        ]
+        content = [{"type": content_item.type, "text": content_item.text} for content_item in result]
 
-        return {
-            "jsonrpc": "2.0",
-            "id": request_id,
-            "result": {
-                "content": content
-            }
-        }
+        return {"jsonrpc": "2.0", "id": request_id, "result": {"content": content}}
     except Exception as e:
         return {
             "jsonrpc": "2.0",
             "id": request_id,
-            "error": {
-                "code": -32603,
-                "message": f"Tool execution error: {str(e)}"
-            }
+            "error": {"code": -32603, "message": f"Tool execution error: {str(e)}"},
         }
 
 
@@ -185,17 +148,11 @@ async def handle_mcp_request(mcp_request: MCPRequest) -> Dict[str, Any]:
         # Client acknowledges initialization - no response needed
         return None
     else:
-        return {
-            "jsonrpc": "2.0",
-            "id": request_id,
-            "error": {
-                "code": -32601,
-                "message": f"Method not found: {method}"
-            }
-        }
+        return {"jsonrpc": "2.0", "id": request_id, "error": {"code": -32601, "message": f"Method not found: {method}"}}
 
 
 # ========== SSE Endpoint ==========
+
 
 @app.get("/sse")
 async def sse_connection():
@@ -251,17 +208,17 @@ async def sse_connection():
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            "X-Accel-Buffering": "no"  # Disable proxy buffering
-        }
+            "X-Accel-Buffering": "no",  # Disable proxy buffering
+        },
     )
 
 
 # ========== Messages Endpoint ==========
 
+
 @app.post("/messages")
 async def messages_endpoint(
-    request: Request,
-    session_id: str = Query(..., description="Session ID from SSE endpoint event")
+    request: Request, session_id: str = Query(..., description="Session ID from SSE endpoint event")
 ):
     """
     Receive MCP messages and send responses via SSE
@@ -278,26 +235,14 @@ async def messages_endpoint(
     """
     # Validate session exists
     if session_id not in sse_sessions:
-        return {
-            "jsonrpc": "2.0",
-            "error": {
-                "code": -32000,
-                "message": f"Invalid session_id: {session_id}"
-            }
-        }
+        return {"jsonrpc": "2.0", "error": {"code": -32000, "message": f"Invalid session_id: {session_id}"}}
 
     # Parse MCP request
     try:
         body = await request.json()
         mcp_request = MCPRequest(**body)
     except Exception as e:
-        error_response = {
-            "jsonrpc": "2.0",
-            "error": {
-                "code": -32700,
-                "message": f"Parse error: {str(e)}"
-            }
-        }
+        error_response = {"jsonrpc": "2.0", "error": {"code": -32700, "message": f"Parse error: {str(e)}"}}
         # Send via SSE
         message_queue = sse_sessions[session_id]
         await message_queue.put(error_response)
@@ -318,6 +263,7 @@ async def messages_endpoint(
 
 # ========== Health Check Endpoint ==========
 
+
 @app.get("/health")
 async def health_check():
     """
@@ -330,11 +276,12 @@ async def health_check():
         "status": "healthy",
         "service": "jupyterhealth-mcp-http",
         "version": "1.0.0",
-        "active_sessions": len(sse_sessions)
+        "active_sessions": len(sse_sessions),
     }
 
 
 # ========== Server Info Endpoint ==========
+
 
 @app.get("/")
 async def root():
@@ -352,22 +299,23 @@ async def root():
             "/sse": "Establish SSE connection (GET)",
             "/messages": "Send MCP messages (POST with session_id)",
             "/health": "Health check endpoint",
-            "/": "This information page"
+            "/": "This information page",
         },
         "authentication": {
             "type": "Interactive OAuth 2.0 Flow",
             "method": "Browser popup (same as stdio version)",
             "cache": "~/.jhe_mcp/token_cache.json",
-            "instructions": "Connect via MCP client - browser opens automatically on first request"
+            "instructions": "Connect via MCP client - browser opens automatically on first request",
         },
         "documentation": {
             "mcp_protocol": "https://modelcontextprotocol.io",
-            "jhe_docs": "https://github.com/the-commons-project/jupyterhealth-exchange"
-        }
+            "jhe_docs": "https://github.com/the-commons-project/jupyterhealth-exchange",
+        },
     }
 
 
 # ========== Startup Event ==========
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -394,10 +342,4 @@ if __name__ == "__main__":
     print(f"SSE endpoint: GET http://{host}:{port}/sse")
     print(f"Messages endpoint: POST http://{host}:{port}/messages?session_id=XXX")
 
-    uvicorn.run(
-        "jhe_mcp_http:app",
-        host=host,
-        port=port,
-        log_level="info",
-        access_log=True
-    )
+    uvicorn.run("jhe_mcp_http:app", host=host, port=port, log_level="info", access_log=True)

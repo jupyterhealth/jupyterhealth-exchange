@@ -1,6 +1,7 @@
 """
 OAuth 2.0 authorization flow with PKCE and private_key_jwt support
 """
+
 import secrets
 import hashlib
 import base64
@@ -20,7 +21,7 @@ from config import (
     CLIENT_SECRET,
     OIDC_RSA_PRIVATE_KEY,
     REDIRECT_URI,
-    CALLBACK_PORT
+    CALLBACK_PORT,
 )
 from .token_cache import TokenCache
 
@@ -37,30 +38,31 @@ class OAuthCallbackHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         params = parse_qs(parsed.query)
 
-        if parsed.path == '/token':
+        if parsed.path == "/token":
             # Endpoint for browser to poll for ID token
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header("Content-type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
 
             import json
+
             if OAuthCallbackHandler.id_token:
-                response_data = {'id_token': OAuthCallbackHandler.id_token}
+                response_data = {"id_token": OAuthCallbackHandler.id_token}
             else:
-                response_data = {'id_token': None}
+                response_data = {"id_token": None}
 
             self.wfile.write(json.dumps(response_data).encode())
 
-        elif parsed.path == '/callback':
+        elif parsed.path == "/callback":
             # Extract authorization code and state
-            OAuthCallbackHandler.authorization_code = params.get('code', [None])[0]
-            OAuthCallbackHandler.state_received = params.get('state', [None])[0]
-            error = params.get('error', [None])[0]
+            OAuthCallbackHandler.authorization_code = params.get("code", [None])[0]
+            OAuthCallbackHandler.state_received = params.get("state", [None])[0]
+            error = params.get("error", [None])[0]
 
             # Send response to browser
             self.send_response(200)
-            self.send_header('Content-type', 'text/html')
+            self.send_header("Content-type", "text/html")
             self.end_headers()
 
             if error:
@@ -192,8 +194,8 @@ def pkce_challenge_from_verifier(verifier: str) -> str:
     Returns:
         Base64-URL-encoded SHA256 hash of verifier
     """
-    digest = hashlib.sha256(verifier.encode('ascii')).digest()
-    return base64.urlsafe_b64encode(digest).rstrip(b'=').decode('ascii')
+    digest = hashlib.sha256(verifier.encode("ascii")).digest()
+    return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
 
 
 def create_client_assertion() -> Optional[str]:
@@ -209,21 +211,17 @@ def create_client_assertion() -> Optional[str]:
     # Create JWT claims
     now = int(time.time())
     claims = {
-        'iss': CLIENT_ID,
-        'sub': CLIENT_ID,
-        'aud': JHE_TOKEN_URL,
-        'jti': secrets.token_urlsafe(16),
-        'exp': now + 300,  # 5 minutes
-        'iat': now
+        "iss": CLIENT_ID,
+        "sub": CLIENT_ID,
+        "aud": JHE_TOKEN_URL,
+        "jti": secrets.token_urlsafe(16),
+        "exp": now + 300,  # 5 minutes
+        "iat": now,
     }
 
     # Sign with RSA private key
     try:
-        client_assertion = jwt.encode(
-            claims,
-            OIDC_RSA_PRIVATE_KEY,
-            algorithm='RS256'
-        )
+        client_assertion = jwt.encode(claims, OIDC_RSA_PRIVATE_KEY, algorithm="RS256")
         return client_assertion
     except Exception as e:
         print(f"Error creating client assertion: {e}")
@@ -237,7 +235,7 @@ def start_callback_server() -> HTTPServer:
     Returns:
         HTTPServer instance
     """
-    server = HTTPServer(('localhost', CALLBACK_PORT), OAuthCallbackHandler)
+    server = HTTPServer(("localhost", CALLBACK_PORT), OAuthCallbackHandler)
     thread = threading.Thread(target=server.handle_request, daemon=True)
     thread.start()
     return server
@@ -263,20 +261,20 @@ def perform_oauth_flow() -> Optional[dict]:
 
     # Build authorization URL
     auth_params = {
-        'response_type': 'code',
-        'client_id': CLIENT_ID,
-        'redirect_uri': REDIRECT_URI,
-        'scope': 'openid',  # Only scope supported by JHE IdP
-        'state': state,
-        'code_challenge': code_challenge,
-        'code_challenge_method': 'S256'
+        "response_type": "code",
+        "client_id": CLIENT_ID,
+        "redirect_uri": REDIRECT_URI,
+        "scope": "openid",  # Only scope supported by JHE IdP
+        "state": state,
+        "code_challenge": code_challenge,
+        "code_challenge_method": "S256",
     }
 
     auth_url = f"{JHE_AUTHORIZE_URL}?{urlencode(auth_params)}"
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("🔐 JupyterHealth Exchange Authentication Required")
-    print("="*60)
+    print("=" * 60)
     print("\nOpening browser for authentication...")
     print(f"If browser doesn't open, visit:\n{auth_url}\n")
 
@@ -308,11 +306,11 @@ def perform_oauth_flow() -> Optional[dict]:
     print("✓ Authorization code received, exchanging for token...")
 
     token_data = {
-        'grant_type': 'authorization_code',
-        'code': auth_code,
-        'redirect_uri': REDIRECT_URI,
-        'client_id': CLIENT_ID,
-        'code_verifier': code_verifier
+        "grant_type": "authorization_code",
+        "code": auth_code,
+        "redirect_uri": REDIRECT_URI,
+        "client_id": CLIENT_ID,
+        "code_verifier": code_verifier,
     }
 
     # Use PKCE only (public client - no client_secret or private_key_jwt)
@@ -326,31 +324,32 @@ def perform_oauth_flow() -> Optional[dict]:
             token = response.json()
 
             # ========== CAPTURE ID TOKEN FOR DEMONSTRATION ==========
-            if 'id_token' in token:
+            if "id_token" in token:
                 # Store ID token for browser polling
-                OAuthCallbackHandler.id_token = token['id_token']
-                id_token_jwt = token['id_token']
+                OAuthCallbackHandler.id_token = token["id_token"]
+                id_token_jwt = token["id_token"]
 
-                print("\n" + "="*80)
+                print("\n" + "=" * 80)
                 print("🎯 ID TOKEN CAPTURED - Ready for jwt.io demonstration!")
-                print("="*80)
+                print("=" * 80)
                 print("\nRAW JWT TOKEN (copy everything below the line):")
-                print("-"*80)
+                print("-" * 80)
                 print(id_token_jwt)
-                print("-"*80)
+                print("-" * 80)
 
                 # Decode and show payload
                 try:
                     decoded = jwt.decode(id_token_jwt, options={"verify_signature": False})
                     print("\nDECODED PAYLOAD (what you'll see at jwt.io):")
-                    print("-"*80)
+                    print("-" * 80)
                     import json
+
                     print(json.dumps(decoded, indent=2))
-                    print("-"*80)
+                    print("-" * 80)
 
                     # Highlight custom claims
-                    if 'jhe_permissions' in decoded:
-                        perms = decoded['jhe_permissions']
+                    if "jhe_permissions" in decoded:
+                        perms = decoded["jhe_permissions"]
                         print(f"\n✨ CUSTOM CLAIMS FOUND:")
                         print(f"   - user_type: {decoded.get('user_type')}")
                         print(f"   - user_id: {decoded.get('user_id')}")
@@ -365,14 +364,14 @@ def perform_oauth_flow() -> Optional[dict]:
                 print("   3. Paste into the 'Encoded' text box on the left")
                 print("   4. See the decoded payload on the right")
                 print("   5. Look for 'jhe_permissions' in the payload!")
-                print("="*80 + "\n")
+                print("=" * 80 + "\n")
             # ========== END CAPTURE ==========
 
             # Save token
             TokenCache.save_token(token)
 
             print("✓ Authentication successful! Token cached.")
-            print("="*60 + "\n")
+            print("=" * 60 + "\n")
 
             return token
         else:
@@ -401,8 +400,8 @@ def get_valid_token() -> Optional[str]:
     print("\n⚠️  No valid token found. Starting authentication flow...")
     token_data = perform_oauth_flow()
 
-    if token_data and 'access_token' in token_data:
-        return token_data['access_token']
+    if token_data and "access_token" in token_data:
+        return token_data["access_token"]
 
     return None
 
@@ -425,9 +424,9 @@ def get_valid_tokens() -> Optional[tuple[str, Optional[str]]]:
     print("\n⚠️  No valid tokens found. Starting authentication flow...")
     token_data = perform_oauth_flow()
 
-    if token_data and 'access_token' in token_data:
-        access_token = token_data['access_token']
-        id_token = token_data.get('id_token')
+    if token_data and "access_token" in token_data:
+        access_token = token_data["access_token"]
+        id_token = token_data.get("id_token")
         return (access_token, id_token)
 
     return None

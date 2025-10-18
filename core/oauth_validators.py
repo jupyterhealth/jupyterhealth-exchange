@@ -2,6 +2,7 @@
 Custom OAuth2 Validator for JupyterHealth Exchange
 Adds user permissions to OIDC ID tokens
 """
+
 import logging
 from oauth2_provider.oauth2_validators import OAuth2Validator
 from core.models import Study, PractitionerOrganization
@@ -61,10 +62,10 @@ class JHEOAuth2Validator(OAuth2Validator):
         user = request.user
 
         # For patient users, only include basic user info (no org/study access)
-        if user.user_type == 'patient':
+        if user.user_type == "patient":
             return {
-                'user_type': 'patient',
-                'user_id': user.id,
+                "user_type": "patient",
+                "user_id": user.id,
             }
 
         # For practitioners and other user types, fetch accessible studies and organizations
@@ -73,48 +74,37 @@ class JHEOAuth2Validator(OAuth2Validator):
             # Uses the related_name 'practitioner_links' from PractitionerOrganization model
             # Query: Studies linked to orgs that have practitioner links to this user
             accessible_studies = list(
-                Study.objects.filter(
-                    organization__practitioner_links__practitioner__jhe_user=user
-                ).values_list('id', flat=True).distinct()
+                Study.objects.filter(organization__practitioner_links__practitioner__jhe_user=user)
+                .values_list("id", flat=True)
+                .distinct()
             )
 
             # Get practitioner's organizations with roles
             # select_related() optimizes query by joining organization table
             practitioner_orgs = list(
-                PractitionerOrganization.objects.filter(
-                    practitioner__jhe_user=user
-                ).select_related('organization').values(
-                    'organization_id',
-                    'organization__name',
-                    'role'
-                )
+                PractitionerOrganization.objects.filter(practitioner__jhe_user=user)
+                .select_related("organization")
+                .values("organization_id", "organization__name", "role")
             )
 
             # Transform database results into clean JSON structure
             organizations = [
-                {
-                    'id': org['organization_id'],
-                    'name': org['organization__name'],
-                    'role': org['role']
-                }
+                {"id": org["organization_id"], "name": org["organization__name"], "role": org["role"]}
                 for org in practitioner_orgs
             ]
 
         except Exception as e:
             # Log error but don't fail token generation
             # This ensures OAuth flow continues even if permission lookup fails
-            logger.error(
-                f"Error fetching permissions for user {user.id} ({user.email}): {e}",
-                exc_info=True
-            )
+            logger.error(f"Error fetching permissions for user {user.id} ({user.email}): {e}", exc_info=True)
             accessible_studies = []
             organizations = []
 
         return {
-            'user_type': user.user_type,
-            'user_id': user.id,
-            'jhe_permissions': {
-                'studies': accessible_studies,
-                'organizations': organizations,
-            }
+            "user_type": user.user_type,
+            "user_id": user.id,
+            "jhe_permissions": {
+                "studies": accessible_studies,
+                "organizations": organizations,
+            },
         }

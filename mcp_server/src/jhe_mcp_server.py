@@ -30,6 +30,7 @@ from mcp_core import create_mcp_server
 
 # ========== Server Entry Point ==========
 
+
 async def main():
     """Run MCP server on stdio"""
     # Validate configuration
@@ -44,11 +45,7 @@ async def main():
 
     # Run server
     async with stdio_server() as (read_stream, write_stream):
-        await server.run(
-            read_stream,
-            write_stream,
-            server.create_initialization_options()
-        )
+        await server.run(read_stream, write_stream, server.create_initialization_options())
 
 
 if __name__ == "__main__":
