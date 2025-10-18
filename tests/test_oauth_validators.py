@@ -121,9 +121,7 @@ class JHEOAuth2ValidatorTests(TestCase):
         lonely_user = JheUser.objects.create_user(
             email="lonely@example.com", password="testpass", user_type="practitioner", identifier="lonely123"
         )
-        Practitioner.objects.create(
-            jhe_user=lonely_user, name_given="Lonely", name_family="Practitioner"
-        )
+        Practitioner.objects.create(jhe_user=lonely_user, name_given="Lonely", name_family="Practitioner")
 
         request = self._create_mock_request(lonely_user)
         claims = self.validator.get_additional_claims(request)
