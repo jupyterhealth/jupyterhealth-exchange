@@ -18,7 +18,6 @@ from config import (
     JHE_AUTHORIZE_URL,
     JHE_TOKEN_URL,
     CLIENT_ID,
-    CLIENT_SECRET,
     OIDC_RSA_PRIVATE_KEY,
     REDIRECT_URI,
     CALLBACK_PORT,
@@ -181,7 +180,6 @@ class OAuthCallbackHandler(BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         """Suppress default logging"""
-        pass
 
 
 def pkce_challenge_from_verifier(verifier: str) -> str:
@@ -279,7 +277,7 @@ def perform_oauth_flow() -> Optional[dict]:
     print(f"If browser doesn't open, visit:\n{auth_url}\n")
 
     # Start local callback server
-    callback_server = start_callback_server()
+    start_callback_server()
 
     # Open browser
     webbrowser.open(auth_url)

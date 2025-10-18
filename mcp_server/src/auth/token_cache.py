@@ -7,7 +7,6 @@ import time
 import secrets
 import jwt
 from typing import Optional
-from pathlib import Path
 import requests
 
 from config import TOKEN_CACHE_PATH, JHE_TOKEN_URL, CLIENT_ID, CLIENT_SECRET, OIDC_RSA_PRIVATE_KEY

@@ -50,7 +50,7 @@ class JHEOAuth2ValidatorTests(TestCase):
             email="practitioner@example.com", password="testpass", user_type="practitioner", identifier="prac123"
         )
         self.practitioner = Practitioner.objects.create(
-            jhe_user=self.practitioner_user, first_name="Sam", last_name="Altman"
+            jhe_user=self.practitioner_user, name_given="Sam", name_family="Altman"
         )
 
         # Link practitioner to organizations with roles
@@ -121,8 +121,8 @@ class JHEOAuth2ValidatorTests(TestCase):
         lonely_user = JheUser.objects.create_user(
             email="lonely@example.com", password="testpass", user_type="practitioner", identifier="lonely123"
         )
-        lonely_practitioner = Practitioner.objects.create(
-            jhe_user=lonely_user, first_name="Lonely", last_name="Practitioner"
+        Practitioner.objects.create(
+            jhe_user=lonely_user, name_given="Lonely", name_family="Practitioner"
         )
 
         request = self._create_mock_request(lonely_user)

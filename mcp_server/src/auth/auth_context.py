@@ -80,14 +80,14 @@ class AuthContext:
                 if org_id and role:
                     self.roles_by_org[org_id] = role
 
-            print(f"✓ Loaded permissions from ID token:")
+            print("✓ Loaded permissions from ID token:")
             print(f"  User: {self.user_id} ({self.user_type})")
             print(f"  Studies: {len(self.study_ids)} accessible")
             print(f"  Organizations: {len(self.roles_by_org)} memberships")
 
         except Exception as e:
             print(f"⚠️  Could not extract claims from ID token: {e}")
-            print(f"   User will have no permissions until re-authentication")
+            print("   User will have no permissions until re-authentication")
             # Leave all permission fields as empty defaults
 
     def validate(self) -> bool:

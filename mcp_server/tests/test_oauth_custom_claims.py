@@ -9,7 +9,6 @@ import os
 import sys
 import django
 import json
-import jwt
 from datetime import timedelta
 from django.utils import timezone
 
@@ -19,7 +18,6 @@ django.setup()
 
 from core.models import JheUser
 from oauth2_provider.models import get_application_model, AccessToken as OAuthAccessToken
-from oauth2_provider.generators import generate_client_secret
 
 Application = get_application_model()
 

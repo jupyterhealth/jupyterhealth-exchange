@@ -35,12 +35,6 @@ from fastapi import FastAPI, Request, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from mcp.types import (
-    JSONRPCMessage,
-    JSONRPCRequest,
-    JSONRPCResponse,
-    JSONRPCError,
-)
 from config import validate_config
 from mcp_core import TOOL_DEFINITIONS, execute_tool, authenticate_stdio
 from auth import AuthContext
