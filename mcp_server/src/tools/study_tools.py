@@ -312,7 +312,7 @@ def get_patient_observations(auth: AuthContext, patient_id: int, limit: int = 10
 
             if value_data:
                 # Pretty print the JSONB data
-                result_lines.append(f"FHIR/OMH Data:")
+                result_lines.append("FHIR/OMH Data:")
                 formatted_json = json.dumps(value_data, indent=2)
                 result_lines.append(formatted_json)
 

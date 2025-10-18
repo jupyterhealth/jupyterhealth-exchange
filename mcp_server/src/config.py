@@ -50,6 +50,6 @@ def validate_config():
         errors.append("JHE_DB_CONN is required")
 
     if errors:
-        raise ValueError(f"Configuration errors:\n" + "\n".join(f"  - {e}" for e in errors))
+        raise ValueError("Configuration errors:\n" + "\n".join(f"  - {e}" for e in errors))
 
     return True

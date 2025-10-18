@@ -28,16 +28,16 @@ import uuid
 from pathlib import Path
 from typing import Dict, Any
 
-# Add src directory to Python path for imports
-sys.path.insert(0, str(Path(__file__).parent))
-
 from fastapi import FastAPI, Request, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from config import validate_config
-from mcp_core import TOOL_DEFINITIONS, execute_tool, authenticate_stdio
-from auth import AuthContext
+# Add src directory to Python path for imports
+sys.path.insert(0, str(Path(__file__).parent))
+
+from config import validate_config  # noqa: E402
+from mcp_core import TOOL_DEFINITIONS, execute_tool, authenticate_stdio  # noqa: E402
+from auth import AuthContext  # noqa: E402
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -331,7 +331,7 @@ if __name__ == "__main__":
     port = int(os.getenv("MCP_PORT", "8001"))
     host = os.getenv("MCP_HOST", "0.0.0.0")
 
-    print(f"Starting JupyterHealth MCP Server (HTTP/SSE)")
+    print("Starting JupyterHealth MCP Server (HTTP/SSE)")
     print(f"Listening on {host}:{port}")
     print(f"SSE endpoint: GET http://{host}:{port}/sse")
     print(f"Messages endpoint: POST http://{host}:{port}/messages?session_id=XXX")

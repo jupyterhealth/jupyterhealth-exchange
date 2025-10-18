@@ -16,8 +16,8 @@ from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "jhe.settings")
 django.setup()
 
-from core.models import JheUser
-from oauth2_provider.models import get_application_model, AccessToken as OAuthAccessToken
+from core.models import JheUser  # noqa: E402
+from oauth2_provider.models import get_application_model, AccessToken as OAuthAccessToken  # noqa: E402
 
 Application = get_application_model()
 
@@ -42,7 +42,7 @@ def create_test_token_for_user(email):
         app = Application.objects.get(client_id="Ima7rx8D6eko0PzlU1jK28WBUT2ZweZj7mqVG2wm")
         print(f"\n📱 Using OAuth application: {app.name}")
     except Application.DoesNotExist:
-        print(f"❌ OAuth application not found! Run 'python manage.py seed' first.")
+        print("❌ OAuth application not found! Run 'python manage.py seed' first.")
         return None
 
     # Create access token
@@ -76,7 +76,7 @@ def create_test_token_for_user(email):
     # Get custom claims from our validator
     custom_claims = validator.get_additional_claims(request)
 
-    print(f"\n✨ Custom Claims Generated:")
+    print("\n✨ Custom Claims Generated:")
     print(json.dumps(custom_claims, indent=2))
 
     # Create standard OIDC claims
@@ -93,7 +93,7 @@ def create_test_token_for_user(email):
     # Combine standard and custom claims
     all_claims = {**standard_claims, **custom_claims}
 
-    print(f"\n🎫 Complete ID Token Payload:")
+    print("\n🎫 Complete ID Token Payload:")
     print("=" * 80)
     print(json.dumps(all_claims, indent=2))
     print("=" * 80)
@@ -111,10 +111,10 @@ def create_test_token_for_user(email):
             # Sign the ID token
             id_token_string = jose_jwt.encode(all_claims, private_key, algorithm="RS256")
 
-            print(f"\n🔐 Signed ID Token (JWT):")
+            print("\n🔐 Signed ID Token (JWT):")
             print(id_token_string)
             print(f"\n   Length: {len(id_token_string)} bytes")
-            print(f"\n💡 Decode this token at https://jwt.io to verify claims")
+            print("\n💡 Decode this token at https://jwt.io to verify claims")
 
             # Verify we can decode it
             # decoded = jose_jwt.decode(
@@ -126,10 +126,10 @@ def create_test_token_for_user(email):
             # print(f"\n✅ Token verified and decoded successfully")
 
         except ImportError:
-            print(f"\n⚠️  python-jose not installed, cannot sign JWT")
-            print(f"   Install with: pip install python-jose")
+            print("\n⚠️  python-jose not installed, cannot sign JWT")
+            print("   Install with: pip install python-jose")
     else:
-        print(f"\n⚠️  No OIDC_RSA_PRIVATE_KEY found in settings")
+        print("\n⚠️  No OIDC_RSA_PRIVATE_KEY found in settings")
 
     return all_claims
 
@@ -147,8 +147,8 @@ def main():
     claims = create_test_token_for_user(test_user_email)
 
     if claims:
-        print(f"\n✅ Test completed successfully!")
-        print(f"\n📊 Summary:")
+        print("\n✅ Test completed successfully!")
+        print("\n📊 Summary:")
         print(f"   - User Type: {claims.get('user_type')}")
         print(f"   - User ID: {claims.get('user_id')}")
 
@@ -158,18 +158,18 @@ def main():
             print(f"   - Organizations: {len(perms.get('organizations', []))} memberships")
 
             if perms.get("studies"):
-                print(f"\n   📚 Accessible Study IDs:")
+                print("\n   📚 Accessible Study IDs:")
                 for study_id in perms["studies"]:
                     print(f"      - Study {study_id}")
 
             if perms.get("organizations"):
-                print(f"\n   🏢 Organization Memberships:")
+                print("\n   🏢 Organization Memberships:")
                 for org in perms["organizations"]:
                     print(f"      - {org['name']} (Role: {org['role']})")
 
-        print(f"\n🎯 Key Achievement:")
-        print(f"   Custom claims are now included in ID tokens, enabling")
-        print(f"   MCP servers to read permissions locally without API calls!")
+        print("\n🎯 Key Achievement:")
+        print("   Custom claims are now included in ID tokens, enabling")
+        print("   MCP servers to read permissions locally without API calls!")
 
 
 if __name__ == "__main__":

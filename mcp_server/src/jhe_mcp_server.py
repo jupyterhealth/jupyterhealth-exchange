@@ -20,12 +20,13 @@ import asyncio
 import sys
 from pathlib import Path
 
+from mcp.server.stdio import stdio_server
+
 # Add src directory to Python path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from mcp.server.stdio import stdio_server
-from config import validate_config
-from mcp_core import create_mcp_server
+from config import validate_config  # noqa: E402
+from mcp_core import create_mcp_server  # noqa: E402
 
 
 # ========== Server Entry Point ==========

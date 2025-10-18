@@ -348,7 +348,7 @@ def perform_oauth_flow() -> Optional[dict]:
                     # Highlight custom claims
                     if "jhe_permissions" in decoded:
                         perms = decoded["jhe_permissions"]
-                        print(f"\n✨ CUSTOM CLAIMS FOUND:")
+                        print("\n✨ CUSTOM CLAIMS FOUND:")
                         print(f"   - user_type: {decoded.get('user_type')}")
                         print(f"   - user_id: {decoded.get('user_id')}")
                         print(f"   - studies: {len(perms.get('studies', []))} accessible")
