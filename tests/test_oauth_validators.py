@@ -26,9 +26,7 @@ class JHEOAuth2ValidatorTests(TestCase):
         self.validator = JHEOAuth2Validator()
 
         # Create test organizations
-        self.org1 = Organization.objects.create(
-            name="Berkeley Institute for Data Science (BIDS)", type="edu"
-        )
+        self.org1 = Organization.objects.create(name="Berkeley Institute for Data Science (BIDS)", type="edu")
         self.org2 = Organization.objects.create(name="Cardiology Department", type="dept")
 
         # Create test studies
