@@ -5,16 +5,15 @@ OAuth 2.0 authorization flow with PKCE and private_key_jwt support
 import secrets
 import hashlib
 import base64
+import json
 import logging
 import webbrowser
 import time
 import threading
-import jwt
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlencode, parse_qs, urlparse
 from typing import Optional
 import requests
-from jwt.exceptions import PyJWTError
 from requests.exceptions import RequestException
 
 from config import (
@@ -34,30 +33,13 @@ class OAuthCallbackHandler(BaseHTTPRequestHandler):
 
     authorization_code = None
     state_received = None
-    id_token = None  # Store ID token for browser polling
 
     def do_GET(self):
         """Handle OAuth callback"""
         parsed = urlparse(self.path)
         params = parse_qs(parsed.query)
 
-        if parsed.path == "/token":
-            # Endpoint for browser to poll for ID token
-            self.send_response(200)
-            self.send_header("Content-type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.end_headers()
-
-            import json
-
-            if OAuthCallbackHandler.id_token:
-                response_data = {"id_token": OAuthCallbackHandler.id_token}
-            else:
-                response_data = {"id_token": None}
-
-            self.wfile.write(json.dumps(response_data).encode())
-
-        elif parsed.path == "/callback":
+        if parsed.path == "/callback":
             # Extract authorization code and state
             OAuthCallbackHandler.authorization_code = params.get("code", [None])[0]
             OAuthCallbackHandler.state_received = params.get("state", [None])[0]
@@ -86,94 +68,8 @@ class OAuthCallbackHandler(BaseHTTPRequestHandler):
                     <head><title>JHE MCP - Authentication Success</title></head>
                     <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
                         <h1>✅ Authentication Successful!</h1>
-                        <p>Exchanging authorization code for tokens...</p>
-                        <p id="status">⏳ Please wait, fetching ID token...</p>
-                        <div id="token-display" style="display:none; margin-top: 30px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
-                            <h2>🎯 ID Token Captured!</h2>
-                            <p><strong>Open your browser console (F12) to see the full token and decoded payload.</strong></p>
-                            <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin-top: 15px; word-wrap: break-word;">
-                                <p style="font-size: 12px; color: #666;">Raw JWT (first 100 chars):</p>
-                                <code id="token-preview" style="font-size: 11px;"></code>
-                            </div>
-                            <p style="margin-top: 20px; color: #28a745;"><strong>✓ Check browser console for full token and instructions!</strong></p>
-                        </div>
-                        <script>
-                            // Poll for ID token from callback server
-                            let pollCount = 0;
-                            const maxPolls = 20; // 10 seconds max
-
-                            function pollForToken() {
-                                fetch('/token')
-                                    .then(res => res.json())
-                                    .then(data => {
-                                        if (data.id_token) {
-                                            displayToken(data.id_token);
-                                        } else if (pollCount < maxPolls) {
-                                            pollCount++;
-                                            setTimeout(pollForToken, 500);
-                                        } else {
-                                            document.getElementById('status').innerHTML = '⚠️ Token exchange timeout. Check terminal for token.';
-                                        }
-                                    })
-                                    .catch(err => {
-                                        if (pollCount < maxPolls) {
-                                            pollCount++;
-                                            setTimeout(pollForToken, 500);
-                                        } else {
-                                            document.getElementById('status').innerHTML = '⚠️ Could not fetch token. Check terminal for token.';
-                                        }
-                                    });
-                            }
-
-                            function displayToken(idToken) {
-                                // Log to console with formatting
-                                console.log("\\n" + "=".repeat(80));
-                                console.log("🎯 ID TOKEN CAPTURED - Ready for jwt.io demonstration!");
-                                console.log("=".repeat(80));
-                                console.log("\\nRAW JWT TOKEN (copy everything below):");
-                                console.log("-".repeat(80));
-                                console.log(idToken);
-                                console.log("-".repeat(80));
-
-                                // Decode and display
-                                try {
-                                    const parts = idToken.split('.');
-                                    const payload = JSON.parse(atob(parts[1]));
-
-                                    console.log("\\nDECODED PAYLOAD (what you'll see at jwt.io):");
-                                    console.log("-".repeat(80));
-                                    console.log(JSON.stringify(payload, null, 2));
-                                    console.log("-".repeat(80));
-
-                                    if (payload.jhe_permissions) {
-                                        const perms = payload.jhe_permissions;
-                                        console.log("\\n✨ CUSTOM CLAIMS FOUND:");
-                                        console.log("   - user_type:", payload.user_type);
-                                        console.log("   - user_id:", payload.user_id);
-                                        console.log("   - studies:", (perms.studies || []).length, "accessible");
-                                        console.log("   - organizations:", (perms.organizations || []).length, "memberships");
-                                    }
-                                } catch (e) {
-                                    console.error("Could not decode token:", e);
-                                }
-
-                                console.log("\\n📋 TO VERIFY AT JWT.IO:");
-                                console.log("   1. Copy the RAW JWT TOKEN above");
-                                console.log("   2. Open https://jwt.io in your browser");
-                                console.log("   3. Paste into the 'Encoded' text box");
-                                console.log("   4. See the decoded payload on the right");
-                                console.log("   5. Look for 'jhe_permissions' in the payload!");
-                                console.log("=".repeat(80));
-
-                                // Update UI
-                                document.getElementById('status').style.display = 'none';
-                                document.getElementById('token-display').style.display = 'block';
-                                document.getElementById('token-preview').textContent = idToken.substring(0, 100) + '...';
-                            }
-
-                            // Start polling after a short delay
-                            setTimeout(pollForToken, 1000);
-                        </script>
+                        <p>You have been successfully authenticated.</p>
+                        <p style="margin-top: 30px; color: #28a745;"><strong>You can now close this browser window.</strong></p>
                     </body>
                 </html>
                 """
@@ -295,58 +191,10 @@ def perform_oauth_flow() -> Optional[dict]:
         if response.status_code == 200:
             token = response.json()
 
-            # ========== CAPTURE ID TOKEN FOR DEMONSTRATION ==========
-            if "id_token" in token:
-                # Store ID token for browser polling
-                OAuthCallbackHandler.id_token = token["id_token"]
-                id_token_jwt = token["id_token"]
-
-                print("\n" + "=" * 80)
-                print("🎯 ID TOKEN CAPTURED - Ready for jwt.io demonstration!")
-                print("=" * 80)
-                print("\nRAW JWT TOKEN (copy everything below the line):")
-                print("-" * 80)
-                print(id_token_jwt)
-                print("-" * 80)
-
-                # Decode and show payload
-                try:
-                    decoded = jwt.decode(id_token_jwt, options={"verify_signature": False})
-                    print("\nDECODED PAYLOAD (what you'll see at jwt.io):")
-                    print("-" * 80)
-                    import json
-
-                    print(json.dumps(decoded, indent=2))
-                    print("-" * 80)
-
-                    # Highlight custom claims
-                    if "jhe_permissions" in decoded:
-                        perms = decoded["jhe_permissions"]
-                        print("\n✨ CUSTOM CLAIMS FOUND:")
-                        print(f"   - user_type: {decoded.get('user_type')}")
-                        print(f"   - user_id: {decoded.get('user_id')}")
-                        print(f"   - studies: {len(perms.get('studies', []))} accessible")
-                        print(f"   - organizations: {len(perms.get('organizations', []))} memberships")
-                except PyJWTError as e:
-                    logger.warning(f"Could not decode ID token for display: {e}")
-                    print(f"\n⚠️  Could not decode ID token: {e}")
-                except (KeyError, TypeError) as e:
-                    logger.warning(f"Invalid ID token structure: {e}")
-                    print(f"\n⚠️  Invalid ID token structure: {e}")
-
-                print("\n📋 TO VERIFY AT JWT.IO:")
-                print("   1. Copy the RAW JWT TOKEN above (the long string)")
-                print("   2. Open https://jwt.io in your browser")
-                print("   3. Paste into the 'Encoded' text box on the left")
-                print("   4. See the decoded payload on the right")
-                print("   5. Look for 'jhe_permissions' in the payload!")
-                print("=" * 80 + "\n")
-            # ========== END CAPTURE ==========
-
             # Save token
             TokenCache.save_token(token)
 
-            print("✓ Authentication successful! Token cached.")
+            print("\n✓ Authentication successful! You can close the browser window.")
             print("=" * 60 + "\n")
 
             return token
