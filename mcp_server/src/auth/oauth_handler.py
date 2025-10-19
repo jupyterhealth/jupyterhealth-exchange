@@ -18,7 +18,6 @@ from config import (
     JHE_AUTHORIZE_URL,
     JHE_TOKEN_URL,
     CLIENT_ID,
-    OIDC_RSA_PRIVATE_KEY,
     REDIRECT_URI,
     CALLBACK_PORT,
 )
