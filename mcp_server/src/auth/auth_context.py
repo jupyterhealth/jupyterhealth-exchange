@@ -30,8 +30,6 @@ class AuthContext:
         self.email: Optional[str] = None
         self.user_type: Optional[str] = None  # 'patient' or 'practitioner'
         self.is_superuser: bool = False
-        self.practitioner_id: Optional[int] = None
-        self.patient_id: Optional[int] = None
         self.roles_by_org: Dict[int, str] = {}  # {org_id: role}
         self.study_ids: List[int] = []
 
@@ -124,53 +122,6 @@ class AuthContext:
             return True
 
         return study_id in self.study_ids
-
-    def get_role_for_org(self, org_id: int) -> Optional[str]:
-        """
-        Get user's role for specific organization
-
-        Args:
-            org_id: Organization identifier
-
-        Returns:
-            Role string (manager, member, viewer) or None
-        """
-        if self.is_superuser:
-            return "super_user"
-
-        return self.roles_by_org.get(org_id)
-
-    def has_permission(self, resource: str, action: str) -> bool:
-        """
-        Check if user has specific permission
-
-        Args:
-            resource: Resource type (e.g., 'study', 'patient')
-            action: Action type (e.g., 'read', 'write', 'manage')
-
-        Returns:
-            True if user has permission
-        """
-        # Superusers have all permissions
-        if self.is_superuser:
-            return True
-
-        # Define role permissions (from JHE core/permissions.py)
-        role_permissions = {
-            "super_user": ["data_source.manage", "organization.manage", "patient.manage", "study.manage"],
-            "manager": ["organization.manage", "patient.manage", "study.manage"],
-            "member": ["patient.manage", "study.manage"],
-            "viewer": [],
-        }
-
-        permission = f"{resource}.{action}"
-
-        # Check across all user's roles
-        for role in self.roles_by_org.values():
-            if permission in role_permissions.get(role, []):
-                return True
-
-        return False
 
     def __repr__(self) -> str:
         return (

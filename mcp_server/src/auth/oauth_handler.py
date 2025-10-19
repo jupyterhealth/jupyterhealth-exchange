@@ -196,36 +196,6 @@ def pkce_challenge_from_verifier(verifier: str) -> str:
     return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
 
 
-def create_client_assertion() -> Optional[str]:
-    """
-    Create JWT client assertion for private_key_jwt authentication
-
-    Returns:
-        JWT string if private key is configured, None otherwise
-    """
-    if not OIDC_RSA_PRIVATE_KEY:
-        return None
-
-    # Create JWT claims
-    now = int(time.time())
-    claims = {
-        "iss": CLIENT_ID,
-        "sub": CLIENT_ID,
-        "aud": JHE_TOKEN_URL,
-        "jti": secrets.token_urlsafe(16),
-        "exp": now + 300,  # 5 minutes
-        "iat": now,
-    }
-
-    # Sign with RSA private key
-    try:
-        client_assertion = jwt.encode(claims, OIDC_RSA_PRIVATE_KEY, algorithm="RS256")
-        return client_assertion
-    except Exception as e:
-        print(f"Error creating client assertion: {e}")
-        return None
-
-
 def start_callback_server() -> HTTPServer:
     """
     Start local HTTP server for OAuth callback
@@ -379,29 +349,6 @@ def perform_oauth_flow() -> Optional[dict]:
     except Exception as e:
         print(f"❌ Error exchanging token: {e}")
         return None
-
-
-def get_valid_token() -> Optional[str]:
-    """
-    Get a valid access token, performing OAuth flow if necessary
-
-    Returns:
-        Access token string or None
-    """
-    # Try to load cached token
-    token = TokenCache.get_valid_token()
-
-    if token:
-        return token
-
-    # No valid cached token, perform OAuth flow
-    print("\n⚠️  No valid token found. Starting authentication flow...")
-    token_data = perform_oauth_flow()
-
-    if token_data and "access_token" in token_data:
-        return token_data["access_token"]
-
-    return None
 
 
 def get_valid_tokens() -> Optional[tuple[str, Optional[str]]]:

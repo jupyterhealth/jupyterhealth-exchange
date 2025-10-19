@@ -13,7 +13,6 @@ load_dotenv()
 JHE_BASE_URL = os.getenv("JHE_BASE_URL", "https://jhe.fly.dev")
 JHE_AUTHORIZE_URL = f"{JHE_BASE_URL}/o/authorize/"
 JHE_TOKEN_URL = f"{JHE_BASE_URL}/o/token/"
-JHE_API_BASE = f"{JHE_BASE_URL}/api/v1"
 
 # OAuth Client Configuration
 CLIENT_ID = os.getenv("JHE_CLIENT_ID", "jhe-universal-mcp")

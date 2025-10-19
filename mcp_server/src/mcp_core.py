@@ -88,27 +88,6 @@ def authenticate_stdio() -> Optional[tuple[str, Optional[str]]]:
     return get_valid_tokens()
 
 
-def authenticate_http(access_token: str) -> Optional[tuple[str, Optional[str]]]:
-    """
-    Authenticate using HTTP Bearer token (cloud deployment)
-
-    Args:
-        access_token: OAuth access token from Authorization header
-
-    Returns:
-        Tuple of (access_token, None) - ID token not available in HTTP mode
-
-    Note:
-        In HTTP mode, we validate the access token against the JHE API
-        and don't have access to the ID token. We'll need to fetch permissions
-        via API calls instead of reading from ID token claims.
-    """
-    # For HTTP mode, we only have the access token
-    # We'll validate it by trying to create an AuthContext
-    # which will make an API call to fetch user permissions
-    return (access_token, None)
-
-
 # ========== Tool Execution ==========
 
 

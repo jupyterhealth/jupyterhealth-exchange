@@ -140,21 +140,6 @@ class TokenCache:
             print("Token cache cleared")
 
     @staticmethod
-    def get_valid_token() -> Optional[str]:
-        """
-        Get a valid access token, refreshing if necessary
-
-        Returns:
-            Access token string if valid, None otherwise
-        """
-        token_data = TokenCache.load_token()
-
-        if token_data and "access_token" in token_data:
-            return token_data["access_token"]
-
-        return None
-
-    @staticmethod
     def get_valid_tokens() -> Optional[tuple[str, Optional[str]]]:
         """
         Get valid access token and ID token, refreshing if necessary
