@@ -14,10 +14,19 @@ JHE_BASE_URL = os.getenv("JHE_BASE_URL", "https://jhe.fly.dev")
 JHE_AUTHORIZE_URL = f"{JHE_BASE_URL}/o/authorize/"
 JHE_TOKEN_URL = f"{JHE_BASE_URL}/o/token/"
 
+# OIDC Configuration for JWT Verification
+JHE_OIDC_ISSUER = f"{JHE_BASE_URL}/o"  # OAuth issuer URL
+JHE_JWKS_URI = f"{JHE_BASE_URL}/o/.well-known/jwks.json"  # Public keys for JWT verification
+
 # OAuth Client Configuration
 CLIENT_ID = os.getenv("JHE_CLIENT_ID", "jhe-universal-mcp")
 CLIENT_SECRET = os.getenv("JHE_CLIENT_SECRET", "")
 OIDC_RSA_PRIVATE_KEY = os.getenv("OIDC_RSA_PRIVATE_KEY", "")
+
+# JWT Verification Configuration
+# Set to "true" ONLY in test environments to skip JWT signature verification
+# WARNING: Disabling verification is INSECURE and should NEVER be used in production
+SKIP_JWT_VERIFICATION = os.getenv("SKIP_JWT_VERIFICATION", "false").lower() == "true"
 
 # Local callback server configuration
 CALLBACK_PORT = int(os.getenv("CALLBACK_PORT", "8765"))

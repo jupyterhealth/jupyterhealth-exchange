@@ -6,8 +6,21 @@ making API calls to JHE. This eliminates network overhead and enables
 offline operation.
 """
 
+import logging
 from typing import Optional, List, Dict
 import jwt
+from jwt.exceptions import (
+    PyJWTError,
+    ExpiredSignatureError,
+    InvalidSignatureError,
+    InvalidAudienceError,
+    InvalidIssuerError,
+)
+
+from config import CLIENT_ID, JHE_OIDC_ISSUER, SKIP_JWT_VERIFICATION
+from .jwks_client import get_jwks_client
+
+logger = logging.getLogger(__name__)
 
 
 class AuthContext:
@@ -48,11 +61,40 @@ class AuthContext:
 
         Args:
             id_token: JWT ID token from OAuth flow
+
+        Raises:
+            InvalidSignatureError: If JWT signature verification fails (token forged)
+            ExpiredSignatureError: If JWT has expired
+            InvalidAudienceError: If JWT audience doesn't match CLIENT_ID
+            InvalidIssuerError: If JWT issuer doesn't match JHE
+            PyJWTError: For other JWT-related errors
         """
         try:
-            # Decode ID token without signature verification (we trust the source)
-            # Signature was already verified by OAuth server
-            claims = jwt.decode(id_token, options={"verify_signature": False})
+            # Verify JWT signature using JHE's public keys
+            if SKIP_JWT_VERIFICATION:
+                logger.warning("⚠️  JWT SIGNATURE VERIFICATION DISABLED - INSECURE!")
+                logger.warning("   This should ONLY be used in test environments")
+                claims = jwt.decode(id_token, options={"verify_signature": False})
+            else:
+                # Get signing key from JWKS endpoint
+                jwks_client = get_jwks_client()
+                signing_key = jwks_client.get_signing_key(id_token)
+
+                # Verify signature and standard claims
+                claims = jwt.decode(
+                    id_token,
+                    key=signing_key.key,
+                    algorithms=["RS256"],
+                    audience=CLIENT_ID,
+                    issuer=JHE_OIDC_ISSUER,
+                    options={
+                        "verify_signature": True,
+                        "verify_exp": True,
+                        "verify_aud": True,
+                        "verify_iss": True,
+                    },
+                )
+                logger.info("✓ JWT signature verified successfully")
 
             # Extract standard OIDC claims
             self.user_id = claims.get("user_id") or claims.get("sub")
@@ -78,14 +120,29 @@ class AuthContext:
                 if org_id and role:
                     self.roles_by_org[org_id] = role
 
-            print("✓ Loaded permissions from ID token:")
-            print(f"  User: {self.user_id} ({self.user_type})")
-            print(f"  Studies: {len(self.study_ids)} accessible")
-            print(f"  Organizations: {len(self.roles_by_org)} memberships")
+            logger.info("✓ Loaded permissions from ID token:")
+            logger.info(f"  User: {self.user_id} ({self.user_type})")
+            logger.info(f"  Studies: {len(self.study_ids)} accessible")
+            logger.info(f"  Organizations: {len(self.roles_by_org)} memberships")
 
+        except ExpiredSignatureError:
+            logger.error("❌ ID token has expired - re-authentication required")
+            raise PermissionError("ID token expired. Please re-authenticate.")
+        except InvalidSignatureError:
+            logger.error("❌ ID token signature verification failed - possible forged token")
+            raise PermissionError("Invalid ID token signature. Authentication failed.")
+        except InvalidAudienceError:
+            logger.error(f"❌ ID token audience mismatch - expected {CLIENT_ID}")
+            raise PermissionError("ID token audience mismatch. Authentication failed.")
+        except InvalidIssuerError:
+            logger.error(f"❌ ID token issuer mismatch - expected {JHE_OIDC_ISSUER}")
+            raise PermissionError("ID token issuer mismatch. Authentication failed.")
+        except PyJWTError as e:
+            logger.error(f"❌ JWT verification error: {e}")
+            raise PermissionError(f"JWT verification failed: {str(e)}")
         except Exception as e:
-            print(f"⚠️  Could not extract claims from ID token: {e}")
-            print("   User will have no permissions until re-authentication")
+            logger.error(f"⚠️  Could not extract claims from ID token: {e}", exc_info=True)
+            logger.warning("   User will have no permissions until re-authentication")
             # Leave all permission fields as empty defaults
 
     def validate(self) -> bool:
