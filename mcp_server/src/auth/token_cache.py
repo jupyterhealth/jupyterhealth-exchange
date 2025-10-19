@@ -3,13 +3,18 @@ Secure token storage and retrieval
 """
 
 import json
+import logging
 import time
 import secrets
 import jwt
 from typing import Optional
 import requests
+from jwt.exceptions import PyJWTError
+from requests.exceptions import RequestException
 
 from config import TOKEN_CACHE_PATH, JHE_TOKEN_URL, CLIENT_ID, CLIENT_SECRET, OIDC_RSA_PRIVATE_KEY
+
+logger = logging.getLogger(__name__)
 
 
 class TokenCache:
@@ -56,8 +61,11 @@ class TokenCache:
                     return TokenCache.refresh_token(token_data)
 
             return token_data
-        except Exception as e:
-            print(f"Error loading token: {e}")
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in token cache: {e}")
+            return None
+        except (IOError, OSError) as e:
+            logger.error(f"Error reading token cache file: {e}")
             return None
 
     @staticmethod
@@ -78,8 +86,11 @@ class TokenCache:
 
         try:
             return jwt.encode(claims, OIDC_RSA_PRIVATE_KEY, algorithm="RS256")
-        except Exception as e:
-            print(f"Error creating client assertion: {e}")
+        except PyJWTError as e:
+            logger.error(f"Error creating client assertion JWT: {e}")
+            return None
+        except ValueError as e:
+            logger.error(f"Invalid RSA private key: {e}")
             return None
 
     @staticmethod
@@ -94,7 +105,7 @@ class TokenCache:
             New token data if successful, None otherwise
         """
         if "refresh_token" not in token_data:
-            print("No refresh token available")
+            logger.warning("No refresh token available")
             return None
 
         try:
@@ -123,13 +134,19 @@ class TokenCache:
                     new_token["refresh_token"] = token_data["refresh_token"]
 
                 TokenCache.save_token(new_token)
-                print("✓ Token refreshed successfully")
+                logger.info("✓ Token refreshed successfully")
                 return new_token
             else:
-                print(f"Token refresh failed: {response.status_code}")
+                logger.warning(f"Token refresh failed: HTTP {response.status_code}")
                 return None
-        except Exception as e:
-            print(f"Error refreshing token: {e}")
+        except RequestException as e:
+            logger.error(f"Network error refreshing token: {e}")
+            return None
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON response from token endpoint: {e}")
+            return None
+        except (IOError, OSError) as e:
+            logger.error(f"Error saving refreshed token: {e}")
             return None
 
     @staticmethod

@@ -5,6 +5,7 @@ OAuth 2.0 authorization flow with PKCE and private_key_jwt support
 import secrets
 import hashlib
 import base64
+import logging
 import webbrowser
 import time
 import threading
@@ -13,6 +14,8 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlencode, parse_qs, urlparse
 from typing import Optional
 import requests
+from jwt.exceptions import PyJWTError
+from requests.exceptions import RequestException
 
 from config import (
     JHE_AUTHORIZE_URL,
@@ -22,6 +25,8 @@ from config import (
     CALLBACK_PORT,
 )
 from .token_cache import TokenCache
+
+logger = logging.getLogger(__name__)
 
 
 class OAuthCallbackHandler(BaseHTTPRequestHandler):
@@ -322,8 +327,12 @@ def perform_oauth_flow() -> Optional[dict]:
                         print(f"   - user_id: {decoded.get('user_id')}")
                         print(f"   - studies: {len(perms.get('studies', []))} accessible")
                         print(f"   - organizations: {len(perms.get('organizations', []))} memberships")
-                except Exception as e:
+                except PyJWTError as e:
+                    logger.warning(f"Could not decode ID token for display: {e}")
                     print(f"\n⚠️  Could not decode ID token: {e}")
+                except (KeyError, TypeError) as e:
+                    logger.warning(f"Invalid ID token structure: {e}")
+                    print(f"\n⚠️  Invalid ID token structure: {e}")
 
                 print("\n📋 TO VERIFY AT JWT.IO:")
                 print("   1. Copy the RAW JWT TOKEN above (the long string)")
@@ -342,11 +351,17 @@ def perform_oauth_flow() -> Optional[dict]:
 
             return token
         else:
+            logger.error(f"Token exchange failed: HTTP {response.status_code}")
             print(f"❌ Token exchange failed: {response.status_code}")
             print(f"Response: {response.text}")
             return None
-    except Exception as e:
-        print(f"❌ Error exchanging token: {e}")
+    except RequestException as e:
+        logger.error(f"Network error during token exchange: {e}")
+        print(f"❌ Network error exchanging token: {e}")
+        return None
+    except (json.JSONDecodeError, KeyError) as e:
+        logger.error(f"Invalid token response: {e}")
+        print(f"❌ Invalid response from OAuth server: {e}")
         return None
 
 
