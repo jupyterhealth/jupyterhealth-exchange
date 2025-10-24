@@ -94,11 +94,10 @@ class JHEOAuth2Validator(OAuth2Validator):
             ]
 
         except Exception as e:
-            # Log error but don't fail token generation
-            # This ensures OAuth flow continues even if permission lookup fails
+            # Fail token generation if we cannot determine permissions
+            # This prevents returning incorrect/empty permissions which could lead to security issues
             logger.error(f"Error fetching permissions for user {user.id} ({user.email}): {e}", exc_info=True)
-            accessible_studies = []
-            organizations = []
+            raise
 
         return {
             "user_type": user.user_type,
