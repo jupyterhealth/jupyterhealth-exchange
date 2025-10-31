@@ -2,7 +2,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 
-from django.db import models
+from django.db import connection
 from django.db.models import sql
 from django.db.models.query import RawQuerySet
 from urllib.parse import urlencode
@@ -13,7 +13,20 @@ class PaginatedRawQuerySet(RawQuerySet):
     def __init__(self, raw_query, **kwargs):
         super(PaginatedRawQuerySet, self).__init__(raw_query, **kwargs)
         self.original_raw_query = raw_query
-        self._result_cache = None
+        self._count = None
+
+    @classmethod
+    def from_raw(cls, qs: RawQuerySet):
+        """Create a PaginatedRawQuerySet from a RawQuerySet"""
+        # same as _clone, but translates class
+        return cls(
+            raw_query=qs.raw_query,
+            model=qs.model,
+            params=qs.params,
+            translations=qs.translations,
+            using=qs.db,
+            hints=qs._hints,
+        )
 
     def __getitem__(self, k):
         """
@@ -26,13 +39,16 @@ class PaginatedRawQuerySet(RawQuerySet):
                 int,
             ),
         ):
-            raise TypeError
+            raise TypeError(f"Can only index by int or slice, not {k:r}")
         assert (not isinstance(k, slice) and (k >= 0)) or (
             isinstance(k, slice) and (k.start is None or k.start >= 0) and (k.stop is None or k.stop >= 0)
         ), "Negative indexing is not supported."
 
-        if self._result_cache is not None:
-            return self._result_cache[k]
+        if "offset" in self.params or "limit" in self.params:
+            # TODO: this is actually quite doable,
+            # but I noticed the code below does it wrong,
+            # so better to error than be wrong
+            raise ValueError("Cannot slice an already sliced query")
 
         if isinstance(k, slice):
             qs = self._clone()
@@ -51,81 +67,39 @@ class PaginatedRawQuerySet(RawQuerySet):
         qs.set_limits(k, k + 1)
         return list(qs)[0]
 
-    def __iter__(self):
-        self._fetch_all()
-        return iter(self._result_cache)
-
     def count(self):
-        if self._result_cache is not None:
-            return len(self._result_cache)
+        """Compute the count
 
-        return self.model.objects.count()
+        Still executes the full query,
+        but at least does not fetch results.
+        """
+        if self._count is not None:
+            return self._count
+
+        # run count without fetch
+        count_query = f"SELECT COUNT(*) FROM ({self.raw_query}) AS _tocount"
+        with connection.cursor() as cursor:
+            cursor.execute(count_query, self.params)
+            self._count = cursor.fetchone()[0]
+        return self._count
 
     def set_limits(self, start, stop):
         limit_offset = ""
 
-        new_params = tuple()
         if start is None:
             start = 0
         elif start > 0:
-            new_params += (start,)
-            limit_offset = " OFFSET %s"
+            self.params["offset"] = start
+            limit_offset = " OFFSET %(offset)s"
         if stop is not None:
-            new_params = (stop - start,) + new_params
-            limit_offset = "LIMIT %s" + limit_offset
+            self.params["limit"] = stop - start
+            limit_offset = "LIMIT %(limit)s" + limit_offset
 
-        self.params = self.params + new_params
         self.raw_query = self.original_raw_query + limit_offset
         self.query = sql.RawQuery(sql=self.raw_query, using=self.db, params=self.params)
 
-    def _fetch_all(self):
-        if self._result_cache is None:
-            self._result_cache = list(super().__iter__())
-
-    def __repr__(self):
-        return "<%s: %s>" % (self.__class__.__name__, self.model.__name__)
-
     def __len__(self):
-        self._fetch_all()
-        return len(self._result_cache)
-
-    def _clone(self):
-        clone = self.__class__(
-            raw_query=self.raw_query,
-            model=self.model,
-            using=self._db,
-            hints=self._hints,
-            query=self.query,
-            params=self.params,
-            translations=self.translations,
-        )
-        return clone
-
-
-class AdminModelRawManager(models.Manager):
-    def raw(self, raw_query, params=None, translations=None, using=None):
-        if using is None:
-            using = self.db
-        return PaginatedRawQuerySet(
-            raw_query,
-            model=self.model,
-            params=params,
-            translations=translations,
-            using=using,
-        )
-
-    def my_raw_sql_method(self, query, params=None):
-        """
-        Execute a raw SQL query with pagination support.
-
-        Args:
-          query (str): The raw SQL query to execute
-          params (tuple, optional): Parameters for the SQL query
-
-        Returns:
-          PaginatedRawQuerySet: A queryset that can be paginated
-        """
-        return self.raw(raw_query=query, params=params)
+        return self.count()
 
 
 class CustomPageNumberPagination(PageNumberPagination):
@@ -133,16 +107,6 @@ class CustomPageNumberPagination(PageNumberPagination):
     page_size_query_param = "page_size"
     page_query_param = "page"
     max_page_size = 1000
-
-    def get_paginated_response(self, data):
-        return Response(
-            {
-                "count": self.page.paginator.count,
-                "next": self.get_next_link(),
-                "previous": self.get_previous_link(),
-                "results": data,
-            }
-        )
 
     def paginate_queryset(self, queryset, request, view=None):
         if not queryset:
@@ -171,7 +135,6 @@ class AdminListMixin:
     Override get_query_args(request) if needed.
     """
 
-    raw_manager = AdminModelRawManager
     model_class = None  # Override in subclass
     serializer_class = None  # Override in subclass
 
