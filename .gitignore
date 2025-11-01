@@ -146,3 +146,5 @@ GitHub.sublime-settings
 
 # Node.js
 node_modules/
+docs/build/
+CLAUDE.md

@@ -207,6 +207,7 @@ OAUTH2_PROVIDER = {
     "OIDC_RSA_PRIVATE_KEY": os.getenv("OIDC_RSA_PRIVATE_KEY"),
     "SCOPES": {"openid": "OpenID Connect scope"},
     "ACCESS_TOKEN_EXPIRE_SECONDS": 1209600,  # 2 weeks
+    "OAUTH2_VALIDATOR_CLASS": "core.oauth_validators.JHEOAuth2Validator",
 }
 
 PATIENT_AUTHORIZATION_CODE_EXPIRE_SECONDS = 1209600  # 2 weeks
