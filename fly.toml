@@ -22,7 +22,7 @@ console_command = "/code/manage.py shell"
   CH_INVITATION_LINK_EXCLUDE_HOST = true
   PATIENT_AUTHORIZATION_CODE_CHALLENGE = "rcqZccUKvWbQH_4DlLRreC5PXf8eMAj9g_iLIGYoFFQ"
   PATIENT_AUTHORIZATION_CODE_VERIFIER = "EIlWNRU1_7yyUdw27ryzBvgcoU8ZJ6bgg_F-wkNbbDQ"
-  
+
 
 [http_service]
   internal_port = 8000
