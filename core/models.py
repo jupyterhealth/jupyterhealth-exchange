@@ -652,7 +652,13 @@ class Patient(models.Model):
 
         # Set default values for pagination parameters
         offset = 0 if offset is None else int(offset)
-        limit = 1000 if page is None else int(page)
+        # FIXME: these are not actually used for pagination!
+        # they set the unconditional boundaries on multi-page queries
+        if page is not None:
+            raise NotImplementedError("page not supported")
+        # since this is unconditional, set it pretty high,
+        # otherwise fetching more data than this is impossible
+        limit = 10_000
 
         # TBD: Query optimization: https://stackoverflow.com/a/6037376
         # TBD: sub constants from config
@@ -1239,7 +1245,13 @@ class Observation(models.Model):
 
         # Set default values for pagination parameters
         offset = 0 if offset is None else int(offset)
-        limit = 1000 if page is None else int(page)
+        # FIXME: these are not actually used for pagination!
+        # they set the unconditional boundaries on multi-page queries
+        if page is not None:
+            raise NotImplementedError("page not supported")
+        # since this is unconditional, set it pretty high,
+        # otherwise fetching more data than this is impossible
+        limit = 10_000
 
         print(f"jhe_user_id: {jhe_user_id}")
         if not patient_id:
