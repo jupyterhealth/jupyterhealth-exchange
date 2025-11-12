@@ -12,25 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - name: Create .env
-        run: |
-          cat <<EOF > .env
-          SITE_TITLE=${{ secrets.SITE_TITLE }}
-          REGISTRATION_INVITE_CODE=${{ secrets.REGISTRATION_INVITE_CODE }}
-          SITE_URL=${{ secrets.SITE_URL }}
-          OIDC_CLIENT_AUTHORITY_PATH=${{ secrets.OIDC_CLIENT_AUTHORITY_PATH }}
-          OIDC_CLIENT_REDIRECT_URI_PATH=${{ secrets.OIDC_CLIENT_REDIRECT_URI_PATH }}
-          OIDC_CLIENT_ID=${{ secrets.OIDC_CLIENT_ID }}
-          CH_INVITATION_LINK_PREFIX=${{ secrets.CH_INVITATION_LINK_PREFIX }}
-          CH_INVITATION_LINK_EXCLUDE_HOST=${{ secrets.CH_INVITATION_LINK_EXCLUDE_HOST }}
-          DB_NAME=${{ secrets.DB_NAME }}
-          DB_USER=${{ secrets.DB_USER }}
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          DB_HOST=${{ secrets.DB_HOST }}
-          DB_PORT=${{ secrets.DB_PORT }}
-          OIDC_RSA_PRIVATE_KEY=${{ secrets.OIDC_RSA_PRIVATE_KEY }}
-          PATIENT_AUTHORIZATION_CODE_CHALLENGE=${{ secrets.PATIENT_AUTHORIZATION_CODE_CHALLENGE }}
-          PATIENT_AUTHORIZATION_CODE_VERIFIER=${{ secrets.PATIENT_AUTHORIZATION_CODE_VERIFIER }}
-          EOF
       - name: Deploy
         run: flyctl deploy -a jhe --remote-only --dockerfile ./Dockerfile
+

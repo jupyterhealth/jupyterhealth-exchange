@@ -1,31 +1,41 @@
 
 
-app = 'jhe'
-primary_region = 'ewr'
-console_command = '/code/manage.py shell'
+app = "jhe"
+primary_region = "ewr"
+console_command = "/code/manage.py shell"
 
 [build]
   dockerfile = "Dockerfile"
 
 [deploy]
-  release_command = 'python manage.py migrate --noinput'
+  release_command = "python manage.py migrate --noinput"
 
 [env]
-  PORT = '8000'
-  DJANGO_LOG_LEVEL    = "INFO"
+  PORT = "8000"
+  DJANGO_LOG_LEVEL = "INFO"
+  SITE_TITLE= "JupyterHealth Exchange Dev"
+  SITE_URL = "https://jhe.fly.dev"
+  OIDC_CLIENT_AUTHORITY_PATH = "/o/"
+  OIDC_CLIENT_REDIRECT_URI_PATH = "/auth/callback"
+  OIDC_CLIENT_ID = "Ima7rx8D6eko0PzlU1jK28WBUT2ZweZj7mqVG2wm"
+  CH_INVITATION_LINK_PREFIX = "https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.dev&referrer=cloud_sharing="
+  CH_INVITATION_LINK_EXCLUDE_HOST = true
+  PATIENT_AUTHORIZATION_CODE_CHALLENGE = "rcqZccUKvWbQH_4DlLRreC5PXf8eMAj9g_iLIGYoFFQ"
+  PATIENT_AUTHORIZATION_CODE_VERIFIER = "EIlWNRU1_7yyUdw27ryzBvgcoU8ZJ6bgg_F-wkNbbDQ"
+
 
 [http_service]
   internal_port = 8000
   force_https = true
-  auto_stop_machines = 'stop'
+  auto_stop_machines = "stop"
   auto_start_machines = true
   min_machines_running = 1
 
 [[vm]]
-  memory = '1gb'
-  cpu_kind = 'shared'
+  memory = "1gb"
+  cpu_kind = "shared"
   cpus = 1
 
 [[statics]]
-  guest_path = '/code/static'
-  url_prefix = '/static/'
+  guest_path = "/code/static"
+  url_prefix = "/static/"
