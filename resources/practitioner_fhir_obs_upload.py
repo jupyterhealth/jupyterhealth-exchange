@@ -15,12 +15,14 @@ django.setup()
 
 from oauth2_provider.models import get_application_model
 
+
 def _get_oidc_client_id_from_db():
     try:
         Application = get_application_model()
         return Application.objects.order_by("id").values_list("client_id", flat=True).first()
     except Exception:
         return None
+
 
 SITE_URL = os.getenv("SITE_URL")
 OIDC_CLIENT_ID = _get_oidc_client_id_from_db() or os.getenv("OIDC_CLIENT_ID")

@@ -14,4 +14,3 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Deploy
         run: flyctl deploy -a jhe --remote-only --dockerfile ./Dockerfile
-
