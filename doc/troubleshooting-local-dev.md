@@ -13,11 +13,4 @@ On Windows systems (particularly when running Django via Visual Studio Code or G
 - `OIDC_CLIENT_AUTHORITY: http://localhost:8000O://`
 
 **Solution:**
-To resolve this issue, explicitly hardcode the correct values into your `settings.py` file, as shown below:
-
-```python
-OIDC_CLIENT_REDIRECT_URI = 'http://localhost:8000/auth/callback'
-OIDC_CLIENT_AUTHORITY = 'http://localhost:8000/o/'
-```
-
-By explicitly defining these variables, you prevent incorrect path injections and resolve the blank screen issue on Windows machines.
+Make sure the `SITE_URL` variable points to the exact host you use to access the app (for example `http://localhost:8000`). The settings now derive the authority and redirect URLs from that value using the fixed `/o/` and `/auth/callback` paths, so there is no longer any need for extra environment configuration. Double-check that `SITE_URL` is not polluted with Windows-style backslashes or drive prefixes so the derived URLs stay valid.

@@ -46,24 +46,13 @@ https://github.com/orgs/the-commons-project/projects/8
 
      ***Skip steps 8-12 below if doing Quick start above***
 1. Browse to http://localhost:8000/admin and enter the credentials `sam@example.com` `Jhe1234!`
-1. Browse to *Applications* under *Django OAuth Toolkit* and create a new application
-   - Leave *User* empty
-   - Set *Redirect URLs* to include `http://localhost:8000/auth/callback` and any other hosts
-   - Set *Type* to Public
-   - Set *Authorization Grant Type* to Authorization code
-   - Leave *Secret* blank
-   - *Name* the app whatever you like
-   - Check *Skip authorization*
-   - Set *Algorithm* to RSA with SHA-2 256
-   - Skip Allowed origins
-   - Save and then Log Out of Django Admin
+1. Under *Django OAuth Toolkit* > *Applications* you should already see the seeded OAuth2 application (redirects include `http://localhost:8000/auth/callback`). Create a new application only if you need a custom client for testing or multi-tenant scenarios.
 1. Create an RS256 Private Key (step by step [here](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#creating-rsa-private-key))
 1. Create a new static PKCE verifier - a random alphanumeric string 44 chars long, and then create the challenge [here](https://tonyxu-io.github.io/pkce-generator).
 1. Return to the `.env` file
-   - Update `OIDC_CLIENT_ID` with the newly created app Client ID
-   - Update the `OIDC_RSA_PRIVATE_KEY` with the newly created Private Key
-   - Update `PATIENT_AUTHORIZATION_CODE_CHALLENGE` and `PATIENT_AUTHORIZATION_CODE_VERIFIER` with PKCE static values generated above
-   - Restart the python environment and Django server
+    - Update the `OIDC_RSA_PRIVATE_KEY` with the newly created Private Key
+    - Update `PATIENT_AUTHORIZATION_CODE_CHALLENGE` and `PATIENT_AUTHORIZATION_CODE_VERIFIER` with PKCE static values generated above
+    - Restart the python environment and Django server
 1. Browse to http://localhost:8000/ and log in with the credentials `mary@example.com` `Jhe1234!` and you should be directed to the `/portal/organizations` path with some example Organizations is the dropdown
 1. Before the each commit always make sure to execute `pre-commit run --all-files` to make sure the PEP8 standards.
 1. Git hook for the pre-commit can also be installed `pre-commit install` to automate the process.
@@ -74,9 +63,9 @@ https://github.com/orgs/the-commons-project/projects/8
 ## Troubleshooting Local Development
 
 **Issue:** On Windows machines, users may experience a blank screen after logging in, caused by incorrect OIDC configuration.
-**Solution:** Explicitly set OIDC variables in your `settings.py`. For further details see [Troubleshooting Local Development](doc/troubleshooting-local-dev.md).
+**Solution:** Make sure `SITE_URL` reflects the host you access (e.g., `http://localhost:8000`) so the derived `OIDC_CLIENT_AUTHORITY` and `OIDC_CLIENT_REDIRECT_URI` values remain well-formed; see [Troubleshooting Local Development](doc/troubleshooting-local-dev.md) for more detail.
 
-By setting these variables explicitly, you prevent incorrect path injections and ensure proper URL formation, resolving the blank screen issue after login on Windows machines.
+Ensuring `SITE_URL` does not include stray characters (like Windows drive paths) prevents malformed URLs and resolves the blank screen problem.
 
 ## Working with the Web UI
 
