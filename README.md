@@ -62,10 +62,18 @@ https://github.com/orgs/the-commons-project/projects/8
 
 ## Troubleshooting Local Development
 
-**Issue:** On Windows machines, users may experience a blank screen after logging in, caused by incorrect OIDC configuration.
-**Solution:** Make sure `SITE_URL` reflects the host you access (e.g., `http://localhost:8000`) so the derived `OIDC_CLIENT_AUTHORITY` and `OIDC_CLIENT_REDIRECT_URI` values remain well-formed; see [Troubleshooting Local Development](doc/troubleshooting-local-dev.md) for more detail.
+**Issue:** Developers running Django on Windows (Visual Studio Code, Git Bash, etc.) might hit a blank screen after login even though authentication succeeds. That usually happens because the OIDC settings in `settings.py` get polluted with local paths (e.g. `OIDC_CLIENT_REDIRECT_URI: http://localhost:8000C:/Program Files/Git/auth/callback`).
 
-Ensuring `SITE_URL` does not include stray characters (like Windows drive paths) prevents malformed URLs and resolves the blank screen problem.
+**Cause:** The environment loader injects the shell’s current working directory or other path fragments into the OIDC URLs, producing malformed authorization/redirect addresses.
+
+**Solution:** Explicitly define the two OIDC URLs in `settings.py` rather than relying on environment interpolation. For example:
+
+```python
+OIDC_CLIENT_REDIRECT_URI = 'http://localhost:8000/auth/callback'
+OIDC_CLIENT_AUTHORITY = 'http://localhost:8000/o/'
+```
+
+By hardcoding the values you prevent the path injection and keep the SPA from seeing broken URLs, which resolves the blank screen after login on Windows hosts.
 
 ## Working with the Web UI
 
