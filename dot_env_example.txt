@@ -16,7 +16,7 @@ DB_HOST="localhost"
 DB_PORT=5432
 
 # <hostname>|<authorization_code> is appended to this URL, eg ?cloud_sharing=example.com%7Cxxxyyyzzz111222333
-CH_INVITATION_LINK_PREFIX="https://appdev.tcpdev.org/m/phr/main?cloud_sharing="
+CH_INVITATION_LINK_PREFIX="https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.dev&referrer=cloud_sharing="
 
 # Some data sources are fixed to a single host, uncomment this line to exclude example.com%7C from example above
 # CH_INVITATION_LINK_EXCLUDE_HOST=True

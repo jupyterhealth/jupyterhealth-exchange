@@ -266,15 +266,15 @@ https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.
 - The prefix URL component may be more simple, for example `https://carex.ai/?invitation=` to launch the CareX app
 - The suffix of the link contains the hostname (optional) followed by a pipe character and the OAuth2 Authorization Code, for example `jhe.fly.dev|LhS05iR1rOnpS4JWfP6GeVUIhaRcRh`
 - The purpose of the suffix is to provide the app with information on what host to talk to (as there may be many JHEs configured for the one Patient) as well as the Authorization Code that can be swapped for an Access Token to use the API (see above)
-- The prefix URL is configured in the `.env` as `CH_INVITATION_LINK_PREFIX`
+- The prefix URL is configured in the `.env` (and `dot_env_example.txt`) as `CH_INVITATION_LINK_PREFIX`; the example value points to the CommonHealth Play Store deep link shown above.
 - The host name is included by default but can optionally be removed from the link (if there will only ever be one host for the app) by configuring the `.env` with `CH_INVITATION_LINK_EXCLUDE_HOST=True`
 - So in the example of `https://carex.ai/?invitation=jhe.fly.dev|LhS05iR1rOnpS4JWfP6GeVUIhaRcRh`
   1. The CareX app is launched with the URL
-  1. The CareX app parses the `invitation` parameter
-  1. The CareX app gets the token endpoint from the invitation host `https://jhe.fly.dev/o/.well-known/openid-configuration`
-  1. The CareX app posts `LhS05iR1rOnpS4JWfP6GeVUIhaRcRh` to get an access token
-  1. The CareX app uses the API below to set consents
-  1. The CareX app uses the API below to upload data
+  2. The CareX app parses the `invitation` parameter
+  3. The CareX app gets the token endpoint from the invitation host `https://jhe.fly.dev/o/.well-known/openid-configuration`
+  4. The CareX app posts `LhS05iR1rOnpS4JWfP6GeVUIhaRcRh` to get an access token
+  5. The CareX app uses the API below to set consents
+  6. The CareX app uses the API below to upload data
 
 #### Single Sign-On (SSO) with SAML2
 
@@ -306,6 +306,8 @@ DEBUG = True
 ```
 > [!WARNING]
 > Use Debug for testing only, switch off Debug for Production.
+
+When `DEBUG` is enabled the SPA debug page now summarizes server errors (including HTML tracebacks), auto-scrolls the banner into view, and auto-hides after a few seconds so developers can quickly see the actionable message.
 
 ###### Test Flow
 
