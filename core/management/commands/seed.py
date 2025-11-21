@@ -311,7 +311,6 @@ class Command(BaseCommand):
         application = get_application_model()
         application.objects.create(
             id=1,
-            client_id=settings.OIDC_CLIENT_ID,
             redirect_uris=f"{settings.SITE_URL}/auth/callback",
             client_type="public",
             authorization_grant_type="authorization-code",

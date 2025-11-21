@@ -6,10 +6,6 @@ DJANGO_LOG_LEVEL="INFO"
 
 SECRET_KEY="django-insecure--l2nzvywecjf!sgu3=v8y#e5@rk-5_l0=0ez!abg576r^th@o"
 
-OIDC_CLIENT_AUTHORITY_PATH="/o/"
-OIDC_CLIENT_REDIRECT_URI_PATH="/auth/callback"
-OIDC_CLIENT_ID="Ima7rx8D6eko0PzlU1jK28WBUT2ZweZj7mqVG2wm"
-
 # PRACTITIONER_DEFAULT_ORGS="20001:viewer;20002:manager" # "<org id>:<role>;..." role=manager|member|viewer
 
 DB_NAME="jhe_dev"
@@ -20,7 +16,7 @@ DB_HOST="localhost"
 DB_PORT=5432
 
 # <hostname>|<authorization_code> is appended to this URL, eg ?cloud_sharing=example.com%7Cxxxyyyzzz111222333
-CH_INVITATION_LINK_PREFIX="https://appdev.tcpdev.org/m/phr/main?cloud_sharing="
+CH_INVITATION_LINK_PREFIX="https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.dev&referrer=cloud_sharing="
 
 # Some data sources are fixed to a single host, uncomment this line to exclude example.com%7C from example above
 # CH_INVITATION_LINK_EXCLUDE_HOST=True

@@ -46,24 +46,13 @@ https://github.com/orgs/the-commons-project/projects/8
 
      ***Skip steps 8-12 below if doing Quick start above***
 1. Browse to http://localhost:8000/admin and enter the credentials `sam@example.com` `Jhe1234!`
-1. Browse to *Applications* under *Django OAuth Toolkit* and create a new application
-   - Leave *User* empty
-   - Set *Redirect URLs* to include `http://localhost:8000/auth/callback` and any other hosts
-   - Set *Type* to Public
-   - Set *Authorization Grant Type* to Authorization code
-   - Leave *Secret* blank
-   - *Name* the app whatever you like
-   - Check *Skip authorization*
-   - Set *Algorithm* to RSA with SHA-2 256
-   - Skip Allowed origins
-   - Save and then Log Out of Django Admin
+1. Under *Django OAuth Toolkit* > *Applications* you should already see the seeded OAuth2 application (redirects include `http://localhost:8000/auth/callback`). Create a new application only if you need a custom client for testing or multi-tenant scenarios.
 1. Create an RS256 Private Key (step by step [here](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#creating-rsa-private-key))
 1. Create a new static PKCE verifier - a random alphanumeric string 44 chars long, and then create the challenge [here](https://tonyxu-io.github.io/pkce-generator).
 1. Return to the `.env` file
-   - Update `OIDC_CLIENT_ID` with the newly created app Client ID
-   - Update the `OIDC_RSA_PRIVATE_KEY` with the newly created Private Key
-   - Update `PATIENT_AUTHORIZATION_CODE_CHALLENGE` and `PATIENT_AUTHORIZATION_CODE_VERIFIER` with PKCE static values generated above
-   - Restart the python environment and Django server
+    - Update the `OIDC_RSA_PRIVATE_KEY` with the newly created Private Key
+    - Update `PATIENT_AUTHORIZATION_CODE_CHALLENGE` and `PATIENT_AUTHORIZATION_CODE_VERIFIER` with PKCE static values generated above
+    - Restart the python environment and Django server
 1. Browse to http://localhost:8000/ and log in with the credentials `mary@example.com` `Jhe1234!` and you should be directed to the `/portal/organizations` path with some example Organizations is the dropdown
 1. Before the each commit always make sure to execute `pre-commit run --all-files` to make sure the PEP8 standards.
 1. Git hook for the pre-commit can also be installed `pre-commit install` to automate the process.
@@ -121,6 +110,12 @@ By hardcoding the values you prevent the path injection and keep the SPA from se
 - A Data Source is anything that produces Observations (typically a device app eg iHealth)
 - A Data Source supports one or more Scopes (types) of Observations (eg Blood Glucose)
 - An Observation references a Data Source ID in the *device* field
+
+### Front-end configuration hints for developers
+
+- The vanilla JavaScript SPA pulls runtime settings via `core/templates/client/client_settings.js`, which exposes a global `CONSTANTS` object.
+- `CONSTANTS` is populated by the Django context processor `core/context_processors.py`, so any new value you expose there becomes available both to the template and to `core/static/client.js`.
+- Keep secrets and URLs on the Django side (settings or database-backed values) and let the context processor synthesize them, to prevent duplication and to keep the SPA reusable across environments.
 
 ### Use Case Example
 
@@ -279,15 +274,15 @@ https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.
 - The prefix URL component may be more simple, for example `https://carex.ai/?invitation=` to launch the CareX app
 - The suffix of the link contains the hostname (optional) followed by a pipe character and the OAuth2 Authorization Code, for example `jhe.fly.dev|LhS05iR1rOnpS4JWfP6GeVUIhaRcRh`
 - The purpose of the suffix is to provide the app with information on what host to talk to (as there may be many JHEs configured for the one Patient) as well as the Authorization Code that can be swapped for an Access Token to use the API (see above)
-- The prefix URL is configured in the `.env` as `CH_INVITATION_LINK_PREFIX`
+- The prefix URL is configured in the `.env` (and `dot_env_example.txt`) as `CH_INVITATION_LINK_PREFIX`; the example value points to the CommonHealth Play Store deep link shown above.
 - The host name is included by default but can optionally be removed from the link (if there will only ever be one host for the app) by configuring the `.env` with `CH_INVITATION_LINK_EXCLUDE_HOST=True`
 - So in the example of `https://carex.ai/?invitation=jhe.fly.dev|LhS05iR1rOnpS4JWfP6GeVUIhaRcRh`
   1. The CareX app is launched with the URL
-  1. The CareX app parses the `invitation` parameter
-  1. The CareX app gets the token endpoint from the invitation host `https://jhe.fly.dev/o/.well-known/openid-configuration`
-  1. The CareX app posts `LhS05iR1rOnpS4JWfP6GeVUIhaRcRh` to get an access token
-  1. The CareX app uses the API below to set consents
-  1. The CareX app uses the API below to upload data
+  2. The CareX app parses the `invitation` parameter
+  3. The CareX app gets the token endpoint from the invitation host `https://jhe.fly.dev/o/.well-known/openid-configuration`
+  4. The CareX app posts `LhS05iR1rOnpS4JWfP6GeVUIhaRcRh` to get an access token
+  5. The CareX app uses the API below to set consents
+  6. The CareX app uses the API below to upload data
 
 #### Single Sign-On (SSO) with SAML2
 
@@ -319,6 +314,8 @@ DEBUG = True
 ```
 > [!WARNING]
 > Use Debug for testing only, switch off Debug for Production.
+
+When `DEBUG` is enabled the SPA debug page now summarizes server errors (including HTML tracebacks), auto-scrolls the banner into view, and auto-hides after a few seconds so developers can quickly see the actionable message.
 
 ###### Test Flow
 

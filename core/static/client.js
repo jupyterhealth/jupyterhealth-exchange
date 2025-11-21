@@ -5,6 +5,23 @@
 const ROUTE_PREFIX = "/portal/";
 const DEFAULT_ROUTE = "organizations";
 const API_PATH = "/api/v1/";
+const SITE_BASE_URL =
+  (typeof CONSTANTS === "object" && CONSTANTS?.SITE_URL)
+    ? CONSTANTS.SITE_URL.replace(/\/$/, "")
+    : "";
+
+const buildTokenEndpoint = () => `${SITE_BASE_URL}/o/token/`;
+const buildApiUrl = (resource) => `${SITE_BASE_URL}${API_PATH}${resource}`;
+const buildTokenPayload = (code = "PASTE_CODE_HERE") => ({
+  code: code,
+  grant_type: "authorization_code",
+  redirect_uri: `${SITE_BASE_URL}/auth/callback`,
+  client_id: CONSTANTS.client_id,
+  code_verifier: CONSTANTS.code_verifier,
+  code_challenge: CONSTANTS.code_challenge,
+});
+const buildPatientConsentsUrl = (patientId = "PASTE_PATIENT_ID_HERE") =>
+  buildApiUrl(`patients/${patientId}/consents`);
 
 const ROUTES = {
   // dashboard: {
@@ -306,12 +323,26 @@ function renderDebug(param) {
     document.getElementById("t-debug").innerHTML
   );
   setTimeout(() => {
-    ["debugOAuthPayload", "debugPatientConsentsUrl"].forEach((element) => {
-      document.getElementById(element).value = document
-        .getElementById(element)
-        .value.replace("SITE_URL", CONSTANTS.SITE_URL);
-    });
-  }, 2000);
+    const payloadElement = document.getElementById("debugOAuthPayload");
+    if (payloadElement) {
+      payloadElement.value = JSON.stringify(buildTokenPayload(), null, 2);
+    }
+
+    const consentsUrlElement = document.getElementById("debugPatientConsentsUrl");
+    if (consentsUrlElement) {
+      consentsUrlElement.value = buildPatientConsentsUrl();
+    }
+
+    const tokenEndpointLabel = document.getElementById("debugTokenEndpointLabel");
+    if (tokenEndpointLabel) {
+      tokenEndpointLabel.textContent = `POST ${buildTokenEndpoint()}`;
+    }
+
+    const userProfileEndpointLabel = document.getElementById("debugUserProfileEndpointLabel");
+    if (userProfileEndpointLabel) {
+      userProfileEndpointLabel.textContent = `GET ${buildApiUrl("users/profile")}`;
+    }
+  }, 200);
   return content({});
 }
 
@@ -1403,26 +1434,138 @@ function debugRedirectSignin() {
 }
 
 let debugPatientToken;
+let debugErrorTimer;
+
+function hideDebugError() {
+  const el = document.getElementById("debugErrorMessage");
+  if (!el) return;
+  el.style.display = "none";
+  el.textContent = "";
+}
+
+function showDebugError(message) {
+  const el = document.getElementById("debugErrorMessage");
+  if (!el) return;
+  if (!message) {
+    hideDebugError();
+    return;
+  }
+  el.textContent = message;
+  el.style.display = "block";
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  if (debugErrorTimer) {
+    clearTimeout(debugErrorTimer);
+  }
+  debugErrorTimer = setTimeout(() => {
+    hideDebugError();
+    debugErrorTimer = null;
+  }, 8000);
+}
+
+function normalizeHtmlError(html) {
+  if (typeof DOMParser === "undefined") return null;
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    if (!doc) return null;
+
+    const textValue = (selector) =>
+      doc.querySelector(selector)?.textContent?.trim().replace(/\s+/g, " ");
+
+    const parts = [textValue("title"), textValue("h1"), textValue("pre.exception_value")].filter(Boolean);
+    if (parts.length) {
+      return parts.join(" — ");
+    }
+
+    const bodyText = doc.body?.textContent?.trim();
+    if (bodyText) {
+      return bodyText.replace(/\s+/g, " ").slice(0, 800);
+    }
+  } catch (err) {
+    console.warn("Failed to parse HTML error payload", err);
+  }
+  return null;
+}
+
+function isHtmlPayload(value) {
+  return (
+    typeof value === "string" &&
+    value.trim().startsWith("<") &&
+    /<\/?html/i.test(value)
+  );
+}
+
+async function readResponsePayload(response) {
+  const text = await response.text();
+  if (!text) {
+    return null;
+  }
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return null;
+  }
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return trimmed;
+  }
+}
 
 async function debugGetPatientTokenFromCode() {
-  const formData = new URLSearchParams(
-    JSON.parse(document.getElementById("debugOAuthPayload").value)
-  ).toString();
-  const response = await fetch("/o/token/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Cache-Control": "no-cache",
-    },
-    body: formData,
-  });
-  const tokens = await response.json();
-  setDebugPatientToken(tokens?.access_token);
-  document.getElementById("debugPatientTokenOut").innerHTML = JSON.stringify(
-    tokens,
-    null,
-    2
-  );
+  showDebugError();
+  try {
+    const formData = new URLSearchParams(
+      JSON.parse(document.getElementById("debugOAuthPayload").value)
+    ).toString();
+    const response = await fetch(buildTokenEndpoint(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Cache-Control": "no-cache",
+      },
+      body: formData,
+    });
+    const tokens = await readResponsePayload(response);
+    if (!response.ok) {
+      showDebugError(
+        getFormattedError(
+          tokens,
+          `${response.status} ${response.statusText}`
+        )
+      );
+      return;
+    }
+    if (typeof tokens !== "object") {
+      showDebugError(`Expected JSON token response but got: ${tokens}`);
+      return;
+    }
+    setDebugPatientToken(tokens?.access_token);
+    document.getElementById("debugPatientTokenOut").innerHTML = JSON.stringify(
+      tokens,
+      null,
+      2
+    );
+  } catch (error) {
+    showDebugError(error.message || "Failed to fetch token");
+  }
+}
+
+function getFormattedError(payload, fallback) {
+  if (!payload) return fallback;
+  if (typeof payload === "string") {
+    if (isHtmlPayload(payload)) {
+      const htmlSummary = normalizeHtmlError(payload);
+      if (htmlSummary) {
+        return htmlSummary;
+      }
+    }
+    const trimmed = payload.trim();
+    return trimmed || fallback;
+  }
+  if (payload.error_description) return payload.error_description;
+  if (payload.detail) return payload.detail;
+  if (payload.message) return payload.message;
+  return JSON.stringify(payload);
 }
 
 function setDebugPatientToken(accessToken) {
@@ -1432,6 +1575,7 @@ function setDebugPatientToken(accessToken) {
       "debugPatientToken"
     ).innerHTML = `Client Token: ${debugPatientToken}`;
   } else {
+    debugPatientToken = null;
     document.getElementById(
       "debugPatientToken"
     ).innerHTML = `Client Token: None`;
@@ -1439,36 +1583,59 @@ function setDebugPatientToken(accessToken) {
 }
 
 async function debugGetUserProfile() {
-  const response = await fetch("/api/v1/users/profile", {
-    headers: {
-      "Cache-Control": "no-cache",
-      Authorization: `Bearer ${debugPatientToken}`,
-    },
-  });
-  const out = await response.json();
-  document.getElementById("debugUserProfileOut").innerHTML = JSON.stringify(
-    out,
-    null,
-    2
-  );
-}
-
-async function debugGetPendingPatientConsents() {
-  const response = await fetch(
-    document.getElementById("debugPendingPatientConsentsUrl").value,
-    {
+  showDebugError();
+  try {
+    const response = await fetch(buildApiUrl("users/profile"), {
       headers: {
         "Cache-Control": "no-cache",
         Authorization: `Bearer ${debugPatientToken}`,
       },
+    });
+    const out = await readResponsePayload(response);
+    if (!response.ok) {
+      showDebugError(
+        getFormattedError(out, `${response.status} ${response.statusText}`)
+      );
+      return;
     }
-  );
-  const out = await response.json();
-  document.getElementById("debugPendingPatientConsentsOut").innerHTML =
-    JSON.stringify(out, null, 2);
+    document.getElementById("debugUserProfileOut").innerHTML = JSON.stringify(
+      out,
+      null,
+      2
+    );
+  } catch (error) {
+    showDebugError(error.message || "Failed to fetch profile");
+  }
+}
+
+async function debugGetPendingPatientConsents() {
+  showDebugError();
+  try {
+    const response = await fetch(
+      document.getElementById("debugPendingPatientConsentsUrl").value,
+      {
+        headers: {
+          "Cache-Control": "no-cache",
+          Authorization: `Bearer ${debugPatientToken}`,
+        },
+      }
+    );
+    const out = await readResponsePayload(response);
+    if (!response.ok) {
+      showDebugError(
+        getFormattedError(out, `${response.status} ${response.statusText}`)
+      );
+      return;
+    }
+    document.getElementById("debugPendingPatientConsentsOut").innerHTML =
+      JSON.stringify(out, null, 2);
+  } catch (error) {
+    showDebugError(error.message || "Failed to fetch consents");
+  }
 }
 
 async function debugDoPatientConsents() {
+  showDebugError();
   const method = document.getElementById("debugPatientConsentsMethod").value;
   const headers = {
     "Cache-Control": "no-cache",
@@ -1479,23 +1646,34 @@ async function debugDoPatientConsents() {
     headers["Content-Type"] = "application/json";
     body = document.getElementById("debugPatientConsentsPayload").value;
   }
-  const response = await fetch(
-    document.getElementById("debugPatientConsentsUrl").value,
-    {
-      method: method,
-      headers: headers,
-      body: body,
+  try {
+    const response = await fetch(
+      document.getElementById("debugPatientConsentsUrl").value,
+      {
+        method: method,
+        headers: headers,
+        body: body,
+      }
+    );
+    const out = await readResponsePayload(response);
+    if (!response.ok) {
+      showDebugError(
+        getFormattedError(out, `${response.status} ${response.statusText}`)
+      );
+      return;
     }
-  );
-  const out = await response.json();
-  document.getElementById("debugPatientConsentsOut").innerHTML = JSON.stringify(
-    out,
-    null,
-    2
-  );
+    document.getElementById("debugPatientConsentsOut").innerHTML = JSON.stringify(
+      out,
+      null,
+      2
+    );
+  } catch (error) {
+    showDebugError(error.message || "Failed to save consents");
+  }
 }
 
 async function debugDoObservations() {
+  showDebugError();
   const method = document.getElementById("debugObservationsMethod").value;
   const headers = {
     "Cache-Control": "no-cache",
@@ -1505,20 +1683,30 @@ async function debugDoObservations() {
     headers["Content-Type"] = "application/json";
     body = document.getElementById("debugObservationsPayload").value;
   }
-  const response = await fetch(
-    document.getElementById("debugObservationsUrl").value,
-    {
-      method: method,
-      headers: headers,
-      body: body,
+  try {
+    const response = await fetch(
+      document.getElementById("debugObservationsUrl").value,
+      {
+        method: method,
+        headers: headers,
+        body: body,
+      }
+    );
+    const out = await readResponsePayload(response);
+    if (!response.ok) {
+      showDebugError(
+        getFormattedError(out, `${response.status} ${response.statusText}`)
+      );
+      return;
     }
-  );
-  const out = await response.json();
-  document.getElementById("debugObservationsOut").innerHTML = JSON.stringify(
-    out,
-    null,
-    2
-  );
+    document.getElementById("debugObservationsOut").innerHTML = JSON.stringify(
+      out,
+      null,
+      2
+    );
+  } catch (error) {
+    showDebugError(error.message || "Failed to fetch observations");
+  }
 }
 
 let iconPreviewTimeout;

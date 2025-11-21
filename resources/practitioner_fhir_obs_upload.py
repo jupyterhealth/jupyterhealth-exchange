@@ -3,16 +3,30 @@ import base64
 import json
 import os
 import urllib.parse
-
+import django
 import requests
 from dotenv import load_dotenv
+from oauth2_provider.models import get_application_model
 
 load_dotenv()
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "jhe.settings")
+django.setup()
+
+
+def _get_oidc_client_id_from_db():
+    try:
+        Application = get_application_model()
+        return Application.objects.order_by("id").values_list("client_id", flat=True).first()
+    except Exception:
+        return None
+
+
 SITE_URL = os.getenv("SITE_URL")
-OIDC_CLIENT_ID = os.getenv("OIDC_CLIENT_ID")
+OIDC_CLIENT_ID = _get_oidc_client_id_from_db() or os.getenv("OIDC_CLIENT_ID")
 PATIENT_AUTHORIZATION_CODE_VERIFIER = os.getenv("PATIENT_AUTHORIZATION_CODE_VERIFIER")
-OIDC_CLIENT_REDIRECT_URI = SITE_URL + os.getenv("OIDC_CLIENT_REDIRECT_URI_PATH")
+_SITE_URL_ROOT = SITE_URL.rstrip("/") if SITE_URL else ""
+OIDC_CLIENT_REDIRECT_URI = f"{_SITE_URL_ROOT}/auth/callback" if _SITE_URL_ROOT else "/auth/callback"
 PATIENT_AUTHORIZATION_CODE_CHALLENGE = os.getenv("PATIENT_AUTHORIZATION_CODE_CHALLENGE")
 
 OMH_BLOOD_GLUCOSE_JSON = {
@@ -66,7 +80,7 @@ class Command:
         authorize_params = {
             "client_id": OIDC_CLIENT_ID,
             "response_type": "code",
-            "redirect_uri": self.BASE_URL + "/auth/callback",
+            "redirect_uri": OIDC_CLIENT_REDIRECT_URI,
             "scope": "openid",
             "code_challenge": PATIENT_AUTHORIZATION_CODE_CHALLENGE,
             "code_challenge_method": "S256",
@@ -94,7 +108,7 @@ class Command:
             data={
                 "code": code,
                 "grant_type": "authorization_code",
-                "redirect_uri": self.BASE_URL + "/auth/callback",
+                "redirect_uri": OIDC_CLIENT_REDIRECT_URI,
                 "client_id": OIDC_CLIENT_ID,
                 "code_verifier": PATIENT_AUTHORIZATION_CODE_VERIFIER,
             },
