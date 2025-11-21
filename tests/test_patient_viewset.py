@@ -11,7 +11,6 @@ from core.models import (
     StudyPatient,
     StudyPatientScopeConsent,
 )
-from core.views.patient import PatientViewSet
 
 
 class PatientViewSetTests(TestCase):
