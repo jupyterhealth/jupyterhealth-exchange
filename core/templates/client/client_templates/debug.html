@@ -40,7 +40,7 @@
 
   <input type="text" id="debugPasteAccessToken" class="form-control mb-4" placeholder="Set Token - Paste Access Token">
 
-  <pre class="m-1 p-1 bg-light rounded" id="debugAuthOut">POST /o/token/</pre>
+  <pre class="m-1 p-1 bg-light rounded" id="debugTokenEndpointLabel">POST /o/token/</pre>
   <!-- TBD: move to settings -->
   <textarea class="form-control form-control-sm" id="debugOAuthPayload" rows="10" style="min-width: 600px">
 {
@@ -57,7 +57,9 @@
 
 
   <h5>Get Patient ID from Token</h5>
-  <pre class="m-1 p-1 bg-light rounded">GET /api/v1/users/profile</pre>
+  <pre class="m-1 p-1 bg-light rounded" id="debugUserProfileEndpointLabel">
+    GET /api/v1/users/profile
+  </pre>
   <pre class="m-3 p-3 bg-light rounded" id="debugUserProfileOut">Patient ID output</pre>
   <button
     type="button"

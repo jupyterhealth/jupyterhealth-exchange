@@ -5,6 +5,23 @@
 const ROUTE_PREFIX = "/portal/";
 const DEFAULT_ROUTE = "organizations";
 const API_PATH = "/api/v1/";
+const SITE_BASE_URL =
+  (typeof CONSTANTS === "object" && CONSTANTS?.SITE_URL)
+    ? CONSTANTS.SITE_URL.replace(/\/$/, "")
+    : "";
+
+const buildTokenEndpoint = () => `${SITE_BASE_URL}/o/token/`;
+const buildApiUrl = (resource) => `${SITE_BASE_URL}${API_PATH}${resource}`;
+const buildTokenPayload = (code = "PASTE_CODE_HERE") => ({
+  code: code,
+  grant_type: "authorization_code",
+  redirect_uri: `${SITE_BASE_URL}/auth/callback`,
+  client_id: CONSTANTS.client_id,
+  code_verifier: CONSTANTS.code_verifier,
+  code_challenge: CONSTANTS.code_challenge,
+});
+const buildPatientConsentsUrl = (patientId = "PASTE_PATIENT_ID_HERE") =>
+  buildApiUrl(`patients/${patientId}/consents`);
 
 const ROUTES = {
   // dashboard: {
@@ -306,12 +323,26 @@ function renderDebug(param) {
     document.getElementById("t-debug").innerHTML
   );
   setTimeout(() => {
-    ["debugOAuthPayload", "debugPatientConsentsUrl"].forEach((element) => {
-      document.getElementById(element).value = document
-        .getElementById(element)
-        .value.replace("SITE_URL", CONSTANTS.SITE_URL);
-    });
-  }, 2000);
+    const payloadElement = document.getElementById("debugOAuthPayload");
+    if (payloadElement) {
+      payloadElement.value = JSON.stringify(buildTokenPayload(), null, 2);
+    }
+
+    const consentsUrlElement = document.getElementById("debugPatientConsentsUrl");
+    if (consentsUrlElement) {
+      consentsUrlElement.value = buildPatientConsentsUrl();
+    }
+
+    const tokenEndpointLabel = document.getElementById("debugTokenEndpointLabel");
+    if (tokenEndpointLabel) {
+      tokenEndpointLabel.textContent = `POST ${buildTokenEndpoint()}`;
+    }
+
+    const userProfileEndpointLabel = document.getElementById("debugUserProfileEndpointLabel");
+    if (userProfileEndpointLabel) {
+      userProfileEndpointLabel.textContent = `GET ${buildApiUrl("users/profile")}`;
+    }
+  }, 200);
   return content({});
 }
 
@@ -1408,7 +1439,7 @@ async function debugGetPatientTokenFromCode() {
   const formData = new URLSearchParams(
     JSON.parse(document.getElementById("debugOAuthPayload").value)
   ).toString();
-  const response = await fetch("/o/token/", {
+  const response = await fetch(buildTokenEndpoint(), {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -1439,7 +1470,7 @@ function setDebugPatientToken(accessToken) {
 }
 
 async function debugGetUserProfile() {
-  const response = await fetch("/api/v1/users/profile", {
+  const response = await fetch(buildApiUrl("users/profile"), {
     headers: {
       "Cache-Control": "no-cache",
       Authorization: `Bearer ${debugPatientToken}`,
