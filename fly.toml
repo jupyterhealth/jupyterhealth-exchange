@@ -17,8 +17,8 @@ console_command = "/code/manage.py shell"
   SITE_URL = "https://jhe.fly.dev"
   CH_INVITATION_LINK_PREFIX = "https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.dev&referrer=cloud_sharing="
   CH_INVITATION_LINK_EXCLUDE_HOST = true
-  PATIENT_AUTHORIZATION_CODE_CHALLENGE = "rcqZccUKvWbQH_4DlLRreC5PXf8eMAj9g_iLIGYoFFQ"
-  PATIENT_AUTHORIZATION_CODE_VERIFIER = "EIlWNRU1_7yyUdw27ryzBvgcoU8ZJ6bgg_F-wkNbbDQ"
+  PATIENT_AUTHORIZATION_CODE_CHALLENGE="C-rdBzEtxD82FMuHF0_76l6NNu_AIqnVJDL1Ba5j0gs"
+  PATIENT_AUTHORIZATION_CODE_VERIFIER="EIlWNRU1_7yyUdw27ryzBvgcoU8ZJ6bgg_F-wkNbbDQ"
 
 
 [http_service]
