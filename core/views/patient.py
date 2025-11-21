@@ -192,11 +192,13 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
 
             responses = []
             consented_time = datetime.now()
+            patient_user = request.user.get_patient()
+            is_patient_user = bool(patient_user and int(pk) == patient_user.id)
             for study_scope_consent in request.data["study_scope_consents"]:
                 study_patient = StudyPatient.objects.filter(
                     study_id=study_scope_consent["study_id"], patient_id=patient.id
                 ).first()
-                if not request.user.is_superuser:
+                if not request.user.is_superuser and not is_patient_user:
                     if request.user.is_practitioner():
                         if not Patient.practitioner_authorized(
                             request.user.id, int(pk), organization_id=study_patient.study.organization.id
@@ -208,7 +210,7 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
                         ).first()
                         if practitioner_org.role not in ["manager", "member"]:
                             raise PermissionDenied("Practitioner role is not valid.")
-                    elif request.user.get_patient() is None:
+                    else:
                         raise PermissionDenied("Only Patient users can update their own consents.")
 
                 for scope_consent in study_scope_consent["scope_consents"]:
