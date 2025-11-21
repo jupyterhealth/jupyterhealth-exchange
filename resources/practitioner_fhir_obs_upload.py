@@ -3,17 +3,15 @@ import base64
 import json
 import os
 import urllib.parse
-
 import django
 import requests
 from dotenv import load_dotenv
+from oauth2_provider.models import get_application_model
 
 load_dotenv()
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "jhe.settings")
 django.setup()
-
-from oauth2_provider.models import get_application_model
 
 
 def _get_oidc_client_id_from_db():
