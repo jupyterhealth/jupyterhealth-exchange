@@ -2,7 +2,6 @@ SITE_TITLE="JupyterHealth Exchange Dev"
 TIME_ZONE="America/Los_Angeles"
 REGISTRATION_INVITE_CODE="helloworld"
 SITE_URL="http://localhost:8000"
-DJANGO_LOG_LEVEL="INFO"
 
 SECRET_KEY="django-insecure--l2nzvywecjf!sgu3=v8y#e5@rk-5_l0=0ez!abg576r^th@o"
 
