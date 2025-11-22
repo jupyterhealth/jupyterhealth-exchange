@@ -75,6 +75,14 @@ OIDC_CLIENT_AUTHORITY = 'http://localhost:8000/o/'
 
 By hardcoding the values you prevent the path injection and keep the SPA from seeing broken URLs, which resolves the blank screen after login on Windows hosts.
 
+## Remote debugging tips
+
+1. **Control log verbosity** with DJANGO_LOG_LEVEL – The backend now reads the `DJANGO_LOG_LEVEL` environment variable (default: INFO) for both the root logger and the django logger. For `Fly.io` deployments, set `DJANGO_LOG_LEVEL=DEBUG` in `fly.toml` and run `fly deploy`. For local development, set `DJANGO_LOG_LEVEL` using the appropriate environment configuration for your operating system.
+
+2. **Don’t forget the SPA debug banner** – temporarily enabling Django `DEBUG` surfaces server-side tracebacks in the portal so you can correlate HTTP logs with richer context. Turn it off afterward to avoid exposing stack traces.
+
+> **Note:** `DJANGO_LOG_LEVEL` is a configuration flag, not a secret. Keep `fly secrets` and your `.env` strictly for secrets. This keeps local CI environments aligned with the same value.
+
 ## Working with the Web UI
 
 ### Patients & Practitioners

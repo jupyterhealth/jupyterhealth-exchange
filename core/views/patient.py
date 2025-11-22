@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 
 from django.conf import settings
@@ -36,8 +35,6 @@ from core.serializers import (
     StudyConsentsSerializer,
     StudyPatientScopeConsentSerializer,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class PatientViewSet(AdminListMixin, ModelViewSet):

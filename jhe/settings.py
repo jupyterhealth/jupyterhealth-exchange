@@ -175,6 +175,8 @@ DATABASES = {
 # default django logging scheme: https://docs.djangoproject.com/en/5.2/ref/logging/#default-logging-configuration
 # https://docs.djangoproject.com/en/5.2/topics/logging
 # also see: https://docs.djangoproject.com/en/5.2/howto/error-reporting/#filtering-error-reports
+DEFAULT_LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO").upper()
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -186,13 +188,13 @@ LOGGING = {
     },
     "root": {
         "handlers": ["console"],
-        # makes it required to set the log level in the environment variable DJANGO_LOG_LEVEL
-        "level": os.getenv("DJANGO_LOG_LEVEL"),
+        # uses the DJANGO_LOG_LEVEL env var (defaults to INFO)
+        "level": DEFAULT_LOG_LEVEL,
     },
     "loggers": {
         "django": {
             "handlers": ["console"],
-            "level": "INFO",
+            "level": DEFAULT_LOG_LEVEL,
             "propagate": False,
         },
     },
