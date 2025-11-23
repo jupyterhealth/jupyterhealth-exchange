@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
 
-JHE_VERSION = "v0.0.7"
+JHE_VERSION = "v0.0.8"
 
 """
 Django settings for jhe project.
