@@ -24,6 +24,7 @@ faker = "*"
 drf-spectacular = "*"
 grafana-django-saml2-auth = "*"
 jsonschema = "*"
+ipython = "*"
 
 [dev-packages]
 coverage = "*"

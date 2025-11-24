@@ -2,6 +2,10 @@ ARG PYTHON_VERSION=3.12-slim-bullseye
 
 FROM python:${PYTHON_VERSION}
 
+RUN apt-get -y update \
+ && apt-get -y install --no-install-recommends postgresql-client \
+ && rm -rf /var/lib/apt/lists/*
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
