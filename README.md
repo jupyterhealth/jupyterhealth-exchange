@@ -883,139 +883,163 @@ Django is a mature and well-supported web framework but was specifically chosen 
 
 A hard requirement was to avoid additional servers and frameworks (eg npm, react, etc) for the front end Web UI. Django supports traditional server-side templating but a modern Single Page App is better suited to this use case of interacting with the Admin REST API. For these reasons, a simple Vanilla JS SPA has been developed using [handlebars](https://github.com/handlebars-lang/handlebars.js) to render client side views from static HTML served using Django templates. The only other additional dependencies are [oidc-clinet-ts](https://github.com/authts/oidc-client-ts) for auth and [bootstrap](https://github.com/twbs/bootstrap) for styling.
 
-### Data Model - To be Updated
+### Data Model
 
 ```mermaid
 erDiagram
-    "users (FHIR Person)" ||--|{ "user_organizations": ""
-    "users (FHIR Person)" ||--|{ "study_practitioners": ""
-    "users (FHIR Person)" {
-        int id
-        jsonb identifer
-        varchar password
-        varchar name_family
-        varchar name_given
-        varchar telecom_email
-    }
-    "organizations (FHIR Organization)" ||--|{ "organizations (FHIR Organization)": ""
-    "organizations (FHIR Organization)" ||--|{ "user_organizations": ""
-    "organizations (FHIR Organization)" ||--|{ "smart_client_configs": ""
-    "organizations (FHIR Organization)" ||--|{ "studies (FHIR Group)": ""
-    "organizations (FHIR Organization)" {
-        int id
-        jsonb identifer
-        varchar name
-        enum type
-        int part_of
-    }
-    "smart_client_configs" {
-        int id
-        int organization_id
-        varchar well_known_uri
-        varchar client_id
-        varchar scopes
-    }
-    "user_organizations" {
-        int id
-        int user_id
-        int organization_id
-    }
-    "patients (FHIR Patient)" ||--|| "users (FHIR Person)": ""
-    "patients (FHIR Patient)" ||--|{ "observations (FHIR Observation)": ""
-    "patients (FHIR Patient)" ||--|{ "study_patients": ""
-    "patients (FHIR Patient)" {
-        int id
-        int user_id
-        int organization_id
-        varchar identifer
-        varchar name_family
-        varchar name_given
-        date   birth_date
-        varchar telecom_cell
-    }
-    "studies (FHIR Group)" ||--|{ "study_patients": ""
-    "studies (FHIR Group)" ||--|{ "study_practitioners": ""
-    "studies (FHIR Group)" ||--|{ "study_scope_requests": ""
-    "studies (FHIR Group)" ||--|{ "study_data_sources": ""
-    "studies (FHIR Group)" {
-        int id
-        int organization_id
-        jsonb identifer
-        varchar name
-        varchar description
-    }
-    "study_patients" ||--|{ "study_patient_scope_consents": ""
-    "study_patients" {
-        int id
-        int study_id
-        int pateint_id
-    }
-    "study_scope_requests" ||--|{ "codeable_concepts (FHIR CodeableConcept)": ""
-    "study_scope_requests" {
-        int id
-        int study_id
-        enum scope_action
-        int scope_code_id
-    }
+  "JheUser (FHIR Person)" {
+    int id PK
+    string email UK
+    boolean email_is_verified
+    string identifier
+    string user_type
+  }
 
-    "study_practitioners" {
-        int id
-        int study_id
-        int user_id
-    }
+  "Organization (FHIR Organization)" {
+    int id PK
+    string name
+    string type
+    int part_of_id FK
+  }
 
-    "observations (FHIR Observation)" ||--|| "codeable_concepts (FHIR CodeableConcept)": ""
-    "observations (FHIR Observation)" ||--|{ "observation_identifiers": ""
-    "observations (FHIR Observation)" ||--|| "data_sources": ""
-    "observations (FHIR Observation)" {
-        int id
-        int subject_patient_id
-        int codeable_concept_id
-        jsonb value_attachment_data
-        timestamp transaction_time
-    }
+  "Practitioner (FHIR Practitioner)" {
+    int id PK
+    int jhe_user_id FK
+    string identifier
+    string name_family
+    string name_given
+    date birth_date
+    string telecom_phone
+    datetime last_updated
+  }
 
-    "observation_identifiers" {
-        int id
-        int observation_id
-        varchar system
-        varchar value
-    }
+  "Patient (FHIR Patient)" {
+    int id PK
+    int jhe_user_id FK
+    string identifier
+    string name_family
+    string name_given
+    date birth_date
+    string telecom_phone
+    datetime last_updated
+  }
 
-    "studies (FHIR Group)" ||--|{ "study_patients": ""
-    "codeable_concepts (FHIR CodeableConcept)" {
-        int id
-        varchar coding_system
-        varchar coding_code
-        varchar text
-    }
-    "study_patient_scope_consents" ||--|| "codeable_concepts (FHIR CodeableConcept)": ""
-    "study_patient_scope_consents" {
-        int id
-        int study_patient_id
-        enum scope_action
-        int scope_code_id
-        bool consented
-        timestamp consented_time
-    }
-    "data_sources" ||--|{ "data_source_supported_scopes": ""
-    "data_sources" ||--|{ "study_data_sources": ""
-    "data_sources" {
-        int id
-        varchar name
-        enum type
-    }
-    "data_source_supported_scopes" ||--|| "codeable_concepts (FHIR CodeableConcept)": ""
-    "data_source_supported_scopes" {
-        int id
-        int data_source_id
-        int scope_code_id
-    }
-    "study_data_sources" {
-        int id
-        int study_id
-        int data_source_id
-    }
+  PractitionerOrganization {
+    int id PK
+    int practitioner_id FK
+    int organization_id FK
+    string role
+  }
+
+  PatientOrganization {
+    int id PK
+    int patient_id FK
+    int organization_id FK
+  }
+
+  "CodeableConcept (FHIR CodeableConcept)" {
+    int id PK
+    string coding_system
+    string coding_code
+    string text
+  }
+
+  "Study (FHIR Group)" {
+    int id PK
+    string name
+    string description
+    int organization_id FK
+    string icon_url
+  }
+
+  StudyPatient {
+    int id PK
+    int study_id FK
+    int patient_id FK
+  }
+
+  StudyPatientScopeConsent {
+    int id PK
+    int study_patient_id FK
+    string scope_actions
+    int scope_code_id FK
+    boolean consented
+    datetime consented_time
+  }
+
+  StudyScopeRequest {
+    int id PK
+    int study_id FK
+    string scope_actions
+    int scope_code_id FK
+  }
+
+  DataSource {
+    int id PK
+    string name
+    string type
+  }
+
+  DataSourceSupportedScope {
+    int id PK
+    int data_source_id FK
+    int scope_code_id FK
+  }
+
+  StudyDataSource {
+    int id PK
+    int study_id FK
+    int data_source_id FK
+  }
+
+  "Observation (FHIR Observation)" {
+    int id PK
+    int subject_patient_id FK
+    int codeable_concept_id FK
+    int data_source_id FK
+    string value_attachment_data
+    datetime last_updated
+    string status
+  }
+
+  ObservationIdentifier {
+    int id PK
+    int observation_id FK
+    string system
+    string value
+  }
+
+  "Organization (FHIR Organization)" ||--o{ "Organization (FHIR Organization)" : _
+  "JheUser (FHIR Person)" ||--|| "Practitioner (FHIR Practitioner)" : _
+  "JheUser (FHIR Person)" ||--|| "Patient (FHIR Patient)" : _
+
+  "Practitioner (FHIR Practitioner)" ||--o{ PractitionerOrganization : _
+  "Organization (FHIR Organization)" ||--o{ PractitionerOrganization : _
+  "Patient (FHIR Patient)" ||--o{ PatientOrganization : _
+  "Organization (FHIR Organization)" ||--o{ PatientOrganization : _
+
+  "Organization (FHIR Organization)" ||--o{ "Study (FHIR Group)" : _
+  "Study (FHIR Group)" ||--o{ StudyPatient : _
+  "Patient (FHIR Patient)" ||--o{ StudyPatient : _
+
+  StudyPatient ||--o{ StudyPatientScopeConsent : _
+  "CodeableConcept (FHIR CodeableConcept)" ||--o{ StudyPatientScopeConsent : _
+
+  "Study (FHIR Group)" ||--o{ StudyScopeRequest : _
+  "CodeableConcept (FHIR CodeableConcept)" ||--o{ StudyScopeRequest : _
+
+  DataSource ||--o{ DataSourceSupportedScope : _
+  "CodeableConcept (FHIR CodeableConcept)" ||--o{ DataSourceSupportedScope : _
+
+  "Study (FHIR Group)" ||--o{ StudyDataSource : _
+  DataSource ||--o{ StudyDataSource : _
+
+  "Patient (FHIR Patient)" ||--o{ "Observation (FHIR Observation)" : _
+  "CodeableConcept (FHIR CodeableConcept)" ||--o{ "Observation (FHIR Observation)" : _
+  DataSource ||--o{ "Observation (FHIR Observation)" : _
+
+  "Observation (FHIR Observation)" ||--o{ ObservationIdentifier : _
+
 ```
 
 ## Deployment
