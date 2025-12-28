@@ -1,0 +1,20 @@
+name: Issue
+description: Standard issue (requires Story Points estimate)
+title: "[Issue]: "
+labels: [ "triage" ]
+body:
+- type: dropdown
+  id: story_points
+  attributes:
+    label: Story Points (or TBE)
+    description: >
+      Story Points estimate relative effort/complexity/risk (not exact time). If unsure, choose TBE and describe the problem. Rough time descriptor: 1=few hrs–1 day, 2=1–2 days, 3=2–3 days, 5=~1 week, 8=>2 week (consider splitting).
+    options:
+    - "TBE"
+    - "1"
+    - "2"
+    - "3"
+    - "5"
+    - "8"
+  validations:
+    required: true
