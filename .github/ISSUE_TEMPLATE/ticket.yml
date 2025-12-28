@@ -1,6 +1,5 @@
 name: Issue
 description: Standard issue (requires Story Points estimate)
-title: "[Issue]: "
 labels: [ "triage" ]
 body:
 - type: dropdown
@@ -8,13 +7,26 @@ body:
   attributes:
     label: Story Points (or TBE)
     description: >
-      Story Points estimate relative effort/complexity/risk (not exact time). If unsure, choose TBE and describe the problem. Rough time descriptor: 1=few hrs–1 day, 2=1–2 days, 3=2–3 days, 5=~1 week, 8=>2 week (consider splitting).
-    options:
-    - "TBE"
-    - "1"
-    - "2"
-    - "3"
-    - "5"
-    - "8"
+      Story Points are a relative estimate of effort/complexity/risk (not exact time). If unsure, choose TBE (to be estimated) and describe the problem. Time hint: 1=few hrs–1 day, 2=1–2 days, 3=2–3 days, 5=~1 week, 8=>2 weeks (consider splitting).
+    options: [ "TBE", "1", "2", "3", "5", "8" ]
+    default: 0
+  validations:
+    required: true
+
+- type: input
+  id: effort_hours
+  attributes:
+    label: Effort estimate (hours)
+    description: Optional. Intended to be filled out by the technical owner/assignee as a rough effort estimate in hours.
+    placeholder: "e.g., 8"
+  validations:
+    required: false
+
+- type: textarea
+  id: description
+  attributes:
+    label: Description
+    description: What’s happening / what do you need? Include steps, expected vs actual, links/screenshots if helpful.
+    placeholder: "Type your description here…"
   validations:
     required: true
