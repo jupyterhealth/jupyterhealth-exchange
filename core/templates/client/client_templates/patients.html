@@ -34,7 +34,7 @@
         </tr>
       </table>
       <div class="mt-2">
-          {{#if @root.manageForPractitioners}}
+          {{#if @root.canManagePatientsInOrg}}
                 <button type="button"
                         class="btn btn-sm btn-success me-2"
                         onclick="nav('patients',{
@@ -115,7 +115,7 @@
               })"
             }}
 
-            {{#if @root.manageForPractitioners}}
+            {{#if @root.canManagePatientsInOrg}}
 
               {{> crudButton iconUpdate=true recordId=id organizationId=@root.organizationId studyId=@root.studyId
                 onclick="nav('patients',{
@@ -322,7 +322,7 @@
               </div>
               {{/unless}}
               {{#if read}}
-                {{#if @root.manageForPractitioners}}
+                {{#if @root.canManagePatientsInOrg}}
                   <div class="mb-3">
                     <button
                       type="button"

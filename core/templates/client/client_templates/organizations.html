@@ -40,7 +40,7 @@
       }}
     {{/if}}
     {{#unless tloId}}
-      {{#if @root.canCreateTopLevelOrg}}
+      {{#if @root.canCreateTopLevelOrganization}}
       {{> crudButton iconCreate=true
         onclick="nav('organizations',{
           create: true
@@ -154,7 +154,7 @@
             </form>
             {{#if read}}
               <p>
-                  {{#if manageForPractitioners}}
+                  {{#if canManagePractitionersInOrg}}
                 Users
                 <button
                   type="button"
@@ -208,7 +208,7 @@
                   <li>
                     {{email}}
                       <span class="text-capitalize" >({{ role }})</span>
-                      {{#if @root.manageForPractitioners}}
+                      {{#if @root.canManagePractitionersInOrg}}
                     <button
                       type="button"
                       onclick="removeUserFromOrganization({{id}},document.getElementById('organizationId').value)"
@@ -222,7 +222,7 @@
               </ul>
               <p>
                 Studies
-                {{#if @root.manageForPractitioners}}
+                {{#if @root.canManagePractitionersInOrg}}
                     <button
                       type="button"
                       onclick="createStudyFromOrganization({{organizationRecord.id}},'{{organizationRecord.name}}')"
@@ -279,7 +279,7 @@
         })"
       }}
 
-    {{#if @root.manageForPractitioners}}
+    {{#if @root.canManagePractitionersInOrg}}
 
     {{> crudButton iconUpdate=true recordId=id
       onclick="nav('organizations',{

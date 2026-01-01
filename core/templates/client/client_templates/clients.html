@@ -1,5 +1,5 @@
 {% verbatim %}
-<script id="t-dataSources" type="text/template">
+<script id="t-clients" type="text/template">
 
   <table class="table table-striped">
     <thead>
@@ -11,25 +11,25 @@
       </tr>
     </thead>
     <tbody>
-      {{#dataSources}}
+      {{#clients}}
         <tr>
           <td>
             {{> crudButton iconRead=true recordId=id
-              onclick="nav('dataSources',{
+              onclick="nav('clients',{
                 id: this.dataset.recordid,
                 read: true
               })"
             }}
-            {{#if @root.canManageDataSources }}
+            {{#if @root.canManageClients }}
                 {{> crudButton iconUpdate=true recordId=id
-                  onclick="nav('dataSources',{
+                  onclick="nav('clients',{
                     id: this.dataset.recordid,
                     update: true
                   })"
                 }}
 
                 {{> crudButton iconDelete=true recordId=id
-                  onclick="nav('dataSources',{
+                  onclick="nav('clients',{
                     id: this.dataset.recordid,
                     delete: true
                   })"
@@ -46,16 +46,16 @@
             </ul>
           </td>
         </tr>
-      {{/dataSources}}
+      {{/clients}}
     </tbody>
   </table>
-  {{#if @root.canManageDataSources }}
+  {{#if @root.canManageClients }}
     <button type="button"
           class="btn btn-sm btn-success"
-          onclick="nav('dataSources',{
+          onclick="nav('clients',{
               create: true
           })">
-    Add Data Source
+    Add Client
   </button>
   {{/if}}
 
@@ -63,7 +63,7 @@
   <!-- MODAL -->
   <div
     class="modal fade"
-    id="dataSources-crudModal"
+    id="clients-crudModal"
     data-bs-backdrop="static"
     data-bs-keyboard="false"
     tabindex="-1"
@@ -72,10 +72,10 @@
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="staticBackdropLabel">
-            {{#if create}} Create Data Source {{/if}}
-            {{#if read}} View Data Source {{/if}}
-            {{#if update}} Update Data Source {{/if}}
-            {{#if delete}} Delete Data Source {{/if}}
+            {{#if create}} Create Client {{/if}}
+            {{#if read}} View Client {{/if}}
+            {{#if update}} Update Client {{/if}}
+            {{#if delete}} Delete Client {{/if}}
           </h1>
           <button
             type="button"
@@ -96,41 +96,41 @@
                 {{#unless create}}
                   <div class="mb-3">
                     <fieldset disabled>
-                      <label for="dataSourceId" class="form-label"
+                      <label for="clientId" class="form-label"
                         >ID</label
                       >
                       <input
                         type="text"
                         class="form-control"
-                        id="dataSourceId"
-                        value="{{dataSourceRecord.id}}"
+                        id="clientId"
+                        value="{{clientRecord.id}}"
                       />
                     </fieldset>
                   </div>
                 {{/unless}}
                 <div class="mb-3">
-                  <label for="dataSourceName" class="form-label"
+                  <label for="clientName" class="form-label"
                     >Name</label
                   >
                   <input
                     type="text"
                     class="form-control"
-                    id="dataSourceName"
-                    value="{{dataSourceRecord.name}}"
+                    id="clientName"
+                    value="{{clientRecord.name}}"
                   />
                 </div>
                 <div class="mb-3">
-                  <label for="dataSourceType" class="form-label"
+                  <label for="clientType" class="form-label"
                     >Type</label
                   >
-                  <select id="dataSourceType" class="form-select">
-                  {{#dataSourceRecord.typeSelect}}
+                  <select id="clientType" class="form-select">
+                  {{#clientRecord.typeSelect}}
                     {{#if selected}}
                       <option value="{{id}}" selected>{{label}}</option>
                     {{else}}
                       <option value="{{id}}">{{label}}</option>
                     {{/if}}
-                  {{/dataSourceRecord.typeSelect}}
+                  {{/clientRecord.typeSelect}}
                   </select>
                 </div>
               </fieldset>
@@ -140,13 +140,13 @@
                   Supported Scopes
                   <button
                     type="button"
-                    onclick="document.getElementById('dataSourcesAddScopeForm').style.setProperty('display','block')"
+                    onclick="document.getElementById('clientsAddScopeForm').style.setProperty('display','block')"
                     class="m-0 p-0 btn btn-sm"
                   >
                     <i class="bi bi-file-earmark-plus"></i>
                   </button>
                 </p>
-                <div id="dataSourcesAddScopeForm" class="mb-2" style="display: none">
+                <div id="clientsAddScopeForm" class="mb-2" style="display: none">
                   <select id="newStudyScope" style="display: inline-block; max-width: 300px" class="form-select align-middle" aria-label="Select Scope">
                   {{#each allScopes}}
                     <option value="{{id}}">{{text}}</option>
@@ -155,19 +155,19 @@
                   <button
                     style="display: inline-block"
                     type="button"
-                    onclick="addScopeToDataSource(document.getElementById('newStudyScope').value, {{dataSourceRecord.id}})"
+                    onclick="addScopeToClient(document.getElementById('newStudyScope').value, {{clientRecord.id}})"
                     class="btn btn-sm btn-success ms-1 align-middle"
                   >
                     Add
                   </button>
                 </div>
                 <ul>
-                  {{#each dataSourceRecord.supportedScopes}}
+                  {{#each clientRecord.supportedScopes}}
                     <li>
                       {{scopeCode.text}}
                       <button
                         type="button"
-                        onclick="removeScopeFromDataSource({{scopeCode.id}},{{@root.dataSourceRecord.id}})"
+                        onclick="removeScopeFromClient({{scopeCode.id}},{{@root.clientRecord.id}})"
                         class="m-0 p-0 btn btn-sm"
                       >
                         <i class="bi bi-trash"></i>
@@ -188,13 +188,13 @@
             Cancel
           </button>
           {{#if create}}
-            <button type="button" class="btn btn-primary" onclick="createDataSource()">Create</button>
+            <button type="button" class="btn btn-primary" onclick="createClient()">Create</button>
           {{/if}}
           {{#if update}}
-            <button type="button" class="btn btn-primary" onclick="updateDataSource({{dataSourceRecord.id}})">Update</button>
+            <button type="button" class="btn btn-primary" onclick="updateClient({{clientRecord.id}})">Update</button>
           {{/if}}
           {{#if delete}}
-            <button type="button" class="btn btn-danger" onclick="deleteDataSource({{dataSourceRecord.id}})">Delete</button>
+            <button type="button" class="btn btn-danger" onclick="deleteClient({{clientRecord.id}})">Delete</button>
           {{/if}}
         </div>
       </div>

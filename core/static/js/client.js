@@ -58,9 +58,14 @@ const ROUTES = {
     iconClass: "bi-database",
     action: "renderObservations",
   },
+  clients: {
+    label: "Clients",
+    iconClass: "bi-box",
+    action: "renderClients",
+  },
   dataSources: {
     label: "Data Sources",
-    iconClass: "bi-phone",
+    iconClass: "bi-boxes",
     action: "renderDataSources",
   },
   debug: {
@@ -69,6 +74,7 @@ const ROUTES = {
     action: "renderDebug",
   },
 };
+
 
 // ────────────────────────────────────────────────────
 // Global Vars
@@ -88,6 +94,7 @@ let userProfile = {};
 let signingOut = false;
 let showDelayedElementsTimeoutId = null;
 let navLoadingOverlayCounter = 0;
+
 
 // ────────────────────────────────────────────────────
 // Common
@@ -405,36 +412,31 @@ function clearModalValidationErrors() {
   });
 }
 
-async function hasOrgPermission(
+async function hasOrganizationPermission(
   selectedOrganization,
   organizationId,
   permission
 ) {
   let role = selectedOrganization?.currentUserRole;
-
   if (!role && organizationId) {
     try {
-      const orgRes = await apiRequest("GET", `organizations/${organizationId}`);
-      const org = await orgRes.json();
-      role = org?.currentUserRole;
-    } catch (_) {
+      const organizationResponse = await apiRequest("GET", `organizations/${organizationId}`);
+      const organization = await organizationResponse.json();
+      role = organization?.currentUserRole;
+    } catch {
       return false;
     }
   }
-
   return role ? ifRoleCan(role, permission) : false;
 }
 
 async function hasGlobalPermission(permission) {
-  if (!userProfile || !userProfile.email) {
-    try {
-      userProfile = await getUserProfile();
-    } catch (_) {
-      return false;
-    }
+  if ((await getUserProfile()).isSuperuser){
+    return ifRoleCan("super_user", permission);
   }
-  return userProfile.isSuperuser;
+  return false
 }
+
 
 // ────────────────────────────────────────────────────
 // User Profile
@@ -459,24 +461,25 @@ async function renderUserProfile() {
   document.getElementById("profileUsername").textContent = displayName;
 }
 
-/**
- * userManager.removeUser() raises an event which triggers
- * the popstate listner which calls navReload to catch back
- * button events. Skip this for signout otherwise redirect
- * is never processed.
- */
+
+// userManager.removeUser() raises an event which triggers
+// the popstate listner which calls navReload to catch back
+// button events. Skip this for signout otherwise redirect
+// is never processed.
 async function signOut() {
   signingOut = true;
   await userManager.removeUser();
   this.document.location = "/accounts/logout";
 }
 
+
 // ────────────────────────────────────────────────────
 // Permission helper (must appear before any render*())
 // ────────────────────────────────────────────────────
 function ifRoleCan(role, permission) {
-  return (window.ROLE_PERMISSIONS[role] || []).includes(permission);
+  return (CONSTANTS.ROLE_PERMISSIONS[role] || []).includes(permission);
 }
+
 
 // ────────────────────────────────────────────────────
 // Organizations
@@ -620,15 +623,13 @@ async function renderOrganizations(queryParams) {
     document.getElementById("t-crudButton").innerHTML
   );
 
-  const canCreateTopLevelOrg = await hasGlobalPermission("");
-
   const renderParams = {
     ...queryParams,
     topLevelOrganizationsSelect: topLevelOrganizationsSelect,
     children: organizationTreeChildren,
     organizationRecord: organizationRecord,
-    manageForPractitioners: canManagePractitionersInOrg,
-    canCreateTopLevelOrg: canCreateTopLevelOrg,
+    canManagePractitionersInOrg: canManagePractitionersInOrg,
+    canCreateTopLevelOrganization: await hasGlobalPermission("organization.create_top_level"),
   };
 
   return content(renderParams);
@@ -704,6 +705,7 @@ async function removeUserFromOrganization(userId, organizationId) {
   );
   if (response.ok) navReloadModal();
 }
+
 
 // ────────────────────────────────────────────────────
 // Patients
@@ -805,7 +807,7 @@ async function renderPatients(queryParams) {
     return v1 === v2;
   });
 
-  const canManagePractitionersInOrg = await hasOrgPermission(
+  const canManagePatientsInOrg = await hasOrganizationPermission(
     selectedOrganization,
     queryParams.organizationId,
     "patient.manage_for_organization"
@@ -825,7 +827,7 @@ async function renderPatients(queryParams) {
     studiesPendingConsent: studiesPendingConsent,
     studiesConsented: studiesConsented,
     pageSizes: [20, 100, 500, 1000],
-    manageForPractitioners: canManagePractitionersInOrg,
+    canManagePatientsInOrg: canManagePatientsInOrg,
   };
 
   return content(renderParams);
@@ -931,6 +933,7 @@ async function getInvitationLink(id, sendEmail) {
     invitationLink["invitationLink"];
   document.getElementById("copyInvitationLink").disabled = false;
 }
+
 
 // ────────────────────────────────────────────────────
 // Studies
@@ -1040,7 +1043,7 @@ async function renderStudies(queryParams) {
     document.getElementById("t-crudButton").innerHTML
   );
 
-  const canManagePractitionersInOrg = await hasOrgPermission(
+  const canManagePractitionersInOrg = await hasOrganizationPermission(
     selectedOrganization,
     queryParams.organizationId,
     "study.manage_for_organization"
@@ -1194,6 +1197,7 @@ async function deleteStudy(id) {
   if (response.ok) await navReturnFromCrud();
 }
 
+
 // ────────────────────────────────────────────────────
 // Observations
 // ────────────────────────────────────────────────────
@@ -1308,6 +1312,118 @@ async function renderObservations(queryParams) {
   return content(renderParams);
 }
 
+
+// ────────────────────────────────────────────────────
+// Clients
+// ────────────────────────────────────────────────────
+
+async function renderClients(queryParams) {
+  const content = Handlebars.compile(
+    document.getElementById("t-clients").innerHTML
+  );
+
+  const clientsResponse = await apiRequest("GET", "clients");
+  const clientsPaginated = await clientsResponse.json();
+  let clientRecord = {};
+  let allScopes;
+
+  if (queryParams.read || queryParams.update || queryParams.delete) {
+    const clientRecordResponse = await apiRequest(
+      "GET",
+      `clients/${queryParams.id}`
+    );
+    clientRecord = await clientRecordResponse.json();
+  }
+
+  clientRecord.typeSelect = buildSelectOptions(CONSTANTS.DATA_SOURCE_TYPES);
+
+  if (queryParams.read) {
+    const clientSupportedScopesResponse = await apiRequest(
+      "GET",
+      `clients/${queryParams.id}/supported_scopes`
+    );
+    clientRecord.supportedScopes =
+      await clientSupportedScopesResponse.json();
+
+    const allScopesResponse = await apiRequest(
+      "GET",
+      `clients/all_scopes`
+    );
+    allScopes = await allScopesResponse.json();
+
+    // filter out the scopes that have already been requested
+    const scopesSupportedIds = clientRecord.supportedScopes.map(
+      (s) => s.scopeCode.id
+    );
+    allScopes = allScopes.filter(
+      (scope) => scopesSupportedIds.indexOf(scope.id) == -1
+    );
+  }
+
+  Handlebars.registerPartial(
+    "crudButton",
+    document.getElementById("t-crudButton").innerHTML
+  );
+
+  const renderParams = {
+    ...queryParams,
+    clients: clientsPaginated.results,
+    clientRecord: clientRecord,
+    allScopes: allScopes,
+    canManageClients: await hasGlobalPermission("client.manage"),
+  };
+
+  return content(renderParams);
+}
+
+async function createClient() {
+  const clientRecord = {
+    name: document.getElementById("clientName").value || null,
+    type: document.getElementById("clientType").value,
+  };
+  if (await apiRequest("POST", `clients`, clientRecord))
+    await navReturnFromCrud();
+}
+
+async function updateClient(id) {
+  const studyRecord = {
+    name: document.getElementById("clientName").value || null,
+    type: document.getElementById("clientType").value || null,
+  };
+  const response = await apiRequest("PATCH", `clients/${id}`, studyRecord);
+  if (response.ok) await navReturnFromCrud();
+}
+
+async function deleteClient(id) {
+  if (await apiRequest("DELETE", `clients/${id}`))
+    await navReturnFromCrud();
+}
+
+async function addScopeToClient(scopeCodeId, clientId) {
+  if (!scopeCodeId || !clientId) return;
+  const response = await apiRequest(
+    "POST",
+    `clients/${clientId}/supported_scopes`,
+    {
+      scopeCodeId: scopeCodeId,
+    }
+  );
+  if (response.ok) navReload();
+}
+
+async function removeScopeFromClient(scopeCodeId, clientId) {
+  if (!scopeCodeId || !clientId) return;
+  const response = await apiRequest(
+    "DELETE",
+    `clients/${clientId}/supported_scopes`,
+    {
+      scopeCodeId: scopeCodeId,
+    }
+  );
+  if (response.ok) navReload();
+}
+
+
 // ────────────────────────────────────────────────────
 // Data Sources
 // ────────────────────────────────────────────────────
@@ -1315,10 +1431,6 @@ async function renderObservations(queryParams) {
 async function renderDataSources(queryParams) {
   const content = Handlebars.compile(
     document.getElementById("t-dataSources").innerHTML
-  );
-
-  const canManagePractitionersInOrg = await hasGlobalPermission(
-    "data_source.manage"
   );
 
   const dataSourcesResponse = await apiRequest("GET", "data_sources");
@@ -1369,7 +1481,7 @@ async function renderDataSources(queryParams) {
     dataSources: dataSourcesPaginated.results,
     dataSourceRecord: dataSourceRecord,
     allScopes: allScopes,
-    manageForPractitioners: canManagePractitionersInOrg,
+    canManageDataSources: await hasGlobalPermission("data_source.manage"),
   };
 
   return content(renderParams);
@@ -1421,6 +1533,7 @@ async function removeScopeFromDataSource(scopeCodeId, dataSourceId) {
   );
   if (response.ok) navReload();
 }
+
 
 // ────────────────────────────────────────────────────
 // Dev and Debug

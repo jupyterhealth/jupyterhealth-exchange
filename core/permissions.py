@@ -16,10 +16,12 @@ class IsSelfUrlPath(permissions.BasePermission):
 # RBAC
 ROLE_PERMISSIONS = {
     "super_user": [
-        "data_source.manage",
         "organization.manage_for_practitioners",
+        "organization.create_top_level",
         "patient.manage_for_organization",
         "study.manage_for_organization",
+        "client.manage",
+        "data_source.manage",
     ],
     "manager": [
         "organization.manage_for_practitioners",

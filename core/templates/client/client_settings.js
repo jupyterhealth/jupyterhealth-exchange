@@ -19,28 +19,8 @@ const CONSTANTS = {
   ORGANIZATION_TOP_LEVEL_PART_OF_ID: 0,
   ORGANIZATION_TOP_LEVEL_PART_OF_LABEL: "None (Top Level Organization)",
   ORGANIZATION_TYPES: {{ ORGANIZATION_TYPES }},
-  DATA_SOURCE_TYPES: {{ DATA_SOURCE_TYPES }}
-};
-
-
-// RBAC permissions
-window.ROLE_PERMISSIONS = {
-  "super_user": [
-    "data_source.manage",
-    "organization.manage_for_practitioners",
-    "patient.manage_for_organization",
-    "study.manage_for_organization"
-  ],
-  "manager": [
-    "organization.manage_for_practitioners",
-    "patient.manage_for_organization",
-    "study.manage_for_organization"
-  ],
-  "member": [
-    "patient.manage_for_organization",
-    "study.manage_for_organization"
-  ],
-  "viewer": []
+  DATA_SOURCE_TYPES: {{ DATA_SOURCE_TYPES }},
+  ROLE_PERMISSIONS: {{ ROLE_PERMISSIONS }}
 };
 
 {% endautoescape %}

@@ -3,6 +3,7 @@ import logging
 from functools import lru_cache
 
 from django.conf import settings
+from core.permissions import ROLE_PERMISSIONS
 from oauth2_provider.models import get_application_model
 
 from core.models import DataSource, Organization
@@ -34,4 +35,5 @@ def constants(request):
         "DATA_SOURCE_TYPES": json.dumps(DataSource.DATA_SOURCE_TYPE_CHOICES),
         "PATIENT_AUTHORIZATION_CODE_CHALLENGE": settings.PATIENT_AUTHORIZATION_CODE_CHALLENGE,
         "PATIENT_AUTHORIZATION_CODE_VERIFIER": settings.PATIENT_AUTHORIZATION_CODE_VERIFIER,
+        "ROLE_PERMISSIONS": json.dumps(ROLE_PERMISSIONS),
     }
