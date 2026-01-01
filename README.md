@@ -122,7 +122,7 @@ By hardcoding the values you prevent the path injection and keep the SPA from se
 ### Front-end configuration hints for developers
 
 - The vanilla JavaScript SPA pulls runtime settings via `core/templates/client/client_settings.js`, which exposes a global `CONSTANTS` object.
-- `CONSTANTS` is populated by the Django context processor `core/context_processors.py`, so any new value you expose there becomes available both to the template and to `core/static/client.js`.
+- `CONSTANTS` is populated by the Django context processor `core/context_processors.py`, so any new value you expose there becomes available both to the template and to `core/static/js/client.js`.
 - Keep secrets and URLs on the Django side (settings or database-backed values) and let the context processor synthesize them, to prevent duplication and to keep the SPA reusable across environments.
 
 ### Use Case Example

@@ -11,22 +11,12 @@
 <script>
   userManager
     .signinCallback()
-    .then(function () {
-      console.log("auth callback success");
+    .then(user => {
+      console.log("callback - user logged in, redirecting to /portal/", user);
+      window.location.href = "/portal/";
     })
     .catch((error) => {
       console.error(error);
     });
-  userManager
-    .getUser()
-    .then((user) => {
-      console.log("got user", user);
-    })
-    .catch((err) => {
-      console.error(err);
-    });
-  setTimeout(function () {
-    location.href = "/portal/";
-  }, 2000);
 </script>
 {% endblock %}

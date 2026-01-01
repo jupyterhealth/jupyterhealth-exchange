@@ -1,12 +1,26 @@
-// ==================================================
+// ** A note on UI architecture: **
+//
+// This is a Single Page Application built with vanilla JavaScript and Handlebars,
+// styled using Bootstrap. No npm, bundlers, or build tools are required.
+// The implementation prioritizes clarity and ease of extension, favoring
+// straightforward, verbose code over complex abstractions (e.g., React-style
+// destructuring patterns).
+//
+// New features can be added by following existing code patterns, making it easy
+// to extend and maintain. Because no build step is required, functionality can
+// be tested or invoked directly from the browser's developer console.
+
+
+
+// ────────────────────────────────────────────────────
 // Global Constants
-// ==================================================
+// ────────────────────────────────────────────────────
 
 const ROUTE_PREFIX = "/portal/";
 const DEFAULT_ROUTE = "organizations";
 const API_PATH = "/api/v1/";
 const SITE_BASE_URL =
-  (typeof CONSTANTS === "object" && CONSTANTS?.SITE_URL)
+  typeof CONSTANTS === "object" && CONSTANTS?.SITE_URL
     ? CONSTANTS.SITE_URL.replace(/\/$/, "")
     : "";
 
@@ -24,11 +38,6 @@ const buildPatientConsentsUrl = (patientId = "PASTE_PATIENT_ID_HERE") =>
   buildApiUrl(`patients/${patientId}/consents`);
 
 const ROUTES = {
-  // dashboard: {
-  //   label: "Dashboard",
-  //   iconClass: "bi-speedometer",
-  //   action: "renderDashboard",
-  // },
   organizations: {
     label: "Organizations",
     iconClass: "bi-diagram-3",
@@ -61,9 +70,9 @@ const ROUTES = {
   },
 };
 
-// ==================================================
+// ────────────────────────────────────────────────────
 // Global Vars
-// ==================================================
+// ────────────────────────────────────────────────────
 
 const actions = {
   renderOrganizations,
@@ -80,9 +89,9 @@ let signingOut = false;
 let showDelayedElementsTimeoutId = null;
 let navLoadingOverlayCounter = 0;
 
-// ==================================================
+// ────────────────────────────────────────────────────
 // Common
-// ==================================================
+// ────────────────────────────────────────────────────
 
 async function app() {
   let currentRouteAndParams = getCurrentRouteAndParams();
@@ -151,13 +160,17 @@ async function nav(newRoute, queryParams, appendQueryParams) {
         : {};
     }
 
-    const bodyTpl = Handlebars.compile(
+    console.log(`nav() - queryParams: ${JSON.stringify(queryParams)}`);
+
+    const bodyTemplate = Handlebars.compile(
       document.getElementById("t-body").innerHTML
     );
 
     // Ensure user is authenticated
     if (!(await userManager.getUser())) {
+      console.log("nav() - no user found, calling signinRedirect()");
       await userManager.signinRedirect();
+      return;
     }
 
     // Render main content for the route
@@ -180,10 +193,12 @@ async function nav(newRoute, queryParams, appendQueryParams) {
       .querySelectorAll("#baseBody > main")
       .forEach((child) => baseBody.removeChild(child));
 
-    document.getElementById("baseBody").insertAdjacentHTML(
-      "afterbegin",
-      bodyTpl({ navItems, mainContent })
-    );
+    document
+      .getElementById("baseBody")
+      .insertAdjacentHTML(
+        "afterbegin",
+        bodyTemplate({ navItems, mainContent })
+      );
 
     // Post-render hooks
     renderUserProfile();
@@ -195,24 +210,34 @@ async function nav(newRoute, queryParams, appendQueryParams) {
 
       // avoid duplicate listeners on re-render
       if (!crudModalElement.dataset.shownHookBound) {
-        crudModalElement.dataset.shownHookBound = '1';
-        crudModalElement.addEventListener('shown.bs.modal', () => {
+        crudModalElement.dataset.shownHookBound = "1";
+        crudModalElement.addEventListener("shown.bs.modal", () => {
           window.MODAL_SHOWN_HANDLERS?.[newRoute]?.(crudModalElement);
         });
       }
     }
 
-
-    if (queryParams.create || queryParams.read || queryParams.update || queryParams.delete) {
+    if (
+      queryParams.create ||
+      queryParams.read ||
+      queryParams.update ||
+      queryParams.delete
+    ) {
       crudModal.show();
     }
 
     // Push history if route/params changed
-    if (newRoute !== current.route || !isShallowEq(queryParams, current.params)) {
+    if (
+      newRoute !== current.route ||
+      !isShallowEq(queryParams, current.params)
+    ) {
       window.history.pushState(
         {},
         "",
-        ROUTE_PREFIX + newRoute + "?" + new URLSearchParams(queryParams).toString()
+        ROUTE_PREFIX +
+          newRoute +
+          "?" +
+          new URLSearchParams(queryParams).toString()
       );
     }
   } catch (e) {
@@ -223,14 +248,12 @@ async function nav(newRoute, queryParams, appendQueryParams) {
   }
 }
 
-
 function navReload() {
   clearModalValidationErrors();
   if (crudModal._isShown) crudModal.hide();
   const currentRouteAndParams = getCurrentRouteAndParams();
   return nav(currentRouteAndParams.route, currentRouteAndParams.params);
 }
-
 
 function navReloadModal() {
   const currentRouteAndParams = getCurrentRouteAndParams();
@@ -241,13 +264,12 @@ function navReloadModal() {
   nav(currentRouteAndParams.route, params);
 }
 
-
 window.addEventListener("popstate", function (event) {
-  console.log("popstate", JSON.stringify(event));
+  console.log("popstate EventListener", JSON.stringify(event));
   if (!signingOut) navReload(); // see signOut() for explanation
 });
 
-async function navReturnFromCrud()  {
+async function navReturnFromCrud() {
   const currentRouteAndParams = getCurrentRouteAndParams();
   const params = currentRouteAndParams.params;
   delete params.create;
@@ -255,7 +277,7 @@ async function navReturnFromCrud()  {
   delete params.update;
   delete params.delete;
   crudModal.hide(); // This returns immediately but kicks of an async process
-  await new Promise(resolve => setTimeout(resolve, 600)); // wait for modal to hide (300 ms)
+  await new Promise((resolve) => setTimeout(resolve, 600)); // wait for modal to hide (300 ms)
   nav(currentRouteAndParams.route, params);
 }
 
@@ -328,19 +350,27 @@ function renderDebug(param) {
       payloadElement.value = JSON.stringify(buildTokenPayload(), null, 2);
     }
 
-    const consentsUrlElement = document.getElementById("debugPatientConsentsUrl");
+    const consentsUrlElement = document.getElementById(
+      "debugPatientConsentsUrl"
+    );
     if (consentsUrlElement) {
       consentsUrlElement.value = buildPatientConsentsUrl();
     }
 
-    const tokenEndpointLabel = document.getElementById("debugTokenEndpointLabel");
+    const tokenEndpointLabel = document.getElementById(
+      "debugTokenEndpointLabel"
+    );
     if (tokenEndpointLabel) {
       tokenEndpointLabel.textContent = `POST ${buildTokenEndpoint()}`;
     }
 
-    const userProfileEndpointLabel = document.getElementById("debugUserProfileEndpointLabel");
+    const userProfileEndpointLabel = document.getElementById(
+      "debugUserProfileEndpointLabel"
+    );
     if (userProfileEndpointLabel) {
-      userProfileEndpointLabel.textContent = `GET ${buildApiUrl("users/profile")}`;
+      userProfileEndpointLabel.textContent = `GET ${buildApiUrl(
+        "users/profile"
+      )}`;
     }
   }, 200);
   return content({});
@@ -375,9 +405,11 @@ function clearModalValidationErrors() {
   });
 }
 
-
-
-async function hasOrgPermission(selectedOrganization, organizationId, permission) {
+async function hasOrgPermission(
+  selectedOrganization,
+  organizationId,
+  permission
+) {
   let role = selectedOrganization?.currentUserRole;
 
   if (!role && organizationId) {
@@ -393,7 +425,6 @@ async function hasOrgPermission(selectedOrganization, organizationId, permission
   return role ? ifRoleCan(role, permission) : false;
 }
 
-
 async function hasGlobalPermission(permission) {
   if (!userProfile || !userProfile.email) {
     try {
@@ -405,11 +436,9 @@ async function hasGlobalPermission(permission) {
   return userProfile.isSuperuser;
 }
 
-
-
-// ==================================================
+// ────────────────────────────────────────────────────
 // User Profile
-// ==================================================
+// ────────────────────────────────────────────────────
 
 async function getUserProfile() {
   const user = await userManager.getUser();
@@ -446,15 +475,14 @@ async function signOut() {
 // Permission helper (must appear before any render*())
 // ────────────────────────────────────────────────────
 function ifRoleCan(role, permission) {
-  return (window.ROLE_PERMISSIONS[role] || []).includes(permission)
+  return (window.ROLE_PERMISSIONS[role] || []).includes(permission);
 }
 
-// ==================================================
+// ────────────────────────────────────────────────────
 // Organizations
-// ==================================================
+// ────────────────────────────────────────────────────
 
 async function renderOrganizations(queryParams) {
-  console.log(`queryParams: ${JSON.stringify(queryParams)}`);
   const content = Handlebars.compile(
     document.getElementById("t-organizations").innerHTML
   );
@@ -490,12 +518,11 @@ async function renderOrganizations(queryParams) {
       ["root"]
     );
     if (organizationRecord && organizationRecord.currentUserRole) {
-        canManagePractitionersInOrg = ifRoleCan(
+      canManagePractitionersInOrg = ifRoleCan(
         organizationRecord.currentUserRole,
-        'organization.manage_for_practitioners'
+        "organization.manage_for_practitioners"
       );
     }
-
 
     const organizationTreeResaponse = await apiRequest(
       "GET",
@@ -549,9 +576,9 @@ async function renderOrganizations(queryParams) {
       ["root"]
     );
     if (organizationRecord && organizationRecord.currentUserRole) {
-        canManagePractitionersInOrg = ifRoleCan(
+      canManagePractitionersInOrg = ifRoleCan(
         organizationRecord.currentUserRole,
-        'organization.manage_for_practitioners'
+        "organization.manage_for_practitioners"
       );
     }
     if (
@@ -595,7 +622,6 @@ async function renderOrganizations(queryParams) {
 
   const canCreateTopLevelOrg = await hasGlobalPermission("");
 
-
   const renderParams = {
     ...queryParams,
     topLevelOrganizationsSelect: topLevelOrganizationsSelect,
@@ -608,8 +634,6 @@ async function renderOrganizations(queryParams) {
   return content(renderParams);
 }
 
-
-
 async function createOrganization(partOf) {
   const organizationName =
     document.getElementById("organizationName").value || null;
@@ -619,13 +643,12 @@ async function createOrganization(partOf) {
     type: organizationType,
     partOf: partOf,
   };
-  console.log(`organizationRecord: ${JSON.stringify(organizationRecord)}`);
   const response = await apiRequest(
     "POST",
     "organizations",
     organizationRecord
   );
-  if (response.ok) await navReturnFromCrud() ;
+  if (response.ok) await navReturnFromCrud();
 }
 
 async function updateOrganization(id) {
@@ -636,21 +659,20 @@ async function updateOrganization(id) {
     name: organizationName,
     type: organizationType,
   };
-  console.log(`organizationRecord: ${JSON.stringify(organizationRecord)}`);
   const response = await apiRequest(
     "PATCH",
     `organizations/${id}`,
     organizationRecord
   );
-  if (response.ok) await navReturnFromCrud() ;
+  if (response.ok) await navReturnFromCrud();
 }
 
 async function deleteOrganization(id) {
   const response = await apiRequest("DELETE", `organizations/${id}`);
-  if (response.ok) await navReturnFromCrud() ;
+  if (response.ok) await navReturnFromCrud();
 }
 
-    async function addUserToOrganization(userEmail, organizationId, role) {
+async function addUserToOrganization(userEmail, organizationId, role) {
   if (!userEmail || !organizationId) return;
   const userRecordResponse = await apiRequest("GET", "users/search_by_email", {
     email: userEmail,
@@ -665,7 +687,7 @@ async function deleteOrganization(id) {
     `organizations/${organizationId}/user`,
     {
       jheUserId: userRecordPaginated.id,
-      organizationPartitionerRole: role
+      organizationPartitionerRole: role,
     }
   );
   if (response.ok) navReloadModal();
@@ -683,13 +705,11 @@ async function removeUserFromOrganization(userId, organizationId) {
   if (response.ok) navReloadModal();
 }
 
-// ==================================================
+// ────────────────────────────────────────────────────
 // Patients
-// ==================================================
+// ────────────────────────────────────────────────────
 
 async function renderPatients(queryParams) {
-  console.log(`queryParams: ${JSON.stringify(queryParams)}`);
-
   const organizationsResponse = await apiRequest("GET", "users/organizations");
   const organizations = await organizationsResponse.json();
 
@@ -706,7 +726,7 @@ async function renderPatients(queryParams) {
   let selectedOrganization;
 
   const organizationForPatientsSelect = organizations.map((organization) => {
-    if(organization.id === parseInt(queryParams.organizationId)){
+    if (organization.id === parseInt(queryParams.organizationId)) {
       organization.selected = true;
       selectedOrganization = organization;
     } else {
@@ -769,11 +789,10 @@ async function renderPatients(queryParams) {
       patientRecordConsents = await patientRecordConsentsResponse.json();
       studiesPendingConsent = patientRecordConsents.studiesPendingConsent;
       studiesConsented = patientRecordConsents.studies;
-      console.log(JSON.stringify(patientRecordConsents));
     }
   } else if (queryParams.create && queryParams.lookedUpEmail) {
     patientRecord = {
-      telecomEmail: queryParams.lookedUpEmail
+      telecomEmail: queryParams.lookedUpEmail,
     };
   }
 
@@ -796,7 +815,7 @@ async function renderPatients(queryParams) {
     ...queryParams,
     patients: patientsPaginated?.results,
     patientRecord: patientRecord,
-    hidePatientDetails: (queryParams.create && !queryParams.lookedUpEmail),
+    hidePatientDetails: queryParams.create && !queryParams.lookedUpEmail,
     page: page,
     pageSize: pageSize,
     totalPages: Math.ceil(patientsPaginated.count / pageSize),
@@ -816,17 +835,24 @@ async function globalLookupPatientByEmail(email, organizationId) {
   const patientRecordResponse = await apiRequest(
     "GET",
     `patients/global_lookup`,
-    {email: email}
+    { email: email }
   );
   const patientRecord = await patientRecordResponse.json();
-  if (patientRecord && patientRecord[0] && patientRecord[0].organizations && patientRecord[0].organizations.length>0 ) {
+  if (
+    patientRecord &&
+    patientRecord[0] &&
+    patientRecord[0].organizations &&
+    patientRecord[0].organizations.length > 0
+  ) {
     const matchingOrganization = patientRecord[0].organizations.find(
       (org) => org.id === organizationId
     );
-    if(matchingOrganization){
-      return alert(`Patient with E-mail ${email} is already a member of ${matchingOrganization.name}`);
+    if (matchingOrganization) {
+      return alert(
+        `Patient with E-mail ${email} is already a member of ${matchingOrganization.name}`
+      );
     }
-    await navReturnFromCrud() ;
+    await navReturnFromCrud();
     await nav("patients", {
       update: true,
       id: patientRecord[0].id,
@@ -834,16 +860,19 @@ async function globalLookupPatientByEmail(email, organizationId) {
       addOrganizationId: true,
     });
   } else {
-    await navReturnFromCrud() ;
-    await nav("patients", { create: true, organizationId: organizationId, lookedUpEmail: email });
+    await navReturnFromCrud();
+    await nav("patients", {
+      create: true,
+      organizationId: organizationId,
+      lookedUpEmail: email,
+    });
   }
 }
 
 async function createPatient(organizationId) {
   const patientRecord = {
     organizationId: organizationId,
-    identifier:
-      document.getElementById("patientIdentifier").value || null,
+    identifier: document.getElementById("patientIdentifier").value || null,
     nameFamily: document.getElementById("patientFamilyName").value || null,
     nameGiven: document.getElementById("patientGivenName").value || null,
     birthDate: document.getElementById("patientBirthDate").value || null,
@@ -851,7 +880,7 @@ async function createPatient(organizationId) {
     telecomPhone: document.getElementById("patientTelecomPhone").value || null,
   };
   const response = await apiRequest("POST", `patients`, patientRecord);
-  if (response.ok) await navReturnFromCrud() ;
+  if (response.ok) await navReturnFromCrud();
 }
 
 async function updatePatient(id) {
@@ -860,20 +889,36 @@ async function updatePatient(id) {
     nameFamily: document.getElementById("patientFamilyName").value || null,
     nameGiven: document.getElementById("patientGivenName").value || null,
     birthDate: document.getElementById("patientBirthDate").value || null,
-    telecomPhone: document.getElementById("patientTelecomPhone").value || null
+    telecomPhone: document.getElementById("patientTelecomPhone").value || null,
   };
-  let response = await apiRequest("PATCH", `patients/${id}?organizationId=${document.getElementById('organizationForPatients')?.value}`, patientRecord);
-  if(response.ok && document.getElementById("addOrganizationId")){
+  let response = await apiRequest(
+    "PATCH",
+    `patients/${id}?organizationId=${
+      document.getElementById("organizationForPatients")?.value
+    }`,
+    patientRecord
+  );
+  if (response.ok && document.getElementById("addOrganizationId")) {
     response = await apiRequest(
       "PATCH",
-      `patients/${id}/global_add_organization?organizationId=${document.getElementById("addOrganizationId").value}`
+      `patients/${id}/global_add_organization?organizationId=${
+        document.getElementById("addOrganizationId").value
+      }`
     );
   }
-  if (response.ok) await navReturnFromCrud() ;
+  if (response.ok) await navReturnFromCrud();
 }
 
 async function deletePatient(id) {
-  if (await apiRequest("DELETE", `patients/${id}?organizationId=${document.getElementById('organizationForPatients')?.value}`)) await navReturnFromCrud() ;
+  if (
+    await apiRequest(
+      "DELETE",
+      `patients/${id}?organizationId=${
+        document.getElementById("organizationForPatients")?.value
+      }`
+    )
+  )
+    await navReturnFromCrud();
 }
 
 async function getInvitationLink(id, sendEmail) {
@@ -887,13 +932,11 @@ async function getInvitationLink(id, sendEmail) {
   document.getElementById("copyInvitationLink").disabled = false;
 }
 
-// ==================================================
+// ────────────────────────────────────────────────────
 // Studies
-// ==================================================
+// ────────────────────────────────────────────────────
 
 async function renderStudies(queryParams) {
-  console.log(`queryParams: ${JSON.stringify(queryParams)}`);
-
   const content = Handlebars.compile(
     document.getElementById("t-studies").innerHTML
   );
@@ -970,8 +1013,6 @@ async function renderStudies(queryParams) {
         (dataSource) => dataSourceIds.indexOf(dataSource.id) == -1
       );
 
-      console.log(studyRecord.dataSources);
-
       const studyScopesRequestedResponse = await apiRequest(
         "GET",
         `studies/${queryParams.id}/scope_requests`
@@ -1040,7 +1081,7 @@ async function createStudy() {
     iconUrl: document.getElementById("studyIconUrl").value || null,
   };
   const response = await apiRequest("POST", `studies`, studyRecord);
-  if (response.ok) await navReturnFromCrud() ;
+  if (response.ok) await navReturnFromCrud();
 }
 
 async function updateStudy(id) {
@@ -1050,7 +1091,7 @@ async function updateStudy(id) {
     iconUrl: document.getElementById("studyIconUrl").value || null,
   };
   const response = await apiRequest("PATCH", `studies/${id}`, studyRecord);
-  if (response.ok) await navReturnFromCrud() ;
+  if (response.ok) await navReturnFromCrud();
 }
 
 function getSelectedRecordIds(selector) {
@@ -1150,16 +1191,14 @@ async function removeDataSourceFromStudy(dataSourceId, studyId) {
 
 async function deleteStudy(id) {
   response = await apiRequest("DELETE", `studies/${id}`);
-  if (response.ok) await navReturnFromCrud() ;
+  if (response.ok) await navReturnFromCrud();
 }
 
-// ==================================================
+// ────────────────────────────────────────────────────
 // Observations
-// ==================================================
+// ────────────────────────────────────────────────────
 
 async function renderObservations(queryParams) {
-  console.log(`queryParams: ${JSON.stringify(queryParams)}`);
-
   const organizationsResponse = await apiRequest("GET", "users/organizations");
   const organizations = await organizationsResponse.json();
 
@@ -1198,9 +1237,6 @@ async function renderObservations(queryParams) {
   // Parse the page and pageSize from queryParams
   const pageParsed = parseInt(queryParams.page);
   const pageSizeParsed = parseInt(queryParams.pageSize);
-
-  console.log(`isNaN(pageParsed): ${isNaN(pageParsed)}`);
-  console.log(`isNaN(pageSizeParsed): ${isNaN(pageSizeParsed)}`);
 
   // Use isNaN to check for invalid numbers, and default to null (or any safe value)
   const observationParams = {
@@ -1272,18 +1308,18 @@ async function renderObservations(queryParams) {
   return content(renderParams);
 }
 
-// ==================================================
+// ────────────────────────────────────────────────────
 // Data Sources
-// ==================================================
+// ────────────────────────────────────────────────────
 
 async function renderDataSources(queryParams) {
-  console.log(`queryParams: ${JSON.stringify(queryParams)}`);
   const content = Handlebars.compile(
     document.getElementById("t-dataSources").innerHTML
   );
 
-   const canManagePractitionersInOrg = await hasGlobalPermission("data_source.manage");
-
+  const canManagePractitionersInOrg = await hasGlobalPermission(
+    "data_source.manage"
+  );
 
   const dataSourcesResponse = await apiRequest("GET", "data_sources");
   const dataSourcesPaginated = await dataSourcesResponse.json();
@@ -1345,21 +1381,21 @@ async function createDataSource() {
     type: document.getElementById("dataSourceType").value,
   };
   if (await apiRequest("POST", `data_sources`, dataSourceRecord))
-    await navReturnFromCrud() ;
+    await navReturnFromCrud();
 }
 
 async function updateDataSource(id) {
-    const studyRecord = {
+  const studyRecord = {
     name: document.getElementById("dataSourceName").value || null,
     type: document.getElementById("dataSourceType").value || null,
   };
   const response = await apiRequest("PATCH", `data_sources/${id}`, studyRecord);
-  if (response.ok) await navReturnFromCrud() ;
-
+  if (response.ok) await navReturnFromCrud();
 }
 
 async function deleteDataSource(id) {
-  if (await apiRequest("DELETE", `data_sources/${id}`)) await navReturnFromCrud() ;
+  if (await apiRequest("DELETE", `data_sources/${id}`))
+    await navReturnFromCrud();
 }
 
 async function addScopeToDataSource(scopeCodeId, dataSourceId) {
@@ -1386,9 +1422,9 @@ async function removeScopeFromDataSource(scopeCodeId, dataSourceId) {
   if (response.ok) navReload();
 }
 
-// ==================================================
+// ────────────────────────────────────────────────────
 // Dev and Debug
-// ==================================================
+// ────────────────────────────────────────────────────
 
 // add an event listener to the window that watches for url changes
 // window.onpopstate = locationHandler;
@@ -1472,7 +1508,11 @@ function normalizeHtmlError(html) {
     const textValue = (selector) =>
       doc.querySelector(selector)?.textContent?.trim().replace(/\s+/g, " ");
 
-    const parts = [textValue("title"), textValue("h1"), textValue("pre.exception_value")].filter(Boolean);
+    const parts = [
+      textValue("title"),
+      textValue("h1"),
+      textValue("pre.exception_value"),
+    ].filter(Boolean);
     if (parts.length) {
       return parts.join(" — ");
     }
@@ -1528,10 +1568,7 @@ async function debugGetPatientTokenFromCode() {
     const tokens = await readResponsePayload(response);
     if (!response.ok) {
       showDebugError(
-        getFormattedError(
-          tokens,
-          `${response.status} ${response.statusText}`
-        )
+        getFormattedError(tokens, `${response.status} ${response.statusText}`)
       );
       return;
     }
@@ -1662,11 +1699,8 @@ async function debugDoPatientConsents() {
       );
       return;
     }
-    document.getElementById("debugPatientConsentsOut").innerHTML = JSON.stringify(
-      out,
-      null,
-      2
-    );
+    document.getElementById("debugPatientConsentsOut").innerHTML =
+      JSON.stringify(out, null, 2);
   } catch (error) {
     showDebugError(error.message || "Failed to save consents");
   }

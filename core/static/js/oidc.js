@@ -7,17 +7,11 @@ window.initOidc = () => {
 
   Log.setLogger(console);
   Log.setLevel(Log.INFO);
-  function debugAuthOut() {
-    const debugAuthOut = document.getElementById("debugAuthOut");
-    debugAuthOut.innerText = "";
-
-    Array.prototype.forEach.call(arguments, function (msg) {
-      if (msg instanceof Error) {
-        msg = "Error: " + msg.message;
-      } else if (typeof msg !== "string") {
-        msg = JSON.stringify(msg, null, 2);
-      }
-      debugAuthOut.innerHTML += msg + "\r\n";
+  function debugAuthOut(...args) {
+    args.forEach((msg) => {
+      if (msg instanceof Error) msg = "Error: " + msg.message;
+      else if (typeof msg !== "string") msg = JSON.stringify(msg, null, 2);
+      console.log(msg);
     });
   }
 
@@ -30,21 +24,22 @@ window.initOidc = () => {
   userManager = new UserManager(window.OIDCSettings);
 
   userManager.events.addUserLoaded(function (user) {
-    console.log("user loaded", user);
     userManager.getUser().then(
       function () {
-        console.log("getUser loaded user after userLoaded event fired");
+        console.log(
+          "window.initOidc - userManager.events.addUserLoaded"
+        );
       },
       () => {}
     );
   });
 
   userManager.events.addUserUnloaded(function (e) {
-    console.log("user unloaded");
+    console.log("window.initOidc - userManager.events.addUserUnloaded");
   });
 
   /**
-   * Testing UI Functions
+   * Testing Functions
    */
 
   const clearState = () => {
