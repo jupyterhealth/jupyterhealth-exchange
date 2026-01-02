@@ -1,0 +1,426 @@
+{% verbatim %}
+<script id="t-practitioners" type="text/template">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <table>
+        <tr>
+          <td class="pe-3">
+            <select
+              id="organizationForPractitioners"
+              class="form-control form-select"
+              onchange="nav('practitioners', null, {organizationId: this.value, page: 1})"
+            >
+              {{#organizationForPractitionersSelect}} {{#if selected}}
+                <option value="{{id}}" selected>{{name}}</option>
+              {{else}}
+                <option value="{{id}}">{{name}}</option>
+              {{/if}} {{/organizationForPractitionersSelect}}
+            </select>
+          </td>
+          <td class="pe-3">
+            <select
+              id="studyForPractitioners"
+              class="form-control form-select"
+              onchange="this.value == 'all' ? nav('practitioners',{ organizationId: {{organizationId}}, page: 1 }) : nav('practitioners',{studyId: this.value, organizationId: {{organizationId}}, page: 1 })"
+            >
+                <option value="all">All Studies</option>
+              {{#studyForPractitionersSelect}} {{#if selected}}
+                <option value="{{id}}" selected>{{name}}</option>
+              {{else}}
+                <option value="{{id}}">{{name}}</option>
+              {{/if}} {{/studyForPractitionersSelect}}
+            </select>
+          </td>
+        </tr>
+      </table>
+      <div class="mt-2">
+          {{#if @root.canManagePractitionersInOrg}}
+                <button type="button"
+                        class="btn btn-sm btn-success me-2"
+                        onclick="nav('practitioners',{
+                            create: true,
+                            practitionerLookup: true,
+                            organizationId: {{@root.organizationId}},
+                            {{#if @root.studyId}} studyId: {{@root.studyId}} {{/if}}
+                        })">
+                  Add Practitioner...
+                </button>
+                <button type="button"
+                class="btn btn-sm btn-primary me-2"
+                onclick="selectPractitionersForStudy({{@root.organizationId}})">
+          Add Practitioner(s) to Study...
+                </button>
+          {{/if}}
+        {{#if studyId}}
+        <button type="button"
+                class="btn btn-sm btn-warning"
+                onclick="removeSelectedPractitionersFromStudy({{@root.studyId}})">
+          Remove Practitioner(s) from Study
+        </button>
+        {{/if}}
+      </div>
+    </div>
+    <div class="d-flex align-items-center">
+      <span class="me-2">Page
+        <input
+          type="number"
+          class="form-control form-control-sm d-inline-block"
+          style="width: 60px;"
+          value="{{page}}"
+          min="1"
+          max="{{totalPages}}"
+          onchange="nav('practitioners', null, {...getCurrentRouteAndParams().params, page: this.value})"
+          onkeydown="if(event.key === 'Enter') { event.preventDefault(); nav('practitioners', null, {...getCurrentRouteAndParams().params, page: this.value}) }"
+        /> of {{totalPages}}
+      </span>
+      <select
+        class="form-select form-select-sm me-2"
+        style="width: auto;"
+        onchange="nav('practitioners', null, {...getCurrentRouteAndParams().params, pageSize: this.value, page: 1})"
+      >
+        {{#each pageSizes}}
+          <option value="{{this}}" {{#if (eq ../pageSize this)}}selected{{/if}}>{{this}}</option>
+        {{/each}}
+      </select>
+      <span>per page</span>
+    </div>
+  </div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col"></th>
+        <th scope="col">Practitioner ID</th>
+        <th scope="col">User ID</th>
+        <th scope="col">External ID</th>
+        <th scope="col">Family Name</th>
+        <th scope="col">Given Name</th>
+        <th scope="col">DOB</th>
+        <th scope="col">E-mail</th>
+        <th scope="col">Cell</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#practitioners}}
+        <tr>
+          <td>
+
+            <input type="checkbox" class="form-check-input practitioner-checkbox" value="{{id}}">
+
+            {{> crudButton iconRead=true recordId=id organizationId=@root.organizationId studyId=@root.studyId
+              onclick="nav('practitioners',{
+                id: this.dataset.recordid,
+                read: true,
+                organizationId: this.dataset.organizationid,
+                studyId: this.dataset.studyid
+              })"
+            }}
+
+            {{#if @root.canManagePractitionersInOrg}}
+
+              {{> crudButton iconUpdate=true recordId=id organizationId=@root.organizationId studyId=@root.studyId
+                onclick="nav('practitioners',{
+                  id: this.dataset.recordid,
+                  update: true,
+                  organizationId: this.dataset.organizationid,
+                  studyId: this.dataset.studyid
+                })"
+              }}
+
+              {{> crudButton iconDelete=true recordId=id organizationId=@root.organizationId studyId=@root.studyId
+                onclick="nav('practitioners',{
+                  id: this.dataset.recordid,
+                  delete: true,
+                  organizationId: this.dataset.organizationid,
+                  studyId: this.dataset.studyid
+                })"
+              }}
+
+            {{/if}}
+          </td>
+          <td>{{id}}</td>
+          <td>{{jheUserId}}</td>
+          <td>{{identifier}}</td>
+          <td>{{nameFamily}}</td>
+          <td>{{nameGiven}}</td>
+          <td>{{birthDate}}</td>
+          <td>{{telecomEmail}}</td>
+          <td>{{telecomPhone}}</td>
+        </tr>
+      {{/practitioners}}
+    </tbody>
+  </table>
+
+  <!-- MODAL -->
+  <div
+    class="modal fade"
+    id="practitioners-crudModal"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">
+            {{#if create}} Create Practitioner {{/if}}
+            {{#if read}} View Practitioner {{/if}}
+            {{#if update}} Update Practitioner {{/if}}
+            {{#if delete}} Delete Practitioner {{/if}}
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning validationError" style="display: none" role="alert"></div>
+          {{#if addOrganizationId}}
+            <div class="alert alert-success" role="alert">This Practitioner already exists.
+            Click the Update button below to add this Practitioner to the Organization <strong>{{selectedOrganization.name}}</strong></div>
+          {{/if}}
+          <div class="container-fluid">
+            {{#if delete}}
+              <div class="alert alert-danger" role="alert">
+                Are you sure you want to delete this entire record?
+              </div>
+            {{/if}}
+            <form>
+              <input id="practitionerId" type="hidden" value="{{practitionerRecord.id}}">
+              <fieldset {{#if read }} disabled {{/if}} {{#if delete }} disabled {{/if}}>
+                {{#unless create}}
+                  <div class="mb-3">
+                    <fieldset disabled>
+                      <label for="practitionerId" class="form-label"
+                        >ID</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="practitionerId"
+                        value="{{practitionerRecord.id}}"
+                      />
+                    </fieldset>
+                  </div>
+                {{/unless}}
+                {{#if practitionerLookup}}
+                <div class="mb-3">
+                  <fieldset>
+                    <label for="practitionerEmailGlobalLookup" class="form-label"
+                      >Practitioner E-mail</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="practitionerEmailGlobalLookup"
+                      value="{{practitionerEmailGlobalLookup}}"
+                    />
+                    <button
+                      style="display: inline-block"
+                      type="button"
+                      onclick="globalLookupPractitionerByEmail(document.getElementById('practitionerEmailGlobalLookup').value, {{organizationId}})"
+                      class="btn btn-sm btn-success align-middle mt-2"
+                    >
+                      Find or Create
+                    </button>
+                  </fieldset>
+                </div>
+                {{#if create}}
+                  {{#unless practitionerLookup}}
+                    <div class="alert alert-info" role="alert">
+                      Creating Practitioner for <strong>{{selectedOrganization.name}}</strong>
+                    </div>
+                  {{/unless}}
+                {{/if}}
+
+                {{/if}}
+                {{#unless hidePractitionerDetails}}
+                  <div class="mb-3">
+                      <label for="practitionerTelecomEmail" class="form-label"
+                        >E-mail*</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="practitionerTelecomEmail"
+                        value="{{practitionerRecord.telecomEmail}}"
+                        disabled="disabled"
+                      />
+                  </div>
+                  <div class="mb-3">
+                    <label for="practitionerIdentifier" class="form-label"
+                      >External Identifier*</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="practitionerIdentifier"
+                      value="{{practitionerRecord.identifier}}"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="practitionerFamilyName" class="form-label"
+                      >Family Name*</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="practitionerFamilyName"
+                      value="{{practitionerRecord.nameFamily}}"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="practitionerGivenName" class="form-label"
+                      >Given Name*</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="practitionerGivenName"
+                      value="{{practitionerRecord.nameGiven}}"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="practitionerBirthDate" class="form-label"
+                      >DOB*</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="practitionerBirthDate"
+                      placeholder="YYYY-MM-DD"
+                      value="{{practitionerRecord.birthDate}}"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="practitionerTelecomPhone" class="form-label"
+                      >Cell</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="practitionerTelecomPhone"
+                      value="{{practitionerRecord.telecomPhone}}"
+                    />
+                  </div>
+                {{/unless}}
+              </fieldset>
+              {{#unless create}}
+              <div class="mb-5">
+                Organizations:
+                <ul>
+                {{#practitionerRecord.organizations}}
+                  <li>
+                    {{name}} ({{id}})
+                  </li>
+                {{/practitionerRecord.organizations}}
+                </ul>
+                {{#if addOrganizationId}}
+                  <input type="hidden" value="{{selectedOrganization.id}}" id="addOrganizationId"/>
+                {{/if}}
+              </div>
+              {{/unless}}
+              {{#if read}}
+                {{#if @root.canManagePractitionersInOrg}}
+                  <div class="mb-3">
+                    <button
+                      type="button"
+                      onclick="getInvitationLink({{practitionerRecord.id}}, document.getElementById('InvitationSendEmail').checked)"
+                      class="btn btn-sm btn-success mb-2"
+                    >
+                      Generate Invitation Link
+                    </button>
+                    <div class="form-check form-check-inline mx-2">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="InvitationSendEmail"
+                      />
+                      <label class="form-check-label" for="InvitationSendEmail">
+                        Send link by email
+                      </label>
+                    </div>
+                    <button
+                      type="button"
+                      id="copyInvitationLink"
+                      onclick="navigator.clipboard.writeText(document.getElementById('invitationLink').value).then(() => this.disabled = true)"
+                      class="btn btn-sm btn-info mb-2"
+                      disabled
+                    >
+                      Copy to Clipboard
+                    </button>
+                    <textarea
+                      class="form-control"
+                      id="invitationLink"
+                      rows="4"
+                      readonly
+                    ></textarea>
+                  </div>
+                {{/if}}
+                <div class="mb-3">
+                  Studies Pending Response:
+                  <ul>
+                  {{#studiesPendingConsent}}
+                    <li>
+                      {{name}}
+                      <ul>
+                      {{#pendingScopeConsents}}
+                        <li>{{code.text}}</li>
+                      {{/pendingScopeConsents}}
+                      </ul>
+                    </li>
+                  {{/studiesPendingConsent}}
+                  </ul>
+                </div>
+                <div class="mb-3">
+                  Studies Responded To:
+                  <ul>
+                  {{#studiesConsented}}
+                    <li>
+                      {{name}}
+                      <ul>
+                      {{#scopeConsents}}
+                        <li>{{code.text}}
+                        {{#if consented}}
+                          <i class="bi bi-check-circle-fill"></i>
+                        {{/if}}
+                        {{#unless consented}}
+                          <i class="bi bi-check-circle-fill"></i>
+                        {{/unless}}
+                        </li>
+                      {{/scopeConsents}}
+                      </ul>
+                    </li>
+                  {{/studiesConsented}}
+                  </ul>
+                </div>
+              {{/if}}
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          {{#if create}}
+            {{#unless practitionerLookup}}
+              <button type="button" class="btn btn-primary" onclick="createPractitioner({{organizationId}})">Create</button>
+            {{/unless}}
+          {{/if}}
+          {{#if update}}
+            <button type="button" class="btn btn-primary" onclick="updatePractitioner({{practitionerRecord.id}})">Update</button>
+          {{/if}}
+          {{#if delete}}
+            <button type="button" class="btn btn-danger" onclick="deletePractitioner({{practitionerRecord.id}})">Delete</button>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+{% endverbatim %}

@@ -1,0 +1,182 @@
+{% verbatim %}
+<script id="t-jheSettings" type="text/template">
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col"></th>
+        <th scope="col">ID</th>
+        <th scope="col">Key</th>
+        <th scope="col">Setting ID</th>
+        <th scope="col">Value Type</th>
+        <th scope="col">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#jheSettings}}
+        <tr>
+          <td>
+            {{> crudButton iconRead=true recordId=id
+              onclick="nav('jheSettings',{
+                id: this.dataset.recordid,
+                read: true
+              })"
+            }}
+            {{#if @root.canManageJheSettings }}
+                {{> crudButton iconUpdate=true recordId=id
+                  onclick="nav('jheSettings',{
+                    id: this.dataset.recordid,
+                    update: true
+                  })"
+                }}
+
+                {{> crudButton iconDelete=true recordId=id
+                  onclick="nav('jheSettings',{
+                    id: this.dataset.recordid,
+                    delete: true
+                  })"
+                }}
+            {{/if}}
+          </td>
+          <td>{{id}}</td>
+          <td>{{key}}</td>
+          <td>{{settingId}}</td>
+          <td>{{valueType}}</td>
+          <td>{{resolvedValue}}</td>
+        </tr>
+      {{/jheSettings}}
+    </tbody>
+  </table>
+  {{#if @root.canManageJheSettings }}
+    <button type="button"
+      class="btn btn-sm btn-success"
+      onclick="nav('jheSettings',{
+          create: true
+      })">
+        Add System Setting
+    </button>
+  {{/if}}
+
+
+  <!-- MODAL -->
+  <div
+    class="modal fade"
+    id="jheSettings-crudModal"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">
+            {{#if create}} Create System Setting {{/if}}
+            {{#if read}} View System Setting {{/if}}
+            {{#if update}} Update System Setting {{/if}}
+            {{#if delete}} Delete System Setting {{/if}}
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid">
+            {{#if delete}}
+              <div class="alert alert-danger" role="alert">
+                Are you sure you want to delete this entire record?
+              </div>
+            {{/if}}
+            <form>
+              <fieldset {{#if read }} disabled {{/if}} {{#if delete }} disabled {{/if}}>
+                {{#unless create}}
+                  <div class="mb-3">
+                    <fieldset disabled>
+                      <label for="jheSettingId" class="form-label"
+                        >ID</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="jheSettingId"
+                        value="{{jheSettingRecord.id}}"
+                      />
+                    </fieldset>
+                  </div>
+                {{/unless}}
+                <div class="mb-3">
+                  <label for="jheSettingKey" class="form-label"
+                    >Key</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="jheSettingKey"
+                    value="{{jheSettingRecord.key}}"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="jheSettingKey" class="form-label"
+                    >Setting ID</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="jheSettingSettingId"
+                    value="{{jheSettingRecord.setting_id}}"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="jheSettingValueType" class="form-label"
+                    >Value Type</label
+                  >
+                  <select id="jheSettingValueType" class="form-select">
+                  {{#jheSettingRecord.valueTypeSelect}}
+                    {{#if selected}}
+                      <option value="{{id}}" selected>{{label}}</option>
+                    {{else}}
+                      <option value="{{id}}">{{label}}</option>
+                    {{/if}}
+                  {{/jheSettingRecord.valueTypeSelect}}
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="jheSettingValue" class="form-label"
+                    >Value</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="jheSettingValue"
+                    value="{{jheSettingRecord.resolvedValue}}"
+                  />
+                </div>
+              </fieldset>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          {{#if create}}
+            <button type="button" class="btn btn-primary" onclick="createJheSetting()">Create</button>
+          {{/if}}
+          {{#if update}}
+            <button type="button" class="btn btn-primary" onclick="updateJheSetting({{jheSettingRecord.id}})">Update</button>
+          {{/if}}
+          {{#if delete}}
+            <button type="button" class="btn btn-danger" onclick="deleteJheSetting({{jheSettingRecord.id}})">Delete</button>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+{% endverbatim %}

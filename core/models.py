@@ -70,11 +70,11 @@ class JheUser(AbstractUser):
     email = models.EmailField(_("Email Address"), max_length=254, unique=True)
     email_is_verified = models.BooleanField(default=False)
     identifier = models.CharField()
-    USER_TYPE_CHOICES = (
-        ("patient", "Patient"),
-        ("practitioner", "Practitioner"),
-    )
-    user_type = models.CharField(max_length=12, choices=USER_TYPE_CHOICES, null=True, blank=True)
+    USER_TYPES = {
+        "patient": "Patient",
+        "practitioner": "Practitioner",
+    }
+    user_type = models.CharField(max_length=12, choices=list(USER_TYPES.items()), null=True, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -296,7 +296,7 @@ class JheUser(AbstractUser):
 class Organization(models.Model):
 
     # https://build.fhir.org/valueset-organizations-type.html
-    ORGANIZATION_TYPE_CHOICES = {
+    ORGANIZATION_TYPES = {
         "root": "ROOT",
         "prov": "Healthcare Provider",
         "dept": "Hospital Department",
@@ -318,7 +318,7 @@ class Organization(models.Model):
     }
 
     name = models.CharField()
-    type = models.CharField(choices=ORGANIZATION_TYPE_CHOICES, null=False, blank=False)
+    type = models.CharField(choices=list(ORGANIZATION_TYPES.items()), null=False, blank=False)
     part_of = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True)
 
     # Helper method to return all users in this organization
@@ -432,7 +432,7 @@ class Practitioner(models.Model):
     name_given = models.CharField(null=True)
     birth_date = models.DateField(null=True)
     telecom_phone = models.CharField(null=True)
-    last_updated = models.DateTimeField(default=timezone.now)
+    last_updated = models.DateTimeField(auto_now=True)
     organizations = models.ManyToManyField(
         Organization, through="PractitionerOrganization", related_name="practitioners"
     )
@@ -458,7 +458,7 @@ class Patient(models.Model):
     name_given = models.CharField()
     birth_date = models.DateField()
     telecom_phone = models.CharField(null=True)
-    last_updated = models.DateTimeField(default=timezone.now)
+    last_updated = models.DateTimeField(auto_now=True)
     organizations = models.ManyToManyField(Organization, through="PatientOrganization", related_name="patients")
 
     def consolidated_consented_scopes(self):
@@ -774,16 +774,16 @@ class PractitionerOrganization(models.Model):
     ROLE_MANAGER = "manager"
     ROLE_VIEWER = "viewer"
 
-    ROLE_CHOICES = [
-        (ROLE_MEMBER, "Member"),
-        (ROLE_MANAGER, "Manager"),
-        (ROLE_VIEWER, "Viewer"),
-    ]
+    ROLE_CHOICES = {
+        ROLE_MEMBER: "Member",
+        ROLE_MANAGER: "Manager",
+        ROLE_VIEWER: "Viewer",
+    }
 
     practitioner = models.ForeignKey(Practitioner, on_delete=models.CASCADE, related_name="organization_links")
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="practitioner_links")
 
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=ROLE_MEMBER)
+    role = models.CharField(max_length=10, choices=list(ROLE_CHOICES.items()), default=ROLE_MEMBER)
 
     class Meta:
         unique_together = ("practitioner", "organization")
@@ -1024,10 +1024,13 @@ class StudyScopeRequest(models.Model):
 
 
 class DataSource(models.Model):
-    DATA_SOURCE_TYPE_CHOICES = {"personal_device": "Personal Device"}
+    DATA_SOURCE_TYPES = {
+        "medical_device": "Medical Device",
+        "personal_device": "Personal Device"
+    }
     name = models.CharField(null=True, blank=False)
     type = models.CharField(
-        choices=DATA_SOURCE_TYPE_CHOICES,
+        choices=list(DATA_SOURCE_TYPES.items()),
         null=False,
         blank=False,
         default="personal_device",
@@ -1087,6 +1090,42 @@ class StudyDataSource(models.Model):
     data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE)
 
 
+class StudyClient(models.Model):
+    study = models.ForeignKey(Study, on_delete=models.CASCADE)
+    client = models.ForeignKey(
+        settings.OAUTH2_PROVIDER_APPLICATION_MODEL,
+        on_delete=models.CASCADE,
+        related_name="studies",
+    )
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["study", "client"],
+                name="core_studyclient_unique_study_id_client_id",
+            )
+        ]
+
+
+class ClientDataSource(models.Model):
+    client = models.ForeignKey(
+        settings.OAUTH2_PROVIDER_APPLICATION_MODEL,
+        on_delete=models.CASCADE,
+        related_name="data_sources",
+    )
+    data_source = models.ForeignKey(
+        "DataSource",
+        on_delete=models.CASCADE,
+        related_name="client_applications",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["client", "data_source"],
+                name="core_clientdatasource_unique_client_id_data_source_id",
+            )
+        ]
+
 # Observation per record: https://stackoverflow.com/a/61484800 (author worked at ONC)
 class Observation(models.Model):
     subject_patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
@@ -1096,7 +1135,7 @@ class Observation(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
 
     # https://build.fhir.org/valueset-observation-status.html
-    OBSERVATION_STATUS_CHOICES = {
+    OBSERVATION_STATUSES = {
         "registered": "registered",
         "preliminary": "preliminary",
         "final": "final",
@@ -1108,7 +1147,12 @@ class Observation(models.Model):
         "unknown": "Unknown",
     }
 
-    status = models.CharField(choices=OBSERVATION_STATUS_CHOICES, null=False, blank=False, default="final")
+    status = models.CharField(
+        choices=list(OBSERVATION_STATUSES.items()),
+        null=False,
+        blank=False,
+        default="final"
+    )
 
     @staticmethod
     def for_practitioner_organization_study_patient(
@@ -1522,7 +1566,7 @@ AND core_codeableconcept.coding_system LIKE %(coding_system)s AND core_codeablec
             codeable_concept=codeable_concepts[0],
             status=fhir_observation.status,
             value_attachment_data=value_attachment_data,
-            last_updated=timezone.now,
+            last_updated=models.DateTimeField(auto_now=True)
         )
 
         if fhir_observation.identifier:
@@ -1592,3 +1636,103 @@ class ObservationIdentifier(models.Model):
                 name="core_observation_identifier_unique_observation_system_value",
             )
         ]
+
+
+class JheSetting(models.Model):
+
+    JHE_SETTING_VALUE_TYPES = {
+        "string": "string",
+        "int": "int",
+        "bool": "bool",
+        "float": "float",
+        "json": "json",
+    }
+
+    key = models.CharField(
+        null=False,
+        blank=False
+    )
+
+    setting_id = models.IntegerField(
+        null=True,
+        blank=True
+    )
+
+    value_type = models.CharField(
+        max_length=10,
+        choices=list(JHE_SETTING_VALUE_TYPES.items())
+    )
+
+    value_string = models.TextField(null=True, blank=True)
+    value_int = models.IntegerField(null=True, blank=True)
+    value_bool = models.BooleanField(null=True, blank=True)
+    value_float = models.FloatField(null=True, blank=True)
+    value_json = models.JSONField(null=True, blank=True)
+
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["key", "setting_id"],
+                name="core_jhesetting_unique_key_setting_id",
+            )
+        ]
+
+    def get_value(self):
+        return {
+            "string": self.value_string,
+            "int": self.value_int,
+            "bool": self.value_bool,
+            "float": self.value_float,
+            "json": self.value_json,
+        }[self.value_type]
+
+    def set_value(self, value_type: str, value):
+        self.value_type = value_type
+
+        # clear all typed columns first (important)
+        self.value_string = None
+        self.value_int = None
+        self.value_bool = None
+        self.value_float = None
+        self.value_json = None
+
+        if value_type == "string":
+            self.value_string = "" if value is None else str(value)
+
+        elif value_type == "int":
+            try:
+                self.value_int = int(value)
+            except (TypeError, ValueError):
+                raise ValidationError({"value": "Invalid int"})
+
+        elif value_type == "bool":
+            # Accept booleans or common strings
+            if isinstance(value, bool):
+                self.value_bool = value
+            elif isinstance(value, str):
+                v = value.strip().lower()
+                if v in ("true", "1", "yes", "y", "on"):
+                    self.value_bool = True
+                elif v in ("false", "0", "no", "n", "off"):
+                    self.value_bool = False
+                else:
+                    raise ValidationError({"value": "Invalid bool"})
+            elif isinstance(value, (int, float)) and value in (0, 1):
+                self.value_bool = bool(value)
+            else:
+                raise ValidationError({"value": "Invalid bool"})
+
+        elif value_type == "float":
+            try:
+                self.value_float = float(value)
+            except (TypeError, ValueError):
+                raise ValidationError({"value": "Invalid float"})
+
+        elif value_type == "json":
+            # DRF will usually give you dict/list already
+            self.value_json = value
+
+        else:
+            raise ValidationError({"value_type": "Unknown value_type"})

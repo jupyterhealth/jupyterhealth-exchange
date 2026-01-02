@@ -1,15 +1,18 @@
-// ** A note on UI architecture: **
-//
-// This is a Single Page Application built with vanilla JavaScript and Handlebars,
-// styled using Bootstrap. No npm, bundlers, or build tools are required.
-// The implementation prioritizes clarity and ease of extension, favoring
-// straightforward, verbose code over complex abstractions (e.g., React-style
+// ────────────────────────────────────────────────────
+// This is a Single Page Application built with vanilla
+// JavaScript and Handlebars, styled using Bootstrap.
+// No npm, bundlers, or build tools are required. The
+// implementation prioritizes clarity and ease of
+// extension, favoring straightforward, verbose code
+// over complex abstractions (e.g., React-style
 // destructuring patterns).
 //
-// New features can be added by following existing code patterns, making it easy
-// to extend and maintain. Because no build step is required, functionality can
-// be tested or invoked directly from the browser's developer console.
-
+// New features can be added by following existing code
+// patterns, making it easy to extend and maintain.
+// Because no build step is required, functionality can
+// be tested or invoked directly from the browser's
+// developer console.
+// ────────────────────────────────────────────────────
 
 
 // ────────────────────────────────────────────────────
@@ -38,6 +41,16 @@ const buildPatientConsentsUrl = (patientId = "PASTE_PATIENT_ID_HERE") =>
   buildApiUrl(`patients/${patientId}/consents`);
 
 const ROUTES = {
+  jheSettings: {
+    label: "System Settings",
+    iconClass: "bi-gear",
+    action: "renderJheSettings",
+  },
+  practitioners: {
+    label: "Practitioners",
+    iconClass: "bi-person-badge",
+    action: "renderPractitioners",
+  },
   organizations: {
     label: "Organizations",
     iconClass: "bi-diagram-3",
@@ -75,16 +88,18 @@ const ROUTES = {
   },
 };
 
-
 // ────────────────────────────────────────────────────
 // Global Vars
 // ────────────────────────────────────────────────────
 
 const actions = {
+  renderJheSettings,
+  //renderPractitioners,
   renderOrganizations,
   renderPatients,
   renderStudies,
   renderObservations,
+  renderClients,
   renderDataSources,
   renderDebug,
 };
@@ -94,7 +109,6 @@ let userProfile = {};
 let signingOut = false;
 let showDelayedElementsTimeoutId = null;
 let navLoadingOverlayCounter = 0;
-
 
 // ────────────────────────────────────────────────────
 // Common
@@ -420,7 +434,10 @@ async function hasOrganizationPermission(
   let role = selectedOrganization?.currentUserRole;
   if (!role && organizationId) {
     try {
-      const organizationResponse = await apiRequest("GET", `organizations/${organizationId}`);
+      const organizationResponse = await apiRequest(
+        "GET",
+        `organizations/${organizationId}`
+      );
       const organization = await organizationResponse.json();
       role = organization?.currentUserRole;
     } catch {
@@ -431,12 +448,11 @@ async function hasOrganizationPermission(
 }
 
 async function hasGlobalPermission(permission) {
-  if ((await getUserProfile()).isSuperuser){
+  if ((await getUserProfile()).isSuperuser) {
     return ifRoleCan("super_user", permission);
   }
-  return false
+  return false;
 }
-
 
 // ────────────────────────────────────────────────────
 // User Profile
@@ -461,7 +477,6 @@ async function renderUserProfile() {
   document.getElementById("profileUsername").textContent = displayName;
 }
 
-
 // userManager.removeUser() raises an event which triggers
 // the popstate listner which calls navReload to catch back
 // button events. Skip this for signout otherwise redirect
@@ -472,14 +487,12 @@ async function signOut() {
   this.document.location = "/accounts/logout";
 }
 
-
 // ────────────────────────────────────────────────────
 // Permission helper (must appear before any render*())
 // ────────────────────────────────────────────────────
 function ifRoleCan(role, permission) {
   return (CONSTANTS.ROLE_PERMISSIONS[role] || []).includes(permission);
 }
-
 
 // ────────────────────────────────────────────────────
 // Organizations
@@ -629,7 +642,9 @@ async function renderOrganizations(queryParams) {
     children: organizationTreeChildren,
     organizationRecord: organizationRecord,
     canManagePractitionersInOrg: canManagePractitionersInOrg,
-    canCreateTopLevelOrganization: await hasGlobalPermission("organization.create_top_level"),
+    canCreateTopLevelOrganization: await hasGlobalPermission(
+      "organization.create_top_level"
+    ),
   };
 
   return content(renderParams);
@@ -705,7 +720,6 @@ async function removeUserFromOrganization(userId, organizationId) {
   );
   if (response.ok) navReloadModal();
 }
-
 
 // ────────────────────────────────────────────────────
 // Patients
@@ -933,7 +947,6 @@ async function getInvitationLink(id, sendEmail) {
     invitationLink["invitationLink"];
   document.getElementById("copyInvitationLink").disabled = false;
 }
-
 
 // ────────────────────────────────────────────────────
 // Studies
@@ -1197,7 +1210,6 @@ async function deleteStudy(id) {
   if (response.ok) await navReturnFromCrud();
 }
 
-
 // ────────────────────────────────────────────────────
 // Observations
 // ────────────────────────────────────────────────────
@@ -1312,7 +1324,6 @@ async function renderObservations(queryParams) {
   return content(renderParams);
 }
 
-
 // ────────────────────────────────────────────────────
 // Clients
 // ────────────────────────────────────────────────────
@@ -1342,13 +1353,9 @@ async function renderClients(queryParams) {
       "GET",
       `clients/${queryParams.id}/supported_scopes`
     );
-    clientRecord.supportedScopes =
-      await clientSupportedScopesResponse.json();
+    clientRecord.supportedScopes = await clientSupportedScopesResponse.json();
 
-    const allScopesResponse = await apiRequest(
-      "GET",
-      `clients/all_scopes`
-    );
+    const allScopesResponse = await apiRequest("GET", `clients/all_scopes`);
     allScopes = await allScopesResponse.json();
 
     // filter out the scopes that have already been requested
@@ -1395,32 +1402,7 @@ async function updateClient(id) {
 }
 
 async function deleteClient(id) {
-  if (await apiRequest("DELETE", `clients/${id}`))
-    await navReturnFromCrud();
-}
-
-async function addScopeToClient(scopeCodeId, clientId) {
-  if (!scopeCodeId || !clientId) return;
-  const response = await apiRequest(
-    "POST",
-    `clients/${clientId}/supported_scopes`,
-    {
-      scopeCodeId: scopeCodeId,
-    }
-  );
-  if (response.ok) navReload();
-}
-
-async function removeScopeFromClient(scopeCodeId, clientId) {
-  if (!scopeCodeId || !clientId) return;
-  const response = await apiRequest(
-    "DELETE",
-    `clients/${clientId}/supported_scopes`,
-    {
-      scopeCodeId: scopeCodeId,
-    }
-  );
-  if (response.ok) navReload();
+  if (await apiRequest("DELETE", `clients/${id}`)) await navReturnFromCrud();
 }
 
 
@@ -1534,6 +1516,69 @@ async function removeScopeFromDataSource(scopeCodeId, dataSourceId) {
   if (response.ok) navReload();
 }
 
+// ────────────────────────────────────────────────────
+// JheSettings
+// ────────────────────────────────────────────────────
+
+async function renderJheSettings(queryParams) {
+  const content = Handlebars.compile(
+    document.getElementById("t-jheSettings").innerHTML
+  );
+
+  const jheSettingsResponse = await apiRequest("GET", "jhe_settings");
+  const jheSettingsPaginated = await jheSettingsResponse.json();
+  let jheSettingRecord = {};
+
+  if (queryParams.read || queryParams.update || queryParams.delete) {
+    const jheSettingRecordResponse = await apiRequest(
+      "GET",
+      `jhe_settings/${queryParams.id}`
+    );
+    jheSettingRecord = await jheSettingRecordResponse.json();
+  }
+
+  jheSettingRecord.valueTypeSelect = buildSelectOptions(CONSTANTS.JHE_SETTING_VALUE_TYPES);
+
+  Handlebars.registerPartial(
+    "crudButton",
+    document.getElementById("t-crudButton").innerHTML
+  );
+
+  const renderParams = {
+    ...queryParams,
+    jheSettings: jheSettingsPaginated.results,
+    jheSettingRecord: jheSettingRecord,
+    canManageJheSettings: true //await hasGlobalPermission("jhe_setting.manage"),
+  };
+
+  return content(renderParams);
+}
+
+async function createJheSetting() {
+  const jheSettingRecord = {
+    key: document.getElementById("jheSettingKey").value || null,
+    setting_id: document.getElementById("jheSettingSettingId").value || null,
+    valueType: document.getElementById("jheSettingValueType").value,
+    value: document.getElementById("jheSettingValue").value || null,
+  };
+  if (await apiRequest("POST", `jhe_settings`, jheSettingRecord))
+    await navReturnFromCrud();
+}
+
+async function updateJheSetting(id) {
+  const jheSettingRecord = {
+    key: document.getElementById("jheSettingKey").value || null,
+    setting_id: document.getElementById("jheSettingSettingId").value || null,
+    valueType: document.getElementById("jheSettingValueType").value,
+    value: document.getElementById("jheSettingValue").value || null,
+  };
+  const response = await apiRequest("PATCH", `jhe_settings/${id}`, jheSettingRecord);
+  if (response.ok) await navReturnFromCrud();
+}
+
+async function deleteJheSetting(id) {
+  if (await apiRequest("DELETE", `jhe_settings/${id}`)) await navReturnFromCrud();
+}
 
 // ────────────────────────────────────────────────────
 // Dev and Debug

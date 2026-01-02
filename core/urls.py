@@ -8,12 +8,15 @@ from django.urls import re_path
 
 # https://www.django-rest-framework.org/api-guide/routers/#defaultrouter
 api_router = DefaultRouter(trailing_slash=False)
+api_router.register(r"jhe_settings", views.JheSettingViewSet, basename="JheSetting")
 api_router.register(r"users", views.JheUserViewSet, basename="JheUser")
+# api_router.register(r"practitioners", views.PractitionerViewSet, basename="Practitioner")
 api_router.register(r"organizations", views.OrganizationViewSet, basename="Organization")
 api_router.register(r"patients", views.PatientViewSet, basename="Patient")
 api_router.register(r"studies", views.StudyViewSet, basename="Study")
 api_router.register(r"observations", views.ObservationViewSet, basename="Observation")
 api_router.register(r"data_sources", views.DataSourceViewSet, basename="DataSource")
+# api_router.register(r"clients", views.ClientViewSet, basename="Client")
 
 fhir_router = DefaultRouter(trailing_slash=False)
 fhir_router.register(r"Observation", views.FHIRObservationViewSet, basename="FHIRObservation")
@@ -55,7 +58,7 @@ urlpatterns = [
     path("smart/callback/", common.smart_callback, name="smart-callback"),
     # Client UI
     path(
-        "portal/settings.js",
+        "portal/client_settings.js",
         TemplateView.as_view(template_name="client/client_settings.js", content_type="text/javascript"),
     ),
     # path('portal/', common.portal, name='portal'),
