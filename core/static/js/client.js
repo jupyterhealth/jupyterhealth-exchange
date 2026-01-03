@@ -94,7 +94,7 @@ const ROUTES = {
 
 const actions = {
   renderJheSettings,
-  //renderPractitioners,
+  renderPractitioners,
   renderOrganizations,
   renderPatients,
   renderStudies,
@@ -720,6 +720,130 @@ async function removeUserFromOrganization(userId, organizationId) {
   );
   if (response.ok) navReloadModal();
 }
+
+// ────────────────────────────────────────────────────
+// Practitioners
+// ────────────────────────────────────────────────────
+
+async function renderPractitioners(queryParams) {
+
+  const content = Handlebars.compile(
+    document.getElementById("t-practitioners").innerHTML
+  );
+
+  let practitionersPaginated, practitionerRecord;
+
+  const pageSize = parseInt(queryParams.pageSize) || 20;
+  const page = parseInt(queryParams.page) || 1;
+
+  const practitionersParams = {
+    page: page,
+    pageSize: pageSize,
+  };
+
+  const practitionersResponse = await apiRequest("GET", "practitioners", practitionersParams);
+  practitionersPaginated = await practitionersResponse.json();
+
+  // SJ: Why is this necessary? It's used in patients as well
+  if (
+    practitionersPaginated.results &&
+    practitionersPaginated.results.length > pageSize
+  ) {
+    practitionersPaginated.results = practitionersPaginated.results.slice(0, pageSize);
+  }
+
+  // if the batch url has been reloaded and there are no longer any selected practitioners
+  if(queryParams.batch && !store.practitionerIdsForBatchAction){
+    nav("practitioners", {});
+    return;
+  }
+
+  if (queryParams.read || queryParams.update || ( queryParams.delete && !queryParams.batch)) {
+    const practitionerRecordResponse = await apiRequest(
+      "GET",
+      `practitioners/${queryParams.id}`
+    );
+    practitionerRecord = await practitionerRecordResponse.json(); 
+  }
+
+  Handlebars.registerHelper("eq", function (v1, v2) {
+    return v1 === v2;
+  });
+
+  Handlebars.registerPartial(
+    "crudButton",
+    document.getElementById("t-crudButton").innerHTML
+  );
+
+  const renderParams = {
+    ...queryParams,
+    practitioners: practitionersPaginated?.results,
+    practitionerRecord: practitionerRecord,
+    page: page,
+    pageSize: pageSize,
+    totalPages: Math.ceil(practitionersPaginated.count / pageSize),
+    pageSizes: [20, 100, 500, 1000],
+    canManagePractitioners: true,
+    selectedPractitionerIds: store.practitionerIdsForBatchAction,
+    selectedCount: store.practitionerIdsForBatchAction?.length,
+  };
+
+  return content(renderParams);
+}
+
+async function selectPractitionerIdsForBatchAction() {
+  const selectedRecordIds = getSelectedRecordIds(".practitioner-checkbox");
+  if (selectedRecordIds.length == 0) {
+    alert("Please select one or more Practitioners.");
+    return;
+  }
+  delete store.practitionerIdsForBatchAction;
+  store.practitionerIdsForBatchAction = selectedRecordIds;
+  nav("practitioners", { delete: true, batch: true });
+}
+
+async function updatePractitioner(id) {
+  const practitionerRecord = {
+    identifier: document.getElementById("practitionerIdentifier").value || null,
+    nameFamily: document.getElementById("practitionerFamilyName").value || null,
+    nameGiven: document.getElementById("practitionerGivenName").value || null,
+    birthDate: document.getElementById("practitionerBirthDate").value || null,
+    telecomPhone: document.getElementById("practitionerTelecomPhone").value || null,
+  };
+  let response = await apiRequest(
+    "PATCH",
+    `practitioners/${id}?organizationId=${
+      document.getElementById("organizationForPractitioners")?.value
+    }`,
+    practitionerRecord
+  );
+  if (response.ok && document.getElementById("addOrganizationId")) {
+    response = await apiRequest(
+      "PATCH",
+      `practitioners/${id}/global_add_organization?organizationId=${
+        document.getElementById("addOrganizationId").value
+      }`
+    );
+  }
+  if (response.ok) await navReturnFromCrud();
+}
+
+async function deletePractitioner(id, batch) {
+  let deleteList = []
+  if (batch && store.practitionerIdsForBatchAction) {
+    deleteList = store.practitionerIdsForBatchAction;
+  } else {
+    deleteList = [id];
+  }
+  for(const id of deleteList){
+    await apiRequest(
+      "DELETE",
+      `practitioners/${id}`
+    )
+  }
+  await navReturnFromCrud();
+}
+
 
 // ────────────────────────────────────────────────────
 // Patients

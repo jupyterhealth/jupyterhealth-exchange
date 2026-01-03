@@ -430,7 +430,6 @@ class Practitioner(models.Model):
     identifier = models.CharField(null=True)
     name_family = models.CharField(null=True)
     name_given = models.CharField(null=True)
-    birth_date = models.DateField(null=True)
     telecom_phone = models.CharField(null=True)
     last_updated = models.DateTimeField(auto_now=True)
     organizations = models.ManyToManyField(

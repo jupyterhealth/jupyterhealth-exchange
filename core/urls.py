@@ -10,7 +10,7 @@ from django.urls import re_path
 api_router = DefaultRouter(trailing_slash=False)
 api_router.register(r"jhe_settings", views.JheSettingViewSet, basename="JheSetting")
 api_router.register(r"users", views.JheUserViewSet, basename="JheUser")
-# api_router.register(r"practitioners", views.PractitionerViewSet, basename="Practitioner")
+api_router.register(r"practitioners", views.PractitionerViewSet, basename="Practitioner")
 api_router.register(r"organizations", views.OrganizationViewSet, basename="Organization")
 api_router.register(r"patients", views.PatientViewSet, basename="Patient")
 api_router.register(r"studies", views.StudyViewSet, basename="Study")

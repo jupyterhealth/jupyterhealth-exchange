@@ -2,17 +2,17 @@ import logging
 
 from rest_framework.viewsets import ModelViewSet
 
-from core.models import JheSetting
+from core.models import Practitioner
 from core.serializers import (
-    JheSettingSerializer,
+    PractitionerSerializer,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class JheSettingViewSet(ModelViewSet):
-    serializer_class = JheSettingSerializer
-    queryset = JheSetting.objects.all() 
+class PractitionerViewSet(ModelViewSet):
+    serializer_class = PractitionerSerializer
+    queryset = Practitioner.objects.all() 
 
     # def get_permissions(self):
     #     """

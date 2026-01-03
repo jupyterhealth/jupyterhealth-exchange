@@ -4,6 +4,8 @@ from .organization import OrganizationViewSet  # noqa
 
 from .patient import PatientViewSet, FHIRPatientViewSet  # noqa
 
+from .practitioner import PractitionerViewSet  # noqa
+
 from .study import StudyViewSet  # noqa
 
 from .observation import ObservationViewSet, FHIRObservationViewSet  # noqa
