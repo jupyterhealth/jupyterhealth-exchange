@@ -1,6 +1,18 @@
 {% verbatim %}
 <script id="t-dataSources" type="text/template">
-
+  <div>
+    <div class="mt-2">
+      {{#if @root.canManageDataSources }}
+        <button type="button"
+              class="btn btn-sm btn-success"
+              onclick="nav('dataSources',{
+                  create: true
+              })">
+          Add Data Source...
+        </button>
+      {{/if}}
+    </div>
+  </div>
   <table class="table table-striped">
     <thead>
       <tr>
@@ -49,15 +61,6 @@
       {{/dataSources}}
     </tbody>
   </table>
-  {{#if @root.canManageDataSources }}
-    <button type="button"
-          class="btn btn-sm btn-success"
-          onclick="nav('dataSources',{
-              create: true
-          })">
-    Add Data Source
-  </button>
-  {{/if}}
 
 
   <!-- MODAL -->

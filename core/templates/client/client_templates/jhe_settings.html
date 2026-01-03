@@ -1,6 +1,18 @@
 {% verbatim %}
 <script id="t-jheSettings" type="text/template">
-
+  <div>
+    <div class="mt-2">
+      {{#if @root.canManageJheSettings }}
+        <button type="button"
+          class="btn btn-sm btn-success"
+          onclick="nav('jheSettings',{
+              create: true
+          })">
+            Add System Setting...
+        </button>
+      {{/if}}
+    </div>
+  </div>
   <table class="table table-striped">
     <thead>
       <tr>
@@ -47,15 +59,6 @@
       {{/jheSettings}}
     </tbody>
   </table>
-  {{#if @root.canManageJheSettings }}
-    <button type="button"
-      class="btn btn-sm btn-success"
-      onclick="nav('jheSettings',{
-          create: true
-      })">
-        Add System Setting
-    </button>
-  {{/if}}
 
 
   <!-- MODAL -->
