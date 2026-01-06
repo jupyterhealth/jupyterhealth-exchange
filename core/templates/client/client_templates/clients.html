@@ -7,7 +7,8 @@
         <th scope="col"></th>
         <th scope="col">ID</th>
         <th scope="col">Name</th>
-        <th scope="col">Supported Scopes</th>
+        <th scope="col">Client ID</th>
+        <th scope="col">Code Verifier</th>
       </tr>
     </thead>
     <tbody>
@@ -38,6 +39,8 @@
           </td>
           <td>{{id}}</td>
           <td>{{name}}</td>
+          <td>{{clientId}}</td>
+          <td>{{codeVerifier}}</td>
           <td>
             <ul>
             {{#each supportedScopes}}
@@ -120,64 +123,39 @@
                   />
                 </div>
                 <div class="mb-3">
-                  <label for="clientType" class="form-label"
-                    >Type</label
+                  <label for="clientClientId" class="form-label"
+                    >Client ID</label
                   >
-                  <select id="clientType" class="form-select">
-                  {{#clientRecord.typeSelect}}
-                    {{#if selected}}
-                      <option value="{{id}}" selected>{{label}}</option>
-                    {{else}}
-                      <option value="{{id}}">{{label}}</option>
-                    {{/if}}
-                  {{/clientRecord.typeSelect}}
-                  </select>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="clientClientId"
+                    value="{{clientRecord.clientId}}"
+                  />
+                  <button
+                      type="button"
+                      class="mt-1 btn btn-sm btn-success"
+                      onclick="document.getElementById('clientClientId').value = generateClientId()"
+                    >Generate</button>
+                </div>
+                <div class="mb-3">
+                  <label for="clientCodeVerifier" class="form-label"
+                    >Code Verifier</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="clientCodeVerifier"
+                    value="{{clientRecord.codeVerifier}}"
+                  />
+                  <button
+                      type="button"
+                      class="mt-1 btn btn-sm btn-success"
+                      onclick="document.getElementById('clientCodeVerifier').value = generateCodeVerifier()"
+                    >Generate</button>
                 </div>
               </fieldset>
             </form>
-            {{#if read}}
-                <p>
-                  Supported Scopes
-                  <button
-                    type="button"
-                    onclick="document.getElementById('clientsAddScopeForm').style.setProperty('display','block')"
-                    class="m-0 p-0 btn btn-sm"
-                  >
-                    <i class="bi bi-file-earmark-plus"></i>
-                  </button>
-                </p>
-                <div id="clientsAddScopeForm" class="mb-2" style="display: none">
-                  <select id="newStudyScope" style="display: inline-block; max-width: 300px" class="form-select align-middle" aria-label="Select Scope">
-                  {{#each allScopes}}
-                    <option value="{{id}}">{{text}}</option>
-                  {{/each}}
-                  </select>
-                  <button
-                    style="display: inline-block"
-                    type="button"
-                    onclick="addScopeToClient(document.getElementById('newStudyScope').value, {{clientRecord.id}})"
-                    class="btn btn-sm btn-success ms-1 align-middle"
-                  >
-                    Add
-                  </button>
-                </div>
-                <ul>
-                  {{#each clientRecord.supportedScopes}}
-                    <li>
-                      {{scopeCode.text}}
-                      <button
-                        type="button"
-                        onclick="removeScopeFromClient({{scopeCode.id}},{{@root.clientRecord.id}})"
-                        class="m-0 p-0 btn btn-sm"
-                      >
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </li>
-                  {{/each}}
-                </ul>
-              </ul>
-              {{/if}}
-          </div>
         </div>
         <div class="modal-footer">
           <button

@@ -15,3 +15,5 @@ from .fhir_base import FHIRBase  # noqa
 from .data_source import DataSourceViewSet  # noqa
 
 from .jhe_setting import JheSettingViewSet  # noqa
+
+from .client import ClientViewSet  # noqa

@@ -17,6 +17,8 @@ from core.models import (
     PractitionerOrganization,
 )
 
+from oauth2_provider.models import get_application_model
+
 
 class PractitionerOrganizationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -198,6 +200,62 @@ class DataSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = DataSource
         fields = ["id", "name", "type", "supported_scopes"]
+
+
+Application = get_application_model()
+
+# djangorestframework-camel-case does not behave as expected here
+class ClientSerializer(serializers.ModelSerializer):
+    # Accept camelCase in input, write to model field client_id
+    clientId = serializers.CharField(source="client_id", required=False)
+
+    # Accept camelCase in input
+    codeVerifier = serializers.CharField(required=False, allow_blank=True, allow_null=True, write_only=True)
+
+    class Meta:
+        model = Application
+        # expose camelCase fields to the client
+        fields = ["id", "name", "clientId", "codeVerifier"]
+
+    def to_representation(self, instance):
+        # Return camelCase in output too
+        data = {
+            "id": instance.id,
+            "name": instance.name,
+            "clientId": instance.client_id,
+        }
+        s = JheSetting.objects.filter(setting_id=instance.id, key="client.code_verifier").first()
+        data["codeVerifier"] = s.get_value() if s else None
+        return data
+
+    def _upsert_setting(self, app_id: int, value):
+        # treat "" as delete
+        if value is None or value == "":
+            JheSetting.objects.filter(setting_id=app_id, key="client.code_verifier").delete()
+            return
+
+        obj, _ = JheSetting.objects.update_or_create(
+            setting_id=app_id,
+            key="client.code_verifier",
+            defaults={"value_type": "string"},
+        )
+        obj.set_value("string", value)
+        obj.save()
+
+    def create(self, validated_data):
+        # validated_data contains model fields under snake_case because of `source=...`
+        code_verifier = validated_data.pop("codeVerifier", None)
+        app = super().create(validated_data)
+        if code_verifier is not None:
+            self._upsert_setting(app.id, code_verifier)
+        return app
+
+    def update(self, instance, validated_data):
+        code_verifier = validated_data.pop("codeVerifier", None)
+        app = super().update(instance, validated_data)
+        if code_verifier is not None:
+            self._upsert_setting(app.id, code_verifier)
+        return app
 
 
 class DataSourceSupportedScopeSerializer(serializers.ModelSerializer):

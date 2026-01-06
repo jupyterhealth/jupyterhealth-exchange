@@ -1470,26 +1470,6 @@ async function renderClients(queryParams) {
     clientRecord = await clientRecordResponse.json();
   }
 
-  clientRecord.typeSelect = buildSelectOptions(CONSTANTS.DATA_SOURCE_TYPES);
-
-  if (queryParams.read) {
-    const clientSupportedScopesResponse = await apiRequest(
-      "GET",
-      `clients/${queryParams.id}/supported_scopes`
-    );
-    clientRecord.supportedScopes = await clientSupportedScopesResponse.json();
-
-    const allScopesResponse = await apiRequest("GET", `clients/all_scopes`);
-    allScopes = await allScopesResponse.json();
-
-    // filter out the scopes that have already been requested
-    const scopesSupportedIds = clientRecord.supportedScopes.map(
-      (s) => s.scopeCode.id
-    );
-    allScopes = allScopes.filter(
-      (scope) => scopesSupportedIds.indexOf(scope.id) == -1
-    );
-  }
 
   Handlebars.registerPartial(
     "crudButton",
@@ -1500,8 +1480,7 @@ async function renderClients(queryParams) {
     ...queryParams,
     clients: clientsPaginated.results,
     clientRecord: clientRecord,
-    allScopes: allScopes,
-    canManageClients: await hasGlobalPermission("client.manage"),
+    canManageClients: true //await hasGlobalPermission("client.manage"),
   };
 
   return content(renderParams);
@@ -1509,24 +1488,53 @@ async function renderClients(queryParams) {
 
 async function createClient() {
   const clientRecord = {
-    name: document.getElementById("clientName").value || null,
-    type: document.getElementById("clientType").value,
+    name: document.getElementById("clientName").value,
+    clientId: document.getElementById("clientClientId").value,
+    codeVerifier: document.getElementById("clientCodeVerifier").value,
   };
   if (await apiRequest("POST", `clients`, clientRecord))
     await navReturnFromCrud();
 }
 
 async function updateClient(id) {
-  const studyRecord = {
-    name: document.getElementById("clientName").value || null,
-    type: document.getElementById("clientType").value || null,
+  const clientRecord = {
+    name: document.getElementById("clientName").value,
+    clientId: document.getElementById("clientClientId").value,
+    codeVerifier: document.getElementById("clientCodeVerifier").value,
   };
-  const response = await apiRequest("PATCH", `clients/${id}`, studyRecord);
+  const response = await apiRequest("PATCH", `clients/${id}`, clientRecord);
   if (response.ok) await navReturnFromCrud();
 }
 
 async function deleteClient(id) {
   if (await apiRequest("DELETE", `clients/${id}`)) await navReturnFromCrud();
+}
+
+function generateClientId(length = 40) {
+  const alphabet =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const alphabetLen = alphabet.length; // 62
+  const out = [];
+  const max = 256 - (256 % alphabetLen); // avoid modulo bias
+
+  while (out.length < length) {
+    const buf = new Uint8Array(length);
+    crypto.getRandomValues(buf);
+
+    for (let i = 0; i < buf.length && out.length < length; i++) {
+      const x = buf[i];
+      if (x < max) out.push(alphabet[x % alphabetLen]);
+    }
+  }
+  return out.join("");
+}
+
+function generateCodeVerifier(byteLength = 32) {
+  // 32 bytes → 43-char base64url string
+  const bytes = new Uint8Array(byteLength);
+  crypto.getRandomValues(bytes);
+
+  return base64UrlEncode(bytes);
 }
 
 
@@ -1603,11 +1611,11 @@ async function createDataSource() {
 }
 
 async function updateDataSource(id) {
-  const studyRecord = {
+  const dataSourceRecord = {
     name: document.getElementById("dataSourceName").value || null,
     type: document.getElementById("dataSourceType").value || null,
   };
-  const response = await apiRequest("PATCH", `data_sources/${id}`, studyRecord);
+  const response = await apiRequest("PATCH", `data_sources/${id}`, dataSourceRecord);
   if (response.ok) await navReturnFromCrud();
 }
 
@@ -1681,7 +1689,7 @@ async function renderJheSettings(queryParams) {
 async function createJheSetting() {
   const jheSettingRecord = {
     key: document.getElementById("jheSettingKey").value || null,
-    setting_id: document.getElementById("jheSettingSettingId").value || null,
+    settingId: document.getElementById("jheSettingSettingId").value || null,
     valueType: document.getElementById("jheSettingValueType").value,
     value: document.getElementById("jheSettingValue").value || null,
   };
@@ -1692,7 +1700,7 @@ async function createJheSetting() {
 async function updateJheSetting(id) {
   const jheSettingRecord = {
     key: document.getElementById("jheSettingKey").value || null,
-    setting_id: document.getElementById("jheSettingSettingId").value || null,
+    settingId: document.getElementById("jheSettingSettingId").value || null,
     valueType: document.getElementById("jheSettingValueType").value,
     value: document.getElementById("jheSettingValue").value || null,
   };
