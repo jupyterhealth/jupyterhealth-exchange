@@ -156,6 +156,49 @@
                 </div>
               </fieldset>
             </form>
+            {{#if read}}
+                <p>
+                  Associated Data Sources
+                  <button
+                    type="button"
+                    onclick="document.getElementById('clientsAddDataSourceForm').style.setProperty('display','block')"
+                    class="m-0 p-0 btn btn-sm"
+                  >
+                    <i class="bi bi-file-earmark-plus"></i>
+                  </button>
+                </p>
+                <div id="clientsAddDataSourceForm" class="mb-2" style="display: none">
+                  <select id="addDataSource" style="display: inline-block; max-width: 300px" class="form-select align-middle" aria-label="Select Data Source">
+                  {{#each allDataSources}}
+                    <option value="{{id}}">{{name}}</option>
+                  {{/each}}
+                  </select>
+                  <button
+                    style="display: inline-block"
+                    type="button"
+                    onclick="addDataSourceToClient(document.getElementById('addDataSource').value, {{@root.clientRecord.id}})"
+                    class="btn btn-sm btn-success ms-1 align-middle"
+                  >
+                    Add
+                  </button>
+                </div>
+                <ul>
+                  {{#each clientRecord.dataSources}}
+                    <li>
+                      {{name}}
+                      <button
+                        type="button"
+                        onclick="removeDataSourceFromClient({{id}},{{@root.clientRecord.id}})"
+                        class="m-0 p-0 btn btn-sm"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </li>
+                  {{/each}}
+                </ul>
+              </ul>
+              {{/if}}
+          </div>
         </div>
         <div class="modal-footer">
           <button
@@ -163,7 +206,7 @@
             class="btn btn-secondary"
             data-bs-dismiss="modal"
           >
-            Cancel
+            Close
           </button>
           {{#if create}}
             <button type="button" class="btn btn-primary" onclick="createClient()">Create</button>

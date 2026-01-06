@@ -1,10 +1,12 @@
 
+from core.models import ClientDataSource, DataSource
 from rest_framework.viewsets import ModelViewSet
 from oauth2_provider.models import get_application_model
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import action
 
-from core.serializers import ClientSerializer
+from core.serializers import ClientDataSourceSerializer, ClientSerializer, DataSourceSerializer
 
 Application = get_application_model()
 
@@ -45,3 +47,22 @@ class ClientViewSet(ModelViewSet):
         # print("=== END partial_update ===\n")
 
         return Response(out, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["GET", "POST", "DELETE"])
+    def data_sources(self, request, pk):
+        if request.method == "GET":
+            data_sources = DataSource.objects.filter(client_applications__client_id=pk).distinct()
+            serializer = DataSourceSerializer(data_sources, many=True)
+            return Response(serializer.data)
+        else:
+            response = None
+            if request.method == "POST":
+                response = ClientDataSource.objects.create(
+                    client_id=pk, data_source_id=request.data["data_source_id"]
+                )
+            else:
+                response = ClientDataSource.objects.filter(
+                    client_id=pk, data_source_id=request.data["data_source_id"]
+                ).delete()
+
+            return Response(ClientDataSourceSerializer(response, many=False).data)

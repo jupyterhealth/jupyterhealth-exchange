@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from core.models import (
+    ClientDataSource,
     CodeableConcept,
     DataSource,
     DataSourceSupportedScope,
@@ -256,6 +257,14 @@ class ClientSerializer(serializers.ModelSerializer):
         if code_verifier is not None:
             self._upsert_setting(app.id, code_verifier)
         return app
+
+
+class ClientDataSourceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ClientDataSource
+        fields = ["id", "client_id", "data_source_id"]
+        depth = 1
 
 
 class DataSourceSupportedScopeSerializer(serializers.ModelSerializer):

@@ -1460,7 +1460,7 @@ async function renderClients(queryParams) {
   const clientsResponse = await apiRequest("GET", "clients");
   const clientsPaginated = await clientsResponse.json();
   let clientRecord = {};
-  let allScopes;
+  let allDataSources;
 
   if (queryParams.read || queryParams.update || queryParams.delete) {
     const clientRecordResponse = await apiRequest(
@@ -1470,6 +1470,28 @@ async function renderClients(queryParams) {
     clientRecord = await clientRecordResponse.json();
   }
 
+  if (queryParams.read) {
+    const clientDataSourcesResponse = await apiRequest(
+      "GET",
+      `clients/${queryParams.id}/data_sources`
+    );
+    clientRecord.dataSources = await clientDataSourcesResponse.json();
+
+    const allDataSourcesResponse = await apiRequest(
+      "GET",
+      `data_sources`
+    );
+    allDataSources = (await allDataSourcesResponse.json()).results;
+
+    // filter out already added data sources
+    const associatedDataSourceIds = clientRecord.dataSources.map(
+      (ds) => ds.id
+    );
+    allDataSources = allDataSources.filter(
+      (dataSource) => associatedDataSourceIds.indexOf(dataSource.id) == -1
+    );
+    console.log(allDataSources)
+  }
 
   Handlebars.registerPartial(
     "crudButton",
@@ -1480,6 +1502,7 @@ async function renderClients(queryParams) {
     ...queryParams,
     clients: clientsPaginated.results,
     clientRecord: clientRecord,
+    allDataSources: allDataSources,
     canManageClients: true //await hasGlobalPermission("client.manage"),
   };
 
@@ -1537,6 +1560,29 @@ function generateCodeVerifier(byteLength = 32) {
   return base64UrlEncode(bytes);
 }
 
+async function addDataSourceToClient(dataSourceId, clientId) {
+  if (!dataSourceId || !clientId) return;
+  const response = await apiRequest(
+    "POST",
+    `clients/${clientId}/data_sources`,
+    {
+      dataSourceId: dataSourceId,
+    }
+  );
+  if (response.ok) navReload();
+}
+
+async function removeDataSourceFromClient(dataSourceId, clientId) {
+  if (!dataSourceId || !clientId) return;
+  const response = await apiRequest(
+    "DELETE",
+    `clients/${clientId}/data_sources`,
+    {
+      dataSourceId: dataSourceId,
+    }
+  );
+  if (response.ok) navReload();
+}
 
 // ────────────────────────────────────────────────────
 // Data Sources
