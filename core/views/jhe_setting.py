@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class JheSettingViewSet(ModelViewSet):
     serializer_class = JheSettingSerializer
-    queryset = JheSetting.objects.all() 
+    queryset = JheSetting.objects.all()
 
     # def get_permissions(self):
     #     """

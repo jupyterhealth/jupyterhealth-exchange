@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class PractitionerViewSet(ModelViewSet):
     serializer_class = PractitionerSerializer
-    queryset = Practitioner.objects.all() 
+    queryset = Practitioner.objects.all()
 
     # def get_permissions(self):
     #     """
