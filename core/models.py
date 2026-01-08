@@ -1023,10 +1023,7 @@ class StudyScopeRequest(models.Model):
 
 
 class DataSource(models.Model):
-    DATA_SOURCE_TYPES = {
-        "medical_device": "Medical Device",
-        "personal_device": "Personal Device"
-    }
+    DATA_SOURCE_TYPES = {"medical_device": "Medical Device", "personal_device": "Personal Device"}
     name = models.CharField(null=True, blank=False)
     type = models.CharField(
         choices=list(DATA_SOURCE_TYPES.items()),
@@ -1096,6 +1093,7 @@ class StudyClient(models.Model):
         on_delete=models.CASCADE,
         related_name="studies",
     )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -1125,6 +1123,7 @@ class ClientDataSource(models.Model):
             )
         ]
 
+
 # Observation per record: https://stackoverflow.com/a/61484800 (author worked at ONC)
 class Observation(models.Model):
     subject_patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
@@ -1146,12 +1145,7 @@ class Observation(models.Model):
         "unknown": "Unknown",
     }
 
-    status = models.CharField(
-        choices=list(OBSERVATION_STATUSES.items()),
-        null=False,
-        blank=False,
-        default="final"
-    )
+    status = models.CharField(choices=list(OBSERVATION_STATUSES.items()), null=False, blank=False, default="final")
 
     @staticmethod
     def for_practitioner_organization_study_patient(
@@ -1565,7 +1559,7 @@ AND core_codeableconcept.coding_system LIKE %(coding_system)s AND core_codeablec
             codeable_concept=codeable_concepts[0],
             status=fhir_observation.status,
             value_attachment_data=value_attachment_data,
-            last_updated=models.DateTimeField(auto_now=True)
+            last_updated=models.DateTimeField(auto_now=True),
         )
 
         if fhir_observation.identifier:
@@ -1647,20 +1641,11 @@ class JheSetting(models.Model):
         "json": "json",
     }
 
-    key = models.CharField(
-        null=False,
-        blank=False
-    )
+    key = models.CharField(null=False, blank=False)
 
-    setting_id = models.IntegerField(
-        null=True,
-        blank=True
-    )
+    setting_id = models.IntegerField(null=True, blank=True)
 
-    value_type = models.CharField(
-        max_length=10,
-        choices=list(JHE_SETTING_VALUE_TYPES.items())
-    )
+    value_type = models.CharField(max_length=10, choices=list(JHE_SETTING_VALUE_TYPES.items()))
 
     value_string = models.TextField(null=True, blank=True)
     value_int = models.IntegerField(null=True, blank=True)

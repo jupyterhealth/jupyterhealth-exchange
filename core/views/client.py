@@ -1,4 +1,3 @@
-
 from rest_framework.viewsets import ModelViewSet
 from oauth2_provider.models import get_application_model
 from rest_framework.response import Response
