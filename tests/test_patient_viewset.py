@@ -62,6 +62,15 @@ class PatientViewSetTests(TestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 200)
+
+        # Idempotency: a second POST with the same payload should not create duplicates.
+        response2 = self.client.post(
+            f"/api/v1/patients/{self.patient.id}/consents",
+            data=payload,
+            format="json",
+        )
+        self.assertEqual(response2.status_code, 200)
+
         created = StudyPatientScopeConsent.objects.filter(
             study_patient=self.study_patient,
             scope_code=self.scope,
