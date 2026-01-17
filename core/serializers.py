@@ -204,6 +204,7 @@ class DataSourceSerializer(serializers.ModelSerializer):
 
 Application = get_application_model()
 
+
 # djangorestframework-camel-case does not behave as expected here
 class ClientSerializer(serializers.ModelSerializer):
     # Accept camelCase in input, write to model field client_id
@@ -348,6 +349,7 @@ class ObservationWithoutDataSerializer(serializers.ModelSerializer):
 # Why resolved_value instead of value?
 # - Because DRF can’t have the same field name be both write-only and read-only cleanly.
 
+
 class JheSettingSerializer(serializers.ModelSerializer):
     value = serializers.JSONField(write_only=True, required=False)
     resolved_value = serializers.SerializerMethodField(read_only=True)
@@ -359,7 +361,7 @@ class JheSettingSerializer(serializers.ModelSerializer):
             "key",
             "setting_id",
             "value_type",
-            "value",           # input
+            "value",  # input
             "resolved_value",  # output
             "last_updated",
         ]

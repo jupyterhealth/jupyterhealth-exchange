@@ -4,14 +4,17 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from urllib.parse import quote
+from oauth2_provider.models import get_application_model
 
 from core.admin_pagination import AdminListMixin
+from core.context_processors import _get_oidc_client_id
 from core.fhir_pagination import FHIRBundlePagination
 from core.models import (
     JheUser,
@@ -131,11 +134,52 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
     def invitation_link(self, request, pk):
         send_email = request.query_params.get("send_email") == "true"
         patient = self.get_object()
-        grant = patient.jhe_user.create_authorization_code(1, settings.OIDC_CLIENT_REDIRECT_URI)
-        url = settings.CH_INVITATION_LINK_PREFIX
-        if not settings.CH_INVITATION_LINK_EXCLUDE_HOST:
-            url = url + quote(settings.SITE_URL.split("/")[2] + "~", safe="~")
-        invitation_link = url + grant.code
+        Application = get_application_model()
+        qs = Application.objects.filter(authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE)
+        application = (
+            qs.filter(client_type=Application.CLIENT_PUBLIC).order_by("id").first() or qs.order_by("id").first()
+        )
+        if not application:
+            raise ValidationError(
+                "No OAuth Application configured for Authorization Code grant; create a PUBLIC application in Django Admin."
+            )
+
+        registered_redirect_uris = set((application.redirect_uris or "").split())
+        if settings.OIDC_CLIENT_REDIRECT_URI not in registered_redirect_uris:
+            raise ValidationError(
+                "OAuth Application redirect URIs must include the JHE callback URL: "
+                f"{settings.OIDC_CLIENT_REDIRECT_URI}"
+            )
+        grant = patient.jhe_user.create_authorization_code(application.id, settings.OIDC_CLIENT_REDIRECT_URI)
+
+        # Build invitation link with all required OAuth parameters
+        # Format: https://pgd.tcp.org/?invite=<hostname>&client_id=<id>&code_verifier=<verifier>&code=<auth_code>
+        base_url = settings.CH_INVITATION_LINK_PREFIX
+
+        # Extract hostname from SITE_URL (e.g., "localhost:8000" or "jhe.ucsf.edu")
+        hostname = settings.SITE_URL.split("/")[2]
+
+        # Use the same OAuth application used to create the Grant
+        client_id = application.client_id
+        code_verifier = settings.PATIENT_AUTHORIZATION_CODE_VERIFIER
+
+        # Build the invitation link with query parameters
+        # Check if base_url already has query params
+        separator = "&" if "?" in base_url else "?"
+
+        if settings.CH_INVITATION_LINK_EXCLUDE_HOST:
+            # Legacy format without hostname
+            invitation_link = f"{base_url}{separator}code={grant.code}"
+        else:
+            # New multi-host format with all OAuth params
+            invitation_link = (
+                f"{base_url}{separator}"
+                f"invite={quote(hostname, safe='')}&"
+                f"client_id={quote(client_id, safe='')}&"
+                f"code_verifier={quote(code_verifier, safe='')}&"
+                f"code={grant.code}"
+            )
+
         if send_email:
             message = render_to_string(
                 "registration/invitation_email.html",
@@ -188,13 +232,17 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
             # the user is a super admin
 
             responses = []
-            consented_time = datetime.now()
+            consented_time = timezone.now()
             patient_user = request.user.get_patient()
             is_patient_user = bool(patient_user and int(pk) == patient_user.id)
             for study_scope_consent in request.data["study_scope_consents"]:
                 study_patient = StudyPatient.objects.filter(
                     study_id=study_scope_consent["study_id"], patient_id=patient.id
                 ).first()
+                if not study_patient:
+                    raise ValidationError(
+                        f"No StudyPatient exists for patient_id={patient.id} and study_id={study_scope_consent['study_id']}"
+                    )
                 if not request.user.is_superuser and not is_patient_user:
                     if request.user.is_practitioner():
                         if not Patient.practitioner_authorized(
@@ -218,32 +266,28 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
                         coding_system=scope_coding_system, coding_code=scope_coding_code
                     ).id
 
-                    if request.method == "POST":
-                        responses.append(
-                            StudyPatientScopeConsent.objects.create(
-                                study_patient_id=study_patient.id,
-                                scope_code_id=scope_code_id,
-                                consented=scope_consent["consented"],
-                                consented_time=consented_time,
-                            )
+                    consent_qs = StudyPatientScopeConsent.objects.filter(
+                        study_patient_id=study_patient.id,
+                        scope_code_id=scope_code_id,
+                    )
+
+                    if request.method in ["POST", "PATCH"]:
+                        # Idempotent: if this consent already exists, update it.
+                        consent_obj, _created = StudyPatientScopeConsent.objects.update_or_create(
+                            study_patient_id=study_patient.id,
+                            scope_code_id=scope_code_id,
+                            defaults={
+                                "consented": scope_consent["consented"],
+                                "consented_time": consented_time,
+                            },
                         )
-                    elif request.method == "PATCH":
-                        responses.append(
-                            StudyPatientScopeConsent.objects.get(
-                                study_patient_id=study_patient.id,
-                                scope_code_id=scope_code_id,
-                            ).update(
-                                consented=scope_consent["consented"],
-                                consented_time=consented_time,
-                            )
-                        )
+                        responses.append(consent_obj)
                     elif request.method == "DELETE":
-                        responses.append(
-                            StudyPatientScopeConsent.objects.get(
-                                study_patient_id=study_patient.id,
-                                scope_code_id=scope_code_id,
-                            ).delete()
-                        )
+                        consent_obj = consent_qs.first()
+                        if not consent_obj:
+                            raise ValidationError("Consent record does not exist for this study_patient/scope_code.")
+                        consent_qs.delete()
+                        responses.append(consent_obj)
 
             return Response({"study_scope_consents": StudyPatientScopeConsentSerializer(responses, many=True).data})
 
