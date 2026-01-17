@@ -137,8 +137,7 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
         Application = get_application_model()
         qs = Application.objects.filter(authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE)
         application = (
-            qs.filter(client_type=Application.CLIENT_PUBLIC).order_by("id").first()
-            or qs.order_by("id").first()
+            qs.filter(client_type=Application.CLIENT_PUBLIC).order_by("id").first() or qs.order_by("id").first()
         )
         if not application:
             raise ValidationError(
@@ -152,22 +151,22 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
                 f"{settings.OIDC_CLIENT_REDIRECT_URI}"
             )
         grant = patient.jhe_user.create_authorization_code(application.id, settings.OIDC_CLIENT_REDIRECT_URI)
-        
+
         # Build invitation link with all required OAuth parameters
         # Format: https://pgd.tcp.org/?invite=<hostname>&client_id=<id>&code_verifier=<verifier>&code=<auth_code>
         base_url = settings.CH_INVITATION_LINK_PREFIX
-        
+
         # Extract hostname from SITE_URL (e.g., "localhost:8000" or "jhe.ucsf.edu")
         hostname = settings.SITE_URL.split("/")[2]
-        
+
         # Use the same OAuth application used to create the Grant
         client_id = application.client_id
         code_verifier = settings.PATIENT_AUTHORIZATION_CODE_VERIFIER
-        
+
         # Build the invitation link with query parameters
         # Check if base_url already has query params
         separator = "&" if "?" in base_url else "?"
-        
+
         if settings.CH_INVITATION_LINK_EXCLUDE_HOST:
             # Legacy format without hostname
             invitation_link = f"{base_url}{separator}code={grant.code}"
@@ -180,7 +179,7 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
                 f"code_verifier={quote(code_verifier, safe='')}&"
                 f"code={grant.code}"
             )
-        
+
         if send_email:
             message = render_to_string(
                 "registration/invitation_email.html",
@@ -286,9 +285,7 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
                     elif request.method == "DELETE":
                         consent_obj = consent_qs.first()
                         if not consent_obj:
-                            raise ValidationError(
-                                "Consent record does not exist for this study_patient/scope_code."
-                            )
+                            raise ValidationError("Consent record does not exist for this study_patient/scope_code.")
                         consent_qs.delete()
                         responses.append(consent_obj)
 
