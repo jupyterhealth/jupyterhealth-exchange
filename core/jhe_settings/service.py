@@ -4,7 +4,7 @@ from core.models import JheSetting
 DEFAULT_CACHE_TTL = 60  # seconds
 
 
-def get(key: str, default=None):
+def get_setting(key: str, default=None):
     cache_key = f"jhe_setting:{key}"
     value = cache.get(cache_key)
 

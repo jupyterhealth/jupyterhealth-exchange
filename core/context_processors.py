@@ -7,6 +7,7 @@ from core.permissions import ROLE_PERMISSIONS
 from oauth2_provider.models import get_application_model
 
 from core.models import DataSource, JheSetting, Organization
+from core.jhe_settings.service import get_setting
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ def constants(request):
 
     return {
         "JHE_VERSION": settings.JHE_VERSION,
-        "SITE_TITLE": settings.SITE_TITLE,
+        "SITE_TITLE": get_setting("site.ui.title"),
         "SITE_URL": settings.SITE_URL,
         "OIDC_CLIENT_AUTHORITY": settings.OIDC_CLIENT_AUTHORITY,
         "OIDC_CLIENT_ID": _get_oidc_client_id(),

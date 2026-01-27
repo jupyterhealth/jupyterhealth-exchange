@@ -42,7 +42,6 @@ if SECRET_KEY is None:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-SITE_TITLE = os.getenv("SITE_TITLE", "JupyterHealth Exchange")
 SITE_URL = os.getenv("SITE_URL", "http://localhost:8000")
 CH_INVITATION_LINK_PREFIX = os.getenv("CH_INVITATION_LINK_PREFIX", "")
 CH_INVITATION_LINK_EXCLUDE_HOST = os.getenv("CH_INVITATION_LINK_EXCLUDE_HOST", "")
