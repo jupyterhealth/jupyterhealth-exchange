@@ -11,6 +11,7 @@ from core.models import (
     JheUser,
     Patient,
     Study,
+    StudyClient,
     StudyDataSource,
     StudyPatient,
     StudyPatientScopeConsent,
@@ -205,57 +206,95 @@ class DataSourceSerializer(serializers.ModelSerializer):
 
 Application = get_application_model()
 
-# djangorestframework-camel-case does not behave as expected here
-class ClientSerializer(serializers.ModelSerializer):
-    # Accept camelCase in input, write to model field client_id
-    clientId = serializers.CharField(source="client_id", required=False)
 
-    # Accept camelCase in input
-    codeVerifier = serializers.CharField(required=False, allow_blank=True, allow_null=True, write_only=True)
+# !!! NB: weird stuff is going on here with how djangorestframework-camel-case selectively transforms some fields but not all
+# Do not make any changes without manual testing
+class ClientSerializer(serializers.ModelSerializer):
+
+    clientId = serializers.CharField(source="client_id", required=False)
+    invitationUrl = serializers.CharField(source="invitation_url", required=False, allow_blank=True, allow_null=True, write_only=True)
+    codeVerifier = serializers.CharField(required=False, allow_blank=True, allow_null=True, write_only=True)  # needs special treatment
 
     class Meta:
         model = Application
         # expose camelCase fields to the client
-        fields = ["id", "name", "clientId", "codeVerifier"]
+        fields = ["id", "name", "clientId", "codeVerifier", "invitationUrl"]
 
     def to_representation(self, instance):
-        # Return camelCase in output too
         data = {
             "id": instance.id,
             "name": instance.name,
             "clientId": instance.client_id,
         }
-        s = JheSetting.objects.filter(setting_id=instance.id, key="client.code_verifier").first()
-        data["codeVerifier"] = s.get_value() if s else None
+
+        code_verifier_setting = JheSetting.objects.filter(setting_id=instance.id, key="client.code_verifier").first()
+        data["codeVerifier"] = code_verifier_setting.get_value() if code_verifier_setting else None
+
+        invitation_url_setting = JheSetting.objects.filter(setting_id=instance.id, key="client.invitation_url").first()
+        data["invitationUrl"] = invitation_url_setting.get_value() if invitation_url_setting else None
+
+        grants = getattr(instance, "patient_grants", None)
+        code_verifier = getattr(instance, "code_verifier", None)
+        invitation_url = getattr(instance, "invitation_url", None)
+
+        # prevent None / empty list explosions
+        grant_code = None
+        if grants:
+            # works for list/tuple/queryset
+            first = grants[0] if hasattr(grants, "__getitem__") else grants.first()
+            grant_code = getattr(first, "code", None)
+
+        data["invitationLink"] = (
+            Patient.construct_invitation_link(invitation_url, instance.client_id, grant_code, code_verifier)
+            if grant_code
+            else None
+        )
+
         return data
 
-    def _upsert_setting(self, app_id: int, value):
+    def _upsert_setting(self, app_id: int, key: str, value):
         # treat "" as delete
         if value is None or value == "":
-            JheSetting.objects.filter(setting_id=app_id, key="client.code_verifier").delete()
+            JheSetting.objects.filter(setting_id=app_id, key=key).delete()
             return
 
         obj, _ = JheSetting.objects.update_or_create(
             setting_id=app_id,
-            key="client.code_verifier",
+            key=key,
             defaults={"value_type": "string"},
         )
         obj.set_value("string", value)
         obj.save()
 
     def create(self, validated_data):
-        # validated_data contains model fields under snake_case because of `source=...`
+        print("validated_data keys:", sorted(validated_data.keys()))
         code_verifier = validated_data.pop("codeVerifier", None)
+        invitation_url = validated_data.pop("invitation_url", None)
+        if invitation_url is None:
+            invitation_url = self.initial_data.get("invitation_url")
+
         app = super().create(validated_data)
+
         if code_verifier is not None:
-            self._upsert_setting(app.id, code_verifier)
+            self._upsert_setting(app.id, "client.code_verifier", code_verifier)
+        if invitation_url is not None:
+            self._upsert_setting(app.id, "client.invitation_url", invitation_url)
+
         return app
 
     def update(self, instance, validated_data):
         code_verifier = validated_data.pop("codeVerifier", None)
+        invitation_url = validated_data.pop("invitation_url", None)
+        if invitation_url is None:
+            invitation_url = self.initial_data.get("invitation_url")
+
         app = super().update(instance, validated_data)
+
         if code_verifier is not None:
-            self._upsert_setting(app.id, code_verifier)
+            self._upsert_setting(app.id, "client.code_verifier", code_verifier)
+        if invitation_url is not None:
+            self._upsert_setting(app.id, "client.invitation_url", invitation_url)
+
         return app
 
 
@@ -264,6 +303,14 @@ class ClientDataSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientDataSource
         fields = ["id", "client_id", "data_source_id"]
+        depth = 1
+
+
+class StudyClientSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = StudyClient
+        fields = ["id", "study", "client"]
         depth = 1
 
 

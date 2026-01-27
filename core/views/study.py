@@ -5,12 +5,14 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework import status
 
 from core.admin_pagination import AdminListMixin
-from core.models import Patient, Study, StudyDataSource, StudyPatient, StudyScopeRequest
+from core.models import Patient, Study, StudyClient, StudyDataSource, StudyPatient, StudyScopeRequest
 from core.permissions import IfUserCan
 from core.serializers import (
     PatientSerializer,
+    StudyClientSerializer,
     StudyDataSourceSerializer,
     StudyPatientSerializer,
     StudyScopeRequestSerializer,
@@ -95,6 +97,30 @@ class StudyViewSet(AdminListMixin, ModelViewSet):
             return Response(StudyScopeRequestSerializer(response, many=False).data)
 
     @action(detail=True, methods=["GET", "POST", "DELETE"])
+    def clients(self, request, pk):
+
+        if request.method == "GET":
+            study_clients = StudyClient.objects.filter(study_id=pk).order_by("id")
+            serializer = StudyClientSerializer(study_clients, many=True)
+            return Response(serializer.data)
+        # djangorestframework-camel-case doesn't work for this endpoint for some reason
+        else:
+            if request.method == "POST":
+                logger.info(request.data.keys())
+                StudyClient.objects.create(
+                    study_id=pk,
+                    client_id=request.data.get("client_id") or request.data.get("clientId")
+                )
+            else:
+                StudyClient.objects.filter(
+                    study_id=pk,
+                    client_id=request.data.get("client_id") or request.data.get("clientId")
+                ).delete()
+
+            return Response(status=status.HTTP_200_OK)
+
+
+    @action(detail=True, methods=["GET", "POST", "DELETE"])
     def data_sources(self, request, pk):
 
         if request.method == "GET":
@@ -102,12 +128,12 @@ class StudyViewSet(AdminListMixin, ModelViewSet):
             serializer = StudyDataSourceSerializer(study_data_sources, many=True)
             return Response(serializer.data)
         else:
-            response = None
             if request.method == "POST":
-                response = StudyDataSource.objects.create(study_id=pk, data_source_id=request.data["data_source_id"])
+                logger.info(request.data.keys())
+                StudyDataSource.objects.create(study_id=pk, data_source_id=request.data["data_source_id"])
             else:
-                response = StudyDataSource.objects.filter(
+                StudyDataSource.objects.filter(
                     study_id=pk, data_source_id=request.data["data_source_id"]
                 ).delete()
 
-            return Response(StudyDataSourceSerializer(response, many=False).data)
+            return Response(status=status.HTTP_200_OK)

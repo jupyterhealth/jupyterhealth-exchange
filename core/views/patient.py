@@ -9,11 +9,14 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from oauth2_provider.models import Grant, get_application_model
 from urllib.parse import quote
+from django.db.models import Prefetch, OuterRef, Subquery
 
 from core.admin_pagination import AdminListMixin
 from core.fhir_pagination import FHIRBundlePagination
 from core.models import (
+    JheSetting,
     JheUser,
     CodeableConcept,
     Patient,
@@ -28,9 +31,11 @@ from core.models import (
 )
 from core.permissions import IfUserCan
 from core.serializers import (
+    ClientSerializer,
     CodeableConceptSerializer,
     FHIRBundledPatientSerializer,
     PatientSerializer,
+    StudyClientSerializer,
     StudyPendingConsentsSerializer,
     StudyConsentsSerializer,
     StudyPatientScopeConsentSerializer,
@@ -128,10 +133,43 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
         return Response(PatientSerializer(patient, many=False).data, status=200)
 
     @action(detail=True, methods=["GET"])
+    def consolidated_clients(self, request, pk):
+        patient = self.get_object()  # Patient instance
+        Client = get_application_model()
+
+        grants_for_patient_user = Grant.objects.filter(user_id=patient.jhe_user_id)
+
+        code_verifier_subquery = (
+            JheSetting.objects
+            .filter(setting_id=OuterRef("id"), key="client.code_verifier")
+            .values("value_string")[:1]
+        )
+
+        invitation_url_subquery = (
+            JheSetting.objects
+            .filter(setting_id=OuterRef("id"), key="client.invitation_url")
+            .values("value_string")[:1]
+        )
+
+        patient_clients = (
+            Client.objects
+            .filter(studies__study__studypatient__patient_id=pk)
+            .annotate(code_verifier=Subquery(code_verifier_subquery), invitation_url=Subquery(invitation_url_subquery))
+            .prefetch_related(
+                Prefetch("grant_set", queryset=grants_for_patient_user, to_attr="patient_grants")
+            )
+            .distinct()
+        )
+
+        serializer = ClientSerializer(patient_clients, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["GET"])
     def invitation_link(self, request, pk):
+        application_id = request.query_params.get("application_id")
         send_email = request.query_params.get("send_email") == "true"
         patient = self.get_object()
-        grant = patient.jhe_user.create_authorization_code(1, settings.OIDC_CLIENT_REDIRECT_URI)
+        grant = patient.jhe_user.create_authorization_code(application_id, settings.OIDC_CLIENT_REDIRECT_URI)
         url = settings.CH_INVITATION_LINK_PREFIX
         if not settings.CH_INVITATION_LINK_EXCLUDE_HOST:
             url = url + quote(settings.SITE_URL.split("/")[2] + "~", safe="~")

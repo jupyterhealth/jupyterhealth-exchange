@@ -4,6 +4,7 @@ import logging
 from datetime import timedelta
 
 from random import SystemRandom
+from urllib.parse import urlparse
 
 import humps
 from django.conf import settings
@@ -268,7 +269,7 @@ class JheUser(AbstractUser):
 
         Grant = get_grant_model()
 
-        Grant.objects.filter(user_id=self.id).delete()
+        Grant.objects.filter(user_id=self.id, application_id=application_id).delete()
 
         # https://github.com/oauthlib/oauthlib/blob/f9a07c6c07d0ddac255dd322ef5fc54a7a46366d/oauthlib/common.py#L188
         UNICODE_ASCII_CHARACTER_SET = "abcdefghijklmnopqrstuvwxyz" "ABCDEFGHIJKLMNOPQRSTUVWXYZ" "0123456789"
@@ -587,6 +588,16 @@ class Patient(models.Model):
         return results[0].count if results else 0
 
     @staticmethod
+    def construct_invitation_link(
+        invitation_url,
+        client_id,
+        auth_code,
+        code_verifier
+    ):
+        invitation_code = f"{urlparse(settings.SITE_URL).hostname}~{client_id}~{auth_code}~{code_verifier}"
+        return invitation_url.replace("CODE", invitation_code)
+
+    @staticmethod
     def practitioner_authorized(
         jhe_user_id,
         patient_id=None,
@@ -744,14 +755,7 @@ class Patient(models.Model):
                 raise (BadRequest(e))  # TBD: move to view
 
         return records
-
-    def __init__(self, *args, **kwargs):
-        # Remove organization_id if it's passed in, as it should be handled by the M2M relationship
-        self._organization_id = None
-        if "organization_id" in kwargs:
-            self._organization_id = kwargs.pop("organization_id")
-        super().__init__(*args, **kwargs)
-        self.telecom_email = None
+    
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -761,6 +765,17 @@ class Patient(models.Model):
                 PatientOrganization.objects.get_or_create(patient=self, organization_id=self._organization_id)
             except IntegrityError as e:
                 print(f"IntegrityError: {e}")
+
+
+    def __init__(self, *args, **kwargs):
+        # Remove organization_id if it's passed in, as it should be handled by the M2M relationship
+        self._organization_id = None
+        if "organization_id" in kwargs:
+            self._organization_id = kwargs.pop("organization_id")
+        super().__init__(*args, **kwargs)
+        self.telecom_email = None
+
+
 
 
 """

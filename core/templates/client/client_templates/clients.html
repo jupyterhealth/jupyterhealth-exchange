@@ -7,6 +7,7 @@
         <th scope="col"></th>
         <th scope="col">ID</th>
         <th scope="col">Name</th>
+        <th scope="col">URL</th>
         <th scope="col">Client ID</th>
         <th scope="col">Code Verifier</th>
       </tr>
@@ -39,6 +40,7 @@
           </td>
           <td>{{id}}</td>
           <td>{{name}}</td>
+          <td>{{invitationUrl}}</td>
           <td>{{clientId}}</td>
           <td>{{codeVerifier}}</td>
           <td>
@@ -120,6 +122,17 @@
                     class="form-control"
                     id="clientName"
                     value="{{clientRecord.name}}"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="clientInvitationUrl" class="form-label"
+                    >Invitation URL</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="clientInvitationUrl"
+                    value="{{clientRecord.invitationUrl}}"
                   />
                 </div>
                 <div class="mb-3">

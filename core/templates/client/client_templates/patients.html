@@ -322,42 +322,53 @@
               </div>
               {{/unless}}
               {{#if read}}
-                {{#if @root.canManagePatientsInOrg}}
-                  <div class="mb-3">
-                    <button
-                      type="button"
-                      onclick="getInvitationLink({{patientRecord.id}}, document.getElementById('InvitationSendEmail').checked)"
-                      class="btn btn-sm btn-success mb-2"
-                    >
-                      Generate Invitation Link
-                    </button>
-                    <div class="form-check form-check-inline mx-2">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        id="InvitationSendEmail"
-                      />
-                      <label class="form-check-label" for="InvitationSendEmail">
-                        Send link by email
-                      </label>
-                    </div>
-                    <button
-                      type="button"
-                      id="copyInvitationLink"
-                      onclick="navigator.clipboard.writeText(document.getElementById('invitationLink').value).then(() => this.disabled = true)"
-                      class="btn btn-sm btn-info mb-2"
-                      disabled
-                    >
-                      Copy to Clipboard
-                    </button>
-                    <textarea
-                      class="form-control"
-                      id="invitationLink"
-                      rows="4"
-                      readonly
-                    ></textarea>
-                  </div>
-                {{/if}}
+                <div class="mb-3">
+                  Consolidated Clients:
+                  <ul>
+                  {{#consolidatedClients}}
+                    <li>
+                      {{name}}
+                      {{#if @root.canManagePatientsInOrg}}
+                        <div class="mb-3">
+                          <button
+                            type="button"
+                            onclick="getInvitationLink({{@root.patientRecord.id}},{{id}},document.getElementById('InvitationSendEmail-{{id}}').checked)"
+                            class="btn btn-sm btn-success mb-2"
+                          >
+                            {{#if grantCode}}Re-{{/if}}Generate Invitation Link
+                          </button>
+                          <div class="form-check form-check-inline mx-2">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              id="InvitationSendEmail-{{id}}"
+                            />
+                            <label class="form-check-label" for="InvitationSendEmail">
+                              Send link by email
+                            </label>
+                          </div>
+                          <textarea
+                            style="font-size: 0.8rem;"
+                            class="form-control"
+                            id="invitationLink-{{id}}"
+                            rows="3"
+                            readonly
+                          >{{invitationLink}}</textarea>
+                          <button
+                            type="button"
+                            id="copyInvitationLink-{{id}}"
+                            onclick="navigator.clipboard.writeText(document.getElementById('invitationLink-{{id}}').value).then(() => this.disabled = true)"
+                            class="btn btn-sm btn-info mt-2"
+                            disabled
+                          >
+                            Copy to Clipboard
+                          </button>
+                        </div>
+                      {{/if}}
+                    </li>
+                  {{/consolidatedClients}}
+                  </ul>
+                </div>
                 <div class="mb-3">
                   Studies Pending Response:
                   <ul>

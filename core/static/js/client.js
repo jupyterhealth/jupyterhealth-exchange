@@ -889,7 +889,7 @@ async function renderPatients(queryParams) {
     document.getElementById("t-patients").innerHTML
   );
 
-  let patientsPaginated, patientRecord, studiesPendingConsent, studiesConsented;
+  let patientsPaginated, patientRecord, studiesPendingConsent, studiesConsented, consolidatedClients;
 
   const pageSize = parseInt(queryParams.pageSize) || 20;
   const page = parseInt(queryParams.page) || 1;
@@ -929,7 +929,14 @@ async function renderPatients(queryParams) {
       patientRecordConsents = await patientRecordConsentsResponse.json();
       studiesPendingConsent = patientRecordConsents.studiesPendingConsent;
       studiesConsented = patientRecordConsents.studies;
+
+      const patientRecordConsolidatedClientsResponse = await apiRequest(
+        "GET",
+        `patients/${queryParams.id}/consolidated_clients`
+      );
+      consolidatedClients = await patientRecordConsolidatedClientsResponse.json();
     }
+
   } else if (queryParams.create && queryParams.lookedUpEmail) {
     patientRecord = {
       telecomEmail: queryParams.lookedUpEmail,
@@ -966,6 +973,7 @@ async function renderPatients(queryParams) {
     studiesConsented: studiesConsented,
     pageSizes: [20, 100, 500, 1000],
     canManagePatientsInOrg: canManagePatientsInOrg,
+    consolidatedClients: consolidatedClients
   };
 
   return content(renderParams);
@@ -1061,15 +1069,15 @@ async function deletePatient(id) {
     await navReturnFromCrud();
 }
 
-async function getInvitationLink(id, sendEmail) {
+async function getInvitationLink(patientId, clientId, sendEmail) {
   const invitationLinkResponse = await apiRequest(
     "GET",
-    `patients/${id}/invitation_link?send_email=${sendEmail}`
+    `patients/${patientId}/invitation_link?send_email=${sendEmail}&application_id=${clientId}`
   );
   const invitationLink = await invitationLinkResponse.json();
-  document.getElementById("invitationLink").value =
+  document.getElementById(`invitationLink-${clientId}`).value =
     invitationLink["invitationLink"];
-  document.getElementById("copyInvitationLink").disabled = false;
+  document.getElementById(`copyInvitationLink-${clientId}`).disabled = false;
 }
 
 // ────────────────────────────────────────────────────
@@ -1111,7 +1119,7 @@ async function renderStudies(queryParams) {
 
   const studiesPaginated = await studiesResponse.json();
 
-  let studyRecord, allDataSources, allScopes;
+  let studyRecord, allClients, allDataSources, allScopes;
 
   if (queryParams.create) {
     studyRecord = {
@@ -1138,6 +1146,24 @@ async function renderStudies(queryParams) {
     }
 
     if (queryParams.read) {
+      
+      // ---- Clients ----
+      const studyClientsResponse = await apiRequest(
+        "GET",
+        `studies/${queryParams.id}/clients`
+      );
+      studyRecord.clients = await studyClientsResponse.json();
+
+      const allClientsResponse = await apiRequest("GET", `clients`);
+      allClients = await allClientsResponse.json();
+
+      // filter out the data sources that have already been added
+      const clientIds = studyRecord.clients.map((s) => s.id);
+      allClients.results = allClients.results.filter(
+        (client) => clientIds.indexOf(client.id) == -1
+      );
+
+
       const studyDataSourcesResponse = await apiRequest(
         "GET",
         `studies/${queryParams.id}/data_sources`
@@ -1190,8 +1216,9 @@ async function renderStudies(queryParams) {
     ...queryParams,
     studies: studiesPaginated?.results,
     studyRecord: studyRecord,
-    allScopes: allScopes ? allScopes : null,
-    allDataSources: allDataSources?.results ? allDataSources.results : null,
+    allScopes: allScopes ?? null,
+    allClients: allClients?.results ?? null,
+    allDataSources: allDataSources?.results ?? null,
     patientCount: store.addPatientIdsToStudy
       ? store.addPatientIdsToStudy.length
       : null,
@@ -1304,6 +1331,26 @@ async function removeScopeRequestFromStudy(scopeCodeId, studyId) {
     `studies/${studyId}/scope_requests`,
     {
       scopeCodeId: scopeCodeId,
+    }
+  );
+  if (response.ok) navReload();
+}
+
+async function addClientToStudy(clientId, studyId) {
+  if (!clientId || !studyId) return;
+  const response = await apiRequest("POST", `studies/${studyId}/clients`, {
+    clientId: clientId,
+  });
+  if (response.ok) navReload();
+}
+
+async function removeClientFromStudy(clientId, studyId) {
+  if (!clientId || !studyId) return;
+  const response = await apiRequest(
+    "DELETE",
+    `studies/${studyId}/clients`,
+    {
+      clientId: clientId,
     }
   );
   if (response.ok) navReload();
@@ -1512,6 +1559,7 @@ async function renderClients(queryParams) {
 async function createClient() {
   const clientRecord = {
     name: document.getElementById("clientName").value,
+    invitationUrl: document.getElementById("clientInvitationUrl").value,
     clientId: document.getElementById("clientClientId").value,
     codeVerifier: document.getElementById("clientCodeVerifier").value,
   };
@@ -1522,6 +1570,7 @@ async function createClient() {
 async function updateClient(id) {
   const clientRecord = {
     name: document.getElementById("clientName").value,
+    invitationUrl: document.getElementById("clientInvitationUrl").value,
     clientId: document.getElementById("clientClientId").value,
     codeVerifier: document.getElementById("clientCodeVerifier").value,
   };

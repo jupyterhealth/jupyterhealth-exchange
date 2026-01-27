@@ -193,6 +193,46 @@
               </fieldset>
               {{#if read}}
                 <p>
+                  Clients
+                  <button
+                    type="button"
+                    onclick="document.getElementById('studiesAddClientForm').style.setProperty('display','block')"
+                    class="m-0 p-0 btn btn-sm"
+                  >
+                    <i class="bi bi-file-earmark-plus"></i>
+                  </button>
+                </p>
+                <div id="studiesAddClientForm" class="mb-2" style="display: none">
+                  <select id="newStudyClient" style="display: inline-block; max-width: 300px" class="form-select align-middle" aria-label="Select Client">
+                  {{#each allClients}}
+                    <option value="{{id}}">{{name}}</option>
+                  {{/each}}
+                  </select>
+                  <button
+                    style="display: inline-block"
+                    type="button"
+                    onclick="addClientToStudy(document.getElementById('newStudyClient').value, {{studyRecord.id}})"
+                    class="btn btn-sm btn-success ms-1 align-middle"
+                  >
+                    Add
+                  </button>
+                </div>
+                <ul>
+                  {{#each studyRecord.clients}}
+                    <li>
+                      {{client.name}}
+                      <button
+                        type="button"
+                        onclick="removeClientFromStudy({{client.id}},{{@root.studyRecord.id}})"
+                        class="m-0 p-0 btn btn-sm"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </li>
+                  {{/each}}
+                </ul>
+
+                <p>
                   Data Sources
                   <button
                     type="button"
