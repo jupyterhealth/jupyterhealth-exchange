@@ -212,8 +212,12 @@ Application = get_application_model()
 class ClientSerializer(serializers.ModelSerializer):
 
     clientId = serializers.CharField(source="client_id", required=False)
-    invitationUrl = serializers.CharField(source="invitation_url", required=False, allow_blank=True, allow_null=True, write_only=True)
-    codeVerifier = serializers.CharField(required=False, allow_blank=True, allow_null=True, write_only=True)  # needs special treatment
+    invitationUrl = serializers.CharField(
+        source="invitation_url", required=False, allow_blank=True, allow_null=True, write_only=True
+    )
+    codeVerifier = serializers.CharField(
+        required=False, allow_blank=True, allow_null=True, write_only=True
+    )  # needs special treatment
 
     class Meta:
         model = Application
@@ -404,6 +408,7 @@ class ObservationWithoutDataSerializer(serializers.ModelSerializer):
 # Why resolved_value instead of value?
 # - Because DRF can’t have the same field name be both write-only and read-only cleanly.
 
+
 class JheSettingSerializer(serializers.ModelSerializer):
     value = serializers.JSONField(write_only=True, required=False)
     resolved_value = serializers.SerializerMethodField(read_only=True)
@@ -415,7 +420,7 @@ class JheSettingSerializer(serializers.ModelSerializer):
             "key",
             "setting_id",
             "value_type",
-            "value",           # input
+            "value",  # input
             "resolved_value",  # output
             "last_updated",
         ]

@@ -35,7 +35,6 @@ from core.serializers import (
     CodeableConceptSerializer,
     FHIRBundledPatientSerializer,
     PatientSerializer,
-    StudyClientSerializer,
     StudyPendingConsentsSerializer,
     StudyConsentsSerializer,
     StudyPatientScopeConsentSerializer,
@@ -139,25 +138,18 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
 
         grants_for_patient_user = Grant.objects.filter(user_id=patient.jhe_user_id)
 
-        code_verifier_subquery = (
-            JheSetting.objects
-            .filter(setting_id=OuterRef("id"), key="client.code_verifier")
-            .values("value_string")[:1]
-        )
+        code_verifier_subquery = JheSetting.objects.filter(
+            setting_id=OuterRef("id"), key="client.code_verifier"
+        ).values("value_string")[:1]
 
-        invitation_url_subquery = (
-            JheSetting.objects
-            .filter(setting_id=OuterRef("id"), key="client.invitation_url")
-            .values("value_string")[:1]
-        )
+        invitation_url_subquery = JheSetting.objects.filter(
+            setting_id=OuterRef("id"), key="client.invitation_url"
+        ).values("value_string")[:1]
 
         patient_clients = (
-            Client.objects
-            .filter(studies__study__studypatient__patient_id=pk)
+            Client.objects.filter(studies__study__studypatient__patient_id=pk)
             .annotate(code_verifier=Subquery(code_verifier_subquery), invitation_url=Subquery(invitation_url_subquery))
-            .prefetch_related(
-                Prefetch("grant_set", queryset=grants_for_patient_user, to_attr="patient_grants")
-            )
+            .prefetch_related(Prefetch("grant_set", queryset=grants_for_patient_user, to_attr="patient_grants"))
             .distinct()
         )
 

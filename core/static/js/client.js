@@ -763,7 +763,7 @@ async function renderPractitioners(queryParams) {
       "GET",
       `practitioners/${queryParams.id}`
     );
-    practitionerRecord = await practitionerRecordResponse.json(); 
+    practitionerRecord = await practitionerRecordResponse.json();
   }
 
   Handlebars.registerHelper("eq", function (v1, v2) {
@@ -1146,7 +1146,7 @@ async function renderStudies(queryParams) {
     }
 
     if (queryParams.read) {
-      
+
       // ---- Clients ----
       const studyClientsResponse = await apiRequest(
         "GET",

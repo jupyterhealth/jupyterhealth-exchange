@@ -108,17 +108,14 @@ class StudyViewSet(AdminListMixin, ModelViewSet):
             if request.method == "POST":
                 logger.info(request.data.keys())
                 StudyClient.objects.create(
-                    study_id=pk,
-                    client_id=request.data.get("client_id") or request.data.get("clientId")
+                    study_id=pk, client_id=request.data.get("client_id") or request.data.get("clientId")
                 )
             else:
                 StudyClient.objects.filter(
-                    study_id=pk,
-                    client_id=request.data.get("client_id") or request.data.get("clientId")
+                    study_id=pk, client_id=request.data.get("client_id") or request.data.get("clientId")
                 ).delete()
 
             return Response(status=status.HTTP_200_OK)
-
 
     @action(detail=True, methods=["GET", "POST", "DELETE"])
     def data_sources(self, request, pk):
@@ -132,8 +129,6 @@ class StudyViewSet(AdminListMixin, ModelViewSet):
                 logger.info(request.data.keys())
                 StudyDataSource.objects.create(study_id=pk, data_source_id=request.data["data_source_id"])
             else:
-                StudyDataSource.objects.filter(
-                    study_id=pk, data_source_id=request.data["data_source_id"]
-                ).delete()
+                StudyDataSource.objects.filter(study_id=pk, data_source_id=request.data["data_source_id"]).delete()
 
             return Response(status=status.HTTP_200_OK)
