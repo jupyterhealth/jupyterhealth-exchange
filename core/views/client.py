@@ -1,4 +1,3 @@
-
 from core.models import ClientDataSource, DataSource
 from rest_framework.viewsets import ModelViewSet
 from oauth2_provider.models import get_application_model
@@ -57,9 +56,7 @@ class ClientViewSet(ModelViewSet):
         else:
             response = None
             if request.method == "POST":
-                response = ClientDataSource.objects.create(
-                    client_id=pk, data_source_id=request.data["data_source_id"]
-                )
+                response = ClientDataSource.objects.create(client_id=pk, data_source_id=request.data["data_source_id"])
             else:
                 response = ClientDataSource.objects.filter(
                     client_id=pk, data_source_id=request.data["data_source_id"]
