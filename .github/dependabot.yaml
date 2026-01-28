@@ -1,0 +1,36 @@
+version: 2
+updates:
+  # Maintain dependencies in our GitHub Workflows
+  - package-ecosystem: github-actions
+    directory: /
+    groups:
+      # group actions PRs
+      actions:
+        - patterns: "actions/*"
+    schedule:
+      interval: monthly
+
+  - package-ecosystem: pip
+    directory: /
+    groups:
+      # one big pull request for patch bumps
+      patch:
+        patterns:
+          - "*"
+        update-types:
+          - patch
+    schedule:
+      interval: monthly
+
+  - package-ecosystem: npm
+    directory: /core/static/js/test/
+    groups:
+      # one big pull request for minor/patch bumps in js
+      minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    schedule:
+      interval: monthly
