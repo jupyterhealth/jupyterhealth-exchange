@@ -928,9 +928,7 @@ class Study(models.Model):
           LEFT JOIN core_studypatientscopeconsent ON core_studypatientscopeconsent.study_patient_id=core_studypatient.id
                 AND core_studypatientscopeconsent.scope_code_id=core_studyscoperequest.scope_code_id
   WHERE core_studypatientscopeconsent.scope_code_id IS {sql_scope_code} AND core_studypatient.patient_id=%(patient_id)s;
-            """.format(
-            sql_scope_code=sql_scope_code
-        )
+            """.format(sql_scope_code=sql_scope_code)
 
         studies_with_scopes = Study.objects.raw(q, {"patient_id": patient_id, "sql_scope_code": sql_scope_code})
 
@@ -1057,9 +1055,7 @@ class DataSource(models.Model):
             {sql_join}
             {sql_where}
             ORDER BY core_datasource.name
-            """.format(
-            sql_join=sql_join, sql_where=sql_where
-        )
+            """.format(sql_join=sql_join, sql_where=sql_where)
 
         data_sources = DataSource.objects.raw(q)
 
