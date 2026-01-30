@@ -50,12 +50,12 @@ jobs:
       - run: echo "Repository name is ${{ github.repository }}."
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - run: echo "Repository cloned successfully."
 
       - name: Set up Python 3.11 for Django tests
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: 3.11
 
