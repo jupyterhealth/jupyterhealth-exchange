@@ -6,7 +6,8 @@ updates:
     groups:
       # group actions PRs
       actions:
-        - patterns: "actions/*"
+        patterns:
+          - "actions/*"
     schedule:
       interval: monthly
 
