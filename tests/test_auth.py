@@ -1,6 +1,6 @@
 import json
 import time
-from urllib.parse import urldecode
+from urllib.parse import parse_qs
 
 from django.conf import settings
 from django.test import TestCase
@@ -57,7 +57,7 @@ class AuthTest(TestCase):
             return 403, headers, json.dumps({"error": "Not a valid token"})
 
     def introspection_response(self, request):
-        token = urldecode(request.body)["token"][0]
+        token = parse_qs(request.body)["token"][0]
 
         headers = {"Content-Type": "application/json"}
 
