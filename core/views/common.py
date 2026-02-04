@@ -526,6 +526,5 @@ def token_exchange(request: HttpRequest):
             "token_type": "Bearer",
             "expires_in": expires_in,
             "scope": scope,
-            "refresh_token": None,
         }
     )
