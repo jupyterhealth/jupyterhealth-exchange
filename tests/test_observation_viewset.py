@@ -5,9 +5,11 @@ import pytest
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
+from core.models import JheUser
 from core.utils import generate_observation_value_attachment_data
 from .utils import (
     add_observations,
+    add_patient_to_study,
     Code,
     get_link,
 )
@@ -196,5 +198,22 @@ def test_observation_upload(client, user, device, hr_study, patient, get_observa
     assert value_attachment_out["body"] == value_attachment_in["body"]
 
 
-def test_get_observation_by_study():
-    pass
+def test_get_observation_by_study(client, patient, hr_study):
+    add_observations(patient=patient, code=Code.HeartRate, n=5)
+    patient2 = JheUser.objects.create_user(
+        email="test-patient-2@example.org",
+        user_type="patient",
+    ).patient
+    add_patient_to_study(patient2, hr_study)
+    add_observations(patient=patient2, code=Code.HeartRate, n=5)
+
+    r = client.get(
+        "/fhir/r5/Observation",
+        {
+            "patient._has:Group:member:_id": hr_study.id,
+        },
+    )
+    if r.status_code != 200:
+        assert r.status_code == 200, f"{r.status_code} != 200, {r.text}"
+    observations = r.json()["entry"]
+    assert len(observations) == 10
