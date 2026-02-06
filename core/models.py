@@ -641,8 +641,6 @@ class Patient(models.Model):
         study_id=None,
         patient_identifier_system=None,
         patient_identifier_value=None,
-        offset=None,
-        page=None,
     ):
 
         # Explicitly cast to ints so no injection vulnerability
@@ -1247,18 +1245,6 @@ class Observation(models.Model):
                 observation_id=int(observation_id)
             )
 
-        print(f"jhe_user_id: {jhe_user_id}")
-        if not patient_id:
-            patient = get_object_or_404(Patient, jhe_user_id=jhe_user_id)
-
-            print(f"patient: {patient}")
-
-            patient_user_id = patient.id
-        else:
-            patient_user_id = patient_id
-
-        print(f"patient_user_id: {patient_user_id}")
-
         # TBD: Query optimization: https://stackoverflow.com/a/6037376
         # pagination: https://github.com/mattbuck85/django-paginator-rawqueryset
         q = """
@@ -1306,7 +1292,6 @@ class Observation(models.Model):
             LEFT JOIN core_study ON core_study.id=core_studypatient.study_id
             JOIN core_organization ON core_organization.id=core_study.organization_id
             JOIN core_patientorganization ON core_patientorganization.organization_id=core_organization.id
-            WHERE core_patientorganization.patient_id={patient_user_id}
 AND core_codeableconcept.coding_system LIKE %(coding_system)s AND core_codeableconcept.coding_code LIKE %(coding_code)s
             {study_sql_where}
             {patient_id_sql_where}
@@ -1316,7 +1301,6 @@ AND core_codeableconcept.coding_system LIKE %(coding_system)s AND core_codeablec
             ORDER BY core_observation.last_updated DESC
             """.format(
             SITE_URL=settings.SITE_URL,
-            patient_user_id=patient_user_id,
             study_sql_where=study_sql_where,
             patient_id_sql_where=patient_id_sql_where,
             patient_identifier_value_sql_where=patient_identifier_value_sql_where,

@@ -70,12 +70,12 @@ class FHIRObservationViewSet(ModelViewSet):
 
         return Observation.fhir_search(
             self.request.user.id,
-            study_id,
-            patient_id,
-            patient_identifier_system,
-            patient_identifier_value,
-            coding_system,
-            coding_value,
+            study_id=study_id,
+            patient_id=patient_id,
+            patient_identifier_system=patient_identifier_system,
+            patient_identifier_value=patient_identifier_value,
+            coding_system=coding_system,
+            coding_code=coding_value,
         )
 
     def create(self, request):
