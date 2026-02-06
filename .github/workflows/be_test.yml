@@ -66,6 +66,4 @@ jobs:
 
       - name: Run Django tests
         run: |
-          pipenv run pytest -v -tests/
-          # TODO: Uncomment the following line to run coverage after the tests are confirmed to work.
-          # pipenv run coverage run --source='.' manage.py test --pattern="*_test.py" --verbosity=2 --failfast --noinput --settings=jhe.test_settings
+          pipenv run pytest -vx tests/
