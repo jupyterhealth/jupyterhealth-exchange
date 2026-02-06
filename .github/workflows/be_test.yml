@@ -59,9 +59,6 @@ jobs:
         with:
           python-version: 3.11
 
-      - name: Find manage.py location
-        run: find . -name manage.py
-
       - name: Install dependencies using Pipenv
         run: |
           pip install pipenv
@@ -69,8 +66,6 @@ jobs:
 
       - name: Run Django tests
         run: |
-          pipenv run python manage.py test --pattern="test*.py" --verbosity=2 --failfast --noinput --settings=jhe.test_settings
+          pipenv run pytest -v -tests/
           # TODO: Uncomment the following line to run coverage after the tests are confirmed to work.
           # pipenv run coverage run --source='.' manage.py test --pattern="*_test.py" --verbosity=2 --failfast --noinput --settings=jhe.test_settings
-
-      - run: echo "Django tests completed."
