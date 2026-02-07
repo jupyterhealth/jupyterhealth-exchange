@@ -3,8 +3,10 @@ Test utilities for populating the test db state
 """
 
 import uuid
-from enum import Enum
 from copy import deepcopy
+from enum import Enum
+from functools import partial
+from operator import itemgetter
 
 from django.utils import timezone
 
@@ -19,6 +21,8 @@ from core.models import (
     StudyScopeRequest,
 )
 from core.utils import generate_observation_value_attachment_data
+from core.fhir_pagination import FHIRBundlePagination
+from core.admin_pagination import CustomPageNumberPagination
 
 
 class Code(Enum):
@@ -94,3 +98,52 @@ def get_link(bundle: dict, rel: str) -> str | None:
         if link["relation"] == rel:
             return link["url"]
     return None
+
+
+def fetch_paginated(client, path, params=None, *, return_pages=False):
+    params = params or {}
+    if "/fhir/" in path:
+        Pagination = FHIRBundlePagination
+        result_key = "entry"
+        total_key = "total"
+        get_next = partial(get_link, rel="next")
+        page_size_param = "_count"
+    else:
+        Pagination = CustomPageNumberPagination
+        result_key = "results"
+        total_key = "count"
+        page_size_param = "pageSize"
+        get_next = itemgetter("next")
+
+    per_page = int(params.get(page_size_param, Pagination.page_size))
+    r = client.get(path, params)
+    assert r.status_code == 200, f"{r.status_code} != 200: {r.text}"
+    page = r.json()
+    pages = [page]
+    all_results = []
+    page_results = page[result_key]
+    all_results.extend(page_results)
+    next_url = get_next(page)
+    if next_url:
+        assert len(page[result_key]) == per_page, f"{len(page[result_key])} != {per_page}"
+
+    visited = {path}
+    while next_url:
+        assert next_url not in visited, f"repeated {next_url} in {visited}"
+        visited.add(next_url)
+        r = client.get(next_url)
+        assert r.status_code == 200, f"{r.status_code} != 200: {r.text}"
+        page = r.json()
+        pages.append(page)
+        next_url = get_next(page)
+        page_results = page[result_key]
+        if next_url:
+            assert len(page_results) == per_page, f"{len(page_results)} != {per_page}"
+        assert page_results
+        all_results.extend(page_results)
+
+    assert len(all_results) == pages[0][total_key], f"{len(all_results)} != {pages[0][total_key]}"
+    if return_pages:
+        return pages
+    else:
+        return all_results

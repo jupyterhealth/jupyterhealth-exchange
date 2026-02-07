@@ -8,10 +8,10 @@ from django.test.utils import CaptureQueriesContext
 from core.models import JheUser
 from core.utils import generate_observation_value_attachment_data
 from .utils import (
+    Code,
     add_observations,
     add_patient_to_study,
-    Code,
-    get_link,
+    fetch_paginated,
 )
 
 
@@ -38,42 +38,32 @@ def test_observation_pagination(hr_study, patient, client, get_observations):
     per_page = 10
     add_observations(patient=patient, code=Code.HeartRate, n=n)
     with CaptureQueriesContext(connection) as ctx:
-        response = get_observations(_count=per_page)
+        page = get_observations(_count=per_page)
     assert len(ctx.captured_queries) < 8
     last_query = ctx.captured_queries[-1]["sql"]
-    # try to make sure our offset/limit were applied
     assert "LIMIT 10" in last_query
     assert "OFFSET" not in last_query
+    assert page["type"] == "searchset"
+    assert page["resourceType"] == "Bundle"
+    assert page["total"] == n
 
-    assert response["type"] == "searchset"
-    assert response["resourceType"] == "Bundle"
-    results = []
-    assert response["total"] == n
-    results = response["entry"]
-    assert len(results) == per_page
-    visited = set()
-    have_ids = [r["resource"]["id"] for r in results]
+    with CaptureQueriesContext(connection) as ctx:
+        pages = fetch_paginated(
+            client, "/fhir/r5/Observation", {"patient": patient.id, "_count": per_page}, return_pages=True
+        )
+    # try to make sure our offset/limit were applied
 
-    while len(results) < n:
-        next_url = get_link(response, "next")
-        assert next_url not in visited
-        visited.add(next_url)
-        with CaptureQueriesContext(connection) as ctx:
-            response = client.get(next_url).json()
-        for record in response["entry"]:
-            resource_id = record["resource"]["id"]
-            assert resource_id not in have_ids
-            have_ids.append(resource_id)
-            results.append(record)
+    assert len(pages) == 11
+    assert len(pages[0]["entry"]) == per_page
+    assert len(pages[-1]["entry"]) == n % per_page
+    assert sum(len(page["entry"]) for page in pages) == n
 
-    assert len(results) == n
-    assert len(ctx.captured_queries) < 8
     last_query = ctx.captured_queries[-1]["sql"]
     # try to make sure our offset/limit were applied
     assert "OFFSET 100" in last_query
 
     # no 'next' link on last page
-    link_rels = [link["relation"] for link in response["link"]]
+    link_rels = [link["relation"] for link in pages[-1]["link"]]
     assert link_rels == ["previous"]
 
 
@@ -82,29 +72,8 @@ def test_observation_limit(hr_study, patient, client, get_observations):
     n = 10_100
     per_page = 1_000
     add_observations(patient=patient, code=Code.HeartRate, n=n)
-    response = get_observations(_count=per_page)
-
-    results = response["entry"]
-    assert len(results) == per_page
-    visited = set()
-    have_ids = [r["resource"]["id"] for r in results]
-
-    while len(results) < n:
-        next_url = get_link(response, "next")
-        assert next_url not in visited
-        visited.add(next_url)
-        response = client.get(next_url).json()
-        for record in response["entry"]:
-            resource_id = record["resource"]["id"]
-            assert resource_id not in have_ids
-            have_ids.append(resource_id)
-            results.append(record)
-
-    assert len(results) == n
-
-    # no 'next' link on last page
-    link_rels = [link["relation"] for link in response["link"]]
-    assert link_rels == ["previous"]
+    all_results = fetch_paginated(client, "/fhir/r5/Observation", {"patient": patient.id, "_count": per_page})
+    assert len(all_results) == n
 
 
 def test_observation_upload_bundle(client, user, device, hr_study, patient, get_observations):
