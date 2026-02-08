@@ -1,9 +1,12 @@
 import json
 import base64
 
+from django.db import connection
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from django.core import mail
+from django.db.models.query import RawQuerySet
 from oauth2_provider.models import get_application_model
 from core.utils import generate_observation_value_attachment_data
 
@@ -192,6 +195,19 @@ class PatientMethodTests(TestCase):
 
         authorized = Patient.practitioner_authorized(practitioner_user.id, self.patient.id)
         self.assertTrue(authorized)
+
+    def test_fhir_search(self):
+        with CaptureQueriesContext(connection) as ctx:
+            search = Observation.fhir_search(
+                self.user.id, patient_id=self.patient.id, coding_system="http://loinc.org", coding_code="1122-3"
+            )
+        # calling fhir_search shouldn't execute any queries
+        self.assertEqual(ctx.captured_queries, [])
+        self.assertIsInstance(search, RawQuerySet)
+        # actually execute the result
+        results = list(search)
+        # TODO: verify actual search results
+        self.assertEqual(results, [])
 
 
 # -----------------------------------------------------
@@ -438,11 +454,17 @@ class ObservationMethodTests(TestCase):
         self.assertGreaterEqual(count, 0)
 
     def test_fhir_search(self):
-        try:
-            results = Observation.fhir_search(self.user.id, coding_system="http://loinc.org", coding_code="1122-3")
-            self.assertIsInstance(list(results), list)
-        except Exception as e:
-            self.fail(f"fhir_search raised an exception: {e}")
+        with CaptureQueriesContext(connection) as ctx:
+            search = Observation.fhir_search(
+                self.user.id, patient_id=self.patient.id, coding_system="http://loinc.org", coding_code="1122-3"
+            )
+        # calling fhir_search shouldn't execute any queries
+        self.assertEqual(ctx.captured_queries, [])
+        self.assertIsInstance(search, RawQuerySet)
+        # actually execute the result
+        results = list(search)
+        # TODO: verify actual search results
+        self.assertEqual(results, [])
 
     def test_fhir_create(self):
         # Construct a minimal valid FHIR observation payload.
