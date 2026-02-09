@@ -40,7 +40,7 @@ if SECRET_KEY is None:
     SECRET_KEY = get_random_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(os.getenv("DEBUG"))
 
 SITE_URL = os.getenv("SITE_URL", "http://localhost:8000")
 CH_INVITATION_LINK_PREFIX = os.getenv("CH_INVITATION_LINK_PREFIX", "")
