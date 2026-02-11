@@ -172,7 +172,7 @@ def fetch_paginated(client, path, params=None, *, return_pages=False):
         assert len(page[result_key]) == per_page, f"{len(page[result_key])} != {per_page}"
 
     if fhir:
-        assert get_link(page, "self"), f"missing self link: {page['links']}"
+        assert get_link(page, "self"), f"missing self link: {page['link']}"
 
     visited = {path}
     while next_url:
@@ -182,7 +182,7 @@ def fetch_paginated(client, path, params=None, *, return_pages=False):
         assert r.status_code == 200, f"{r.status_code} != 200: {r.text}"
         page = r.json()
         if fhir:
-            assert next_url == get_link(page, "self"), f"missing self link: {page['links']}, expected {next_url}"
+            assert next_url == get_link(page, "self"), f"missing self link: {page['link']}, expected {next_url}"
         pages.append(page)
         next_url = get_next(page)
         page_results = page[result_key]

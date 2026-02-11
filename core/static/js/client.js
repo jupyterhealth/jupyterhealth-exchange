@@ -1422,8 +1422,8 @@ async function renderObservations(queryParams) {
   );
 
   // Parse the page and pageSize from queryParams
-  const pageParsed = parseInt(queryParams.page);
-  const pageSizeParsed = parseInt(queryParams.pageSize);
+  const pageParsed = parseInt(queryParams.page) || 1;
+  const pageSizeParsed = parseInt(queryParams.pageSize) || 20;
 
   // Use isNaN to check for invalid numbers, and default to null (or any safe value)
   const observationParams = {

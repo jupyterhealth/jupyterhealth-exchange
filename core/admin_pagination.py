@@ -1,10 +1,8 @@
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.response import Response
 
 from django.db import connection
 from django.db.models import sql
 from django.db.models.query import RawQuerySet
-from urllib.parse import urlencode
 
 
 # https://stackoverflow.com/questions/32191853/best-way-to-paginate-a-raw-sql-query-in-a-django-rest-listapi-view#:~:text=A%20more%20efficient%20solution%20than,in%20your%20raw%20SQL%20query
@@ -39,9 +37,10 @@ class PaginatedRawQuerySet(RawQuerySet):
             ),
         ):
             raise TypeError(f"Can only index by int or slice, not {k:r}")
-        assert (not isinstance(k, slice) and (k >= 0)) or (
-            isinstance(k, slice) and (k.start is None or k.start >= 0) and (k.stop is None or k.stop >= 0)
-        ), "Negative indexing is not supported."
+        if (isinstance(k, int) and k < 0) or (
+            isinstance(k, slice) and ((k.start and k.start < 0) or (k.stop and k.stop < 0))
+        ):
+            raise ValueError("Negative indexing is not supported.")
 
         if "offset" in self.params or "limit" in self.params:
             # TODO: this is actually quite doable,
@@ -85,6 +84,8 @@ class PaginatedRawQuerySet(RawQuerySet):
     def set_limits(self, start, stop):
         limit_offset = ""
 
+        if not self.params:
+            self.params = {}
         if start is None:
             start = 0
         elif start > 0:
@@ -108,98 +109,6 @@ class CustomPageNumberPagination(PageNumberPagination):
     max_page_size = 1000
 
     def paginate_queryset(self, queryset, request, view=None):
+        if isinstance(queryset, RawQuerySet):
+            queryset = PaginatedRawQuerySet.from_raw(queryset)
         return super().paginate_queryset(queryset, request, view)
-
-
-def build_url(base_url, page, params):
-    query_params = {k: v for k, v in params.items() if v is not None}
-    query_params["page"] = page
-    return f"{base_url}?{urlencode(query_params)}"
-
-
-# This mixin is used to allow custom pagination for Admin API views.
-class AdminListMixin:
-    """
-    Mixin that provides a standardized list implementation for admin APIs.
-    Expects the model class to expose a query method and a count method.
-
-    Subclasses should define:
-      - model_class (the model to query),
-      - serializer_class,
-      - admin_query_method, and
-      - admin_count_method.
-
-    Override get_query_args(request) if needed.
-    """
-
-    model_class = None  # Override in subclass
-    serializer_class = None  # Override in subclass
-
-    # These attributes can be either strings (names of methods) or callables.
-    admin_query_method = None  # e.g., "for_practitioner_organization_study_patient"
-    admin_count_method = None  # e.g., "count_for_practitioner_organization_study_patient"
-
-    def get_query_args(self, request):
-        """
-        Return any positional args required by the model methods.
-        Override if you need to supply additional positional arguments.
-        """
-        return (request.user.id,)
-
-    def list(self, request):
-        # Extract pagination parameters:
-        try:
-            page = int(request.query_params.get("page", 1))
-        except (ValueError, AttributeError):
-            page = 1
-        try:
-            page_size = int(request.query_params.get("page_size", 20))
-        except (ValueError, AttributeError):
-            page_size = 20
-
-        # Extract extra query parameters from request:
-        params = {k: v for k, v in request.query_params.items() if k not in ["page", "page_size"]}
-        query_func = self._resolve_method(self.admin_query_method)
-        count_func = self._resolve_method(self.admin_count_method)
-
-        if not callable(query_func) or not callable(count_func):
-            raise NotImplementedError(
-                "Subclasses must define callable 'admin_query_method' and 'admin_count_method' attributes"
-            )
-        query_args = self.get_query_args(request)
-
-        # Execute the raw query:
-        data = query_func(*query_args, **params, page=page, pageSize=page_size)
-
-        if hasattr(self, "process_admin_query_results"):
-            data = self.process_admin_query_results(data)
-
-        count = count_func(*query_args, **params)
-
-        if self.serializer_class is None:
-            raise NotImplementedError("Subclasses must define 'serializer_class' attribute")
-        serialized_data = self.serializer_class(data, many=True).data
-
-        base_url = request.build_absolute_uri().split("?")[0]
-        response_params = {**params, "page_size": page_size}
-        response_data = {
-            "count": count,
-            "next": (build_url(base_url, page + 1, response_params) if page * page_size < count else None),
-            "previous": (build_url(base_url, page - 1, response_params) if page > 1 else None),
-            "results": serialized_data,
-        }
-        return Response(response_data)
-
-    # This method resolves the method name or callable to the actual method from what is defined in viewset.
-    def _resolve_method(self, method):
-        """
-        If 'method' is a callable, return it directly.
-        If it's a string, get the attribute of self.model_class by that name.
-        """
-        if callable(method):
-            return method
-        elif isinstance(method, str):
-            func = getattr(self.model_class, method, None)
-            return func
-        else:
-            return None

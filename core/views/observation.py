@@ -1,7 +1,7 @@
+import inspect
 import logging
-from core.fhir_pagination import FHIRBundlePagination
-from core.views.fhir_base import FHIRBase
-from rest_framework import status, viewsets
+
+from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
 from core.serializers import (
     FHIRBundledObservationSerializer,
@@ -9,19 +9,31 @@ from core.serializers import (
     ObservationSerializer,
 )
 from core.models import Observation, Study
+from core.admin_pagination import CustomPageNumberPagination
+from core.fhir_pagination import FHIRBundlePagination
+from core.views.fhir_base import FHIRBase
 from rest_framework.response import Response
-from core.admin_pagination import AdminListMixin
 from rest_framework.exceptions import ValidationError, PermissionDenied
 
 logger = logging.getLogger(__name__)
 
 
-class ObservationViewSet(AdminListMixin, viewsets.ViewSet):
+class ObservationViewSet(ModelViewSet):
     model_class = Observation
     serializer_class = ObservationSerializer
+    pagination_class = CustomPageNumberPagination
 
-    admin_query_method = Observation.__dict__["for_practitioner_organization_study_patient"]
-    admin_count_method = Observation.__dict__["count_for_practitioner_organization_study_patient"]
+    supported_query_params = {
+        key
+        for key in inspect.signature(Observation.for_practitioner_organization_study_patient).parameters
+        if key not in {"jhe_user_id"}
+    }
+
+    def get_queryset(self):
+        return Observation.for_practitioner_organization_study_patient(
+            self.request.user.id,
+            **{key: value for key, value in self.request.query_params.items() if key in self.supported_query_params},
+        )
 
 
 class FHIRObservationViewSet(ModelViewSet):

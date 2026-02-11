@@ -1,4 +1,5 @@
 from datetime import datetime
+import inspect
 
 from django.conf import settings
 from django.core.mail import EmailMessage
@@ -13,7 +14,7 @@ from oauth2_provider.models import Grant, get_application_model
 from urllib.parse import quote
 from django.db.models import Prefetch, OuterRef, Subquery
 
-from core.admin_pagination import AdminListMixin
+from core.admin_pagination import CustomPageNumberPagination
 from core.fhir_pagination import FHIRBundlePagination
 from core.models import (
     JheSetting,
@@ -41,11 +42,16 @@ from core.serializers import (
 )
 
 
-class PatientViewSet(AdminListMixin, ModelViewSet):
+class PatientViewSet(ModelViewSet):
     model_class = Patient
     serializer_class = PatientSerializer
-    admin_query_method = Patient.__dict__["for_practitioner_organization_study"]
-    admin_count_method = Patient.__dict__["count_for_practitioner_organization_study"]
+    pagination_class = CustomPageNumberPagination
+
+    supported_query_params = {
+        key
+        for key in inspect.signature(Patient.for_practitioner_organization_study).parameters
+        if key not in {"jhe_user_id"}
+    }
 
     def get_permissions(self):
         """
@@ -65,6 +71,13 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
                 return Patient.objects.filter(pk=self.kwargs["pk"])
             else:
                 raise PermissionDenied("Current User does not have authorization to access this Patient.")
+        else:
+            return Patient.for_practitioner_organization_study(
+                self.request.user.id,
+                **{
+                    key: value for key, value in self.request.query_params.items() if key in self.supported_query_params
+                },
+            )
 
     def create(self, request, *args, **kwargs):
         patient = None
