@@ -1,6 +1,5 @@
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
 
 from django.db import connection
 from django.db.models import sql
@@ -109,8 +108,6 @@ class CustomPageNumberPagination(PageNumberPagination):
     max_page_size = 1000
 
     def paginate_queryset(self, queryset, request, view=None):
-        if not queryset:
-            raise NotFound("No results found")
         return super().paginate_queryset(queryset, request, view)
 
 

@@ -20,11 +20,11 @@ def test_get_data_source(api_client, device):
 
 
 def test_create_delete_data_source(api_client, superuser):
-    # regular users don't have permission
     data_sources = fetch_paginated(api_client, "/api/v1/data_sources")
     existing = len(data_sources)
     r = api_client.post("/api/v1/data_sources", {})
     assert r.status_code == 403, r.text
+    # regular users don't have permission to create
     api_client.force_authenticate(superuser)
     r = api_client.post("/api/v1/data_sources", {"name": "Device!"})
     assert r.status_code == 201, r.text
