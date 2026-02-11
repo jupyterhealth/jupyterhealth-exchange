@@ -532,7 +532,7 @@ class Patient(models.Model):
         """
         Count patients a practitioner is allowed to see (FHIR _total).
         """
-        practitioner = get_object_or_404(Practitioner.objects.get(jhe_user_id=jhe_user_id))
+        practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
         practitioner_id = practitioner.id
 
         organization_sql_where = ""
