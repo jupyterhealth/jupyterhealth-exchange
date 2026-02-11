@@ -144,7 +144,9 @@ def portal(request, path):
 
 
 def smart_launch(request):
-    # TBD: Refactor/move this out of common
+    raise NotImplementedError()
+    # TBD: this is an incomplete implementation,
+    # remove all hardcoded values in favor of settings
     SMART_CLIENT_ID = "jhe1234"
     SMART_REDIRECT_URI = settings.SITE_URL + "/smart/callback"
     SMART_SCOPES = "openid fhirUser launch launch/patient online_access patient/*.rs observation/*.rs"
@@ -166,6 +168,8 @@ def smart_launch(request):
     # 5) Now we need to get the authroization token - we use config to construct the request
     #    See https://build.fhir.org/ig/HL7/smart-app-launch/app-launch.html#request-4
 
+    # code_verifier, code_challenge = new_pkce_challenge()
+
     auth_code_params = {
         "response_type": "code",  # fixed
         "client_id": SMART_CLIENT_ID,
@@ -174,7 +178,7 @@ def smart_launch(request):
         "scope": SMART_SCOPES,
         "state": "jheState1",  # TBD map to user session - this is client-provided
         "aud": iss,
-        "code_challenge": "AAc39YwnMSLwjXUVYSc1WY5tx45lSLj4eJ5CHyjY9Es",
+        # "code_challenge": code_challenge,
         "code_challenge_method": "S256",
     }
 
@@ -185,6 +189,9 @@ def smart_launch(request):
 
 
 def smart_callback(request):
+    raise NotImplementedError()
+    # TBD: this is an incomplete implementation,
+    # remove all hardcoded values in favor of settings
     auth_code = request.GET.get("code")
     state = request.GET.get("state")  # noqa
 
@@ -193,12 +200,16 @@ def smart_callback(request):
     smart_config_token_endpoint = (
         "https://launch.smarthealthit.org/v/r4/auth/token"  # from above smart_config_data.get('authorization_endpoint')
     )
+    code_verifier = request.session.get("pkce_verifier")
+    if code_verifier is not None:
+        # FIXME: raise the right request error
+        raise
 
     token_params = {
         "grant_type": "authorization_code",  # fixed
         "code": auth_code,
         "redirect_uri": SMART_REDIRECT_URI,
-        "code_verifier": "N0hHRVk2WDNCUUFPQTIwVDNZWEpFSjI4UElNV1pSTlpRUFBXNTEzU0QzRTMzRE85WDFWTzU2WU9ESw==",
+        "code_verifier": code_verifier,
     }
 
     token_response = requests.post(

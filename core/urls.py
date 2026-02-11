@@ -54,8 +54,8 @@ urlpatterns = [
     ),
     path("auth/login/", common.client_auth_login, name="client-auth-login"),
     # Smart Launch
-    path("smart/launch", common.smart_launch, name="smart-launch"),
-    path("smart/callback/", common.smart_callback, name="smart-callback"),
+    # path("smart/launch", common.smart_launch, name="smart-launch"),
+    # path("smart/callback/", common.smart_callback, name="smart-callback"),
     # Client UI
     path(
         "portal/client_settings.js",
