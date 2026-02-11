@@ -67,7 +67,7 @@ class OrganizationViewSet(ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def types(self, request):
-        return Response(Organization.ORGANIZATION_TYPE_CHOICES)
+        return Response(Organization.ORGANIZATION_TYPES)
 
     @action(detail=True, methods=["GET"])
     def tree(self, request, pk):
