@@ -5,12 +5,13 @@ import pytest
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
-from core.models import JheUser
+from core.models import JheUser, Organization
 from core.utils import generate_observation_value_attachment_data
 from .utils import (
     Code,
     add_observations,
     add_patient_to_study,
+    create_study,
     fetch_paginated,
 )
 
@@ -64,7 +65,7 @@ def test_observation_pagination(hr_study, patient, api_client, get_observations)
 
     # no 'next' link on last page
     link_rels = [link["relation"] for link in pages[-1]["link"]]
-    assert link_rels == ["previous"]
+    assert link_rels == ["self", "previous"]
 
 
 def test_observation_limit(hr_study, patient, api_client, get_observations):
@@ -188,3 +189,53 @@ def test_get_observation_by_study(api_client, patient, hr_study):
         assert r.status_code == 200, f"{r.status_code} != 200, {r.text}"
     observations = r.json()["entry"]
     assert len(observations) == 10
+
+
+@pytest.mark.xfail(reason="studies have access to all patient data if a patient is in the study")
+def test_get_observation_one_patient_two_studies(api_client, patient, hr_study):
+
+    org2 = Organization.objects.create(
+        name="org2",
+        type="other",
+    )
+    bp_study = create_study(organization=org2, codes=[Code.BloodPressure])
+    add_observations(patient=patient, code=Code.HeartRate, n=6)
+    add_patient_to_study(patient, bp_study)
+    add_observations(patient=patient, code=Code.BloodPressure, n=5)
+
+    r = api_client.get(
+        "/fhir/r5/Observation",
+        {
+            "patient._has:Group:member:_id": hr_study.id,
+        },
+    )
+    if r.status_code != 200:
+        assert r.status_code == 200, f"{r.status_code} != 200, {r.text}"
+    observations = r.json()["entry"]
+    assert len(observations) == 6
+
+
+def test_get_observation_access(api_client, patient, hr_study):
+    add_observations(patient=patient, code=Code.HeartRate, n=6)
+    org2 = Organization.objects.create(
+        name="org2",
+        type="other",
+    )
+    bp_study = create_study(organization=org2, codes=[Code.BloodPressure])
+    patient2 = JheUser.objects.create_user(
+        email="test-patient-2@example.org",
+        user_type="patient",
+    ).patient
+    add_patient_to_study(patient2, bp_study)
+    add_observations(patient=patient2, code=Code.BloodPressure, n=5)
+
+    r = api_client.get(
+        "/fhir/r5/Observation",
+        {
+            "patient._has:Group:member:_id": hr_study.id,
+        },
+    )
+    if r.status_code != 200:
+        assert r.status_code == 200, f"{r.status_code} != 200, {r.text}"
+    observations = r.json()["entry"]
+    assert len(observations) == 6
