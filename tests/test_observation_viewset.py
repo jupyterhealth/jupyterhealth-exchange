@@ -17,9 +17,9 @@ from .utils import (
 
 
 @pytest.fixture
-def get_observations(client, patient, hr_study):
+def get_observations(api_client, patient, hr_study):
     def _get_observations(**params):
-        r = client.get(
+        r = api_client.get(
             "/fhir/r5/Observation",
             {
                 "patient": patient.id,
@@ -34,7 +34,7 @@ def get_observations(client, patient, hr_study):
     return _get_observations
 
 
-def test_observation_pagination(hr_study, patient, client, get_observations):
+def test_observation_pagination(hr_study, patient, api_client, get_observations):
     n = 101
     per_page = 10
     add_observations(patient=patient, code=Code.HeartRate, n=n)
@@ -50,7 +50,7 @@ def test_observation_pagination(hr_study, patient, client, get_observations):
 
     with CaptureQueriesContext(connection) as ctx:
         pages = fetch_paginated(
-            client, "/fhir/r5/Observation", {"patient": patient.id, "_count": per_page}, return_pages=True
+            api_client, "/fhir/r5/Observation", {"patient": patient.id, "_count": per_page}, return_pages=True
         )
     # try to make sure our offset/limit were applied
 
@@ -68,16 +68,18 @@ def test_observation_pagination(hr_study, patient, client, get_observations):
     assert link_rels == ["self", "previous"]
 
 
-def test_observation_limit(hr_study, patient, client, get_observations):
+def test_observation_limit(hr_study, patient, api_client, get_observations):
     """Test a large query with lots of entries"""
     n = 10_100
     per_page = 1_000
     add_observations(patient=patient, code=Code.HeartRate, n=n)
-    all_results = fetch_paginated(client, "/fhir/r5/Observation", {"patient": patient.id, "_count": per_page})
+    all_results = fetch_paginated(api_client, "/fhir/r5/Observation", {"patient": patient.id, "_count": per_page})
+    assert len(all_results) == n
+    all_results = fetch_paginated(api_client, "/api/v1/observations", {"patient_id": patient.id, "pageSize": per_page})
     assert len(all_results) == n
 
 
-def test_observation_upload_bundle(client, user, device, hr_study, patient, get_observations):
+def test_observation_upload_bundle(api_client, device, hr_study, patient, get_observations):
     entries = []
     for i in range(10):
         record = generate_observation_value_attachment_data(Code.HeartRate.value)
@@ -109,7 +111,7 @@ def test_observation_upload_bundle(client, user, device, hr_study, patient, get_
         "type": "batch",
         "entry": entries,
     }
-    r = client.post("/fhir/r5/", data=request_payload, format="json")
+    r = api_client.post("/fhir/r5/", data=request_payload)
     for entry in r.json()["entry"]:
         if "outcome" in entry["response"]:
             for issue in entry["response"]["outcome"]["issue"]:
@@ -130,7 +132,7 @@ def test_observation_upload_bundle(client, user, device, hr_study, patient, get_
     assert value_attachment_out["body"] == value_attachment_in["body"]
 
 
-def test_observation_upload(client, user, device, hr_study, patient, get_observations):
+def test_observation_upload(api_client, device, hr_study, patient, get_observations):
     record = generate_observation_value_attachment_data(Code.HeartRate.value)
 
     resource = {
@@ -152,7 +154,7 @@ def test_observation_upload(client, user, device, hr_study, patient, get_observa
             # "data": record,
         },
     }
-    r = client.post("/fhir/r5/Observation", data=resource, format="json")
+    r = api_client.post("/fhir/r5/Observation", data=resource)
     if r.status_code != 201:
         print(r)
     assert r.status_code == 201
@@ -168,7 +170,7 @@ def test_observation_upload(client, user, device, hr_study, patient, get_observa
     assert value_attachment_out["body"] == value_attachment_in["body"]
 
 
-def test_get_observation_by_study(client, patient, hr_study):
+def test_get_observation_by_study(api_client, patient, hr_study):
     add_observations(patient=patient, code=Code.HeartRate, n=5)
     patient2 = JheUser.objects.create_user(
         email="test-patient-2@example.org",
@@ -177,7 +179,7 @@ def test_get_observation_by_study(client, patient, hr_study):
     add_patient_to_study(patient2, hr_study)
     add_observations(patient=patient2, code=Code.HeartRate, n=5)
 
-    r = client.get(
+    r = api_client.get(
         "/fhir/r5/Observation",
         {
             "patient._has:Group:member:_id": hr_study.id,
@@ -190,7 +192,7 @@ def test_get_observation_by_study(client, patient, hr_study):
 
 
 @pytest.mark.xfail(reason="studies have access to all patient data if a patient is in the study")
-def test_get_observation_one_patient_two_studies(client, patient, hr_study):
+def test_get_observation_one_patient_two_studies(api_client, patient, hr_study):
 
     org2 = Organization.objects.create(
         name="org2",
@@ -201,7 +203,7 @@ def test_get_observation_one_patient_two_studies(client, patient, hr_study):
     add_patient_to_study(patient, bp_study)
     add_observations(patient=patient, code=Code.BloodPressure, n=5)
 
-    r = client.get(
+    r = api_client.get(
         "/fhir/r5/Observation",
         {
             "patient._has:Group:member:_id": hr_study.id,
@@ -213,7 +215,7 @@ def test_get_observation_one_patient_two_studies(client, patient, hr_study):
     assert len(observations) == 6
 
 
-def test_get_observation_access(client, patient, hr_study):
+def test_get_observation_access(api_client, patient, hr_study):
     add_observations(patient=patient, code=Code.HeartRate, n=6)
     org2 = Organization.objects.create(
         name="org2",
@@ -227,7 +229,7 @@ def test_get_observation_access(client, patient, hr_study):
     add_patient_to_study(patient2, bp_study)
     add_observations(patient=patient2, code=Code.BloodPressure, n=5)
 
-    r = client.get(
+    r = api_client.get(
         "/fhir/r5/Observation",
         {
             "patient._has:Group:member:_id": hr_study.id,
