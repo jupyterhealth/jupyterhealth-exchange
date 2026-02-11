@@ -12,9 +12,11 @@ from django.utils import timezone
 
 from core.models import (
     CodeableConcept,
+    JheUser,
     Observation,
     Organization,
     Patient,
+    PatientOrganization,
     Study,
     StudyPatient,
     StudyPatientScopeConsent,
@@ -52,18 +54,58 @@ def create_study(
     return study
 
 
-def add_patient_to_study(patient: Patient, study: Study) -> None:
+n_created = 0
+
+
+def add_patients(n, organization=None):
+    to_create = {}
+
+    def _add_to_bulk(obj):
+        # save for bulk creating later
+        to_create.setdefault(obj.__class__, []).append(obj)
+
+    global n_created
+
+    for i in range(n_created, n_created + n):
+        user = JheUser(
+            email=f"testuser-{i}@example.com",
+            user_type="patient",
+        )
+        _add_to_bulk(user)
+        patient = Patient(
+            jhe_user=user,
+            identifier=f"external-{i}",
+            name_family=f"Last {i}",
+            name_given="First",
+            birth_date="2020-01-01",
+        )
+        _add_to_bulk(patient)
+        if organization:
+            po = PatientOrganization(patient=patient, organization=organization)
+            _add_to_bulk(po)
+
+    for Class, items in to_create.items():
+        Class.objects.bulk_create(items)
+    n_created += n
+    return to_create[Patient]
+
+
+def add_patient_to_study(patient: Patient, study: Study, consent=True) -> None:
     """Add a patient to a study, including consent for the scopes requested by the study"""
+    existing = StudyPatient.objects.filter(study=study, patient=patient).first()
+    if existing:
+        return
     patient.organizations.add(study.organization)
     study_patient = StudyPatient.objects.create(study=study, patient=patient)
-    for scope_request in StudyScopeRequest.objects.filter(study=study):
-        scope_code = scope_request.scope_code
-        StudyPatientScopeConsent.objects.create(
-            study_patient=study_patient,
-            scope_code=scope_code,
-            consented=True,
-            consented_time=timezone.now(),
-        )
+    if consent:
+        for scope_request in StudyScopeRequest.objects.filter(study=study):
+            scope_code = scope_request.scope_code
+            StudyPatientScopeConsent.objects.create(
+                study_patient=study_patient,
+                scope_code=scope_code,
+                consented=True,
+                consented_time=timezone.now(),
+            )
 
 
 def add_observations(patient: Patient, code: Code | str, n: int) -> None:

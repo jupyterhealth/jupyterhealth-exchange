@@ -9,6 +9,7 @@ from core.models import (
     DataSource,
     JheUser,
     Organization,
+    PractitionerOrganization,
 )
 
 
@@ -25,6 +26,14 @@ def organization(db):
 
 
 @pytest.fixture
+def superuser(db):
+    return JheUser.objects.create_superuser(
+        email="superuser@example.org",
+        password="unused",
+    )
+
+
+@pytest.fixture
 def user(organization):
     user = JheUser.objects.create_user(
         email="test-user@example.org",
@@ -32,7 +41,11 @@ def user(organization):
         identifier="test-practitioner",
         user_type="practitioner",
     )
-    user.practitioner.organizations.add(organization)
+    PractitionerOrganization.objects.create(
+        practitioner=user.practitioner,
+        organization=organization,
+        role="manager",
+    )
     return user
 
 
@@ -42,10 +55,11 @@ def device(db):
 
 
 @pytest.fixture
-def client(user):
-    client = APIClient()
-    client.force_authenticate(user)
-    return client
+def api_client(user):
+    api_client = APIClient()
+    api_client.default_format = "json"
+    api_client.force_authenticate(user)
+    return api_client
 
 
 @pytest.fixture
