@@ -38,13 +38,7 @@ class FHIRBundlePagination(PageNumberPagination):
             "total": self.page.paginator.count,
             "entry": data,
             "link": self._get_fhir_links(),
-            "meta": {
-                "pagination": {
-                    "page": self.page.number,
-                    "pageSize": self.page.paginator.per_page,
-                    "totalPages": total_pages,
-                }
-            },
+            "meta": {},
         }
 
         return Response(response_data)
