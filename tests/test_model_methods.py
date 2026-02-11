@@ -121,9 +121,13 @@ class OrganizationMethodTests(TestCase):
 class PatientMethodTests(TestCase):
     def setUp(self):
         self.user = JheUser.objects.create_user(
-            email="patient@example.com", password="password", identifier="patient123"
+            email="patient@example.com",
+            password="password",
+            identifier="patient123",
+            user_type="practitioner",
         )
         self.org = Organization.objects.create(name="Hospital", type="prov")
+        self.user.practitioner.organizations.add(self.org)
 
         self.patient = Patient.objects.create(
             jhe_user=self.user,
@@ -201,8 +205,8 @@ class PatientMethodTests(TestCase):
             search = Observation.fhir_search(
                 self.user.id, patient_id=self.patient.id, coding_system="http://loinc.org", coding_code="1122-3"
             )
-        # calling fhir_search shouldn't execute any queries
-        self.assertEqual(ctx.captured_queries, [])
+        # calling fhir_search should only execute looking up practitioner id
+        self.assertEqual(len(ctx.captured_queries), 1)
         self.assertIsInstance(search, RawQuerySet)
         # actually execute the result
         results = list(search)
@@ -355,8 +359,12 @@ class ObservationMethodTests(TestCase):
     def setUp(self):
         self.org = Organization.objects.create(name="Clinic", type="prov")
         self.user = JheUser.objects.create_user(
-            email="patient4@example.com", password="password", identifier="patient000"
+            email="patient4@example.com",
+            password="password",
+            identifier="patient000",
+            user_type="practitioner",
         )
+        self.user.practitioner.organizations.add(self.org)
 
         self.patient = Patient.objects.create(
             jhe_user=self.user,
@@ -458,8 +466,9 @@ class ObservationMethodTests(TestCase):
             search = Observation.fhir_search(
                 self.user.id, patient_id=self.patient.id, coding_system="http://loinc.org", coding_code="1122-3"
             )
-        # calling fhir_search shouldn't execute any queries
-        self.assertEqual(ctx.captured_queries, [])
+        # calling fhir_search should only lookup practitioner id
+        # not anything else
+        self.assertEqual(len(ctx.captured_queries), 1)
         self.assertIsInstance(search, RawQuerySet)
         # actually execute the result
         results = list(search)
