@@ -58,6 +58,11 @@ def test_observation_pagination(hr_study, patient, client, get_observations):
     assert len(pages[-1]["entry"]) == n % per_page
     assert sum(len(page["entry"]) for page in pages) == n
 
+    pagination = pages[0]["meta"]["pagination"]
+    assert pagination["page"] == 1
+    assert pagination["pageSize"] == per_page
+    assert pagination["totalPages"] == len(pages)
+
     last_query = ctx.captured_queries[-1]["sql"]
     # try to make sure our offset/limit were applied
     assert "OFFSET 100" in last_query

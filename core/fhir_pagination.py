@@ -25,6 +25,13 @@ class FHIRBundlePagination(PageNumberPagination):
 
     def get_paginated_response(self, data):
         """Return FHIR-compliant Bundle response with pagination"""
+        if self.page.paginator.count == 0:
+            total_pages = 1
+        else:
+            total_pages = self.page.paginator.count // self.page.paginator.per_page
+            if self.page.paginator.count % self.page.paginator.per_page:
+                total_pages += 1
+
         response_data = {
             "resourceType": "Bundle",
             "type": "searchset",
@@ -35,7 +42,7 @@ class FHIRBundlePagination(PageNumberPagination):
                 "pagination": {
                     "page": self.page.number,
                     "pageSize": self.page.paginator.per_page,
-                    "totalPages": self.page.paginator.count,
+                    "totalPages": total_pages,
                 }
             },
         }
