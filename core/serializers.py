@@ -493,6 +493,14 @@ class FHIRObservationSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, record):
+        # deserialize json fields
+        record.meta = json.loads(record.meta)
+        record.identifier = list(filter(lambda item: item is not None, json.loads(record.identifier)))
+        if len(record.identifier) == 0:
+            del record.identifier
+        record.subject = json.loads(record.subject)
+        record.code = json.loads(record.code)
+        record.value_attachment = json.loads(record.value_attachment)
         as_dict = super().to_representation(record)
         # validate
         try:
@@ -505,20 +513,6 @@ class FHIRObservationSerializer(serializers.ModelSerializer):
 class FHIRBundledObservationSerializer(serializers.Serializer):
     # TBD: full_url = serializers.CharField()
     resource = FHIRObservationSerializer(required=False, read_only=True, source="*")
-
-    def to_representation(self, record):
-        # the raw query in `fhir_search` doesn't deserialize everything
-        # (e.g. jsonb are still strings)
-        # so we need to deserialize some by hand
-        # Extra handling if list can potentially contain nulls
-        record.meta = json.loads(record.meta)
-        record.identifier = list(filter(lambda item: item is not None, json.loads(record.identifier)))
-        if len(record.identifier) == 0:
-            del record.identifier
-        record.subject = json.loads(record.subject)
-        record.code = json.loads(record.code)
-        record.value_attachment = json.loads(record.value_attachment)
-        return super().to_representation(record)
 
 
 class FHIRPatientSerializer(serializers.ModelSerializer):
@@ -545,6 +539,13 @@ class FHIRPatientSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, record):
+        # jsonb in raw is not automagically cast
+        record.meta = json.loads(record.meta)
+        record.identifier = json.loads(record.identifier)
+        if len(record.identifier) == 0:
+            del record.identifier
+        record.name = json.loads(record.name)
+        record.telecom = json.loads(record.telecom)
         as_dict = super().to_representation(record)
         # validate
         try:
@@ -557,16 +558,6 @@ class FHIRPatientSerializer(serializers.ModelSerializer):
 class FHIRBundledPatientSerializer(serializers.Serializer):
     # full_url = serializers.CharField()
     resource = FHIRPatientSerializer(required=False, read_only=True, source="*")
-
-    def to_representation(self, record):
-        # jsonb in raw is not automagically cast
-        record.meta = json.loads(record.meta)
-        record.identifier = json.loads(record.identifier)
-        if len(record.identifier) == 0:
-            del record.identifier
-        record.name = json.loads(record.name)
-        record.telecom = json.loads(record.telecom)
-        return super().to_representation(record)
 
 
 class FHIRBundleSerializer(serializers.Serializer):
