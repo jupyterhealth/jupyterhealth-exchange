@@ -1,5 +1,10 @@
 import json
+
+import humps
+from django.core.exceptions import BadRequest
 from rest_framework import serializers
+from fhir.resources.observation import Observation as FHIRObservation
+from fhir.resources.patient import Patient as FHIRPatient
 
 from core.models import (
     ClientDataSource,
@@ -487,6 +492,15 @@ class FHIRObservationSerializer(serializers.ModelSerializer):
             "value_attachment",
         ]
 
+    def to_representation(self, record):
+        as_dict = super().to_representation(record)
+        # validate
+        try:
+            FHIRObservation.parse_obj(humps.camelize(as_dict))
+        except Exception as e:
+            raise BadRequest(e)
+        return as_dict
+
 
 class FHIRBundledObservationSerializer(serializers.Serializer):
     # TBD: full_url = serializers.CharField()
@@ -497,6 +511,7 @@ class FHIRBundledObservationSerializer(serializers.Serializer):
         # (e.g. jsonb are still strings)
         # so we need to deserialize some by hand
         # Extra handling if list can potentially contain nulls
+        record.meta = json.loads(record.meta)
         record.identifier = list(filter(lambda item: item is not None, json.loads(record.identifier)))
         if len(record.identifier) == 0:
             del record.identifier
@@ -528,6 +543,15 @@ class FHIRPatientSerializer(serializers.ModelSerializer):
             "birth_date",
             "telecom",
         ]
+
+    def to_representation(self, record):
+        as_dict = super().to_representation(record)
+        # validate
+        try:
+            FHIRPatient.parse_obj(humps.camelize(as_dict))
+        except Exception as e:
+            raise BadRequest(e)
+        return as_dict
 
 
 class FHIRBundledPatientSerializer(serializers.Serializer):
