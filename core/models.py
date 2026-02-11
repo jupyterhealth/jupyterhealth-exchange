@@ -25,6 +25,7 @@ from django.utils.translation import gettext_lazy as _
 from fhir.resources.observation import Observation as FHIRObservation
 from jsonschema import ValidationError
 from core.utils import validate_with_registry
+from core.admin_pagination import PaginatedRawQuerySet
 from oauth2_provider.models import AccessToken, RefreshToken, Grant, IDToken, get_application_model, get_grant_model
 
 from .tokens import account_activation_token
@@ -128,7 +129,6 @@ class JheUser(AbstractUser):
 
         if is_new and self.user_type:
             if self.user_type == "patient" and not hasattr(self, "patient_profile"):
-                print("JheUser save patient profile")
                 Patient.objects.create(
                     jhe_user=self,
                     name_family=self.last_name or "",
@@ -137,7 +137,6 @@ class JheUser(AbstractUser):
                     identifier=self.identifier,
                 )
             elif self.user_type == "practitioner" and not hasattr(self, "practitioner_profile"):
-                print("JheUser save practitioner profile")
                 with transaction.atomic():
                     practitioner = Practitioner.objects.create(
                         jhe_user=self,
@@ -380,47 +379,6 @@ class Organization(models.Model):
         self.children = []
 
 
-class PractitionerQuerySet(models.QuerySet):
-    def count_studies(self, jhe_user_id, organization_id=None, study_id=None):
-        """
-        Returns the total number of distinct studies for this practitioner,
-        optionally filtered by organization_id and/or study_id.
-        """
-        params = {"jhe_user_id": jhe_user_id}
-        study_clause = ""
-        if study_id:
-            study_clause = "AND core_study.id = %(study_id)s"
-            params["study_id"] = int(study_id)
-        org_clause = ""
-        if organization_id:
-            org_clause = "AND core_organization.id = %(org_id)s"
-            params["org_id"] = int(organization_id)
-
-        sql = f"""
-            SELECT COUNT(DISTINCT core_study.id) AS count
-            FROM core_study
-            JOIN core_organization
-              ON core_organization.id = core_study.organization_id
-            JOIN core_practitionerorganization
-              ON core_practitionerorganization.organization_id = core_organization.id
-            WHERE core_practitioner.jhe_user_id = %(jhe_user_id)s
-            {study_clause}
-            {org_clause}
-        """
-        with connection.cursor() as cursor:
-            cursor.execute(sql, params)
-            row = cursor.fetchone()
-        return row[0] if row else 0
-
-
-class PractitionerManager(models.Manager):
-    def get_queryset(self):
-        return PractitionerQuerySet(self.model, using=self._db)
-
-    def count_studies(self, *args, **kwargs):
-        return self.get_queryset().count_studies(*args, **kwargs)
-
-
 class Practitioner(models.Model):
     jhe_user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -435,7 +393,6 @@ class Practitioner(models.Model):
     organizations = models.ManyToManyField(
         Organization, through="PractitionerOrganization", related_name="practitioners"
     )
-    objects = PractitionerManager()
 
 
 class Patient(models.Model):
@@ -479,12 +436,7 @@ class Patient(models.Model):
         study_id=None,
         patient_id=None,
         patient_identifier_value=None,
-        page=1,
-        pageSize=20,
     ):
-        pageSize = int(pageSize) if pageSize is not None else 20
-        page = int(page) if page is not None else 1
-        offset = pageSize * (page - 1)
         organization_sql_where = f"AND core_organization.id={int(organization_id)}" if organization_id else ""
         study_sql_where = f"AND core_study.id={int(study_id)}" if study_id else ""
         patient_id_sql_where = f"AND core_patient.id={int(patient_id)}" if patient_id else ""
@@ -511,80 +463,12 @@ class Patient(models.Model):
               {study_sql_where}
               {patient_id_sql_where}
               {patient_identifier_value_sql_where}
-            LIMIT {pageSize}
-            OFFSET {offset};
         """
 
         params = {"jhe_user_id": jhe_user_id}
         if patient_identifier_value:
             params["patient_identifier_value"] = patient_identifier_value
         return Patient.objects.raw(sql, params)
-
-    # TODO: need to make this as DRY as possible, and re-use in other models.
-    @staticmethod
-    def count_for_practitioner_organization_study(
-        jhe_user_id,
-        organization_id=None,
-        study_id=None,
-        patient_id=None,
-        patient_identifier_value=None,
-    ):
-        """
-        Count patients a practitioner is allowed to see (FHIR _total).
-        """
-        practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
-        practitioner_id = practitioner.id
-
-        organization_sql_where = ""
-        if organization_id:
-            organization_sql_where = f"AND core_organization.id={int(organization_id)}"
-
-        study_sql_where = ""
-        if study_id:
-            study_sql_where = f"AND core_study.id={int(study_id)}"
-
-        patient_id_sql_where = ""
-        if patient_id:
-            patient_id_sql_where = f"AND core_patient.id={int(patient_id)}"
-
-        patient_identifier_value_sql_where = ""
-        if patient_identifier_value:
-            patient_identifier_value_sql_where = "AND core_patient.identifier=%(patient_identifier_value)s"
-
-        query = f"""
-            SELECT 1 AS id,
-                   COUNT(DISTINCT core_patient.id) AS count
-            FROM core_patient
-            LEFT JOIN core_studypatient
-              ON core_studypatient.patient_id = core_patient.id
-            LEFT JOIN core_study
-              ON core_study.id = core_studypatient.study_id
-            JOIN core_patientorganization
-              ON core_patientorganization.patient_id = core_patient.id
-            JOIN core_organization
-              ON core_organization.id = core_patientorganization.organization_id
-            JOIN core_practitionerorganization
-              ON core_practitionerorganization.organization_id = core_organization.id
-            WHERE core_practitionerorganization.practitioner_id = %(practitioner_id)s
-              {organization_sql_where}
-              {study_sql_where}
-              {patient_id_sql_where}
-              {patient_identifier_value_sql_where}
-        """
-
-        # Use a temporary model for count results
-        class CountResult(models.Model):
-            count = models.IntegerField()
-
-            class Meta:
-                managed = False
-                app_label = "core"
-
-        params = {"practitioner_id": practitioner_id}
-        if patient_identifier_value:
-            params["patient_identifier_value"] = patient_identifier_value
-        results = list(CountResult.objects.raw(query, params))
-        return results[0].count if results else 0
 
     @staticmethod
     def construct_invitation_link(invitation_url, client_id, auth_code, code_verifier):
@@ -599,22 +483,16 @@ class Patient(models.Model):
         patient_identifier_value=None,
         organization_id=None,
     ):
-        if (
-            len(
-                Patient.for_practitioner_organization_study(
-                    jhe_user_id,
-                    organization_id,
-                    None,
-                    patient_id,
-                    patient_identifier_value,
-                    page=1,
-                    pageSize=20,
-                )
-            )
-            == 0
-        ):
-            return False
-        return True
+        qs = Patient.for_practitioner_organization_study(
+            jhe_user_id,
+            organization_id,
+            None,
+            patient_id,
+            patient_identifier_value,
+        )
+        # this is how we limit query to at most one result
+        qs = PaginatedRawQuerySet.from_raw(qs)[:1]
+        return len(qs) > 0
 
     @staticmethod
     def for_study(jhe_user_id, study_id):
@@ -804,13 +682,10 @@ class Study(models.Model):
     icon_url = models.TextField(null=True, blank=True)
 
     @staticmethod
-    def for_practitioner_organization(jhe_user_id, organization_id=None, study_id=None, page=1, pageSize=20):
+    def for_practitioner_organization(jhe_user_id, organization_id=None, study_id=None):
         practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
         practitioner_id = practitioner.id
 
-        page = int(page)
-        pageSize = int(pageSize)
-        offset = pageSize * (page - 1)
         study_sql_where = f"AND core_study.id = {int(study_id)}" if study_id else ""
         organization_sql_where = f"AND core_organization.id = {int(organization_id)}" if organization_id else ""
 
@@ -825,48 +700,14 @@ class Study(models.Model):
             {study_sql_where}
             {organization_sql_where}
             ORDER BY core_study.name
-            LIMIT {pageSize}
-            OFFSET {offset};
         """
         return Study.objects.raw(sql, {"practitioner_id": practitioner_id})
 
     @staticmethod
-    def count_for_practitioner_organization(jhe_user_id, organization_id=None, study_id=None):
-        """
-        Use a dedicated count query for better performance. Returns the total number of studies matching the
-        criteria.
-        """
-        practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
-        practitioner_id = practitioner.id
-        study_sql_where = f"AND core_study.id = {int(study_id)}" if study_id else ""
-        organization_sql_where = f"AND core_organization.id = {int(organization_id)}" if organization_id else ""
-
-        class CountResult(models.Model):
-            count = models.IntegerField()
-
-            class Meta:
-                managed = False
-                app_label = "core"
-
-        query = f"""
-          SELECT 1 AS id, COUNT(DISTINCT core_study.id) AS count
-          FROM core_study
-          JOIN core_organization
-            ON core_organization.id = core_study.organization_id
-          JOIN core_practitionerorganization
-            ON core_practitionerorganization.organization_id = core_organization.id
-          WHERE core_practitionerorganization.practitioner_id = %(practitioner_id)s
-          {study_sql_where}
-          {organization_sql_where}
-        """
-        results = list(CountResult.objects.raw(query, {"practitioner_id": practitioner_id}))
-        return results[0].count if results else 0
-
-    @staticmethod
     def practitioner_authorized(practitioner_user_id, study_id):
-        if len(Study.for_practitioner_organization(practitioner_user_id, None, study_id)) == 0:
-            return False
-        return True
+        qs = Study.for_practitioner_organization(practitioner_user_id, None, study_id)
+        qs = PaginatedRawQuerySet.from_raw(qs)[:1]
+        return len(qs) > 0
 
     def has_patient(study_id, patient_id):
         study_patients = StudyPatient.objects.filter(study_id=study_id, patient_id=patient_id)
@@ -1126,20 +967,7 @@ class Observation(models.Model):
         study_id=None,
         patient_id=None,
         observation_id=None,
-        page=1,
-        pageSize=20,
     ):
-
-        if isinstance(pageSize, str):
-            pageSize = int(pageSize)
-
-        if isinstance(page, str):
-            page = int(page)
-
-        print(f"pageSize: {pageSize}, page: {page}")
-
-        offset = pageSize * (page - 1)
-
         # Explicitly cast to ints so no injection vulnerability
         organization_sql_where = ""
         if organization_id:
@@ -1186,7 +1014,6 @@ class Observation(models.Model):
         {patient_id_sql_where}
         {observation_sql_where}
         ORDER BY core_observation.last_updated DESC
-        LIMIT %(pageSize)s OFFSET %(offset)s;
         """.format(
             organization_sql_where=organization_sql_where,
             study_sql_where=study_sql_where,
@@ -1197,7 +1024,7 @@ class Observation(models.Model):
         practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
         practitioner_id = practitioner.id
 
-        return Observation.objects.raw(q, {"practitioner_id": practitioner_id, "pageSize": pageSize, "offset": offset})
+        return Observation.objects.raw(q, {"practitioner_id": practitioner_id})
 
     @staticmethod
     def practitioner_authorized(practitioner_user_id, observation_id):
@@ -1320,65 +1147,6 @@ class Observation(models.Model):
                 "patient_identifier_value": patient_identifier_value,
             },
         )
-
-    @staticmethod
-    def count_for_practitioner_organization_study_patient(
-        jhe_user_id,
-        organization_id=None,
-        study_id=None,
-        patient_id=None,
-        observation_id=None,
-    ):
-        """Use a dedicated count query for better performance. Aligns with optional inclusion for _total number of
-        matching resources per FHIR spec."""
-
-        # Explicitly cast to ints so no injection vulnerability
-        organization_sql_where = ""
-        if organization_id:
-            organization_sql_where = f"AND core_organization.id={int(organization_id)}"
-
-        study_sql_where = ""
-        if study_id:
-            study_sql_where = f"AND core_study.id={int(study_id)}"
-
-        patient_id_sql_where = ""
-        if patient_id:
-            patient_id_sql_where = f"AND core_patient.id={int(patient_id)}"
-
-        observation_sql_where = ""
-        if observation_id:
-            observation_sql_where = f"AND core_observation.id={int(observation_id)}"
-
-        practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
-        practitioner_id = practitioner.id
-
-        # Use a temporary model for count results
-        class CountResult(models.Model):
-            count = models.IntegerField()
-
-            class Meta:
-                managed = False  # No table creation
-                app_label = "core"
-
-        query = f"""
-        SELECT 1 as id, COUNT(DISTINCT core_observation.id) as count
-        FROM core_observation
-        JOIN core_codeableconcept ON core_codeableconcept.id=core_observation.codeable_concept_id
-        JOIN core_patient ON core_patient.id=core_observation.subject_patient_id
-        JOIN core_patientorganization ON core_patientorganization.patient_id=core_patient.id
-        JOIN core_organization ON core_organization.id=core_patientorganization.organization_id
-        JOIN core_practitionerorganization ON core_practitionerorganization.organization_id=core_organization.id
-        LEFT JOIN core_studypatient ON core_studypatient.patient_id=core_patient.id
-        LEFT JOIN core_study ON core_study.id=core_studypatient.study_id
-        WHERE core_practitionerorganization.practitioner_id=%(practitioner_id)s
-        {organization_sql_where}
-        {study_sql_where}
-        {patient_id_sql_where}
-        {observation_sql_where}
-      """
-
-        results = list(CountResult.objects.raw(query, {"practitioner_id": practitioner_id}))
-        return results[0].count if results else 0
 
     # Get the binary data eg https://www.rapidtables.com/convert/number/string-to-binary.html (delimiter=none)
     # base64 it eg https://cryptii.com/pipes/binary-to-base64
