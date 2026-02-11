@@ -9,6 +9,8 @@ on:
 
 jobs:
   run-full-test-suite:
+    permissions:
+      id-token: write
 
     name: Run full test suite
     runs-on: ubuntu-latest
@@ -70,3 +72,5 @@ jobs:
 
       - name: upload coverage
         uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
