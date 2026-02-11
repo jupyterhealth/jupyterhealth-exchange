@@ -103,12 +103,14 @@ def get_link(bundle: dict, rel: str) -> str | None:
 def fetch_paginated(client, path, params=None, *, return_pages=False):
     params = params or {}
     if "/fhir/" in path:
+        fhir = True
         Pagination = FHIRBundlePagination
         result_key = "entry"
         total_key = "total"
         get_next = partial(get_link, rel="next")
         page_size_param = "_count"
     else:
+        fhir = False
         Pagination = CustomPageNumberPagination
         result_key = "results"
         total_key = "count"
@@ -127,6 +129,9 @@ def fetch_paginated(client, path, params=None, *, return_pages=False):
     if next_url:
         assert len(page[result_key]) == per_page, f"{len(page[result_key])} != {per_page}"
 
+    if fhir:
+        assert get_link(page, "self"), f"missing self link: {page['links']}"
+
     visited = {path}
     while next_url:
         assert next_url not in visited, f"repeated {next_url} in {visited}"
@@ -134,6 +139,8 @@ def fetch_paginated(client, path, params=None, *, return_pages=False):
         r = client.get(next_url)
         assert r.status_code == 200, f"{r.status_code} != 200: {r.text}"
         page = r.json()
+        if fhir:
+            assert next_url == get_link(page, "self"), f"missing self link: {page['links']}, expected {next_url}"
         pages.append(page)
         next_url = get_next(page)
         page_results = page[result_key]

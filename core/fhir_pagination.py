@@ -52,6 +52,10 @@ class FHIRBundlePagination(PageNumberPagination):
     def _get_fhir_links(self):
         """Generate FHIR Bundle links for pagination"""
         links = []
+
+        # Self link (always present)
+        links.append({"relation": "self", "url": self.request.build_absolute_uri()})
+
         prev_link = self.get_previous_link()
         next_link = self.get_next_link()
         if prev_link:

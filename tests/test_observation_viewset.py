@@ -69,7 +69,7 @@ def test_observation_pagination(hr_study, patient, client, get_observations):
 
     # no 'next' link on last page
     link_rels = [link["relation"] for link in pages[-1]["link"]]
-    assert link_rels == ["previous"]
+    assert link_rels == ["self", "previous"]
 
 
 def test_observation_limit(hr_study, patient, client, get_observations):
