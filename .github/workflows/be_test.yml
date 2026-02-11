@@ -44,23 +44,15 @@ jobs:
       SECRET_KEY: "super-secret-key"
 
     steps:
-      - run: echo "Triggered by a ${{ github.event_name }} event."
-      - run: echo "The workflow is running on ${{ runner.os }}."
-      - run: echo "Branch name is ${{ github.ref }}."
-      - run: echo "Repository name is ${{ github.repository }}."
-
       - name: Checkout code
         uses: actions/checkout@v6
 
       - run: echo "Repository cloned successfully."
 
-      - name: Set up Python 3.11 for Django tests
+      - name: Set up Python for Django tests
         uses: actions/setup-python@v6
         with:
-          python-version: 3.11
-
-      - name: Find manage.py location
-        run: find . -name manage.py
+          python-version: 3.12
 
       - name: Install dependencies using Pipenv
         run: |
@@ -69,8 +61,12 @@ jobs:
 
       - name: Run Django tests
         run: |
-          pipenv run python manage.py test --pattern="test*.py" --verbosity=2 --failfast --noinput --settings=jhe.test_settings
-          # TODO: Uncomment the following line to run coverage after the tests are confirmed to work.
-          # pipenv run coverage run --source='.' manage.py test --pattern="*_test.py" --verbosity=2 --failfast --noinput --settings=jhe.test_settings
+          pipenv run pytest -vx tests/
 
-      - run: echo "Django tests completed."
+      - name: install coverage.py
+        # needed for codecov
+        run: |
+          pip install coverage
+
+      - name: upload coverage
+        uses: codecov/codecov-action@v5
