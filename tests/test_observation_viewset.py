@@ -75,7 +75,7 @@ def test_observation_limit(hr_study, patient, api_client, get_observations):
     add_observations(patient=patient, code=Code.HeartRate, n=n)
     all_results = fetch_paginated(api_client, "/fhir/r5/Observation", {"patient": patient.id, "_count": per_page})
     assert len(all_results) == n
-    all_results = fetch_paginated(api_client, "/api/v1/observations", {"patient": patient.id, "pageSize": per_page})
+    all_results = fetch_paginated(api_client, "/api/v1/observations", {"patient_id": patient.id, "pageSize": per_page})
     assert len(all_results) == n
 
 
