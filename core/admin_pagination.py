@@ -37,8 +37,8 @@ class PaginatedRawQuerySet(RawQuerySet):
             ),
         ):
             raise TypeError(f"Can only index by int or slice, not {k:r}")
-        if (not isinstance(k, slice) and (k >= 0)) or (
-            isinstance(k, slice) and (k.start is None or k.start >= 0) and (k.stop is None or k.stop >= 0)
+        if (isinstance(k, int) and k < 0) or (
+            isinstance(k, slice) and ((k.start and k.start < 0) or (k.stop and k.stop < 0))
         ):
             raise ValueError("Negative indexing is not supported.")
 
