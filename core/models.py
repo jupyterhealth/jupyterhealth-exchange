@@ -532,7 +532,7 @@ class Patient(models.Model):
         """
         Count patients a practitioner is allowed to see (FHIR _total).
         """
-        practitioner = Practitioner.objects.get(jhe_user_id=jhe_user_id)
+        practitioner = get_object_or_404(Practitioner.objects.get(jhe_user_id=jhe_user_id))
         practitioner_id = practitioner.id
 
         organization_sql_where = ""
@@ -643,6 +643,9 @@ class Patient(models.Model):
         patient_identifier_value=None,
     ):
 
+        practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
+        practitioner_id = practitioner.id
+
         # Explicitly cast to ints so no injection vulnerability
         study_sql_where = ""
         if study_id:
@@ -698,12 +701,8 @@ class Patient(models.Model):
             JOIN core_studypatient ON core_studypatient.patient_id=core_patient.id
             JOIN core_practitionerorganization
             ON core_practitionerorganization.organization_id = core_organization.id
+            WHERE core_practitionerorganization.practitioner_id = %(practitioner_id)s
 
-            WHERE core_practitionerorganization.practitioner_id = (
-              SELECT id
-              FROM core_practitioner
-              WHERE jhe_user_id = %(jhe_user_id)s
-            )
             {study_sql_where}
             {patient_identifier_value_sql_where}
             ORDER BY core_patient.name_family
@@ -716,7 +715,7 @@ class Patient(models.Model):
         records = Patient.objects.raw(
             q,
             {
-                "jhe_user_id": jhe_user_id,
+                "practitioner_id": practitioner_id,
                 "patient_identifier_value": patient_identifier_value,
             },
         )
@@ -1180,7 +1179,8 @@ class Observation(models.Model):
         JOIN core_practitionerorganization ON core_practitionerorganization.organization_id=core_organization.id
         LEFT JOIN core_studypatient ON core_studypatient.patient_id=core_patient.id
         LEFT JOIN core_study ON core_study.id=core_studypatient.study_id
-        WHERE core_practitionerorganization.practitioner_id=%(jhe_user_id)s
+        WHERE core_practitionerorganization.practitioner_id = %(practitioner_id)s
+
         {organization_sql_where}
         {study_sql_where}
         {patient_id_sql_where}
@@ -1194,12 +1194,10 @@ class Observation(models.Model):
             observation_sql_where=observation_sql_where,
         )
 
-        practitioner = Practitioner.objects.get(jhe_user_id=jhe_user_id)
+        practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
         practitioner_id = practitioner.id
 
-        print(f"practitioner_id: {practitioner_id}")
-
-        return Observation.objects.raw(q, {"jhe_user_id": practitioner_id, "pageSize": pageSize, "offset": offset})
+        return Observation.objects.raw(q, {"practitioner_id": practitioner_id, "pageSize": pageSize, "offset": offset})
 
     @staticmethod
     def practitioner_authorized(practitioner_user_id, observation_id):
@@ -1225,6 +1223,9 @@ class Observation(models.Model):
         coding_code=None,
         observation_id=None,
     ):
+
+        practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
+        practitioner_id = practitioner.id
 
         # Explicitly cast to ints so no injection vulnerability
         study_sql_where = ""
@@ -1288,11 +1289,14 @@ class Observation(models.Model):
             LEFT JOIN core_observationidentifier ON core_observationidentifier.observation_id=core_observation.id
             JOIN core_codeableconcept ON core_codeableconcept.id=core_observation.codeable_concept_id
             JOIN core_patient ON core_patient.id=core_observation.subject_patient_id
+            JOIN core_patientorganization ON core_patientorganization.patient_id=core_patient.id
+            JOIN core_organization ON core_organization.id=core_patientorganization.organization_id
+            JOIN core_practitionerorganization ON core_practitionerorganization.organization_id=core_organization.id
             LEFT JOIN core_studypatient ON core_studypatient.patient_id=core_patient.id
             LEFT JOIN core_study ON core_study.id=core_studypatient.study_id
-            JOIN core_organization ON core_organization.id=core_study.organization_id
-            JOIN core_patientorganization ON core_patientorganization.organization_id=core_organization.id
-AND core_codeableconcept.coding_system LIKE %(coding_system)s AND core_codeableconcept.coding_code LIKE %(coding_code)s
+            WHERE core_practitionerorganization.practitioner_id = %(practitioner_id)s
+            AND core_codeableconcept.coding_system LIKE %(coding_system)s AND core_codeableconcept.coding_code LIKE %(coding_code)s
+
             {study_sql_where}
             {patient_id_sql_where}
             {patient_identifier_value_sql_where}
@@ -1310,6 +1314,7 @@ AND core_codeableconcept.coding_system LIKE %(coding_system)s AND core_codeablec
         return Observation.objects.raw(
             q,
             {
+                "practitioner_id": practitioner_id,
                 "coding_system": coding_system if coding_system else "%",
                 "coding_code": coding_code if coding_code else "%",
                 "patient_identifier_value": patient_identifier_value,
@@ -1344,7 +1349,7 @@ AND core_codeableconcept.coding_system LIKE %(coding_system)s AND core_codeablec
         if observation_id:
             observation_sql_where = f"AND core_observation.id={int(observation_id)}"
 
-        practitioner = Practitioner.objects.get(jhe_user_id=jhe_user_id)
+        practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
         practitioner_id = practitioner.id
 
         # Use a temporary model for count results

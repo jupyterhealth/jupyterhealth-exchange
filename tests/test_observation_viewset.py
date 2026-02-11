@@ -5,12 +5,13 @@ import pytest
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
-from core.models import JheUser
+from core.models import JheUser, Organization
 from core.utils import generate_observation_value_attachment_data
 from .utils import (
     Code,
     add_observations,
     add_patient_to_study,
+    create_study,
     fetch_paginated,
 )
 
@@ -191,3 +192,53 @@ def test_get_observation_by_study(client, patient, hr_study):
         assert r.status_code == 200, f"{r.status_code} != 200, {r.text}"
     observations = r.json()["entry"]
     assert len(observations) == 10
+
+
+@pytest.mark.xfail(reason="studies have access to all patient data if a patient is in the study")
+def test_get_observation_one_patient_two_studies(client, patient, hr_study):
+
+    org2 = Organization.objects.create(
+        name="org2",
+        type="other",
+    )
+    bp_study = create_study(organization=org2, codes=[Code.BloodPressure])
+    add_observations(patient=patient, code=Code.HeartRate, n=6)
+    add_patient_to_study(patient, bp_study)
+    add_observations(patient=patient, code=Code.BloodPressure, n=5)
+
+    r = client.get(
+        "/fhir/r5/Observation",
+        {
+            "patient._has:Group:member:_id": hr_study.id,
+        },
+    )
+    if r.status_code != 200:
+        assert r.status_code == 200, f"{r.status_code} != 200, {r.text}"
+    observations = r.json()["entry"]
+    assert len(observations) == 6
+
+
+def test_get_observation_access(client, patient, hr_study):
+    add_observations(patient=patient, code=Code.HeartRate, n=6)
+    org2 = Organization.objects.create(
+        name="org2",
+        type="other",
+    )
+    bp_study = create_study(organization=org2, codes=[Code.BloodPressure])
+    patient2 = JheUser.objects.create_user(
+        email="test-patient-2@example.org",
+        user_type="patient",
+    ).patient
+    add_patient_to_study(patient2, bp_study)
+    add_observations(patient=patient2, code=Code.BloodPressure, n=5)
+
+    r = client.get(
+        "/fhir/r5/Observation",
+        {
+            "patient._has:Group:member:_id": hr_study.id,
+        },
+    )
+    if r.status_code != 200:
+        assert r.status_code == 200, f"{r.status_code} != 200, {r.text}"
+    observations = r.json()["entry"]
+    assert len(observations) == 6
