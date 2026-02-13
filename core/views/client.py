@@ -1,9 +1,11 @@
 from core.models import ClientDataSource, DataSource
+from jhe import settings
 from rest_framework.viewsets import ModelViewSet
 from oauth2_provider.models import get_application_model
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 
 from core.serializers import ClientDataSourceSerializer, ClientSerializer, DataSourceSerializer
 
@@ -14,7 +16,40 @@ class ClientViewSet(ModelViewSet):
     serializer_class = ClientSerializer
 
     def get_queryset(self):
-        return Application.objects.all().order_by("-created")
+        return Application.objects.exclude(name__contains="JHE").order_by(
+            "-created"
+        )  # We don't want to include the JHE Portal client here
+
+    def perform_create(self, serializer):
+        name = self.request.data.get("name")
+        client_id = self.request.data.get(
+            "clientId"
+        )  # djangorestframework_camel_case not working here - may be reserved
+        invitation_url = self.request.data.get("invitation_url")
+        code_verifier = self.request.data.get("codeVerifier")
+
+        errors = {}
+        if not name:
+            errors["name"] = ["This field is required."]
+        if not client_id:
+            errors["clientId"] = ["This field is required."]
+        if not invitation_url:
+            errors["invitation_url"] = ["This field is required."]
+        if not code_verifier:
+            errors["code_verifier"] = ["This field is required."]
+        if errors:
+            raise ValidationError(errors)
+
+        serializer.save(
+            name=name,
+            client_id=client_id,
+            client_type=Application.CLIENT_PUBLIC,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+            skip_authorization=True,
+            redirect_uris=settings.SITE_URL
+            + settings.OAUTH2_CALLBACK_PATH,  # required but not actually used since this is a public client and we validate the redirect_uri manually
+            algorithm="RS256",  # RSA with SHA-256
+        )
 
     def partial_update(self, request, *args, **kwargs):
         # print("keys in request.data:", list(request.data.keys()))

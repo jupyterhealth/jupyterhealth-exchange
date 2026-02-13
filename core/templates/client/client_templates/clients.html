@@ -90,6 +90,7 @@
           ></button>
         </div>
         <div class="modal-body">
+          <div class="alert alert-warning validationError" style="display: none" role="alert"></div>
           <div class="container-fluid">
             {{#if delete}}
               <div class="alert alert-danger" role="alert">
@@ -126,7 +127,7 @@
                 </div>
                 <div class="mb-3">
                   <label for="clientInvitationUrl" class="form-label"
-                    >Invitation URL</label
+                    >Invitation URL<br/><small>Use the variable <code>CODE</code> to insert authorization code<br/>Eg. <code>https://example.com?invitation=CODE</code></small></label
                   >
                   <input
                     type="text"
@@ -149,7 +150,7 @@
                       type="button"
                       class="mt-1 btn btn-sm btn-success"
                       onclick="document.getElementById('clientClientId').value = generateClientId()"
-                    >Generate</button>
+                    >{{#if update}} Re-Generate {{/if}} {{#unless update}} Generate {{/unless}}</button>
                 </div>
                 <div class="mb-3">
                   <label for="clientCodeVerifier" class="form-label"
@@ -165,7 +166,7 @@
                       type="button"
                       class="mt-1 btn btn-sm btn-success"
                       onclick="document.getElementById('clientCodeVerifier').value = generateCodeVerifier()"
-                    >Generate</button>
+                    >{{#if update}} Re-Generate {{/if}} {{#unless update}} Generate {{/unless}}</button>
                 </div>
               </fieldset>
             </form>

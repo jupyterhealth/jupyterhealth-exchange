@@ -25,8 +25,7 @@ def _get_oidc_client_id_from_db():
 SITE_URL = os.getenv("SITE_URL")
 OIDC_CLIENT_ID = _get_oidc_client_id_from_db() or os.getenv("OIDC_CLIENT_ID")
 PATIENT_AUTHORIZATION_CODE_VERIFIER = os.getenv("PATIENT_AUTHORIZATION_CODE_VERIFIER")
-_SITE_URL_ROOT = SITE_URL.rstrip("/") if SITE_URL else ""
-OIDC_CLIENT_REDIRECT_URI = f"{_SITE_URL_ROOT}/auth/callback" if _SITE_URL_ROOT else "/auth/callback"
+OIDC_CLIENT_REDIRECT_URI = f"{SITE_URL}/auth/callback"
 PATIENT_AUTHORIZATION_CODE_CHALLENGE = os.getenv("PATIENT_AUTHORIZATION_CODE_CHALLENGE")
 
 OMH_BLOOD_GLUCOSE_JSON = {
