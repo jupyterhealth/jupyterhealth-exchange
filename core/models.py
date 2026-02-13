@@ -279,10 +279,12 @@ class JheUser(AbstractUser):
             user_id=self.id,
             code=authorization_code,
             expires=timezone.now() + timedelta(seconds=settings.PATIENT_AUTHORIZATION_CODE_EXPIRE_SECONDS),
-            redirect_uri=settings.SITE_URL+settings.OAUTH2_CALLBACK_PATH,
+            redirect_uri=settings.SITE_URL + settings.OAUTH2_CALLBACK_PATH,
             scope="openid",
             # https://github.com/oauthlib/oauthlib/blob/f9a07c6c07d0ddac255dd322ef5fc54a7a46366d/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L18
-            code_challenge=base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest()).rstrip(b'=').decode(),
+            code_challenge=base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest())
+            .rstrip(b"=")
+            .decode(),
             code_challenge_method="S256",
             nonce="",
             claims=json.dumps({}),

@@ -311,7 +311,7 @@ class Command(BaseCommand):
         application = get_application_model()
         application.objects.create(
             id=1,
-            redirect_uris=settings.SITE_URL+settings.OAUTH2_CALLBACK_PATH,
+            redirect_uris=settings.SITE_URL + settings.OAUTH2_CALLBACK_PATH,
             client_type="public",
             authorization_grant_type="authorization-code",
             client_secret="pbkdf2_sha256$870000$Hrxk93CVKgRSGJdyusw4go$umXWiaCn152vXWiXl1bQZwupccDt18QiQcotff+hBmQ=",

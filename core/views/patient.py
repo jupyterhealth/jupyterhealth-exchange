@@ -177,24 +177,18 @@ class PatientViewSet(ModelViewSet):
 
         if not client_id:
             raise APIException("Missing required query parameter: application_id")
-        
+
         client_client_id = Client.objects.get(pk=client_id).client_id
 
         if not patient:
             raise APIException("Patient not found.")
 
-        code_verifier_setting = JheSetting.objects.filter(
-            setting_id=client_id,
-            key="client.code_verifier"
-        ).first()
+        code_verifier_setting = JheSetting.objects.filter(setting_id=client_id, key="client.code_verifier").first()
 
         if not code_verifier_setting:
             raise APIException("Missing JheSetting: client.code_verifier")
 
-        invitation_url_setting = JheSetting.objects.filter(
-            setting_id=client_id,
-            key="client.invitation_url"
-        ).first()
+        invitation_url_setting = JheSetting.objects.filter(setting_id=client_id, key="client.invitation_url").first()
 
         if not invitation_url_setting:
             raise APIException("Missing JheSetting: client.invitation_url")
@@ -206,8 +200,10 @@ class PatientViewSet(ModelViewSet):
 
         if not grant:
             raise APIException("Failed to create authorization code.")
-        
-        invitation_link = Patient.construct_invitation_link(invitation_url_setting.get_value(), client_client_id, grant.code, code_verifier_setting.get_value())
+
+        invitation_link = Patient.construct_invitation_link(
+            invitation_url_setting.get_value(), client_client_id, grant.code, code_verifier_setting.get_value()
+        )
 
         if send_email:
             message = render_to_string(
@@ -220,7 +216,7 @@ class PatientViewSet(ModelViewSet):
             email = EmailMessage("JHE Invitation", message, to=[patient.jhe_user.email])
             email.content_subtype = "html"
             email.send()
-        
+
         return Response({"invitation_link": invitation_link})
 
     @action(detail=True, methods=["GET", "POST", "PATCH", "DELETE"])

@@ -16,11 +16,15 @@ class ClientViewSet(ModelViewSet):
     serializer_class = ClientSerializer
 
     def get_queryset(self):
-        return Application.objects.exclude(name__contains="JHE").order_by("-created") # We don't want to include the JHE Portal client here
-    
+        return Application.objects.exclude(name__contains="JHE").order_by(
+            "-created"
+        )  # We don't want to include the JHE Portal client here
+
     def perform_create(self, serializer):
         name = self.request.data.get("name")
-        client_id = self.request.data.get("clientId")  # djangorestframework_camel_case not working here - may be reserved
+        client_id = self.request.data.get(
+            "clientId"
+        )  # djangorestframework_camel_case not working here - may be reserved
         invitation_url = self.request.data.get("invitation_url")
         code_verifier = self.request.data.get("codeVerifier")
 
@@ -42,7 +46,8 @@ class ClientViewSet(ModelViewSet):
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
             skip_authorization=True,
-            redirect_uris=settings.SITE_URL+settings.OAUTH2_CALLBACK_PATH,  # required but not actually used since this is a public client and we validate the redirect_uri manually
+            redirect_uris=settings.SITE_URL
+            + settings.OAUTH2_CALLBACK_PATH,  # required but not actually used since this is a public client and we validate the redirect_uri manually
             algorithm="RS256",  # RSA with SHA-256
         )
 
