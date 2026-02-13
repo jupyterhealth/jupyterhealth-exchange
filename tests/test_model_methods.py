@@ -2,6 +2,7 @@ import json
 import base64
 
 from django.db import connection
+from django.conf import settings
 from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
@@ -58,7 +59,7 @@ class JheUserMethodTests(TestCase):
 
     def test_create_authorization_code(self):
         # Use the application created in setUp
-        redirect_uri = "http://example.com/redirect"
+        redirect_uri = settings.SITE_URL + "/auth/callback"
         code_instance = self.user.create_authorization_code(self.application.id, redirect_uri)
         self.assertIsNotNone(code_instance)
         self.assertEqual(code_instance.redirect_uri, redirect_uri)
