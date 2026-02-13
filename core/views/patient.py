@@ -1,7 +1,6 @@
 from datetime import datetime
 import inspect
 
-from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
