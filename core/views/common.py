@@ -414,7 +414,6 @@ def token_exchange(request: HttpRequest):
         "subject_token_type",
         "subject_token",
         "grant_type",
-        "iss",
     ):
         if not request.POST.get(name):
             return json_error(f"Missing required argument: {name}")
@@ -426,11 +425,6 @@ def token_exchange(request: HttpRequest):
     subject_token = request.POST.get("subject_token")
     grant_type = request.POST.get("grant_type")
     scope = request.POST.get("scope", "openid")
-
-    # our extension:
-    # is there a better standard way to identify the IdP
-    # of the token being exchanged?
-    iss = request.POST.get("iss")
 
     # argument validation
     if grant_type != "urn:ietf:params:oauth:grant-type:token-exchange":
@@ -445,16 +439,9 @@ def token_exchange(request: HttpRequest):
     if scope != "openid":
         return json_error(f"Only 'openid' scope is supported, not {scope}")
 
-    # TODO: should there be more than one?
-    if iss.rstrip("/") != settings.TRUSTED_TOKEN_IDP.rstrip("/"):
-        return json_error(f"Can only exchange tokens from trusted issuer: {settings.TRUSTED_TOKEN_IDP}, not {iss}")
-
     # lookup via userinfo/introspection
     # sample SMART-on-FHIR doesn't have userinfo
     # curl -X POST -H "Authorization: Bearer $token" -d "token=$token" $introspection
-    #
-    # SMART FHIR launch
-    # allow
     trusted_idp = settings.TRUSTED_TOKEN_IDP
     r = requests.get(
         f"{trusted_idp}/.well-known/openid-configuration",
@@ -473,7 +460,7 @@ def token_exchange(request: HttpRequest):
         r = requests.get(url, headers={"Authorization": f"Bearer {subject_token}"})
         if r.status_code >= 400:
             logger.warning("Failed to lookup subject_token %s: %s", r.status_code, r.text)
-            return json_error(f"Token not found in {iss}")
+            return json_error(f"Token not found in {trusted_idp}")
         user_info = r.json()
         if external_id_claim not in user_info:
             logger.error("%s not in %s", external_id_claim, user_info)
@@ -485,12 +472,12 @@ def token_exchange(request: HttpRequest):
         r = requests.post(url, data={"token": subject_token}, headers={"Authorization": f"Bearer {subject_token}"})
         if r.status_code >= 400:
             logger.warning("Failed to lookup subject_token %s: %s", r.status_code, r.text)
-            return json_error(f"Token not found in {iss}")
+            return json_error(f"Token not found in {trusted_idp}")
         token_info = r.json()
         # introspection must always set 'active'
         if not token_info["active"]:
             logger.warning("subject_token not active")
-            return json_error(f"Token not found in {iss}")
+            return json_error(f"Token not found in {trusted_idp}")
 
         if external_id_claim in token_info:
             identifier = token_info[external_id_claim]
