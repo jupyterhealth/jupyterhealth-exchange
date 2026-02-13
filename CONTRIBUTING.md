@@ -46,6 +46,7 @@ pre-commit run --all-files
 - [ ] New/changed functions have tests
 - [ ] No hardcoded secrets or credentials
 - [ ] DB-backed settings use `get_setting()`; not `settings.X`; for runtime config (see [Settings Architecture](#settings-architecture))
+- [ ] If there are large refactors, please flag it in advance and ensure other developers are made aware.
 
 ## Settings Architecture
 
