@@ -1,0 +1,6 @@
+[tool.black]
+line-length = 120
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "jhe.test_settings"
+addopts = "--cov=core --cov=jhe"

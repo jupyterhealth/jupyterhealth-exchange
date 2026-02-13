@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 
-from core.admin_pagination import AdminListMixin
+from core.admin_pagination import CustomPageNumberPagination
 from core.models import Patient, Study, StudyClient, StudyDataSource, StudyPatient, StudyScopeRequest
 from core.permissions import IfUserCan
 from core.serializers import (
@@ -23,12 +23,11 @@ from core.serializers import (
 logger = logging.getLogger(__name__)
 
 
-class StudyViewSet(AdminListMixin, ModelViewSet):
+class StudyViewSet(ModelViewSet):
 
     model_class = Study
     serializer_class = StudyOrganizationSerializer
-    admin_query_method = Study.__dict__["for_practitioner_organization"]
-    admin_count_method = Study.__dict__["count_for_practitioner_organization"]
+    pagination_class = CustomPageNumberPagination
 
     def get_permissions(self):
         """

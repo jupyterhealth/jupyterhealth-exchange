@@ -54,8 +54,8 @@ urlpatterns = [
     ),
     path("auth/login/", common.client_auth_login, name="client-auth-login"),
     # Smart Launch
-    path("smart/launch", common.smart_launch, name="smart-launch"),
-    path("smart/callback/", common.smart_callback, name="smart-callback"),
+    # path("smart/launch", common.smart_launch, name="smart-launch"),
+    # path("smart/callback/", common.smart_callback, name="smart-callback"),
     # oauth token exchange
     path("o/token-exchange", common.token_exchange, name="token-exchange"),
     # Client UI

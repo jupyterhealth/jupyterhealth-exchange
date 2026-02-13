@@ -1,9 +1,13 @@
 import json
 import base64
 
+from django.db import connection
+from django.conf import settings
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from django.core import mail
+from django.db.models.query import RawQuerySet
 from oauth2_provider.models import get_application_model
 from core.utils import generate_observation_value_attachment_data
 
@@ -55,7 +59,7 @@ class JheUserMethodTests(TestCase):
 
     def test_create_authorization_code(self):
         # Use the application created in setUp
-        redirect_uri = "http://example.com/redirect"
+        redirect_uri = settings.SITE_URL + "/auth/callback"
         code_instance = self.user.create_authorization_code(self.application.id, redirect_uri)
         self.assertIsNotNone(code_instance)
         self.assertEqual(code_instance.redirect_uri, redirect_uri)
@@ -118,9 +122,13 @@ class OrganizationMethodTests(TestCase):
 class PatientMethodTests(TestCase):
     def setUp(self):
         self.user = JheUser.objects.create_user(
-            email="patient@example.com", password="password", identifier="patient123"
+            email="patient@example.com",
+            password="password",
+            identifier="patient123",
+            user_type="practitioner",
         )
         self.org = Organization.objects.create(name="Hospital", type="prov")
+        self.user.practitioner.organizations.add(self.org)
 
         self.patient = Patient.objects.create(
             jhe_user=self.user,
@@ -159,23 +167,6 @@ class PatientMethodTests(TestCase):
         self.assertGreaterEqual(len(patients), 1)
         self.assertEqual(patients[0].id, self.patient.id)
 
-    def test_count_for_practitioner_organization_study(self):
-        practitioner_user = JheUser.objects.create_user(
-            email="doctor2@example.com",
-            password="password",
-            identifier="doc456",
-            user_type="practitioner",
-        )
-        practitioner = Practitioner.objects.get(jhe_user=practitioner_user)
-
-        PractitionerOrganization.objects.create(practitioner=practitioner, organization=self.org)
-
-        study = Study.objects.create(name="Study1", description="Desc", organization=self.org)
-        StudyPatient.objects.create(study=study, patient=self.patient)
-
-        count = Patient.count_for_practitioner_organization_study(practitioner_user.id)
-        self.assertGreaterEqual(count, 1)
-
     def test_practitioner_authorized(self):
         practitioner_user = JheUser.objects.create_user(
             email="doctor3@example.com",
@@ -192,6 +183,19 @@ class PatientMethodTests(TestCase):
 
         authorized = Patient.practitioner_authorized(practitioner_user.id, self.patient.id)
         self.assertTrue(authorized)
+
+    def test_fhir_search(self):
+        with CaptureQueriesContext(connection) as ctx:
+            search = Observation.fhir_search(
+                self.user.id, patient_id=self.patient.id, coding_system="http://loinc.org", coding_code="1122-3"
+            )
+        # calling fhir_search should only execute looking up practitioner id
+        self.assertEqual(len(ctx.captured_queries), 1)
+        self.assertIsInstance(search, RawQuerySet)
+        # actually execute the result
+        results = list(search)
+        # TODO: verify actual search results
+        self.assertEqual(results, [])
 
 
 # -----------------------------------------------------
@@ -216,10 +220,6 @@ class StudyMethodTests(TestCase):
         studies = list(Study.for_practitioner_organization(self.user.id))
         self.assertGreaterEqual(len(studies), 1)
         self.assertTrue(any(s.id == self.study.id for s in studies))
-
-    def test_count_for_practitioner_organization(self):
-        count = Study.count_for_practitioner_organization(self.user.id)
-        self.assertGreaterEqual(count, 1)
 
     def test_practitioner_authorized(self):
         authorized = Study.practitioner_authorized(self.user.id, self.study.id)
@@ -339,8 +339,12 @@ class ObservationMethodTests(TestCase):
     def setUp(self):
         self.org = Organization.objects.create(name="Clinic", type="prov")
         self.user = JheUser.objects.create_user(
-            email="patient4@example.com", password="password", identifier="patient000"
+            email="patient4@example.com",
+            password="password",
+            identifier="patient000",
+            user_type="practitioner",
         )
+        self.user.practitioner.organizations.add(self.org)
 
         self.patient = Patient.objects.create(
             jhe_user=self.user,
@@ -409,40 +413,19 @@ class ObservationMethodTests(TestCase):
         authorized = Observation.practitioner_authorized(practitioner_user.id, self.observation.id)
         self.assertTrue(authorized)
 
-    def test_count_for_practitioner_organization_study_patient(self):
-        practitioner_user = JheUser.objects.create_user(
-            email="doctor6@example.com",
-            password="password",
-            identifier="doc777",
-            user_type="practitioner",
-        )
-        practitioner = Practitioner.objects.get(jhe_user=practitioner_user)
-
-        PractitionerOrganization.objects.create(practitioner=practitioner, organization=self.org)
-
-        # Create a study and link the patient to it
-        study = Study.objects.create(name="Study for Observation", description="Desc", organization=self.org)
-        study_patient = StudyPatient.objects.create(study=study, patient=self.patient)
-
-        # Create consent for the required code
-        StudyPatientScopeConsent.objects.create(
-            study_patient=study_patient,
-            scope_actions="rs",
-            scope_code=self.code,
-            consented=True,
-            consented_time=timezone.now(),
-        )
-
-        # Get the count - in test environment, accept 0 as valid
-        count = Observation.count_for_practitioner_organization_study_patient(practitioner_user.id)
-        self.assertGreaterEqual(count, 0)
-
     def test_fhir_search(self):
-        try:
-            results = Observation.fhir_search(self.user.id, coding_system="http://loinc.org", coding_code="1122-3")
-            self.assertIsInstance(list(results), list)
-        except Exception as e:
-            self.fail(f"fhir_search raised an exception: {e}")
+        with CaptureQueriesContext(connection) as ctx:
+            search = Observation.fhir_search(
+                self.user.id, patient_id=self.patient.id, coding_system="http://loinc.org", coding_code="1122-3"
+            )
+        # calling fhir_search should only lookup practitioner id
+        # not anything else
+        self.assertEqual(len(ctx.captured_queries), 1)
+        self.assertIsInstance(search, RawQuerySet)
+        # actually execute the result
+        results = list(search)
+        # TODO: verify actual search results
+        self.assertEqual(results, [])
 
     def test_fhir_create(self):
         # Construct a minimal valid FHIR observation payload.

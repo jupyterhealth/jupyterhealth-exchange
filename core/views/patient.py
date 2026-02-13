@@ -1,19 +1,18 @@
 from datetime import datetime
+import inspect
 
-from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError, PermissionDenied
+from rest_framework.exceptions import ValidationError, PermissionDenied, APIException
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from oauth2_provider.models import Grant, get_application_model
-from urllib.parse import quote
 from django.db.models import Prefetch, OuterRef, Subquery
 
-from core.admin_pagination import AdminListMixin
+from core.admin_pagination import CustomPageNumberPagination
 from core.fhir_pagination import FHIRBundlePagination
 from core.models import (
     JheSetting,
@@ -41,11 +40,16 @@ from core.serializers import (
 )
 
 
-class PatientViewSet(AdminListMixin, ModelViewSet):
+class PatientViewSet(ModelViewSet):
     model_class = Patient
     serializer_class = PatientSerializer
-    admin_query_method = Patient.__dict__["for_practitioner_organization_study"]
-    admin_count_method = Patient.__dict__["count_for_practitioner_organization_study"]
+    pagination_class = CustomPageNumberPagination
+
+    supported_query_params = {
+        key
+        for key in inspect.signature(Patient.for_practitioner_organization_study).parameters
+        if key not in {"jhe_user_id"}
+    }
 
     def get_permissions(self):
         """
@@ -65,6 +69,13 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
                 return Patient.objects.filter(pk=self.kwargs["pk"])
             else:
                 raise PermissionDenied("Current User does not have authorization to access this Patient.")
+        else:
+            return Patient.for_practitioner_organization_study(
+                self.request.user.id,
+                **{
+                    key: value for key, value in self.request.query_params.items() if key in self.supported_query_params
+                },
+            )
 
     def create(self, request, *args, **kwargs):
         patient = None
@@ -158,14 +169,41 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
 
     @action(detail=True, methods=["GET"])
     def invitation_link(self, request, pk):
-        application_id = request.query_params.get("application_id")
+        client_id = request.query_params.get("application_id")
+        Client = get_application_model()
         send_email = request.query_params.get("send_email") == "true"
         patient = self.get_object()
-        grant = patient.jhe_user.create_authorization_code(application_id, settings.OIDC_CLIENT_REDIRECT_URI)
-        url = settings.CH_INVITATION_LINK_PREFIX
-        if not settings.CH_INVITATION_LINK_EXCLUDE_HOST:
-            url = url + quote(settings.SITE_URL.split("/")[2] + "~", safe="~")
-        invitation_link = url + grant.code
+
+        if not client_id:
+            raise APIException("Missing required query parameter: application_id")
+
+        client_client_id = Client.objects.get(pk=client_id).client_id
+
+        if not patient:
+            raise APIException("Patient not found.")
+
+        code_verifier_setting = JheSetting.objects.filter(setting_id=client_id, key="client.code_verifier").first()
+
+        if not code_verifier_setting:
+            raise APIException("Missing JheSetting: client.code_verifier")
+
+        invitation_url_setting = JheSetting.objects.filter(setting_id=client_id, key="client.invitation_url").first()
+
+        if not invitation_url_setting:
+            raise APIException("Missing JheSetting: client.invitation_url")
+
+        grant = patient.jhe_user.create_authorization_code(
+            client_id,
+            code_verifier_setting.get_value(),
+        )
+
+        if not grant:
+            raise APIException("Failed to create authorization code.")
+
+        invitation_link = Patient.construct_invitation_link(
+            invitation_url_setting.get_value(), client_client_id, grant.code, code_verifier_setting.get_value()
+        )
+
         if send_email:
             message = render_to_string(
                 "registration/invitation_email.html",
@@ -177,6 +215,7 @@ class PatientViewSet(AdminListMixin, ModelViewSet):
             email = EmailMessage("JHE Invitation", message, to=[patient.jhe_user.email])
             email.content_subtype = "html"
             email.send()
+
         return Response({"invitation_link": invitation_link})
 
     @action(detail=True, methods=["GET", "POST", "PATCH", "DELETE"])
