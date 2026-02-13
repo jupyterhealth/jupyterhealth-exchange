@@ -475,7 +475,8 @@ class Patient(models.Model):
 
     @staticmethod
     def construct_invitation_link(invitation_url, client_id, auth_code, code_verifier):
-        invitation_code = f"{urlparse(settings.SITE_URL).hostname}~{client_id}~{auth_code}~{code_verifier}"
+        url_parsed = urlparse(settings.SITE_URL)
+        invitation_code = f"{url_parsed.netloc}~{client_id}~{auth_code}~{code_verifier}"
         return invitation_url.replace("CODE", invitation_code)
 
     @staticmethod
