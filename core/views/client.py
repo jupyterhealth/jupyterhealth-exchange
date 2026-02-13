@@ -46,8 +46,7 @@ class ClientViewSet(ModelViewSet):
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
             skip_authorization=True,
-            redirect_uris=settings.SITE_URL
-            + settings.OAUTH2_CALLBACK_PATH,  # required but not actually used
+            redirect_uris=settings.SITE_URL + settings.OAUTH2_CALLBACK_PATH,  # required but not actually used
             algorithm="RS256",  # RSA with SHA-256
         )
 
