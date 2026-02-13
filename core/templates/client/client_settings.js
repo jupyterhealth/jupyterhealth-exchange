@@ -4,7 +4,6 @@ window.OIDCSettings = {
   authority: "{{ OIDC_CLIENT_AUTHORITY }}",
   client_id: "{{ OIDC_CLIENT_ID }}",
   // silentRequestTimeoutInSeconds: 600,
-  // popup_redirect_uri: 'http://127.0.0.1:8000/auth/callback_popup',
   redirect_uri: "{{ OIDC_CLIENT_REDIRECT_URI }}",
   extraQueryParams: {},
   response_mode: "query",

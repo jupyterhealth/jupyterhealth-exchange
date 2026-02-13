@@ -22,23 +22,6 @@
 const ROUTE_PREFIX = "/portal/";
 const DEFAULT_ROUTE = "organizations";
 const API_PATH = "/api/v1/";
-const SITE_BASE_URL =
-  typeof CONSTANTS === "object" && CONSTANTS?.SITE_URL
-    ? CONSTANTS.SITE_URL.replace(/\/$/, "")
-    : "";
-
-const buildTokenEndpoint = () => `${SITE_BASE_URL}/o/token/`;
-const buildApiUrl = (resource) => `${SITE_BASE_URL}${API_PATH}${resource}`;
-const buildTokenPayload = (code = "PASTE_CODE_HERE") => ({
-  code: code,
-  grant_type: "authorization_code",
-  redirect_uri: `${SITE_BASE_URL}/auth/callback`,
-  client_id: CONSTANTS.client_id,
-  code_verifier: CONSTANTS.code_verifier,
-  code_challenge: CONSTANTS.code_challenge,
-});
-const buildPatientConsentsUrl = (patientId = "PASTE_PATIENT_ID_HERE") =>
-  buildApiUrl(`patients/${patientId}/consents`);
 
 const ROUTES = {
   jheSettings: {
@@ -359,42 +342,6 @@ async function apiRequest(method, resourcePath, params) {
     console.log(`apiRequest Error: ${error}`);
   }
   return response;
-}
-
-function renderDebug(param) {
-  const content = Handlebars.compile(
-    document.getElementById("t-debug").innerHTML
-  );
-  setTimeout(() => {
-    const payloadElement = document.getElementById("debugOAuthPayload");
-    if (payloadElement) {
-      payloadElement.value = JSON.stringify(buildTokenPayload(), null, 2);
-    }
-
-    const consentsUrlElement = document.getElementById(
-      "debugPatientConsentsUrl"
-    );
-    if (consentsUrlElement) {
-      consentsUrlElement.value = buildPatientConsentsUrl();
-    }
-
-    const tokenEndpointLabel = document.getElementById(
-      "debugTokenEndpointLabel"
-    );
-    if (tokenEndpointLabel) {
-      tokenEndpointLabel.textContent = `POST ${buildTokenEndpoint()}`;
-    }
-
-    const userProfileEndpointLabel = document.getElementById(
-      "debugUserProfileEndpointLabel"
-    );
-    if (userProfileEndpointLabel) {
-      userProfileEndpointLabel.textContent = `GET ${buildApiUrl(
-        "users/profile"
-      )}`;
-    }
-  }, 200);
-  return content({});
 }
 
 function displayError(messageDetail) {
@@ -1818,6 +1765,22 @@ async function deleteJheSetting(id) {
 // call the urlLocationHandler function to handle the initial url
 // locationHandler();
 
+const DEBUG_TOKEN_ENDPOINT = `${CONSTANTS.SITE_URL}/o/token/`;
+const DEBUG_API_ENDPOINT = `${CONSTANTS.SITE_URL}${API_PATH}`;
+
+function renderDebug() {
+  const content = Handlebars.compile(
+    document.getElementById("t-debug").innerHTML,
+  );
+  setTimeout(() => {
+    document.getElementById("debugTokenEndpointLabel").textContent = `POST ${DEBUG_TOKEN_ENDPOINT}`;
+    document.getElementById("debugUserProfileEndpointLabel").textContent = `GET ${DEBUG_API_ENDPOINT}users/profile`;
+    document.getElementById("debugPatientConsentsUrl").value =
+      `${DEBUG_API_ENDPOINT}patients/PASTE_PATIENT_ID_HERE/consents`;
+  }, 200);
+  return content({});
+}
+
 function debugGetUser() {
   userManager
     .getUser()
@@ -1939,10 +1902,37 @@ async function readResponsePayload(response) {
 async function debugGetPatientTokenFromCode() {
   showDebugError();
   try {
-    const formData = new URLSearchParams(
-      JSON.parse(document.getElementById("debugOAuthPayload").value)
-    ).toString();
-    const response = await fetch(buildTokenEndpoint(), {
+
+    const invitationCode = document.getElementById(
+      "debugPasteInvitationCode",
+    ).value;
+
+    // Split on "~"
+    const [host, client_id, code, code_verifier] = invitationCode.split("~");
+
+    // Generate PKCE code_challenge (S256)
+    const encoder = new TextEncoder();
+    const data = encoder.encode(code_verifier);
+    const digest = await crypto.subtle.digest("SHA-256", data);
+    const code_challenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+
+    // Final JSON
+    const payload = {
+      code,
+      grant_type: "authorization_code",
+      redirect_uri: OIDCSettings.redirect_uri,
+      client_id,
+      code_verifier,
+      code_challenge,
+    };
+
+    document.getElementById("debugOAuthPayload").value = JSON.stringify(payload, null, 2);
+
+    const formData = new URLSearchParams(payload).toString();
+    const response = await fetch(DEBUG_TOKEN_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -1990,6 +1980,18 @@ function getFormattedError(payload, fallback) {
   return JSON.stringify(payload);
 }
 
+function getDebugPatientToken(accessToken) {
+  if (accessToken) {
+    debugPatientToken = accessToken;
+    document.getElementById("debugPatientToken").innerHTML =
+      `Client Token: ${debugPatientToken}`;
+  } else {
+    debugPatientToken = null;
+    document.getElementById("debugPatientToken").innerHTML =
+      `Client Token: None`;
+  }
+}
+
 function setDebugPatientToken(accessToken) {
   if (accessToken) {
     debugPatientToken = accessToken;
@@ -2007,7 +2009,7 @@ function setDebugPatientToken(accessToken) {
 async function debugGetUserProfile() {
   showDebugError();
   try {
-    const response = await fetch(buildApiUrl("users/profile"), {
+    const response = await fetch(`${DEBUG_API_ENDPOINT}users/profile`, {
       headers: {
         "Cache-Control": "no-cache",
         Authorization: `Bearer ${debugPatientToken}`,

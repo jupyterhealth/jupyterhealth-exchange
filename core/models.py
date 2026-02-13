@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import json
 import logging
 from datetime import timedelta
@@ -260,7 +261,7 @@ class JheUser(AbstractUser):
             return None
 
     # https://github.com/jazzband/django-oauth-toolkit/blob/102c85141ec44549e17080c676292e79e5eb46cc/oauth2_provider/oauth2_validators.py#L675
-    def create_authorization_code(self, application_id, redirect_uri):
+    def create_authorization_code(self, application_id, code_verifier):
 
         self.last_login = timezone.now()
         self.save()
@@ -278,10 +279,10 @@ class JheUser(AbstractUser):
             user_id=self.id,
             code=authorization_code,
             expires=timezone.now() + timedelta(seconds=settings.PATIENT_AUTHORIZATION_CODE_EXPIRE_SECONDS),
-            redirect_uri=redirect_uri,
+            redirect_uri=settings.SITE_URL+settings.OAUTH2_CALLBACK_PATH,
             scope="openid",
             # https://github.com/oauthlib/oauthlib/blob/f9a07c6c07d0ddac255dd322ef5fc54a7a46366d/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L18
-            code_challenge=settings.PATIENT_AUTHORIZATION_CODE_CHALLENGE,
+            code_challenge=base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest()).rstrip(b'=').decode(),
             code_challenge_method="S256",
             nonce="",
             claims=json.dumps({}),
