@@ -25,7 +25,7 @@ def _get_oidc_client_id_from_db():
 SITE_URL = os.getenv("SITE_URL")
 OIDC_CLIENT_ID = _get_oidc_client_id_from_db() or os.getenv("OIDC_CLIENT_ID")
 PATIENT_AUTHORIZATION_CODE_VERIFIER = os.getenv("PATIENT_AUTHORIZATION_CODE_VERIFIER")
-OIDC_CLIENT_REDIRECT_URI = f"{SITE_URL}/auth/callback"
+OAUTH2_CALLBACK_PATH = f"{SITE_URL}/auth/callback"
 PATIENT_AUTHORIZATION_CODE_CHALLENGE = os.getenv("PATIENT_AUTHORIZATION_CODE_CHALLENGE")
 
 OMH_BLOOD_GLUCOSE_JSON = {
@@ -79,7 +79,7 @@ class Command:
         authorize_params = {
             "client_id": OIDC_CLIENT_ID,
             "response_type": "code",
-            "redirect_uri": OIDC_CLIENT_REDIRECT_URI,
+            "redirect_uri": OAUTH2_CALLBACK_PATH,
             "scope": "openid",
             "code_challenge": PATIENT_AUTHORIZATION_CODE_CHALLENGE,
             "code_challenge_method": "S256",
@@ -107,7 +107,7 @@ class Command:
             data={
                 "code": code,
                 "grant_type": "authorization_code",
-                "redirect_uri": OIDC_CLIENT_REDIRECT_URI,
+                "redirect_uri": OAUTH2_CALLBACK_PATH,
                 "client_id": OIDC_CLIENT_ID,
                 "code_verifier": PATIENT_AUTHORIZATION_CODE_VERIFIER,
             },
