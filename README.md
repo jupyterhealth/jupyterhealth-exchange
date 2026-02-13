@@ -18,15 +18,19 @@ This project is currently in a Proof of Concept stage, the project can be viewed
 
 https://github.com/orgs/the-commons-project/projects/8
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for test requirements, coding standards, and PR checklist.
+
 ## Getting Started
 
 > [!TIP]
 > **If you are a user (Practitioner or Patient), please take note of the following access information for the [JupyterHealth Website](https://jhe.fly.dev):**
-> - JHE Default Invite Code is ```helloworld``` (see [here](https://github.com/the-commons-project/jupyterhealth-exchange/blob/main/dot_env_example.txt#L3))
-> - JHE Default Super User ```sam@example.com/Jhe1234!``` can create and edit top level organizations. Any user can create sub-organizations.
+> - JHE Default Invite Code is `jhe1234` (set by `python manage.py seed` via `JheSetting` ; see [seed.py](core/management/commands/seed.py))
+> - JHE Default Super User `sam@example.com` / `Jhe1234!` can create and edit top level organizations. Any user can create sub-organizations.
 
 > [!TIP]
->**Quick start:** For local development, Skip the steps 8–12 as the `seed_db` command will register the Django OAuth2 application. Also, Pre‑generated values of  `OIDC_RSA_PRIVATE_KEY`, `PATIENT_AUTHORIZATION_CODE_CHALLENGE`, and `PATIENT_AUTHORIZATION_CODE_VERIFIER` are provided in `dot_env_example.txt` for dev/demo use only.
+> **Quick start:** For local development, skip steps 8–12 ; the `seed` command registers the OAuth2 application and seeds all required `JheSetting` values (invite code, PKCE challenge/verifier, RSA key, etc.). A pre‑generated `OIDC_RSA_PRIVATE_KEY` is provided in `dot_env_example.txt` for dev/demo use only.
 
 > [!NOTE]
 > Due to browser security restrictions and the [oidc-client-ts](https://github.com/authts/oidc-client-ts) used for authentication, the web app **must be accessed over HTTPS for any hostname other than localhost** - see [Running in Production](#running-in-production) below.
@@ -48,17 +52,15 @@ https://github.com/orgs/the-commons-project/projects/8
 1. Browse to http://localhost:8000/admin and enter the credentials `sam@example.com` `Jhe1234!`
 1. Under *Django OAuth Toolkit* > *Applications* you should already see the seeded OAuth2 application (redirects include `http://localhost:8000/auth/callback`). Create a new application only if you need a custom client for testing or multi-tenant scenarios.
 1. Create an RS256 Private Key (step by step [here](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#creating-rsa-private-key))
-1. Create a new static PKCE verifier - a random alphanumeric string 44 chars long, and then create the challenge [here](https://tonyxu-io.github.io/pkce-generator).
 1. Return to the `.env` file
     - Update the `OIDC_RSA_PRIVATE_KEY` with the newly created Private Key
-    - Update `PATIENT_AUTHORIZATION_CODE_CHALLENGE` and `PATIENT_AUTHORIZATION_CODE_VERIFIER` with PKCE static values generated above
     - Restart the python environment and Django server
 1. Browse to http://localhost:8000/ and log in with the credentials `mary@example.com` `Jhe1234!` and you should be directed to the `/portal/organizations` path with some example Organizations is the dropdown
 1. Before the each commit always make sure to execute `pre-commit run --all-files` to make sure the PEP8 standards.
 1. Git hook for the pre-commit can also be installed `pre-commit install` to automate the process.
-1. If a hook fails, fix the issues, stage the changes, and commit again — the commit only succeeds when hooks pass.
+1. If a hook fails, fix the issues, stage the changes, and commit again ; the commit only succeeds when hooks pass.
 > [!WARNING]
-> The `OIDC_RSA_PRIVATE_KEY`, `PATIENT_AUTHORIZATION_CODE_CHALLENGE`, and `PATIENT_AUTHORIZATION_CODE_VERIFIER` provided in `dot_env_example.txt` are public demo keys for development only and must not be used in production.
+> The `OIDC_RSA_PRIVATE_KEY` provided in `dot_env_example.txt` is a public demo key for development only and must not be used in production. PKCE challenge/verifier values are now stored as `JheSetting` records in the database (seeded by `python manage.py seed`).
 
 ## Troubleshooting Local Development
 
@@ -253,51 +255,39 @@ flowchart TD
 - The OAuth 2.0 Authorization Code grant flow with PKCE is used to issue access and refresh and OIDC for ID tokens for both Practitioners (web login) and Patients (JHE Clients via secret invitation link)
 
 - Endpoints and configuration details can be discovered from the OIDC metadata endpoint:
-  `/o/.well-known/openid-configuration`
-
-- Separate OAuth clients are created for the Web UI (Practitioner) and for individual JHE (Patient) Clients
-
-- In an effort to utilize the standard libraries ([Django OAuth Toolkit](https://github.com/django-oauth/django-oauth-toolkit)) without too much modification, the JHE Client Authorization Code grant flow is divided into three parts:
-  1. The first part of the flow used to generate the authorization code is instigated by the JHE server with no interaction from the client
-  1. The authorization code is then shared with the client out-of-band (E-mail or SMS) as a secret invitation link
-  1. The JHE Client at a later date then swaps the authorization code for an access token
-
-- Because the Patient authorization code is instigated by the server (Step 1 above) rather than a web browser, the PKCE code challenge and code verifier must be static values and travel with the authorization code. The Patient JHE Client then sends this `code_verifier` along with the `authorization_code` to obtain tokens. The `redirect_uri` serves no purpose (as the initial authorization code has already been issued) but is required per OAuth spec so is defined as a static path (see below).
-
-- Bringing this altogether, the JHE Client requires 4 values to the invitation code used in the link
-  1. `host_with_port` - The host name (and optionally `:port`) of the JHE to connect with, eg example.com
-  2. `client_id` - The OAuth 2.0 Client ID
-  3. `authorization_code` - The OAuth 2.0 authorization code
-  4. `code_verifier` - The OAuth 2.0 code verifier
-
-  ```
-  https://app.tcp.org/invitation/jhe.tcp.org~G7lkfTooTemBHzfya2wpGOZZSIbbtPH6joiVZvCF~psJUkrTx9ZJ2KHyG5Iz9F2NzrKdCL3~7sMHvAWzSEKIj2tSifAIFTruBmfLYriljxVBI5NyrQ
-
-  invitation_code = "jhe.tcp.org~G7lkfTooTemBHzfya2wpGOZZSIbbtPH6joiVZvCF~psJUkrTx9ZJ2KHyG5Iz9F2NzrKdCL3~7sMHvAWzSEKIj2tSifAIFTruBmfLYriljxVBI5NyrQ"
-
-  host_with_port, client_id, authorization_code, code_verifier = invitation_code.split("~")
-
-  post_url = parse(f"https://{host_with_port}/o/.well-known/openid-configuration").token_endpoint
-  redirect_url = f"https://{host_with_port}/auth/callback" # Doesn't do anything but required by spec
-
-  POST https://jhe.tcp.org/o/token/
-  Content-Type: application/x-www-form-urlencoded
-  grant_type=authorization_code&redirect_uri=https%3A%2F%2Fjhe.tcp.org%2Fauth%2Fcallback&client_id=G7lkfTooTemBHzfya2wpGOZZSIbbtPH6joiVZvCF&code=psJUkrTx9ZJ2KHyG5Iz9F2NzrKdCL3&code_verifier=7sMHvAWzSEKIj2tSifAIFTruBmfLYriljxVBI5NyrQ
-
-  RESPONSE
-  {
-    "access_token":"1CxKTwNOK5vr0gnO6LY0ZfJF70prfy",
-    "expires_in": 1209600,
-    "token_type": "Bearer",
-    "scope": "openid",
-    "refresh_token": "DkZRFWWHB9Qndbv1WQn4UVOvKZbOz",
-    "id_token": "eyJ0e..."
-  }
-  ```
-
-- The returned `access_token` should be included in the `Authorization` header for all subsequent API requests with the prefix `Bearer `
+	`/o/.well-known/openid-configuration`
+- The returned Access Token should be included in the `Authorization` header for all API requests with the prefix `Bearer `
+- Because the Patient authorization code is generated by the server, the PKCE code challenge and code verifier are stored as `JheSetting` records in the database (seeded by `python manage.py seed`). The Patient client sends the `code_verifier` along with the authorization code to obtain tokens. The `redirect_uri` is built automatically from the `site.url` setting.
+```
+Client POST
+Content-Type: application/x-www-form-urlencoded
+code=4AWKhgaaomTSf9PfwxN4ExnXjdSEqh&grant_type=authorization_code&redirect_uri=https%3A%2F%2Fexample.com%2Fauth%2Fcallback
+&client_id=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+&code_verifier=<code_verifier from JheSetting or invitation link>
+```
 > [!NOTE]
-> It is understood using static values for PKCE defeats the intended purpose but because the JHE Client authorization code generation is instigated by the server and shared out of band (rather than a web browser) dynamic PKCE can not be used.
+> It is understood using static values for PKCE runs against best practises however this is only used for the Patient client auth and not the Practitioner Web UI or API auth. The Patient client authorization code is generated by the server and shared out of band and therefore dynamic PKCE can not be used unless it is passed along with the invitation secret link, which would defeat the purpose of an additional check.
+
+#### Invitation Link Structure
+
+An invitation link may look something like below
+
+```
+https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.dev&referrer=cloud_sharing=jhe.fly.dev|LhS05iR1rOnpS4JWfP6GeVUIhaRcRh
+```
+
+- The purpose of the prefix URL (eg `https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.dev&referrer=cloud_sharing=` ) is for the device to know which app to launch. In this case, the CommonHealth app is launched via Google Play so that if the user does not yet have the CommonHealth app installed they can install it within the flow
+- The prefix URL component may be more simple, for example `https://carex.ai/?invitation=` to launch the CareX app
+- The suffix of the link contains the hostname (optional) followed by a pipe character and the OAuth2 Authorization Code, for example `jhe.fly.dev|LhS05iR1rOnpS4JWfP6GeVUIhaRcRh`
+- The purpose of the suffix is to provide the app with information on what host to talk to (as there may be many JHEs configured for the one Patient) as well as the Authorization Code that can be swapped for an Access Token to use the API (see above)
+- The prefix URL is configured per OAuth2 application as a `JheSetting` (key: `client.invitation_url`, `setting_id=<application_id>`). Set it from the Django Admin > JHE Settings. The placeholder `CODE` in the URL is replaced at runtime with `hostname~client_id~auth_code~code_verifier`.
+- So in the example of `https://carex.ai/?invitation=jhe.fly.dev|LhS05iR1rOnpS4JWfP6GeVUIhaRcRh`
+  1. The CareX app is launched with the URL
+  2. The CareX app parses the `invitation` parameter
+  3. The CareX app gets the token endpoint from the invitation host `https://jhe.fly.dev/o/.well-known/openid-configuration`
+  4. The CareX app posts `LhS05iR1rOnpS4JWfP6GeVUIhaRcRh` to get an access token
+  5. The CareX app uses the API below to set consents
+  6. The CareX app uses the API below to upload data
 
 #### Single Sign-On (SSO) with SAML2
 

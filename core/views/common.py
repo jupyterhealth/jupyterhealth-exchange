@@ -37,6 +37,7 @@ from django_saml2_auth.utils import (
 )
 
 from core.utils import get_or_create_user
+from core.jhe_settings.service import get_setting
 from ..forms import UserRegistrationForm
 from ..tokens import account_activation_token
 
@@ -148,7 +149,7 @@ def smart_launch(request):
     # TBD: this is an incomplete implementation,
     # remove all hardcoded values in favor of settings
     SMART_CLIENT_ID = "jhe1234"
-    SMART_REDIRECT_URI = settings.SITE_URL + "/smart/callback"
+    SMART_REDIRECT_URI = get_setting("site.url", settings.SITE_URL) + "/smart/callback"
     SMART_SCOPES = "openid fhirUser launch launch/patient online_access patient/*.rs observation/*.rs"
     # https://build.fhir.org/ig/HL7/smart-app-launch/scopes-and-launch-context.html
 
@@ -195,7 +196,7 @@ def smart_callback(request):
     auth_code = request.GET.get("code")
     state = request.GET.get("state")  # noqa
 
-    SMART_REDIRECT_URI = settings.SITE_URL + "/smart/callback"
+    SMART_REDIRECT_URI = get_setting("site.url", settings.SITE_URL) + "/smart/callback"
 
     smart_config_token_endpoint = (
         "https://launch.smarthealthit.org/v/r4/auth/token"  # from above smart_config_data.get('authorization_endpoint')

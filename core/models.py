@@ -146,8 +146,10 @@ class JheUser(AbstractUser):
                         identifier=self.identifier,
                     )
 
-                    # --- parse multi-org:role string from env ---
-                    mapping_str = getattr(settings, "PRACTITIONER_DEFAULT_ORGS", "")
+                    # --- parse multi-org:role string from db ---
+                    from core.jhe_settings.service import get_setting
+
+                    mapping_str = get_setting("auth.default_orgs", "")
                     mapping_str = (mapping_str or "").strip()
 
                     if mapping_str:
@@ -209,10 +211,12 @@ class JheUser(AbstractUser):
                                 link.save(update_fields=["role"])
 
     def send_email_verificaion(self):
+        from core.jhe_settings.service import get_setting
+
         message = render_to_string(
             "registration/verify_email_message.html",
             {
-                "site_url": settings.SITE_URL,
+                "site_url": get_setting("site.url", settings.SITE_URL),
                 "email_address": self.email,
                 "user_id": urlsafe_base64_encode(force_bytes(self.id)),
                 "token": account_activation_token.make_token(self),
@@ -262,6 +266,7 @@ class JheUser(AbstractUser):
 
     # https://github.com/jazzband/django-oauth-toolkit/blob/102c85141ec44549e17080c676292e79e5eb46cc/oauth2_provider/oauth2_validators.py#L675
     def create_authorization_code(self, application_id, code_verifier):
+        from core.jhe_settings.service import get_setting
 
         self.last_login = timezone.now()
         self.save()
@@ -279,7 +284,7 @@ class JheUser(AbstractUser):
             user_id=self.id,
             code=authorization_code,
             expires=timezone.now() + timedelta(seconds=settings.PATIENT_AUTHORIZATION_CODE_EXPIRE_SECONDS),
-            redirect_uri=settings.SITE_URL + settings.OAUTH2_CALLBACK_PATH,
+            redirect_uri=get_setting("site.url", settings.SITE_URL) + settings.OAUTH2_CALLBACK_PATH,
             scope="openid",
             # https://github.com/oauthlib/oauthlib/blob/f9a07c6c07d0ddac255dd322ef5fc54a7a46366d/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L18
             code_challenge=base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest())
@@ -475,8 +480,10 @@ class Patient(models.Model):
 
     @staticmethod
     def construct_invitation_link(invitation_url, client_id, auth_code, code_verifier):
-        url_parsed = urlparse(settings.SITE_URL)
-        invitation_code = f"{url_parsed.netloc}~{client_id}~{auth_code}~{code_verifier}"
+        from core.jhe_settings.service import get_setting
+
+        site_url = get_setting("site.url", settings.SITE_URL)
+        invitation_code = f"{urlparse(site_url).hostname}~{client_id}~{auth_code}~{code_verifier}"
         return invitation_url.replace("CODE", invitation_code)
 
     @staticmethod
@@ -524,6 +531,7 @@ class Patient(models.Model):
         patient_identifier_system=None,
         patient_identifier_value=None,
     ):
+        from core.jhe_settings.service import get_setting
 
         practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
         practitioner_id = practitioner.id
@@ -589,7 +597,7 @@ class Patient(models.Model):
             {patient_identifier_value_sql_where}
             ORDER BY core_patient.name_family
             """.format(
-            SITE_URL=settings.SITE_URL,
+            SITE_URL=get_setting("site.url", settings.SITE_URL),
             study_sql_where=study_sql_where,
             patient_identifier_value_sql_where=patient_identifier_value_sql_where,
         )
@@ -1062,6 +1070,7 @@ class Observation(models.Model):
         coding_code=None,
         observation_id=None,
     ):
+        from core.jhe_settings.service import get_setting
 
         practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
         practitioner_id = practitioner.id
@@ -1149,7 +1158,7 @@ class Observation(models.Model):
             GROUP BY core_observation.id, core_codeableconcept.coding_system, core_codeableconcept.coding_code
             ORDER BY core_observation.last_updated DESC
             """.format(
-            SITE_URL=settings.SITE_URL,
+            SITE_URL=get_setting("site.url", settings.SITE_URL),
             study_sql_where=study_sql_where,
             study_scope_join=study_scope_join,
             study_scope_where=study_scope_where,
