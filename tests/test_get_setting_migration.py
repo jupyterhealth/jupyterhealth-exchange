@@ -107,9 +107,7 @@ class ContextProcessorTests(TestCase):
     def setUp(self):
         cache.clear()
         # Create the OAuth application so _get_oidc_client_id works
-        self.user = JheUser.objects.create_user(
-            email="ctx-test@example.com", password="pass", identifier="ctx"
-        )
+        self.user = JheUser.objects.create_user(email="ctx-test@example.com", password="pass", identifier="ctx")
         Application.objects.create(
             name="JHE Portal",
             user=self.user,
@@ -132,6 +130,7 @@ class ContextProcessorTests(TestCase):
 
         # Clear the lru_cache so the test app is picked up
         from core.context_processors import _get_oidc_client_id
+
         _get_oidc_client_id.cache_clear()
 
         request = RequestFactory().get("/")
@@ -238,9 +237,7 @@ class SendEmailVerificationTests(TestCase):
     """Regression: send_email_verificaion must use get_setting for site_url."""
 
     def setUp(self):
-        self.user = JheUser.objects.create_user(
-            email="email-test@example.com", password="pw", identifier="em1"
-        )
+        self.user = JheUser.objects.create_user(email="email-test@example.com", password="pw", identifier="em1")
 
     @patch(GET_SETTING_SVC, return_value="https://db-email.example.com")
     def test_email_contains_db_site_url(self, mock_gs):
@@ -254,9 +251,7 @@ class CreateAuthorizationCodeTests(TestCase):
     """Regression: create_authorization_code redirect_uri must use get_setting."""
 
     def setUp(self):
-        self.user = JheUser.objects.create_user(
-            email="auth-code@example.com", password="pw", identifier="ac1"
-        )
+        self.user = JheUser.objects.create_user(email="auth-code@example.com", password="pw", identifier="ac1")
         self.app = Application.objects.create(
             name="Test App",
             user=self.user,
@@ -294,9 +289,7 @@ class GetDefaultOrgsTests(TestCase):
         )
         practitioner = Practitioner.objects.get(jhe_user=user)
         self.assertTrue(
-            PractitionerOrganization.objects.filter(
-                practitioner=practitioner, organization=self.org, role="v"
-            ).exists()
+            PractitionerOrganization.objects.filter(practitioner=practitioner, organization=self.org, role="v").exists()
         )
 
     @patch(GET_SETTING_SVC, return_value="")
@@ -400,9 +393,7 @@ class ClientViewSetPerformCreateTests(TestCase):
     """Integration: ClientViewSet.perform_create uses get_setting for redirect_uris."""
 
     def setUp(self):
-        self.user = JheUser.objects.create_superuser(
-            email="admin-client@example.com", password="pw"
-        )
+        self.user = JheUser.objects.create_superuser(email="admin-client@example.com", password="pw")
 
     @patch("core.views.client.get_setting", return_value="https://db-client.example.com")
     def test_perform_create_uses_db_site_url(self, mock_gs):
