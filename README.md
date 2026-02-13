@@ -62,15 +62,15 @@ https://github.com/orgs/the-commons-project/projects/8
 
 ## Troubleshooting Local Development
 
-**Issue:** Developers running Django on Windows (Visual Studio Code, Git Bash, etc.) might hit a blank screen after login even though authentication succeeds. That usually happens because the OIDC settings in `settings.py` get polluted with local paths (e.g. `OIDC_CLIENT_REDIRECT_URI: http://localhost:8000C:/Program Files/Git/auth/callback`).
+**Issue:** Developers running Django on Windows (Visual Studio Code, Git Bash, etc.) might hit a blank screen after login even though authentication succeeds. That usually happens because the OIDC settings in `settings.py` get polluted with local paths (e.g. `OAUTH2_CALLBACK_PATH: http://localhost:8000C:/Program Files/Git/auth/callback`).
 
 **Cause:** The environment loader injects the shell’s current working directory or other path fragments into the OIDC URLs, producing malformed authorization/redirect addresses.
 
 **Solution:** Explicitly define the two OIDC URLs in `settings.py` rather than relying on environment interpolation. For example:
 
 ```python
-OIDC_CLIENT_REDIRECT_URI = 'http://localhost:8000/auth/callback'
-OIDC_CLIENT_AUTHORITY = 'http://localhost:8000/o/'
+OAUTH2_CALLBACK_PATH = '/auth/callback'
+OIDC_CLIENT_AUTHORITY_PATH = '/o/'
 ```
 
 By hardcoding the values you prevent the path injection and keep the SPA from seeing broken URLs, which resolves the blank screen after login on Windows hosts.
