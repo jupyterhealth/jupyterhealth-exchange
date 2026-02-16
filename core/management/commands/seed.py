@@ -46,8 +46,8 @@ class Command(BaseCommand):
             self.seed_codeable_concept()
             self.seed_data_source()
             root_organization = self.create_root_organization()
-            self.seed_berkeley(root_organization)
-            self.seed_ucsf(root_organization)
+            self.seed_example_university(root_organization)
+            self.seed_example_medical(root_organization)
             self.seed_oauth_application()
 
         self.stdout.write(self.style.SUCCESS("Seeding complete."))
@@ -122,19 +122,19 @@ class Command(BaseCommand):
     def create_root_organization():
         return Organization.objects.create(id=0, name="ROOT", type="root")
 
-    def seed_berkeley(self, root_organization):
+    def seed_example_university(self, root_organization):
 
         ucb = Organization.objects.create(
-            name="University of California Berkeley",
+            name="Example University",
             type="edu",
             part_of=root_organization,
         )
         ccdss = Organization.objects.create(
-            name="College of Computing, Data Science and Society",
+            name="Example School of Data Science",
             type="edu",
             part_of=ucb,
         )
-        bids = Organization.objects.create(name="Berkeley Institute for Data Science (BIDS)", type="edu", part_of=ccdss)
+        bids = Organization.objects.create(name="Example Research Institute (ERI)", type="edu", part_of=ccdss)
 
         mary = self.create_user_with_profile("mary@example.com")
 
@@ -152,13 +152,13 @@ class Command(BaseCommand):
         tom = self.create_user_with_profile("tom@example.com")
         PractitionerOrganization.objects.create(practitioner=tom, organization=bids, role="viewer")
 
-        # 3) Create BIDS studies
+        # 3) Create ERI studies
         bp_hr = Study.objects.create(
-            name="BIDS Study on BP & HR",
+            name="Example Study on BP & HR",
             description="Blood Pressure & Heart Rate",
             organization=bids,
         )
-        bp = Study.objects.create(name="BIDS Study on BP", description="Blood Pressure", organization=bids)
+        bp = Study.objects.create(name="Example Study on BP", description="Blood Pressure", organization=bids)
 
         bp_code = CodeableConcept.objects.get(coding_code="omh:blood-pressure:4.0")
         hr_code = CodeableConcept.objects.get(coding_code="omh:heart-rate:2.0")
@@ -203,7 +203,10 @@ class Command(BaseCommand):
                     consented_time=now,
                 )
 
-        for consent in StudyPatientScopeConsent.objects.filter(consented=True):
+        eri_study_patients = [sp_peter_bp_hr, sp_peter_bp, sp_pamela_bp_hr, sp_pamela_bp]
+        for consent in StudyPatientScopeConsent.objects.filter(
+            consented=True, study_patient__in=eri_study_patients
+        ):
             scope_code = consent.scope_code
             Observation.objects.create(
                 subject_patient=consent.study_patient.patient,
@@ -211,17 +214,17 @@ class Command(BaseCommand):
                 value_attachment_data=generate_observation_value_attachment_data(consent.scope_code.coding_code),
             )
 
-    def seed_ucsf(self, root_organization):
+    def seed_example_medical(self, root_organization):
 
         ucsf = Organization.objects.create(
-            name="University of California San Francisco",
+            name="Example Medical University",
             type="edu",
             part_of=root_organization,
         )
-        med = Organization.objects.create(name="Department of Medicine", type="edu", part_of=ucsf)
-        cardio = Organization.objects.create(name="Cardiology", type="edu", part_of=med)
-        mosl = Organization.objects.create(name="Moslehi Lab", type="laboratory", part_of=cardio)
-        olgin = Organization.objects.create(name="Olgin Lab", type="laboratory", part_of=cardio)
+        med = Organization.objects.create(name="Example Department", type="edu", part_of=ucsf)
+        cardio = Organization.objects.create(name="Heart Research Division", type="edu", part_of=med)
+        mosl = Organization.objects.create(name="Example Lab Alpha", type="laboratory", part_of=cardio)
+        olgin = Organization.objects.create(name="Example Lab Beta", type="laboratory", part_of=cardio)
 
         mark = self.create_user_with_profile("mark@example.com", user_type="practitioner")
         practitioner_org_links = [
@@ -239,17 +242,17 @@ class Command(BaseCommand):
         o2_code = CodeableConcept.objects.get(coding_code="omh:oxygen-saturation:2.0")
 
         cardio_rr = Study.objects.create(
-            name="Cardio Study on RR",
+            name="Example Study on RR",
             description="Respiratory rate",
             organization=cardio,
         )
         mosl_bt = Study.objects.create(
-            name="Moslehi Study on BT",
+            name="Example Study on BT",
             description="Body Temperature",
             organization=mosl,
         )
         olgin_o2 = Study.objects.create(
-            name="Olgin Study on O2",
+            name="Example Study on O2",
             description="Oxygen Saturation",
             organization=olgin,
         )
@@ -297,7 +300,10 @@ class Command(BaseCommand):
             consented_time=now,
         )
 
-        for consent in StudyPatientScopeConsent.objects.filter(consented=True):
+        med_study_patients = [sp_percy_bt, sp_paul_o2, sp_pat_rr, sp_pat_o2]
+        for consent in StudyPatientScopeConsent.objects.filter(
+            consented=True, study_patient__in=med_study_patients
+        ):
             scope_code = consent.scope_code
             Observation.objects.create(
                 subject_patient=consent.study_patient.patient,

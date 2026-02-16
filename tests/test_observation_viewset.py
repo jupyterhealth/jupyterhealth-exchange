@@ -191,7 +191,6 @@ def test_get_observation_by_study(api_client, patient, hr_study):
     assert len(observations) == 10
 
 
-@pytest.mark.xfail(reason="studies have access to all patient data if a patient is in the study")
 def test_get_observation_one_patient_two_studies(api_client, patient, hr_study):
 
     org2 = Organization.objects.create(

@@ -980,8 +980,12 @@ class Observation(models.Model):
             )
 
         study_sql_where = ""
+        study_scope_join = ""
+        study_scope_where = ""
         if study_id:
             study_sql_where = "AND core_study.id={study_id}".format(study_id=int(study_id))
+            study_scope_join = "JOIN core_studyscoperequest ON core_studyscoperequest.study_id=core_study.id"
+            study_scope_where = "AND core_observation.codeable_concept_id=core_studyscoperequest.scope_code_id"
 
         patient_id_sql_where = ""
         if patient_id:
@@ -1011,16 +1015,20 @@ class Observation(models.Model):
         JOIN core_practitionerorganization ON core_practitionerorganization.organization_id=core_organization.id
         LEFT JOIN core_studypatient ON core_studypatient.patient_id=core_patient.id
         LEFT JOIN core_study ON core_study.id=core_studypatient.study_id
+        {study_scope_join}
         WHERE core_practitionerorganization.practitioner_id = %(practitioner_id)s
 
         {organization_sql_where}
         {study_sql_where}
+        {study_scope_where}
         {patient_id_sql_where}
         {observation_sql_where}
         ORDER BY core_observation.last_updated DESC
         """.format(
             organization_sql_where=organization_sql_where,
             study_sql_where=study_sql_where,
+            study_scope_join=study_scope_join,
+            study_scope_where=study_scope_where,
             patient_id_sql_where=patient_id_sql_where,
             observation_sql_where=observation_sql_where,
         )
@@ -1060,8 +1068,12 @@ class Observation(models.Model):
 
         # Explicitly cast to ints so no injection vulnerability
         study_sql_where = ""
+        study_scope_join = ""
+        study_scope_where = ""
         if study_id:
             study_sql_where = "AND core_study.id={study_id}".format(study_id=int(study_id))
+            study_scope_join = "JOIN core_studyscoperequest ON core_studyscoperequest.study_id=core_study.id"
+            study_scope_where = "AND core_observation.codeable_concept_id=core_studyscoperequest.scope_code_id"
 
         patient_id_sql_where = ""
         if patient_id:
@@ -1125,10 +1137,12 @@ class Observation(models.Model):
             JOIN core_practitionerorganization ON core_practitionerorganization.organization_id=core_organization.id
             LEFT JOIN core_studypatient ON core_studypatient.patient_id=core_patient.id
             LEFT JOIN core_study ON core_study.id=core_studypatient.study_id
+            {study_scope_join}
             WHERE core_practitionerorganization.practitioner_id = %(practitioner_id)s
             AND core_codeableconcept.coding_system LIKE %(coding_system)s AND core_codeableconcept.coding_code LIKE %(coding_code)s
 
             {study_sql_where}
+            {study_scope_where}
             {patient_id_sql_where}
             {patient_identifier_value_sql_where}
             {observation_sql_where}
@@ -1137,6 +1151,8 @@ class Observation(models.Model):
             """.format(
             SITE_URL=settings.SITE_URL,
             study_sql_where=study_sql_where,
+            study_scope_join=study_scope_join,
+            study_scope_where=study_scope_where,
             patient_id_sql_where=patient_id_sql_where,
             patient_identifier_value_sql_where=patient_identifier_value_sql_where,
             observation_sql_where=observation_sql_where,

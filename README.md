@@ -169,8 +169,8 @@ flowchart TD
     style sam fill:#CFC
 
     %% berkeley
-    ucb("Organization:<br/>University of California Berkeley") --> ccdss("Organization:<br/>College of Computing, Data Science and Society")
-    ccdss --> bids("Organization:<br/>Berkeley Institute for Data Science (BIDS)")
+    ucb("Organization:<br/>Example University") --> ccdss("Organization:<br/>Example School of Data Science")
+    ccdss --> bids("Organization:<br/>Example Research Institute (ERI)")
 
     %% berkeley users
     ucb --Manager--> mary("ManagerMary<br/><small>mary\@example.com</small>")
@@ -186,27 +186,27 @@ flowchart TD
     style tom fill:#CFC
 
     %% berkeley studies
-    bids --> bidsStudyOnBPHR("BIDS Study on BP & HR<br/><small>Blood Pressure<br/>Heart Rate</small>")
+    bids --> bidsStudyOnBPHR("Example Study on BP & HR<br/><small>Blood Pressure<br/>Heart Rate</small>")
     style bidsStudyOnBPHR fill:#CFF
-    bids --> bidsStudyOnBP("BIDS Study on BP<br/><small>Blood Pressure </small>")
+    bids --> bidsStudyOnBP("Example Study on BP<br/><small>Blood Pressure </small>")
     style bidsStudyOnBP fill:#CFF
 
     %% berkeley patients
-    bids --> peter("BidsPatientPeter<br/><small>peter\@example.com</small>")
+    bids --> peter("EriPatientPeter<br/><small>peter\@example.com</small>")
     style peter fill:#FCC
     peter --Consented--> bidsStudyOnBPHR
     peter --Requested--> bidsStudyOnBP
-    pamela("BidsPatientPamela<br/><small>pamela\@example.com</small>")
+    pamela("EriPatientPamela<br/><small>pamela\@example.com</small>")
     style pamela fill:#FCC
     bids --> pamela
     pamela --Consented--> bidsStudyOnBPHR
     pamela --Consented--> bidsStudyOnBP
 
     %% ucsf
-    ucsf("Organization:<br/>University of California San Francisco") --> med("Organization:<br/>Department of Medicine")
-    med --> cardio("Organization:<br/>Cardiology")
-    cardio --> moslehi("Organization:<br/>Moslehi Lab")
-    cardio --> olgin("Organization:<br/>Olgin Lab")
+    ucsf("Organization:<br/>Example Medical University") --> med("Organization:<br/>Example Department")
+    med --> cardio("Organization:<br/>Heart Research Division")
+    cardio --> moslehi("Organization:<br/>Example Lab Alpha")
+    cardio --> olgin("Organization:<br/>Example Lab Beta")
 
     %% ucsf users
     ucsf --Manager-->mark("ManagerMark<br/><small>mark\@example.com</small>")
@@ -218,21 +218,21 @@ flowchart TD
     olgin --Manager--> tom
 
     %% ucsf studies
-    cardio --> cardioStudyOnRR("Cardio Study on RR<br/><small>Respiratory rate</small>")
+    cardio --> cardioStudyOnRR("Example Study on RR<br/><small>Respiratory rate</small>")
     style cardioStudyOnRR fill:#CFF
-    moslehi --> moslehiStudyOnBT("Moslehi Study on BT<br/><small>Body Temperature</small>")
+    moslehi --> moslehiStudyOnBT("Example Study on BT<br/><small>Body Temperature</small>")
     style moslehiStudyOnBT fill:#CFF
-    olgin --> olginStudyOnO2("Olgin Study on O2<br/><small>Oxygen Saturation</small>")
+    olgin --> olginStudyOnO2("Example Study on O2<br/><small>Oxygen Saturation</small>")
     style olginStudyOnO2 fill:#CFF
 
     %% ucsf patients
-    moslehi --> percy("MoslehiPatientPercy<br/><small>percy\@example.com</small>")
+    moslehi --> percy("AlphaPatientPercy<br/><small>percy\@example.com</small>")
     style percy fill:#FCC
     percy --Consented--> moslehiStudyOnBT
-    olgin --> paul("OlginPatientPaul<br/><small>paul\@example.com</small>")
+    olgin --> paul("BetaPatientPaul<br/><small>paul\@example.com</small>")
     style paul fill:#FCC
     paul --Consented--> olginStudyOnO2
-    cardio --> pat("CardioOlginPatientPat<br/><small>pat\@example.com</small>")
+    cardio --> pat("HeartBetaPatientPat<br/><small>pat\@example.com</small>")
     style pat fill:#FCC
     pat --Consented--> cardioStudyOnRR
     pat --Consented--> olginStudyOnO2
@@ -243,7 +243,7 @@ flowchart TD
 
 - Additional test data from the [iglu project](https://github.com/irinagain/iglu) can be seeded by running the following command (please note this can take 10-20 minutes to run)
   `$ python manage.py iglu`
-- This creates a new study under the "Berkeley Institute for Data Science (BIDS)" Organization with 19 mock patients and 1745 real Observation data points
+- This creates a new study under the "Example Research Institute (ERI)" Organization with 19 mock patients and 1745 real Observation data points
 
 
 ## Working with APIs
@@ -624,14 +624,14 @@ When `DEBUG` is enabled the SPA debug page now summarizes server errors (includi
 ## Test Procedure
 
 1. **Select Parent Organization**
-   Choose **University of California, Berkeley**.
+   Choose **Example University**.
 
 2. **Open Sub-Organization**
-   Click **View** for **Berkeley Institute for Data Science (BIDS)**.
+   Click **View** for **Example Research Institute (ERI)**.
 
 3. **Create a New Study**
 
-   * Under BIDS, create a study.
+   * Under ERI, create a study.
    * Add the **iHealth** data source.
    * Set the data scope to **blood glucose**.
 

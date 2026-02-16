@@ -209,9 +209,9 @@ class Command(BaseCommand):
             return
 
         # Find an org by name fragment
-        organization = Organization.objects.filter(name__icontains="BIDS").first()
+        organization = Organization.objects.filter(name__icontains="Example Research Institute").first()
         if not organization:
-            self.stderr.write(self.style.ERROR("Missing Organization with name containing 'BIDS'"))
+            self.stderr.write(self.style.ERROR("Missing Organization with name containing 'Example Research Institute'"))
             return
 
         # Data source by name
