@@ -354,6 +354,7 @@ When `DEBUG` is enabled the SPA debug page now summarizes server errors (includi
 ### Admin REST API
 
 - The Admin API is used by the Web UI SPA for Practitioner/Patient/Organization/Study management and Patient data provider apps/clients to manage Patient consents.
+- The `/api/v1/jhe_settings` and `/api/v1/practitioners` endpoints are restricted to superusers only. Non-superuser requests receive a `403 Forbidden` response.
 
 #### Profile
 
