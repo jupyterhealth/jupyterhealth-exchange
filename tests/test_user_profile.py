@@ -58,6 +58,7 @@ PRACTITIONER_USER_EXPECTED_FIELDS = {
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def patient_client(patient):
     """APIClient authenticated as the patient user from conftest."""

@@ -204,9 +204,7 @@ class Command(BaseCommand):
                 )
 
         eri_study_patients = [sp_peter_bp_hr, sp_peter_bp, sp_pamela_bp_hr, sp_pamela_bp]
-        for consent in StudyPatientScopeConsent.objects.filter(
-            consented=True, study_patient__in=eri_study_patients
-        ):
+        for consent in StudyPatientScopeConsent.objects.filter(consented=True, study_patient__in=eri_study_patients):
             scope_code = consent.scope_code
             Observation.objects.create(
                 subject_patient=consent.study_patient.patient,
@@ -301,9 +299,7 @@ class Command(BaseCommand):
         )
 
         med_study_patients = [sp_percy_bt, sp_paul_o2, sp_pat_rr, sp_pat_o2]
-        for consent in StudyPatientScopeConsent.objects.filter(
-            consented=True, study_patient__in=med_study_patients
-        ):
+        for consent in StudyPatientScopeConsent.objects.filter(consented=True, study_patient__in=med_study_patients):
             scope_code = consent.scope_code
             Observation.objects.create(
                 subject_patient=consent.study_patient.patient,
