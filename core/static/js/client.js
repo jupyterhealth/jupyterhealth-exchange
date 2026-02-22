@@ -1926,7 +1926,6 @@ async function debugGetPatientTokenFromCode() {
       redirect_uri: OIDCSettings.redirect_uri,
       client_id,
       code_verifier,
-      code_challenge,
     };
 
     document.getElementById("debugOAuthPayload").value = JSON.stringify(payload, null, 2);
