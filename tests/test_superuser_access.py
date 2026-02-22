@@ -18,12 +18,12 @@ from rest_framework.test import APIClient
 from core.models import JheSetting, JheUser, Practitioner
 from core.permissions import IsSuperUser
 
-
 SETTINGS_URL = "/api/v1/jhe_settings"
 PRACTITIONERS_URL = "/api/v1/practitioners"
 
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def superuser_client(superuser):
@@ -73,6 +73,7 @@ class TestIsSuperUserPermissionUnit:
     @pytest.mark.django_db
     def test_superuser_is_allowed(self, superuser):
         from unittest.mock import MagicMock
+
         perm = IsSuperUser()
         request = MagicMock()
         request.user = superuser
@@ -81,6 +82,7 @@ class TestIsSuperUserPermissionUnit:
     @pytest.mark.django_db
     def test_regular_user_is_denied(self, user):
         from unittest.mock import MagicMock
+
         perm = IsSuperUser()
         request = MagicMock()
         request.user = user
@@ -89,6 +91,7 @@ class TestIsSuperUserPermissionUnit:
     @pytest.mark.django_db
     def test_patient_is_denied(self, patient):
         from unittest.mock import MagicMock
+
         perm = IsSuperUser()
         request = MagicMock()
         request.user = patient.jhe_user
@@ -97,6 +100,7 @@ class TestIsSuperUserPermissionUnit:
     def test_anonymous_is_denied(self):
         from unittest.mock import MagicMock
         from django.contrib.auth.models import AnonymousUser
+
         perm = IsSuperUser()
         request = MagicMock()
         request.user = AnonymousUser()
@@ -118,12 +122,15 @@ class TestSettingsSuperuserAccess:
 
     @pytest.mark.django_db
     def test_create(self, superuser_client):
-        r = superuser_client.post(SETTINGS_URL, {
-            "key": "new.setting",
-            "settingId": 999,
-            "valueType": "string",
-            "value": "hello",
-        })
+        r = superuser_client.post(
+            SETTINGS_URL,
+            {
+                "key": "new.setting",
+                "settingId": 999,
+                "valueType": "string",
+                "value": "hello",
+            },
+        )
         assert r.status_code == 201
 
     @pytest.mark.django_db
@@ -133,20 +140,26 @@ class TestSettingsSuperuserAccess:
 
     @pytest.mark.django_db
     def test_update(self, superuser_client, sample_setting):
-        r = superuser_client.put(f"{SETTINGS_URL}/{sample_setting.id}", {
-            "key": "test.setting",
-            "settingId": 1,
-            "valueType": "string",
-            "value": "updated_value",
-        })
+        r = superuser_client.put(
+            f"{SETTINGS_URL}/{sample_setting.id}",
+            {
+                "key": "test.setting",
+                "settingId": 1,
+                "valueType": "string",
+                "value": "updated_value",
+            },
+        )
         assert r.status_code == 200
 
     @pytest.mark.django_db
     def test_partial_update(self, superuser_client, sample_setting):
-        r = superuser_client.patch(f"{SETTINGS_URL}/{sample_setting.id}", {
-            "value": "patched",
-            "valueType": "string",
-        })
+        r = superuser_client.patch(
+            f"{SETTINGS_URL}/{sample_setting.id}",
+            {
+                "value": "patched",
+                "valueType": "string",
+            },
+        )
         assert r.status_code == 200
 
     @pytest.mark.django_db
@@ -164,9 +177,15 @@ class TestSettingsPractitionerDenied:
 
     @pytest.mark.django_db
     def test_create(self, practitioner_client):
-        r = practitioner_client.post(SETTINGS_URL, {
-            "key": "hack.setting", "settingId": 1, "valueType": "string", "value": "x",
-        })
+        r = practitioner_client.post(
+            SETTINGS_URL,
+            {
+                "key": "hack.setting",
+                "settingId": 1,
+                "valueType": "string",
+                "value": "x",
+            },
+        )
         assert r.status_code == 403
 
     @pytest.mark.django_db
@@ -175,9 +194,15 @@ class TestSettingsPractitionerDenied:
 
     @pytest.mark.django_db
     def test_update(self, practitioner_client, sample_setting):
-        r = practitioner_client.put(f"{SETTINGS_URL}/{sample_setting.id}", {
-            "key": "test.setting", "settingId": 1, "valueType": "string", "value": "x",
-        })
+        r = practitioner_client.put(
+            f"{SETTINGS_URL}/{sample_setting.id}",
+            {
+                "key": "test.setting",
+                "settingId": 1,
+                "valueType": "string",
+                "value": "x",
+            },
+        )
         assert r.status_code == 403
 
     @pytest.mark.django_db
@@ -194,9 +219,15 @@ class TestSettingsPatientDenied:
 
     @pytest.mark.django_db
     def test_create(self, patient_client):
-        r = patient_client.post(SETTINGS_URL, {
-            "key": "hack.setting", "settingId": 1, "valueType": "string", "value": "x",
-        })
+        r = patient_client.post(
+            SETTINGS_URL,
+            {
+                "key": "hack.setting",
+                "settingId": 1,
+                "valueType": "string",
+                "value": "x",
+            },
+        )
         assert r.status_code == 403
 
 
@@ -209,9 +240,15 @@ class TestSettingsAnonymousDenied:
 
     @pytest.mark.django_db
     def test_create(self, anon_client):
-        r = anon_client.post(SETTINGS_URL, {
-            "key": "hack.setting", "settingId": 1, "valueType": "string", "value": "x",
-        })
+        r = anon_client.post(
+            SETTINGS_URL,
+            {
+                "key": "hack.setting",
+                "settingId": 1,
+                "valueType": "string",
+                "value": "x",
+            },
+        )
         assert r.status_code == 401
 
 
@@ -247,12 +284,15 @@ class TestPractitionersPractitionerDenied:
 
     @pytest.mark.django_db
     def test_create(self, practitioner_client, organization):
-        r = practitioner_client.post(PRACTITIONERS_URL, {
-            "organizationId": organization.id,
-            "telecomEmail": "new@example.com",
-            "nameFamily": "last",
-            "nameGiven": "first",
-        })
+        r = practitioner_client.post(
+            PRACTITIONERS_URL,
+            {
+                "organizationId": organization.id,
+                "telecomEmail": "new@example.com",
+                "nameFamily": "last",
+                "nameGiven": "first",
+            },
+        )
         assert r.status_code == 403
 
     @pytest.mark.django_db
@@ -338,9 +378,15 @@ class TestSuperuserRegressions:
     def test_settings_crud_roundtrip(self, superuser_client):
         """Full create-read-update-delete cycle for settings."""
         # Create
-        r = superuser_client.post(SETTINGS_URL, {
-            "key": "roundtrip.test", "settingId": 42, "valueType": "string", "value": "v1",
-        })
+        r = superuser_client.post(
+            SETTINGS_URL,
+            {
+                "key": "roundtrip.test",
+                "settingId": 42,
+                "valueType": "string",
+                "value": "v1",
+            },
+        )
         assert r.status_code == 201
         setting_id = r.json()["id"]
 
@@ -350,9 +396,13 @@ class TestSuperuserRegressions:
         assert r.json()["key"] == "roundtrip.test"
 
         # Update
-        r = superuser_client.patch(f"{SETTINGS_URL}/{setting_id}", {
-            "value": "v2", "valueType": "string",
-        })
+        r = superuser_client.patch(
+            f"{SETTINGS_URL}/{setting_id}",
+            {
+                "value": "v2",
+                "valueType": "string",
+            },
+        )
         assert r.status_code == 200
 
         # Delete
@@ -362,9 +412,15 @@ class TestSuperuserRegressions:
     @pytest.mark.django_db
     def test_settings_data_not_modified_by_denied_attempt(self, practitioner_client, superuser_client, sample_setting):
         """A denied POST from a practitioner must not create any setting."""
-        r = practitioner_client.post(SETTINGS_URL, {
-            "key": "evil.setting", "settingId": 666, "valueType": "string", "value": "bad",
-        })
+        r = practitioner_client.post(
+            SETTINGS_URL,
+            {
+                "key": "evil.setting",
+                "settingId": 666,
+                "valueType": "string",
+                "value": "bad",
+            },
+        )
         assert r.status_code == 403
         # Confirm nothing was created
         r2 = superuser_client.get(SETTINGS_URL)
