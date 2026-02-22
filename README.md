@@ -358,18 +358,33 @@ When `DEBUG` is enabled the SPA debug page now summarizes server errors (includi
 #### Profile
 
 - The `profile` endpoint returns the current user details.
+- For patient users, PHI fields (`email`, `firstName`, `lastName`, and patient-level `nameFamily`, `nameGiven`, `birthDate`, `telecomPhone`, `telecomEmail`) are omitted from the response.
 
 ```json
-// GET /api/v1/users/profile
+// GET /api/v1/users/profile (practitioner)
 {
     "id": 10001,
     "email": "peter@example.com",
     "firstName": "Peter",
-    "lastName": "ThePatient",
+    "lastName": "ThePractitioner",
+    "patient": null,
+    "userType": "practitioner",
+    "isSuperuser": false
+}
+```
+
+```json
+// GET /api/v1/users/profile (patient — PHI stripped)
+{
+    "id": 10002,
     "patient": {
         "id": 40001,
-      	...
-    }
+        "jheUserId": 10002,
+        "identifier": "",
+        "organizations": [ ... ]
+    },
+    "userType": "patient",
+    "isSuperuser": false
 }
 ```
 
