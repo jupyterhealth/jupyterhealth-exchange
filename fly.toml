@@ -13,12 +13,7 @@ console_command = "/code/manage.py shell"
 [env]
   PORT = "8000"
   DJANGO_LOG_LEVEL = "INFO"
-  SITE_TITLE= "JupyterHealth Exchange Dev"
   SITE_URL = "https://jhe.fly.dev"
-  CH_INVITATION_LINK_PREFIX = "https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.dev&referrer=cloud_sharing="
-  CH_INVITATION_LINK_EXCLUDE_HOST = true
-  PATIENT_AUTHORIZATION_CODE_CHALLENGE="C-rdBzEtxD82FMuHF0_76l6NNu_AIqnVJDL1Ba5j0gs"
-  PATIENT_AUTHORIZATION_CODE_VERIFIER="EIlWNRU1_7yyUdw27ryzBvgcoU8ZJ6bgg_F-wkNbbDQ"
 
 
 [http_service]

@@ -1,7 +1,5 @@
 export SITE_TITLE="JupyterHealth Exchange Dev"
-export REGISTRATION_INVITE_CODE="helloworld"
 export SITE_URL=http://localhost:8000
-export CH_INVITATION_LINK_PREFIX="https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.dev&referrer=cloud_sharing_code="
 export DB_NAME="test_jhe_dev"
 export DB_USER="postgres"
 export DB_PASSWORD="postgres"
@@ -60,6 +58,4 @@ z/HPpaGyn4YlcDJGsLiKqElqQBZcCgscxLvP0s7TaA7Py7d0Sg+BXkb/w37hojs7
 w28cmsrmgsEJRLWSh8XG8C86JH67
 -----END PRIVATE KEY-----"
 
-export PATIENT_AUTHORIZATION_CODE_CHALLENGE="abc123"
-export PATIENT_AUTHORIZATION_CODE_VERIFIER="abc123"
 export SECRET_KEY="super-secret-key"

@@ -1,8 +1,10 @@
 import argparse
 import base64
+import hashlib
 import json
 import os
 import urllib.parse
+
 import django
 import requests
 from dotenv import load_dotenv
@@ -13,6 +15,9 @@ load_dotenv()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "jhe.settings")
 django.setup()
 
+from core.jhe_settings.service import get_setting  # noqa: E402  (must come after django.setup())
+from core.models import JheSetting  # noqa: E402
+
 
 def _get_oidc_client_id_from_db():
     try:
@@ -22,11 +27,31 @@ def _get_oidc_client_id_from_db():
         return None
 
 
-SITE_URL = os.getenv("SITE_URL")
+def _get_default_application_id():
+    """Return the PK of the first OAuth2 application (used as JheSetting.setting_id)."""
+    try:
+        Application = get_application_model()
+        return Application.objects.order_by("id").values_list("id", flat=True).first()
+    except Exception:
+        return None
+
+
+def _get_client_setting(key):
+    """Read a per-client JheSetting (setting_id = default application PK)."""
+    app_id = _get_default_application_id()
+    setting = JheSetting.objects.filter(setting_id=app_id, key=key).first()
+    return setting.get_value() if setting else None
+
+
+SITE_URL = get_setting("site.url", os.getenv("SITE_URL", "http://localhost:8000"))
 OIDC_CLIENT_ID = _get_oidc_client_id_from_db() or os.getenv("OIDC_CLIENT_ID")
-PATIENT_AUTHORIZATION_CODE_VERIFIER = os.getenv("PATIENT_AUTHORIZATION_CODE_VERIFIER")
-OIDC_CLIENT_REDIRECT_URI = f"{SITE_URL}/auth/callback"
-PATIENT_AUTHORIZATION_CODE_CHALLENGE = os.getenv("PATIENT_AUTHORIZATION_CODE_CHALLENGE")
+_code_verifier = _get_client_setting("client.code_verifier") or os.getenv("PATIENT_AUTHORIZATION_CODE_VERIFIER")
+OAUTH2_CALLBACK_PATH = f"{SITE_URL}/auth/callback"
+_code_challenge = (
+    base64.urlsafe_b64encode(hashlib.sha256(_code_verifier.encode()).digest()).rstrip(b"=").decode()
+    if _code_verifier
+    else os.getenv("PATIENT_AUTHORIZATION_CODE_CHALLENGE")
+)
 
 OMH_BLOOD_GLUCOSE_JSON = {
     "header": {
@@ -44,7 +69,6 @@ OMH_BLOOD_GLUCOSE_JSON = {
 
 
 class Command:
-
     def __init__(self):
         self.session = requests.Session()
         self.BASE_URL = SITE_URL
@@ -79,9 +103,9 @@ class Command:
         authorize_params = {
             "client_id": OIDC_CLIENT_ID,
             "response_type": "code",
-            "redirect_uri": OIDC_CLIENT_REDIRECT_URI,
+            "redirect_uri": OAUTH2_CALLBACK_PATH,
             "scope": "openid",
-            "code_challenge": PATIENT_AUTHORIZATION_CODE_CHALLENGE,
+            "code_challenge": _code_challenge,
             "code_challenge_method": "S256",
         }
 
@@ -107,9 +131,9 @@ class Command:
             data={
                 "code": code,
                 "grant_type": "authorization_code",
-                "redirect_uri": OIDC_CLIENT_REDIRECT_URI,
+                "redirect_uri": OAUTH2_CALLBACK_PATH,
                 "client_id": OIDC_CLIENT_ID,
-                "code_verifier": PATIENT_AUTHORIZATION_CODE_VERIFIER,
+                "code_verifier": _code_verifier,
             },
         ).json()
         return response.get("access_token"), response.get("refresh_token")

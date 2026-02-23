@@ -1,7 +1,8 @@
 import pytest
 
-from core.models import StudyPatient, CodeableConcept, StudyScopeRequest
-from .utils import fetch_paginated, add_patients, Code
+from core.models import CodeableConcept, StudyPatient, StudyScopeRequest
+
+from .utils import Code, add_patients, fetch_paginated
 
 
 def test_list_studies(api_client, organization, hr_study):

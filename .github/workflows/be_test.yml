@@ -32,17 +32,13 @@ jobs:
 
     env:
       SITE_TITLE: "JupyterHealth Exchange Dev"
-      REGISTRATION_INVITE_CODE: "helloworld"
       SITE_URL: "http://localhost:8000"
-      CH_INVITATION_LINK_PREFIX: "https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.dev&referrer=cloud_sharing_code="
       DB_NAME: "test_jhe_dev"
       DB_USER: "postgres"
       DB_PASSWORD: "postgres"
       DB_HOST: "localhost"
       DB_PORT: "5432"
       OIDC_RSA_PRIVATE_KEY: "-----BEGIN RSA PRIVATE KEY-----\\Abc123\\n-----END RSA PRIVATE KEY-----"
-      PATIENT_AUTHORIZATION_CODE_CHALLENGE: "abc123"
-      PATIENT_AUTHORIZATION_CODE_VERIFIER: "abc123"
       SECRET_KEY: "super-secret-key"
 
     steps:

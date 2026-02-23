@@ -12,11 +12,10 @@ from core.models import (
     PractitionerOrganization,
 )
 
-
 from .utils import (
+    Code,
     add_patient_to_study,
     create_study,
-    Code,
 )
 
 

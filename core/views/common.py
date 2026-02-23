@@ -1,20 +1,17 @@
 import logging
 import secrets
 import urllib
-from typing import Optional
 
 import jwt
 import requests
 from dictor import dictor  # type: ignore
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth import login
+from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.views import LoginView as BaseLoginView
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
-from django.shortcuts import redirect
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.template import TemplateDoesNotExist
 from django.utils import timezone
 from django.utils.encoding import force_str
@@ -37,12 +34,14 @@ from django_saml2_auth.utils import (
     is_jwt_well_formed,
     run_hook,
 )
-from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.models import get_access_token_model
+from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauthlib.common import Request
 
+from core.jhe_settings.service import get_setting
 from core.models import JheUser
 from core.utils import get_or_create_user
+
 from ..forms import UserRegistrationForm
 from ..tokens import account_activation_token
 
@@ -155,7 +154,7 @@ def smart_launch(request):
     # TBD: this is an incomplete implementation,
     # remove all hardcoded values in favor of settings
     SMART_CLIENT_ID = "jhe1234"
-    SMART_REDIRECT_URI = settings.SITE_URL + "/smart/callback"
+    SMART_REDIRECT_URI = get_setting("site.url", settings.SITE_URL) + "/smart/callback"
     SMART_SCOPES = "openid fhirUser launch launch/patient online_access patient/*.rs observation/*.rs"
     # https://build.fhir.org/ig/HL7/smart-app-launch/scopes-and-launch-context.html
 
@@ -202,7 +201,7 @@ def smart_callback(request):
     auth_code = request.GET.get("code")
     state = request.GET.get("state")  # noqa
 
-    SMART_REDIRECT_URI = settings.SITE_URL + "/smart/callback"
+    SMART_REDIRECT_URI = get_setting("site.url", settings.SITE_URL) + "/smart/callback"
 
     smart_config_token_endpoint = (
         "https://launch.smarthealthit.org/v/r4/auth/token"  # from above smart_config_data.get('authorization_endpoint')
@@ -245,7 +244,7 @@ def smart_callback(request):
 
     login(request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
 
-    logger.info(f'Save to server state, patient_id: {token_data.get("patient")}')
+    logger.info(f"Save to server state, patient_id: {token_data.get('patient')}")
 
     return redirect("client-auth-login")
 
@@ -361,7 +360,7 @@ def acs(request: HttpRequest):
 
         return HttpResponseRedirect(frontend_url + query)
 
-    def redirect(redirect_url: Optional[str] = None) -> HttpResponseRedirect:
+    def redirect(redirect_url: str | None = None) -> HttpResponseRedirect:
         """Redirect to the redirect_url or the root page.
 
         Args:
@@ -418,6 +417,8 @@ def token_exchange(request: HttpRequest):
         if not request.POST.get(name):
             return json_error(f"Missing required argument: {name}")
 
+    site_url = get_setting("site.url", settings.SITE_URL)
+
     # standard arguments:
     audience = request.POST.get("audience")
     requested_token_type = request.POST.get("requested_token_type")
@@ -434,15 +435,15 @@ def token_exchange(request: HttpRequest):
         return json_error(f"subject_token_type must be {_access_token_type}, not {subject_token_type}")
     if requested_token_type != _access_token_type:
         return json_error(f"requested_token_type must be {_access_token_type}, not {requested_token_type}")
-    if audience != settings.SITE_URL:
-        return json_error(f"audience must be {settings.SITE_URL}, not {audience}")
+    if audience != site_url:
+        return json_error(f"audience must be {site_url}, not {audience}")
     if scope != "openid":
         return json_error(f"Only 'openid' scope is supported, not {scope}")
 
     # lookup via userinfo/introspection
     # sample SMART-on-FHIR doesn't have userinfo
     # curl -X POST -H "Authorization: Bearer $token" -d "token=$token" $introspection
-    trusted_idp = settings.TRUSTED_TOKEN_IDP
+    trusted_idp = get_setting("trusted_token_idp", settings.TRUSTED_TOKEN_IDP)
     r = requests.get(
         f"{trusted_idp}/.well-known/openid-configuration",
         headers={"Accept": "application/json"},

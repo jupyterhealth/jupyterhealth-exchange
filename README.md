@@ -18,15 +18,23 @@ This project is currently in a Proof of Concept stage, the project can be viewed
 
 https://github.com/orgs/the-commons-project/projects/8
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for test requirements, coding standards, and PR checklist.
+
+## Upgrade / Migration Guides
+
+- [v0.0.8 → v0.0.9](doc/MIGRATION_v0.0.9.md) — DB-backed settings, multi-client support, breaking API changes
+
 ## Getting Started
 
 > [!TIP]
 > **If you are a user (Practitioner or Patient), please take note of the following access information for the [JupyterHealth Website](https://jhe.fly.dev):**
-> - JHE Default Invite Code is ```helloworld``` (see [here](https://github.com/the-commons-project/jupyterhealth-exchange/blob/main/dot_env_example.txt#L3))
-> - JHE Default Super User ```sam@example.com/Jhe1234!``` can create and edit top level organizations. Any user can create sub-organizations.
+> - JHE Invite Code is generated randomly by `python manage.py seed` and printed to stdout (stored as a `JheSetting` ; see [seed.py](core/management/commands/seed.py))
+> - JHE Default Super User `sam@example.com` / `Jhe1234!` can create and edit top level organizations. Any user can create sub-organizations.
 
 > [!TIP]
->**Quick start:** For local development, Skip the steps 8–12 as the `seed_db` command will register the Django OAuth2 application. Also, Pre‑generated values of  `OIDC_RSA_PRIVATE_KEY`, `PATIENT_AUTHORIZATION_CODE_CHALLENGE`, and `PATIENT_AUTHORIZATION_CODE_VERIFIER` are provided in `dot_env_example.txt` for dev/demo use only.
+> **Quick start:** For local development, skip steps 8–12 ; the `seed` command registers the OAuth2 application and seeds all required `JheSetting` values (invite code, PKCE challenge/verifier, RSA key, etc.). A pre‑generated `OIDC_RSA_PRIVATE_KEY` is provided in `dot_env_example.txt` for dev/demo use only.
 
 > [!NOTE]
 > Due to browser security restrictions and the [oidc-client-ts](https://github.com/authts/oidc-client-ts) used for authentication, the web app **must be accessed over HTTPS for any hostname other than localhost** - see [Running in Production](#running-in-production) below.
@@ -48,29 +56,27 @@ https://github.com/orgs/the-commons-project/projects/8
 1. Browse to http://localhost:8000/admin and enter the credentials `sam@example.com` `Jhe1234!`
 1. Under *Django OAuth Toolkit* > *Applications* you should already see the seeded OAuth2 application (redirects include `http://localhost:8000/auth/callback`). Create a new application only if you need a custom client for testing or multi-tenant scenarios.
 1. Create an RS256 Private Key (step by step [here](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#creating-rsa-private-key))
-1. Create a new static PKCE verifier - a random alphanumeric string 44 chars long, and then create the challenge [here](https://tonyxu-io.github.io/pkce-generator).
 1. Return to the `.env` file
     - Update the `OIDC_RSA_PRIVATE_KEY` with the newly created Private Key
-    - Update `PATIENT_AUTHORIZATION_CODE_CHALLENGE` and `PATIENT_AUTHORIZATION_CODE_VERIFIER` with PKCE static values generated above
     - Restart the python environment and Django server
 1. Browse to http://localhost:8000/ and log in with the credentials `mary@example.com` `Jhe1234!` and you should be directed to the `/portal/organizations` path with some example Organizations is the dropdown
 1. Before the each commit always make sure to execute `pre-commit run --all-files` to make sure the PEP8 standards.
 1. Git hook for the pre-commit can also be installed `pre-commit install` to automate the process.
-1. If a hook fails, fix the issues, stage the changes, and commit again — the commit only succeeds when hooks pass.
+1. If a hook fails, fix the issues, stage the changes, and commit again ; the commit only succeeds when hooks pass.
 > [!WARNING]
-> The `OIDC_RSA_PRIVATE_KEY`, `PATIENT_AUTHORIZATION_CODE_CHALLENGE`, and `PATIENT_AUTHORIZATION_CODE_VERIFIER` provided in `dot_env_example.txt` are public demo keys for development only and must not be used in production.
+> The `OIDC_RSA_PRIVATE_KEY` provided in `dot_env_example.txt` is a public demo key for development only and must not be used in production. PKCE challenge/verifier values are now stored as `JheSetting` records in the database (seeded by `python manage.py seed`).
 
 ## Troubleshooting Local Development
 
-**Issue:** Developers running Django on Windows (Visual Studio Code, Git Bash, etc.) might hit a blank screen after login even though authentication succeeds. That usually happens because the OIDC settings in `settings.py` get polluted with local paths (e.g. `OIDC_CLIENT_REDIRECT_URI: http://localhost:8000C:/Program Files/Git/auth/callback`).
+**Issue:** Developers running Django on Windows (Visual Studio Code, Git Bash, etc.) might hit a blank screen after login even though authentication succeeds. That usually happens because the OIDC settings in `settings.py` get polluted with local paths (e.g. `OAUTH2_CALLBACK_PATH: http://localhost:8000C:/Program Files/Git/auth/callback`).
 
 **Cause:** The environment loader injects the shell’s current working directory or other path fragments into the OIDC URLs, producing malformed authorization/redirect addresses.
 
 **Solution:** Explicitly define the two OIDC URLs in `settings.py` rather than relying on environment interpolation. For example:
 
 ```python
-OIDC_CLIENT_REDIRECT_URI = 'http://localhost:8000/auth/callback'
-OIDC_CLIENT_AUTHORITY = 'http://localhost:8000/o/'
+OAUTH2_CALLBACK_PATH = '/auth/callback'
+OIDC_CLIENT_AUTHORITY_PATH = '/o/'
 ```
 
 By hardcoding the values you prevent the path injection and keep the SPA from seeing broken URLs, which resolves the blank screen after login on Windows hosts.
@@ -169,8 +175,8 @@ flowchart TD
     style sam fill:#CFC
 
     %% berkeley
-    ucb("Organization:<br/>University of California Berkeley") --> ccdss("Organization:<br/>College of Computing, Data Science and Society")
-    ccdss --> bids("Organization:<br/>Berkeley Institute for Data Science (BIDS)")
+    ucb("Organization:<br/>Example University") --> ccdss("Organization:<br/>Example School of Data Science")
+    ccdss --> bids("Organization:<br/>Example Research Institute (ERI)")
 
     %% berkeley users
     ucb --Manager--> mary("ManagerMary<br/><small>mary\@example.com</small>")
@@ -186,27 +192,27 @@ flowchart TD
     style tom fill:#CFC
 
     %% berkeley studies
-    bids --> bidsStudyOnBPHR("BIDS Study on BP & HR<br/><small>Blood Pressure<br/>Heart Rate</small>")
+    bids --> bidsStudyOnBPHR("Example Study on BP & HR<br/><small>Blood Pressure<br/>Heart Rate</small>")
     style bidsStudyOnBPHR fill:#CFF
-    bids --> bidsStudyOnBP("BIDS Study on BP<br/><small>Blood Pressure </small>")
+    bids --> bidsStudyOnBP("Example Study on BP<br/><small>Blood Pressure </small>")
     style bidsStudyOnBP fill:#CFF
 
     %% berkeley patients
-    bids --> peter("BidsPatientPeter<br/><small>peter\@example.com</small>")
+    bids --> peter("EriPatientPeter<br/><small>peter\@example.com</small>")
     style peter fill:#FCC
     peter --Consented--> bidsStudyOnBPHR
     peter --Requested--> bidsStudyOnBP
-    pamela("BidsPatientPamela<br/><small>pamela\@example.com</small>")
+    pamela("EriPatientPamela<br/><small>pamela\@example.com</small>")
     style pamela fill:#FCC
     bids --> pamela
     pamela --Consented--> bidsStudyOnBPHR
     pamela --Consented--> bidsStudyOnBP
 
     %% ucsf
-    ucsf("Organization:<br/>University of California San Francisco") --> med("Organization:<br/>Department of Medicine")
-    med --> cardio("Organization:<br/>Cardiology")
-    cardio --> moslehi("Organization:<br/>Moslehi Lab")
-    cardio --> olgin("Organization:<br/>Olgin Lab")
+    ucsf("Organization:<br/>Example Medical University") --> med("Organization:<br/>Example Department")
+    med --> cardio("Organization:<br/>Heart Research Division")
+    cardio --> moslehi("Organization:<br/>Example Lab Alpha")
+    cardio --> olgin("Organization:<br/>Example Lab Beta")
 
     %% ucsf users
     ucsf --Manager-->mark("ManagerMark<br/><small>mark\@example.com</small>")
@@ -218,21 +224,21 @@ flowchart TD
     olgin --Manager--> tom
 
     %% ucsf studies
-    cardio --> cardioStudyOnRR("Cardio Study on RR<br/><small>Respiratory rate</small>")
+    cardio --> cardioStudyOnRR("Example Study on RR<br/><small>Respiratory rate</small>")
     style cardioStudyOnRR fill:#CFF
-    moslehi --> moslehiStudyOnBT("Moslehi Study on BT<br/><small>Body Temperature</small>")
+    moslehi --> moslehiStudyOnBT("Example Study on BT<br/><small>Body Temperature</small>")
     style moslehiStudyOnBT fill:#CFF
-    olgin --> olginStudyOnO2("Olgin Study on O2<br/><small>Oxygen Saturation</small>")
+    olgin --> olginStudyOnO2("Example Study on O2<br/><small>Oxygen Saturation</small>")
     style olginStudyOnO2 fill:#CFF
 
     %% ucsf patients
-    moslehi --> percy("MoslehiPatientPercy<br/><small>percy\@example.com</small>")
+    moslehi --> percy("AlphaPatientPercy<br/><small>percy\@example.com</small>")
     style percy fill:#FCC
     percy --Consented--> moslehiStudyOnBT
-    olgin --> paul("OlginPatientPaul<br/><small>paul\@example.com</small>")
+    olgin --> paul("BetaPatientPaul<br/><small>paul\@example.com</small>")
     style paul fill:#FCC
     paul --Consented--> olginStudyOnO2
-    cardio --> pat("CardioOlginPatientPat<br/><small>pat\@example.com</small>")
+    cardio --> pat("HeartBetaPatientPat<br/><small>pat\@example.com</small>")
     style pat fill:#FCC
     pat --Consented--> cardioStudyOnRR
     pat --Consented--> olginStudyOnO2
@@ -243,29 +249,25 @@ flowchart TD
 
 - Additional test data from the [iglu project](https://github.com/irinagain/iglu) can be seeded by running the following command (please note this can take 10-20 minutes to run)
   `$ python manage.py iglu`
-- This creates a new study under the "Berkeley Institute for Data Science (BIDS)" Organization with 19 mock patients and 1745 real Observation data points
+- This creates a new study under the "Example Research Institute (ERI)" Organization with 19 mock patients and 1745 real Observation data points
 
 
 ## Working with APIs
 
 ### Auth API
 
-- The OAuth 2.0 Authorization Code grant flow with PKCE is used to issue Access, Refresh and ID tokens for both Practitioners (web login) and Patients (secret invitation link)
-- The Patient authorization code is generated by the server and then shared with the user out-of-band as a secret invitation link
-- OAuth is configured from the Django Admin page (See Getting Started above)
+- The OAuth 2.0 Authorization Code grant flow with PKCE is used to issue access and refresh and OIDC for ID tokens for both Practitioners (web login) and Patients (JHE Clients via secret invitation link)
+
 - Endpoints and configuration details can be discovered from the OIDC metadata endpoint:
 	`/o/.well-known/openid-configuration`
 - The returned Access Token should be included in the `Authorization` header for all API requests with the prefix `Bearer `
-- Because the Patient authorization code is generated by the server, the PKCE code challenge and code verifier for Patient auth must be static values and set by the env vars (example below). The Patient client then sends this `code_verifier` along with the authorization code to obtain tokens. The `redirect_uri` serves no purpose (as the initial authorization code has already been issued) but is required per OAuth spec.
+- Because the Patient authorization code is generated by the server, the PKCE code challenge and code verifier are stored as `JheSetting` records in the database (seeded by `python manage.py seed`). The Patient client sends the `code_verifier` along with the authorization code to obtain tokens. The `redirect_uri` is built automatically from the `site.url` setting.
 ```
-PATIENT_AUTHORIZATION_CODE_CHALLENGE = '-2FUJ5UCa7NK9hZWS0bc0W9uJ-Zr_-Pngd4on69oxpU'
-PATIENT_AUTHORIZATION_CODE_VERIFIER  = 'f28984eaebcf41d881223399fc8eab27eaa374a9a8134eb3a900a3b7c0e6feab5b427479f3284ebe9c15b698849b0de2'
-
 Client POST
 Content-Type: application/x-www-form-urlencoded
 code=4AWKhgaaomTSf9PfwxN4ExnXjdSEqh&grant_type=authorization_code&redirect_uri=https%3A%2F%2Fexample.com%2Fauth%2Fcallback
 &client_id=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-&code_verifier=f28984eaebcf41d881223399fc8eab27eaa374a9a8134eb3a900a3b7c0e6feab5b427479f3284ebe9c15b698849b0de2
+&code_verifier=<code_verifier from JheSetting or invitation link>
 ```
 > [!NOTE]
 > It is understood using static values for PKCE runs against best practises however this is only used for the Patient client auth and not the Practitioner Web UI or API auth. The Patient client authorization code is generated by the server and shared out of band and therefore dynamic PKCE can not be used unless it is passed along with the invitation secret link, which would defeat the purpose of an additional check.
@@ -282,8 +284,7 @@ https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.
 - The prefix URL component may be more simple, for example `https://carex.ai/?invitation=` to launch the CareX app
 - The suffix of the link contains the hostname (optional) followed by a pipe character and the OAuth2 Authorization Code, for example `jhe.fly.dev|LhS05iR1rOnpS4JWfP6GeVUIhaRcRh`
 - The purpose of the suffix is to provide the app with information on what host to talk to (as there may be many JHEs configured for the one Patient) as well as the Authorization Code that can be swapped for an Access Token to use the API (see above)
-- The prefix URL is configured in the `.env` (and `dot_env_example.txt`) as `CH_INVITATION_LINK_PREFIX`; the example value points to the CommonHealth Play Store deep link shown above.
-- The host name is included by default but can optionally be removed from the link (if there will only ever be one host for the app) by configuring the `.env` with `CH_INVITATION_LINK_EXCLUDE_HOST=True`
+- The prefix URL is configured per OAuth2 application as a `JheSetting` (key: `client.invitation_url`, `setting_id=<application_id>`). Set it from the Django Admin > JHE Settings. The placeholder `CODE` in the URL is replaced at runtime with `hostname~client_id~auth_code~code_verifier`.
 - So in the example of `https://carex.ai/?invitation=jhe.fly.dev|LhS05iR1rOnpS4JWfP6GeVUIhaRcRh`
   1. The CareX app is launched with the URL
   2. The CareX app parses the `invitation` parameter
@@ -347,22 +348,38 @@ When `DEBUG` is enabled the SPA debug page now summarizes server errors (includi
 ### Admin REST API
 
 - The Admin API is used by the Web UI SPA for Practitioner/Patient/Organization/Study management and Patient data provider apps/clients to manage Patient consents.
+- The `/api/v1/jhe_settings` and `/api/v1/practitioners` endpoints are restricted to superusers only. Non-superuser requests receive a `403 Forbidden` response.
 
 #### Profile
 
 - The `profile` endpoint returns the current user details.
+- For patient users, PHI fields (`email`, `firstName`, `lastName`, and patient-level `nameFamily`, `nameGiven`, `birthDate`, `telecomPhone`, `telecomEmail`) are omitted from the response.
 
 ```json
-// GET /api/v1/users/profile
+// GET /api/v1/users/profile (practitioner)
 {
     "id": 10001,
     "email": "peter@example.com",
     "firstName": "Peter",
-    "lastName": "ThePatient",
+    "lastName": "ThePractitioner",
+    "patient": null,
+    "userType": "practitioner",
+    "isSuperuser": false
+}
+```
+
+```json
+// GET /api/v1/users/profile (patient — PHI stripped)
+{
+    "id": 10002,
     "patient": {
         "id": 40001,
-      	...
-    }
+        "jheUserId": 10002,
+        "identifier": "",
+        "organizations": [ ... ]
+    },
+    "userType": "patient",
+    "isSuperuser": false
 }
 ```
 
@@ -624,14 +641,14 @@ When `DEBUG` is enabled the SPA debug page now summarizes server errors (includi
 ## Test Procedure
 
 1. **Select Parent Organization**
-   Choose **University of California, Berkeley**.
+   Choose **Example University**.
 
 2. **Open Sub-Organization**
-   Click **View** for **Berkeley Institute for Data Science (BIDS)**.
+   Click **View** for **Example Research Institute (ERI)**.
 
 3. **Create a New Study**
 
-   * Under BIDS, create a study.
+   * Under ERI, create a study.
    * Add the **iHealth** data source.
    * Set the data scope to **blood glucose**.
 

@@ -1,8 +1,9 @@
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
-from django.db import connection
-from django.db import transaction
+from django.db import connection, transaction
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from faker import Faker
@@ -11,13 +12,14 @@ from oauth2_provider.models import get_application_model
 from core.models import (
     CodeableConcept,
     DataSource,
-    Organization,
-    StudyPatientScopeConsent,
-    Study,
-    PractitionerOrganization,
-    StudyPatient,
-    Observation,
+    JheSetting,
     JheUser,
+    Observation,
+    Organization,
+    PractitionerOrganization,
+    Study,
+    StudyPatient,
+    StudyPatientScopeConsent,
     StudyScopeRequest,
 )
 from core.utils import generate_observation_value_attachment_data
@@ -43,14 +45,50 @@ class Command(BaseCommand):
         with transaction.atomic():
             self.reset_sequences()
             self.generate_superuser()
+            self.seed_jhe_settings()
             self.seed_codeable_concept()
             self.seed_data_source()
             root_organization = self.create_root_organization()
-            self.seed_berkeley(root_organization)
-            self.seed_ucsf(root_organization)
+            self.seed_example_university(root_organization)
+            self.seed_example_medical(root_organization)
             self.seed_oauth_application()
 
         self.stdout.write(self.style.SUCCESS("Seeding complete."))
+
+    def seed_jhe_settings(self):
+        invite_code = get_random_string(12)
+        secret_key = get_random_string(50, "abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)")
+
+        private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        private_key_pem = private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption(),
+        ).decode()
+
+        jhe_settings = [
+            ("site.url", "string", "http://localhost:8000"),
+            ("site.ui.title", "string", "JupyterHealth Exchange"),
+            ("site.time_zone", "string", "America/Los_Angeles"),
+            ("site.registration_invite_code", "string", invite_code),
+            ("site.secret_key", "string", secret_key),
+            ("auth.default_orgs", "string", "20001:viewer;20002:manager"),
+            ("auth.private_key", "string", private_key_pem),
+            ("auth.sso.saml2", "int", 0),
+            ("auth.sso.idp_metadata_url", "string", ""),
+            ("auth.sso.valid_domains", "string", ""),
+        ]
+        for key, value_type, value in jhe_settings:
+            setting, _ = JheSetting.objects.update_or_create(
+                key=key,
+                setting_id=None,
+                defaults={"value_type": value_type},
+            )
+            setting.set_value(value_type, str(value) if value_type == "int" else value)
+            setting.save()
+
+        self.stdout.write(f"  Registration invite code: {invite_code}")
+        self.stdout.write(f"  Secret key: {secret_key}")
 
     @staticmethod
     def us_phone_number():
@@ -122,19 +160,18 @@ class Command(BaseCommand):
     def create_root_organization():
         return Organization.objects.create(id=0, name="ROOT", type="root")
 
-    def seed_berkeley(self, root_organization):
-
+    def seed_example_university(self, root_organization):
         ucb = Organization.objects.create(
-            name="University of California Berkeley",
+            name="Example University",
             type="edu",
             part_of=root_organization,
         )
         ccdss = Organization.objects.create(
-            name="College of Computing, Data Science and Society",
+            name="Example School of Data Science",
             type="edu",
             part_of=ucb,
         )
-        bids = Organization.objects.create(name="Berkeley Institute for Data Science (BIDS)", type="edu", part_of=ccdss)
+        bids = Organization.objects.create(name="Example Research Institute (ERI)", type="edu", part_of=ccdss)
 
         mary = self.create_user_with_profile("mary@example.com")
 
@@ -152,13 +189,13 @@ class Command(BaseCommand):
         tom = self.create_user_with_profile("tom@example.com")
         PractitionerOrganization.objects.create(practitioner=tom, organization=bids, role="viewer")
 
-        # 3) Create BIDS studies
+        # 3) Create ERI studies
         bp_hr = Study.objects.create(
-            name="BIDS Study on BP & HR",
+            name="Example Study on BP & HR",
             description="Blood Pressure & Heart Rate",
             organization=bids,
         )
-        bp = Study.objects.create(name="BIDS Study on BP", description="Blood Pressure", organization=bids)
+        bp = Study.objects.create(name="Example Study on BP", description="Blood Pressure", organization=bids)
 
         bp_code = CodeableConcept.objects.get(coding_code="omh:blood-pressure:4.0")
         hr_code = CodeableConcept.objects.get(coding_code="omh:heart-rate:2.0")
@@ -203,7 +240,8 @@ class Command(BaseCommand):
                     consented_time=now,
                 )
 
-        for consent in StudyPatientScopeConsent.objects.filter(consented=True):
+        eri_study_patients = [sp_peter_bp_hr, sp_peter_bp, sp_pamela_bp_hr, sp_pamela_bp]
+        for consent in StudyPatientScopeConsent.objects.filter(consented=True, study_patient__in=eri_study_patients):
             scope_code = consent.scope_code
             Observation.objects.create(
                 subject_patient=consent.study_patient.patient,
@@ -211,17 +249,16 @@ class Command(BaseCommand):
                 value_attachment_data=generate_observation_value_attachment_data(consent.scope_code.coding_code),
             )
 
-    def seed_ucsf(self, root_organization):
-
+    def seed_example_medical(self, root_organization):
         ucsf = Organization.objects.create(
-            name="University of California San Francisco",
+            name="Example Medical University",
             type="edu",
             part_of=root_organization,
         )
-        med = Organization.objects.create(name="Department of Medicine", type="edu", part_of=ucsf)
-        cardio = Organization.objects.create(name="Cardiology", type="edu", part_of=med)
-        mosl = Organization.objects.create(name="Moslehi Lab", type="laboratory", part_of=cardio)
-        olgin = Organization.objects.create(name="Olgin Lab", type="laboratory", part_of=cardio)
+        med = Organization.objects.create(name="Example Department", type="edu", part_of=ucsf)
+        cardio = Organization.objects.create(name="Heart Research Division", type="edu", part_of=med)
+        mosl = Organization.objects.create(name="Example Lab Alpha", type="laboratory", part_of=cardio)
+        olgin = Organization.objects.create(name="Example Lab Beta", type="laboratory", part_of=cardio)
 
         mark = self.create_user_with_profile("mark@example.com", user_type="practitioner")
         practitioner_org_links = [
@@ -239,17 +276,17 @@ class Command(BaseCommand):
         o2_code = CodeableConcept.objects.get(coding_code="omh:oxygen-saturation:2.0")
 
         cardio_rr = Study.objects.create(
-            name="Cardio Study on RR",
+            name="Example Study on RR",
             description="Respiratory rate",
             organization=cardio,
         )
         mosl_bt = Study.objects.create(
-            name="Moslehi Study on BT",
+            name="Example Study on BT",
             description="Body Temperature",
             organization=mosl,
         )
         olgin_o2 = Study.objects.create(
-            name="Olgin Study on O2",
+            name="Example Study on O2",
             description="Oxygen Saturation",
             organization=olgin,
         )
@@ -297,7 +334,8 @@ class Command(BaseCommand):
             consented_time=now,
         )
 
-        for consent in StudyPatientScopeConsent.objects.filter(consented=True):
+        med_study_patients = [sp_percy_bt, sp_paul_o2, sp_pat_rr, sp_pat_o2]
+        for consent in StudyPatientScopeConsent.objects.filter(consented=True, study_patient__in=med_study_patients):
             scope_code = consent.scope_code
             Observation.objects.create(
                 subject_patient=consent.study_patient.patient,
@@ -305,9 +343,7 @@ class Command(BaseCommand):
                 value_attachment_data=generate_observation_value_attachment_data(consent.scope_code.coding_code),
             )
 
-    @staticmethod
-    def seed_oauth_application(name="JHE Dev"):
-
+    def seed_oauth_application(self, name="JHE Dev"):
         application = get_application_model()
         application.objects.create(
             id=1,
@@ -325,6 +361,33 @@ class Command(BaseCommand):
             hash_client_secret=True,
             allowed_origins="",
         )
+
+        # Per-client JheSettings (setting_id = application PK)
+        import base64
+
+        code_verifier = base64.urlsafe_b64encode(get_random_string(48).encode()).decode()
+        client_settings = [
+            (
+                "client.code_verifier",
+                "string",
+                code_verifier,
+            ),
+            (
+                "client.invitation_url",
+                "string",
+                "https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.dev&referrer=cloud_sharing=CODE",
+            ),
+        ]
+        for key, value_type, value in client_settings:
+            setting, _ = JheSetting.objects.update_or_create(
+                key=key,
+                setting_id=1,
+                defaults={"value_type": value_type},
+            )
+            setting.set_value(value_type, value)
+            setting.save()
+
+        self.stdout.write(f"  Client code_verifier: {code_verifier}")
 
     def create_user_with_profile(self, email, user_type="practitioner", password="Jhe1234!"):
         user = JheUser.objects.create_user(

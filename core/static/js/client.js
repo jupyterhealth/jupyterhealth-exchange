@@ -1765,8 +1765,8 @@ async function deleteJheSetting(id) {
 // call the urlLocationHandler function to handle the initial url
 // locationHandler();
 
-const DEBUG_TOKEN_ENDPOINT = `${CONSTANTS.SITE_URL}/o/token/`;
-const DEBUG_API_ENDPOINT = `${CONSTANTS.SITE_URL}${API_PATH}`;
+const DEBUG_TOKEN_ENDPOINT = `${window.location.origin}/o/token/`;
+const DEBUG_API_ENDPOINT = `${window.location.origin}${API_PATH}`;
 
 function renderDebug() {
   const content = Handlebars.compile(
@@ -1926,7 +1926,6 @@ async function debugGetPatientTokenFromCode() {
       redirect_uri: OIDCSettings.redirect_uri,
       client_id,
       code_verifier,
-      code_challenge,
     };
 
     document.getElementById("debugOAuthPayload").value = JSON.stringify(payload, null, 2);

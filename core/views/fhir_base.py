@@ -1,10 +1,10 @@
-import traceback
-
 import copy
 import http
-import humps
 import logging
-from django.core.exceptions import PermissionDenied, BadRequest
+import traceback
+
+import humps
+from django.core.exceptions import BadRequest, PermissionDenied
 from django.db.utils import IntegrityError
 from fhir.resources.bundle import Bundle
 from fhir.resources.operationoutcome import OperationOutcome
