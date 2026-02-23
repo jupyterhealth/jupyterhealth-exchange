@@ -22,6 +22,10 @@ https://github.com/orgs/the-commons-project/projects/8
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for test requirements, coding standards, and PR checklist.
 
+## Upgrade / Migration Guides
+
+- [v0.0.8 → v0.0.9](doc/MIGRATION_v0.0.9.md) — DB-backed settings, multi-client support, breaking API changes
+
 ## Getting Started
 
 > [!TIP]

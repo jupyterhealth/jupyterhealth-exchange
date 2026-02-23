@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
 
-JHE_VERSION = "v0.0.8"
+JHE_VERSION = "v0.0.9"
 
 """
 Django settings for jhe project.
@@ -214,8 +214,6 @@ OAUTH2_PROVIDER = {
 OAUTH2_PROVIDER_APPLICATION_MODEL = "oauth2_provider.Application"
 
 PATIENT_AUTHORIZATION_CODE_EXPIRE_SECONDS = 1209600  # 2 weeks
-PATIENT_AUTHORIZATION_CODE_CHALLENGE = "C-rdBzEtxD82FMuHF0_76l6NNu_AIqnVJDL1Ba5j0gs"
-PATIENT_AUTHORIZATION_CODE_VERIFIER = "EIlWNRU1_7yyUdw27ryzBvgcoU8ZJ6bgg_F-wkNbbDQ"
 
 X_FRAME_OPTIONS = os.getenv("X_FRAME_OPTIONS", "SAMEORIGIN")
 
