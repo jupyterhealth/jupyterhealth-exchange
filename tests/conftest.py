@@ -18,10 +18,10 @@ from .utils import (
     create_study,
 )
 
-
 # ---------------------------------------------------------------------------
 # Smoke-test infrastructure
 # ---------------------------------------------------------------------------
+
 
 def pytest_addoption(parser):
     """Register the ``--smoke-url`` CLI option."""
