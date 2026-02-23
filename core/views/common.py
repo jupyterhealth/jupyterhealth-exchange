@@ -395,10 +395,6 @@ def token_exchange(request: HttpRequest):
     """
     RFC 8693: OAuth 2.0 Token Exchange
 
-    Extensions to spec:
-
-    - `iss` parameter identifies issuing Identity Provider (IdP)
-
     Requires setting:
     - TRUSTED_TOKEN_IDP: OIDC base URL
 
