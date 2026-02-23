@@ -28,6 +28,13 @@ console_command = "/code/manage.py shell"
   cpu_kind = "shared"
   cpus = 1
 
+[[http_service.checks]]
+  grace_period = "30s"
+  interval = "15s"
+  method = "GET"
+  path = "/health"
+  timeout = "5s"
+
 [[statics]]
   guest_path = "/code/static"
   url_prefix = "/static/"

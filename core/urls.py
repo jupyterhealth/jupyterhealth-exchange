@@ -24,6 +24,8 @@ fhir_router.register(r"", views.FHIRBase, basename="FHIRBase")
 
 # snake_case instead of kebab-case because Djano @action decoratrors don't support hyphens
 urlpatterns = [
+    # Health check (no auth, no DB)
+    path("health", common.health, name="health"),
     # Home
     path("", common.home, name="home"),
     # Django auth and accounts
