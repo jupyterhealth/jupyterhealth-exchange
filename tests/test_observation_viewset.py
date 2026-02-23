@@ -192,7 +192,6 @@ def test_get_observation_by_study(api_client, patient, hr_study):
 
 
 def test_get_observation_one_patient_two_studies(api_client, patient, hr_study):
-
     org2 = Organization.objects.create(
         name="org2",
         type="other",

@@ -280,7 +280,6 @@ class PatientViewSet(ModelViewSet):
                         raise PermissionDenied("Only Patient users can update their own consents.")
 
                 for scope_consent in study_scope_consent["scope_consents"]:
-
                     scope_coding_system = scope_consent["coding_system"]
                     scope_coding_code = scope_consent["coding_code"]
                     scope_code_id = CodeableConcept.objects.get(
@@ -322,7 +321,6 @@ class FHIRPatientViewSet(ModelViewSet):
     pagination_class = FHIRBundlePagination
 
     def get_queryset(self):
-
         patient_identifier_system_and_value = self.request.GET.get("identifier", None)
 
         # GET /Patient?_has:Group:member:_id=<group-id>

@@ -239,7 +239,7 @@ def smart_callback(request):
 
     login(request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
 
-    logger.info(f'Save to server state, patient_id: {token_data.get("patient")}')
+    logger.info(f"Save to server state, patient_id: {token_data.get('patient')}")
 
     return redirect("client-auth-login")
 

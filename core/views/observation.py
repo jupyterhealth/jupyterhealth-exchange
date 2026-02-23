@@ -37,7 +37,6 @@ class ObservationViewSet(ModelViewSet):
 
 
 class FHIRObservationViewSet(ModelViewSet):
-
     pagination_class = FHIRBundlePagination
 
     def get_serializer_class(self):

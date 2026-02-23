@@ -263,7 +263,6 @@ class JheUser(AbstractUser):
 
     # https://github.com/jazzband/django-oauth-toolkit/blob/102c85141ec44549e17080c676292e79e5eb46cc/oauth2_provider/oauth2_validators.py#L675
     def create_authorization_code(self, application_id, code_verifier):
-
         self.last_login = timezone.now()
         self.save()
 
@@ -272,7 +271,7 @@ class JheUser(AbstractUser):
         Grant.objects.filter(user_id=self.id, application_id=application_id).delete()
 
         # https://github.com/oauthlib/oauthlib/blob/f9a07c6c07d0ddac255dd322ef5fc54a7a46366d/oauthlib/common.py#L188
-        UNICODE_ASCII_CHARACTER_SET = "abcdefghijklmnopqrstuvwxyz" "ABCDEFGHIJKLMNOPQRSTUVWXYZ" "0123456789"
+        UNICODE_ASCII_CHARACTER_SET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         authorization_code = "".join(SystemRandom().choice(UNICODE_ASCII_CHARACTER_SET) for _ in range(30))
 
         return Grant.objects.create(
@@ -297,7 +296,6 @@ class JheUser(AbstractUser):
 
 
 class Organization(models.Model):
-
     # https://build.fhir.org/valueset-organizations-type.html
     ORGANIZATION_TYPES = {
         "root": "ROOT",
@@ -327,7 +325,6 @@ class Organization(models.Model):
     # Helper method to return all users in this organization
     @property
     def users(self):
-
         patient_user_ids = (
             PatientOrganization.objects.filter(organization=self)
             .select_related("patient__jhe_user")
@@ -501,7 +498,6 @@ class Patient(models.Model):
 
     @staticmethod
     def for_study(jhe_user_id, study_id):
-
         q = """
             SELECT core_patient.*
             FROM core_patient
@@ -721,7 +717,6 @@ class Study(models.Model):
 
     @staticmethod
     def studies_with_scopes(patient_id, pending=False):
-
         sql_scope_code = "NOT NULL"
         if pending:
             sql_scope_code = "NULL"
@@ -807,7 +802,6 @@ class StudyPatientScopeConsent(models.Model):
 
     @staticmethod
     def patient_scopes(jhe_user_id):
-
         q = """
             SELECT DISTINCT core_codeableconcept.* FROM core_codeableconcept
             JOIN core_studypatientscopeconsent ON core_studypatientscopeconsent.scope_code_id=core_codeableconcept.id
@@ -854,7 +848,6 @@ class DataSource(models.Model):
     # this will never be large
     @staticmethod
     def data_sources_with_scopes(data_source_id=None, study_id=None):
-
         # Explicitly cast to ints so no injection vulnerability
         sql_where = ""
         sql_join = ""
@@ -1171,7 +1164,6 @@ class Observation(models.Model):
     # base64 it eg https://cryptii.com/pipes/binary-to-base64
     @staticmethod
     def fhir_create(data, user):
-
         # Validate Structure
         fhir_observation = None
         try:
@@ -1352,7 +1344,6 @@ class ObservationIdentifier(models.Model):
 
 
 class JheSetting(models.Model):
-
     JHE_SETTING_VALUE_TYPES = {
         "string": "string",
         "int": "int",

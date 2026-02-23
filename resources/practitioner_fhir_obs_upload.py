@@ -68,7 +68,6 @@ OMH_BLOOD_GLUCOSE_JSON = {
 
 
 class Command:
-
     def __init__(self):
         self.session = requests.Session()
         self.BASE_URL = SITE_URL

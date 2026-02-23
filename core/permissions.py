@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class IsSelfUrlPath(permissions.BasePermission):
-
     def has_permission(self, request, view):
         return int(request.parser_context["kwargs"]["pk"]) == request.user.id
 
@@ -44,7 +43,6 @@ def IfUserCan(resource_and_action: str):
     resource, action = resource_and_action.split(".", 1)
 
     class _IfUserCan(permissions.IsAuthenticated):
-
         @staticmethod
         def if_role_can(role: str, permission: str):
             return permission in ROLE_PERMISSIONS.get(role, [])
@@ -92,7 +90,6 @@ def IfUserCan(resource_and_action: str):
             return link.role if link else None
 
         def has_permission(self, request, view):
-
             # User has to be authenticated
             if super().has_permission(request, view):
                 role = self.get_role(view, request, resource)

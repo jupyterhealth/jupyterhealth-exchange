@@ -162,7 +162,6 @@ class Command(BaseCommand):
         return Organization.objects.create(id=0, name="ROOT", type="root")
 
     def seed_example_university(self, root_organization):
-
         ucb = Organization.objects.create(
             name="Example University",
             type="edu",
@@ -252,7 +251,6 @@ class Command(BaseCommand):
             )
 
     def seed_example_medical(self, root_organization):
-
         ucsf = Organization.objects.create(
             name="Example Medical University",
             type="edu",
@@ -347,7 +345,6 @@ class Command(BaseCommand):
             )
 
     def seed_oauth_application(self, name="JHE Dev"):
-
         application = get_application_model()
         application.objects.create(
             id=1,
