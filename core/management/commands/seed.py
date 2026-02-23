@@ -5,6 +5,8 @@ from django.db import connection
 from django.db import transaction
 from django.utils import timezone
 from django.utils.crypto import get_random_string
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from faker import Faker
 from oauth2_provider.models import get_application_model
 
@@ -54,74 +56,28 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Seeding complete."))
 
-    @staticmethod
-    def seed_jhe_settings():
+    def seed_jhe_settings(self):
+        invite_code = get_random_string(12)
+        secret_key = get_random_string(50, "abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)")
+
+        private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        private_key_pem = private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption(),
+        ).decode()
+
         jhe_settings = [
             ("site.url", "string", "http://localhost:8000"),
             ("site.ui.title", "string", "JupyterHealth Exchange"),
             ("site.time_zone", "string", "America/Los_Angeles"),
-            ("site.registration_invite_code", "string", "jhe1234"),
-            ("site.secret_key", "string", "django-insecure--l2nzvywecjf!sgu3=v8y#e5@rk-5_l0=0ez!abg576r^th@o"),
+            ("site.registration_invite_code", "string", invite_code),
+            ("site.secret_key", "string", secret_key),
             ("auth.default_orgs", "string", "20001:viewer;20002:manager"),
-            (
-                "auth.private_key",
-                "string",
-                "-----BEGIN PRIVATE KEY-----\n"
-                "MIIJQQIBADANBgkqhkiG9w0BAQEFAASCCSswggknAgEAAoICAQC4FaxiLBy7ttiN\n"
-                "yjgQRNGtLP9uvqcco0ieUNM+X+x5trTX90FldupRTX47s7QIKLpLPyQE5KBAx4Qz\n"
-                "SorakA0R8v/s82b6hPfsIipyf0HrrtzBOAp0kA0eI960lxxJL6jpoVYkgtzjz2rh\n"
-                "KneX7dfYrpoS6mvaBUkbLuKCHrd2Gfs5h589DV3eiXpmqbxKcgWtb1heH24JqRhG\n"
-                "aK89s2vnVzQPQQWe1zX0oGEyfmuOeiO2EEmZqCxCui5Bo+Ane6OSVjIHTEx5tgMD\n"
-                "EJcNIB5ajS69Ue6D+SKrPQGL5FKMtAzOfnkrS/f9dQsz6PK4KiFemDDWAmLiuBvX\n"
-                "pZMjQuWxFwz3VeUWKYWAMcg6d0n12oC28b/pdVc8DMoJKyqeAf8BCqaZFpQ6VJDh\n"
-                "j9BhvZPcUySHAiHfEsQiyem7rQszxOL5pfZ/BKmIoaz5pya+hVYz855yerkYZU7B\n"
-                "lpRk+net3Mm3LY+aMB3NdmVLWtT1wGx5c7tXI0hqKb67vp2jNDPEmvnWScC3JLAB\n"
-                "wS9GEN/xAIFUwZx8kYY/6BlMl486P6Bz1SvGvq+AyOrB3Io7JdELN2TNn5c+vZ+I\n"
-                "+ieJD2H2KoBBJAktYunlOUxztTlIeKa+bQaeCgkXCLphGroGQCkgwoLiGsm33WY3\n"
-                "6rE/gyNSKozMoDG8/p8Nrla5u/VZzQIDAQABAoICABYIYg2OAhJlnB28amFoG0CC\n"
-                "9j+nChFfab2pJt98U61ttM90hJtEVF9OyyESLSYc2c9Py1vakWOvfZ81+NCYFThk\n"
-                "wUT3DQhHCfV1UWdK2/T9hOaLcpTo+Oj2mh07SONplOoBqXHNR+rsVHqGvrGsgf0p\n"
-                "SL+i1y3NHCbowauZSZQVIACOvvxrsSSFh+Tpw+OVKiDMBuOdF2qIlqM2vGLCKtQR\n"
-                "l+WLfsS4NXkGCRwmDXGMJOIRqP1/J20FI6wvlRCkt7s4HdzJwQ2AP3QKdEnZ4kgs\n"
-                "Rb/bIpUhKIkeUCUSOt8kXbQJZy9LdG8dpy2bYBGy2TOdO5shxfwk1RBGfQnnY95O\n"
-                "HdSWALeyercqoX0SNc+czxRHBjHeeH8OUCn+gb3Oobsn2HrAOcOWTPfDmxldGC84\n"
-                "gPx6wLDhxEh91rdziWzetzVqhgvhbE0IbP2RiQWJzdlMV90oWxCotZZZBkJ6rv2B\n"
-                "+d16+23BlRlP/Fer+p8ePDgYeI2299jgk8uv3PGkWMvZR2SPV1bm0z1vSbBU7D18\n"
-                "HMUEEhaK26aPyIgx/vyy/jtQX5VAwb9QqUD8nzAlCrBRQwOQAhbxPRKzmKGQJad7\n"
-                "8AzWKF15xKJtafMxAugkmilA9hJKTGUPhOGQgUUXTdzkwTeYAJR4nGNK8XdSuCwD\n"
-                "x3EoGkY7ICKAhCCrg3mBAoIBAQDs7onw6zKW5iTAlhFbjmgLCUgj1MJOcaZAXR6R\n"
-                "egWqliDzhT1j6/IwMmyOcRFeaa9PolFO6Lfw/kjRPwjo2+4chsEmuQcdS6LxoIBf\n"
-                "BmquuuvLM9iigmDQDcrObrElEEhid9q7Jgu5O14pFooo76seDJtq9BqvcZ3KxgQa\n"
-                "8SXGjVSm23o3KE5iwVexK4En8/VerYV3+cBa6KS7lZRVsaRm7O7PTFMohvzkaXL6\n"
-                "9wf5EUnIL1SU0sd8QGEVeEYI0LKDJqZhz4BRUyYVKZhCFcwBSi+tmlJ64Lk5FEwR\n"
-                "YqwpQ3SqL0Z09h3s4AlQiJGKpH+XzImNnFCscMBdptOcThU5AoIBAQDG5lXFaCUA\n"
-                "l/4wSxrCFZIp2MjP7TZncJEB2BWX3u20w86tI5+PAGf+O0XcEshWPLP5tgEZRZEO\n"
-                "Bb6/pOmFn+tyLmUWTIiAGWlBBNZHQitG5VSeZEkpA6QCL6HXiCZsAW8bTZIjiHjC\n"
-                "xNZEYGO2t15zAg86O99jmbVAJAzEKLhkkBuNqj6cUwQqsMb2EJM3n0YphXIM9hGP\n"
-                "Lz+uC55TpX5InR77Vaw7djAA8gu4L7L4swxehVcAZoHZ+qM8sbRQWezJ9bY7VRpE\n"
-                "CojEbxN83G6DjsHR2hvEdpWOkttKQqxx6+6Wfs6mvBZw8/lchD+nT/97iBjKaReN\n"
-                "HDvNAuMh/501AoIBAF5nmXzuKiUoJGK8KMRjVJ95Hk5wms9ox0aEFAcBKLrUwOJn\n"
-                "J5Pl0oVTwh9re/EziQ/g7CbV4Vzb5SXCyQkHgLPLGbEVLnmExrMiMaQrSVy/y+4W\n"
-                "hW4TJwIfTLy+LEVJXJ4nhXbmbOtsdVNH0NsIzBTYDyEpjGx1h9rg1YfqqBOaAq3N\n"
-                "a8AIhlshEJDedcL2mMEVwMWSNQvEAMdhjU4rzwbXxzu//K58Qs28Gn1W6s1aDxz9\n"
-                "huUZqzSd7lEAsF8Y0NgjEU6NwGInEFiET0+docCtz5uLjuu5GPReWwTeXRy/7P9W\n"
-                "gOtfmYLlrbByChPFAbX5YKGVNCvRbUSjkVOJZTkCggEAG5ZjGyhgyX5LcWNZaMYZ\n"
-                "Kdi5sa1TOHGyizDvfcsb6VCnX/hq7yi9Q9Pw0p+ATgXJaL9H07uEbQ9675XuFeyi\n"
-                "eYnZ14fx/uKHaM9E8UlKO2EfpYB/bULmAq+coQpvWdexE3Zk6KzLIyiuF3nPGs7A\n"
-                "OO92MTuQtn3hV+4oHyUOvlQGnlWYrZIOJ+WxEvwljzd2QdgSg521vcht6rQN18hC\n"
-                "hcvVOkMdynmQGvF3kqp7Bme/NXUFJjcRl6xd69MyEVsHrtN33S7mn71eTvChIVZp\n"
-                "tbGdTIAWDd/syoOwCtLInFx/ETyxaQr5id0tHxnwwkIkS3wLBDgjXh0mZj8aReLw\n"
-                "aQKCAQAuNxYXoq8MLY18JI2Gh1ynN6S8ii4gMQKoQVaW6JWcQWYP6qm+CM6pf1JW\n"
-                "NEgygTNSGeiLBS4DtSQ0v4T1wsBvln6vNAxE+vRke/kiv9DdUt6vIjKf2LTTeob9\n"
-                "S3B6WK0/YbXxvD/0LkA+MXz7IUiSKdLMx8fdOAf5eSbK3zwEqDXk+UHl6f4itIYS\n"
-                "z/HPpaGyn4YlcDJGsLiKqElqQBZcCgscxLvP0s7TaA7Py7d0Sg+BXkb/w37hojs7\n"
-                "9612yTNicWsNYVmVJ6BYDN3yxuF1OxqtJaros5YvP7ZWxC9r0ldP6MFgdJKzU2pl\n"
-                "w28cmsrmgsEJRLWSh8XG8C86JH67\n"
-                "-----END PRIVATE KEY-----",
-            ),
+            ("auth.private_key", "string", private_key_pem),
             ("auth.sso.saml2", "int", 0),
-            ("auth.sso.idp_metadata_url", "string", "https://mocksaml.com/api/saml/metadata"),
-            ("auth.sso.valid_domains", "string", "example.com,example.org"),
+            ("auth.sso.idp_metadata_url", "string", ""),
+            ("auth.sso.valid_domains", "string", ""),
         ]
         for key, value_type, value in jhe_settings:
             setting, _ = JheSetting.objects.update_or_create(
@@ -131,6 +87,9 @@ class Command(BaseCommand):
             )
             setting.set_value(value_type, str(value) if value_type == "int" else value)
             setting.save()
+
+        self.stdout.write(f"  Registration invite code: {invite_code}")
+        self.stdout.write(f"  Secret key: {secret_key}")
 
     @staticmethod
     def us_phone_number():
@@ -387,8 +346,7 @@ class Command(BaseCommand):
                 value_attachment_data=generate_observation_value_attachment_data(consent.scope_code.coding_code),
             )
 
-    @staticmethod
-    def seed_oauth_application(name="JHE Dev"):
+    def seed_oauth_application(self, name="JHE Dev"):
 
         application = get_application_model()
         application.objects.create(
@@ -409,11 +367,14 @@ class Command(BaseCommand):
         )
 
         # Per-client JheSettings (setting_id = application PK)
+        import base64
+
+        code_verifier = base64.urlsafe_b64encode(get_random_string(48).encode()).decode()
         client_settings = [
             (
                 "client.code_verifier",
                 "string",
-                "N0hHRVk2WDNCUUFPQTIwVDNZWEpFSjI4UElNV1pSTlpRUFBXNTEzU0QzRTMzRE85WDFWTzU2WU9ESw==",
+                code_verifier,
             ),
             (
                 "client.invitation_url",
@@ -429,6 +390,8 @@ class Command(BaseCommand):
             )
             setting.set_value(value_type, value)
             setting.save()
+
+        self.stdout.write(f"  Client code_verifier: {code_verifier}")
 
     def create_user_with_profile(self, email, user_type="practitioner", password="Jhe1234!"):
         user = JheUser.objects.create_user(

@@ -36,8 +36,11 @@ from core.models import (
 
 Application = get_application_model()
 
-# Patch target: lazy imports inside models.py resolve to the service module
+# Patch targets:
+# GET_SETTING_SVC — patches the function in the service module (for service/form tests)
+# GET_SETTING_MODELS — patches the top-level import in models.py (for model method tests)
 GET_SETTING_SVC = "core.jhe_settings.service.get_setting"
+GET_SETTING_MODELS = "core.models.get_setting"
 
 
 # =====================================================================
@@ -137,8 +140,9 @@ class ContextProcessorTests(TestCase):
         ctx = constants(request)
 
         self.assertEqual(ctx["SITE_URL"], "https://custom.example.com")
-        self.assertTrue(ctx["OIDC_CLIENT_AUTHORITY"].startswith("https://custom.example.com"))
-        self.assertTrue(ctx["OIDC_CLIENT_REDIRECT_URI"].startswith("https://custom.example.com"))
+        # PR #299 switched to path-only vars; full URLs are built client-side via window.origin
+        self.assertEqual(ctx["OIDC_CLIENT_AUTHORITY_PATH"], "/o/")
+        self.assertEqual(ctx["OAUTH2_CALLBACK_PATH"], "/auth/callback")
         # SAML2 should be int from DB
         self.assertEqual(ctx["SAML2_ENABLED"], 0)
         # Should NOT contain PATIENT_AUTHORIZATION_CODE_CHALLENGE/VERIFIER
@@ -206,7 +210,7 @@ class InviteCodeFormTests(TestCase):
 class ConstructInvitationLinkTests(TestCase):
     """Regression: construct_invitation_link must use DB site.url, not ENV."""
 
-    @patch(GET_SETTING_SVC, return_value="https://db-host.example.com")
+    @patch(GET_SETTING_MODELS, return_value="https://db-host.example.com")
     def test_uses_db_site_url(self, mock_gs):
         result = Patient.construct_invitation_link(
             invitation_url="https://app.example.com?code=CODE",
@@ -239,7 +243,7 @@ class SendEmailVerificationTests(TestCase):
     def setUp(self):
         self.user = JheUser.objects.create_user(email="email-test@example.com", password="pw", identifier="em1")
 
-    @patch(GET_SETTING_SVC, return_value="https://db-email.example.com")
+    @patch(GET_SETTING_MODELS, return_value="https://db-email.example.com")
     def test_email_contains_db_site_url(self, mock_gs):
         mail.outbox = []
         self.user.send_email_verificaion()
@@ -260,7 +264,7 @@ class CreateAuthorizationCodeTests(TestCase):
             redirect_uris="http://example.com/redirect",
         )
 
-    @patch(GET_SETTING_SVC, return_value="https://db-auth.example.com")
+    @patch(GET_SETTING_MODELS, return_value="https://db-auth.example.com")
     def test_redirect_uri_uses_db_setting(self, mock_gs):
         code = self.user.create_authorization_code(self.app.id, "http://example.com/redirect")
         self.assertTrue(code.redirect_uri.startswith("https://db-auth.example.com"))
@@ -276,7 +280,7 @@ class GetDefaultOrgsTests(TestCase):
     def tearDown(self):
         cache.clear()
 
-    @patch(GET_SETTING_SVC)
+    @patch(GET_SETTING_MODELS)
     def test_practitioner_assigned_to_default_org(self, mock_gs):
         # ROLE_CHOICES is a dict; valid_roles = {c[0] for c in dict} gives first char of keys
         # So valid roles are 'm', 'v' (from 'member', 'manager', 'viewer')
@@ -292,7 +296,7 @@ class GetDefaultOrgsTests(TestCase):
             PractitionerOrganization.objects.filter(practitioner=practitioner, organization=self.org, role="v").exists()
         )
 
-    @patch(GET_SETTING_SVC, return_value="")
+    @patch(GET_SETTING_MODELS, return_value="")
     def test_empty_default_orgs_skips_assignment(self, mock_gs):
         user = JheUser.objects.create_user(
             email="no-default-org@example.com",
@@ -317,7 +321,7 @@ class FhirSearchGetSettingTests(TestCase):
         )
         self.user.practitioner.organizations.add(self.org)
 
-    @patch(GET_SETTING_SVC, return_value="https://db-fhir.example.com")
+    @patch(GET_SETTING_MODELS, return_value="https://db-fhir.example.com")
     def test_patient_fhir_search_calls_get_setting(self, mock_gs):
         """Unit: Patient.fhir_search should call get_setting for SITE_URL.
         We don't execute the raw SQL (requires full schema joins); we just
@@ -328,7 +332,7 @@ class FhirSearchGetSettingTests(TestCase):
         calls = [c for c in mock_gs.call_args_list if c[0][0] == "site.url"]
         self.assertGreaterEqual(len(calls), 1)
 
-    @patch(GET_SETTING_SVC, return_value="https://db-fhir.example.com")
+    @patch(GET_SETTING_MODELS, return_value="https://db-fhir.example.com")
     def test_observation_fhir_search_calls_get_setting(self, mock_gs):
         """Integration: Observation.fhir_search should call get_setting for SITE_URL."""
         qs = Observation.fhir_search(self.user.id)
@@ -346,7 +350,7 @@ class SeedJheSettingsTests(TestCase):
     def test_seed_creates_all_settings(self):
         from core.management.commands.seed import Command
 
-        Command.seed_jhe_settings()
+        Command().seed_jhe_settings()
 
         expected_keys = [
             "site.url",
@@ -370,8 +374,9 @@ class SeedJheSettingsTests(TestCase):
         """Regression: running seed twice must not duplicate or error."""
         from core.management.commands.seed import Command
 
-        Command.seed_jhe_settings()
-        Command.seed_jhe_settings()
+        cmd = Command()
+        cmd.seed_jhe_settings()
+        cmd.seed_jhe_settings()
         # No duplicates
         self.assertEqual(
             JheSetting.objects.filter(key="site.url").count(),
@@ -381,7 +386,7 @@ class SeedJheSettingsTests(TestCase):
     def test_seed_saml2_is_int_type(self):
         from core.management.commands.seed import Command
 
-        Command.seed_jhe_settings()
+        Command().seed_jhe_settings()
         setting = JheSetting.objects.get(key="auth.sso.saml2")
         self.assertEqual(setting.value_type, "int")
 

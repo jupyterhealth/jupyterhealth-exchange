@@ -27,6 +27,7 @@ from fhir.resources.observation import Observation as FHIRObservation
 from jsonschema import ValidationError
 from core.utils import validate_with_registry
 from core.admin_pagination import PaginatedRawQuerySet
+from core.jhe_settings.service import get_setting
 from oauth2_provider.models import AccessToken, RefreshToken, Grant, IDToken, get_application_model, get_grant_model
 
 from .tokens import account_activation_token
@@ -147,8 +148,6 @@ class JheUser(AbstractUser):
                     )
 
                     # --- parse multi-org:role string from db ---
-                    from core.jhe_settings.service import get_setting
-
                     mapping_str = get_setting("auth.default_orgs", "")
                     mapping_str = (mapping_str or "").strip()
 
@@ -211,8 +210,6 @@ class JheUser(AbstractUser):
                                 link.save(update_fields=["role"])
 
     def send_email_verificaion(self):
-        from core.jhe_settings.service import get_setting
-
         message = render_to_string(
             "registration/verify_email_message.html",
             {
@@ -266,7 +263,6 @@ class JheUser(AbstractUser):
 
     # https://github.com/jazzband/django-oauth-toolkit/blob/102c85141ec44549e17080c676292e79e5eb46cc/oauth2_provider/oauth2_validators.py#L675
     def create_authorization_code(self, application_id, code_verifier):
-        from core.jhe_settings.service import get_setting
 
         self.last_login = timezone.now()
         self.save()
@@ -480,8 +476,6 @@ class Patient(models.Model):
 
     @staticmethod
     def construct_invitation_link(invitation_url, client_id, auth_code, code_verifier):
-        from core.jhe_settings.service import get_setting
-
         site_url = get_setting("site.url", settings.SITE_URL)
         invitation_code = f"{urlparse(site_url).hostname}~{client_id}~{auth_code}~{code_verifier}"
         return invitation_url.replace("CODE", invitation_code)
@@ -531,8 +525,6 @@ class Patient(models.Model):
         patient_identifier_system=None,
         patient_identifier_value=None,
     ):
-        from core.jhe_settings.service import get_setting
-
         practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
         practitioner_id = practitioner.id
 
@@ -1070,8 +1062,6 @@ class Observation(models.Model):
         coding_code=None,
         observation_id=None,
     ):
-        from core.jhe_settings.service import get_setting
-
         practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
         practitioner_id = practitioner.id
 

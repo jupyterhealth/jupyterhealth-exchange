@@ -26,7 +26,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for test requirements, coding standards, 
 
 > [!TIP]
 > **If you are a user (Practitioner or Patient), please take note of the following access information for the [JupyterHealth Website](https://jhe.fly.dev):**
-> - JHE Default Invite Code is `jhe1234` (set by `python manage.py seed` via `JheSetting` ; see [seed.py](core/management/commands/seed.py))
+> - JHE Invite Code is generated randomly by `python manage.py seed` and printed to stdout (stored as a `JheSetting` ; see [seed.py](core/management/commands/seed.py))
 > - JHE Default Super User `sam@example.com` / `Jhe1234!` can create and edit top level organizations. Any user can create sub-organizations.
 
 > [!TIP]

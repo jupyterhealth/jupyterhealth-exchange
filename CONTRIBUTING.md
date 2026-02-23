@@ -1,5 +1,24 @@
 # Contributing to JupyterHealth Exchange
 
+## Development Setup
+
+```bash
+# 1. Clone and enter the repo
+git clone https://github.com/jupyterhealth/jupyterhealth-exchange.git
+cd jupyterhealth-exchange
+
+# 2. Install dependencies
+pipenv install --dev
+pipenv shell
+
+# 3. Start the test database
+source ci/test_env.sh
+bash ci/start-db.sh
+
+# 4. Install pre-commit hooks (runs linters automatically on each commit)
+pre-commit install
+```
+
 ## Code Quality Standards
 
 Every pull request **must** include tests that cover the code you added or changed. PRs without adequate test coverage will not be merged.
@@ -21,17 +40,11 @@ Every pull request **must** include tests that cover the code you added or chang
 ### Running Tests
 
 ```bash
-# Run all tests
+# Run all tests (coverage is collected automatically via pyproject.toml)
 pytest
 
 # Run a specific test file
 pytest tests/test_model_methods.py
-
-# Run with coverage
-pytest --cov=core --cov=jhe
-
-# Run pre-commit hooks
-pre-commit run --all-files
 ```
 
 ### Writing Tests
@@ -42,7 +55,7 @@ pre-commit run --all-files
 ## Pull Request Checklist
 
 - [ ] Tests pass locally (`pytest`)
-- [ ] Pre-commit hooks pass (`pre-commit run --all-files`)
+- [ ] Pre-commit hooks pass (automatic if installed via `pre-commit install`)
 - [ ] New/changed functions have tests
 - [ ] No hardcoded secrets or credentials
 - [ ] DB-backed settings use `get_setting()`; not `settings.X`; for runtime config (see [Settings Architecture](#settings-architecture))
@@ -55,65 +68,8 @@ Runtime configuration lives in the database via the `JheSetting` model, accessed
 **Rules:**
 - `jhe/settings.py` ENV vars are for **Django startup only** (DB config, `ALLOWED_HOSTS`, middleware).
 - Application code in `core/` must use `get_setting("key", fallback_default)` for runtime values.
-- In `core/models.py`, use **lazy imports** to avoid circular dependencies:
-  ```python
-  def my_method(self):
-      from core.jhe_settings.service import get_setting
-      url = get_setting("site.url", settings.SITE_URL)
-  ```
+- `get_setting` is imported at the top of `core/models.py`. The circular dependency with `core.jhe_settings.service` is resolved by a lazy import of `JheSetting` inside the service module.
 - Seed defaults are defined in `core/management/commands/seed.py` → `seed_jhe_settings()`.
-
-## Branching & Commits
-
-This project follows [Conventional Commits](https://www.conventionalcommits.org/).
-
-### Branch Naming
-
-```
-<type>/<short-description>
-```
-
-| Prefix | Use |
-|--------|-----|
-| `feat/` | New feature |
-| `fix/` | Bug fix |
-| `docs/` | Documentation only |
-| `refactor/` | Code restructuring (no behavior change) |
-| `test/` | Adding or updating tests |
-| `chore/` | Maintenance (deps, CI, config) |
-
-### Commit Messages
-
-```
-<type>(<scope>): <short summary>
-```
-
-- **type**: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`, `style`, `perf`
-- **scope** (optional): module or area affected, e.g. `settings`, `seed`, `auth`
-- **summary**: imperative mood, lowercase, no period
-
-Examples:
-```
-feat(settings): migrate SITE_URL from ENV to JheSetting
-fix(auth): use get_setting for redirect_uri in create_authorization_code
-test(settings): add regression tests for get_setting migration
-docs(readme): remove stale PKCE ENV var references
-chore(ci): remove unused CHALLENGE/VERIFIER env vars
-```
-
-### Commit Discipline
-
-- Group related changes into a single commit under one `<type>(<scope>):` header.
-- Use the commit body to list what changed:
-  ```
-  feat(settings): migrate ENV config to DB-backed JheSetting
-
-  - added get_setting() calls in place of settings.X references
-  - wrote unit, integration, and regression tests
-  - updated seed.py to create JheSetting entries on startup
-  - cleaned up stale ENV vars in CI scripts
-  ```
-- Use `feat!:` or a `BREAKING CHANGE:` footer for breaking changes.
 
 ## Reporting Issues
 
