@@ -171,9 +171,7 @@ class TestP2AuthEnforcement:
     def test_admin_api_requires_auth(self, http, path, description):
         """``GET {path}`` without credentials → 401 or 403."""
         resp = _get(http, path, allow_redirects=False)
-        assert resp.status_code in (401, 403), (
-            f"{description} ({path}): expected 401/403, got {resp.status_code}"
-        )
+        assert resp.status_code in (401, 403), f"{description} ({path}): expected 401/403, got {resp.status_code}"
 
     @pytest.mark.parametrize(
         "path, description",
@@ -187,9 +185,7 @@ class TestP2AuthEnforcement:
     def test_fhir_api_requires_auth(self, http, path, description):
         """``GET {path}`` without credentials → 401 or 403."""
         resp = _get(http, path, allow_redirects=False)
-        assert resp.status_code in (401, 403), (
-            f"{description} ({path}): expected 401/403, got {resp.status_code}"
-        )
+        assert resp.status_code in (401, 403), f"{description} ({path}): expected 401/403, got {resp.status_code}"
 
 
 # ===================================================================
@@ -204,17 +200,13 @@ class TestP2AdminSite:
     def test_admin_accessible(self, http):
         """``GET /admin/`` → 200 (login page) or 302 (redirect to login)."""
         resp = _get(http, "/admin/", allow_redirects=False)
-        assert resp.status_code in (200, 301, 302), (
-            f"Admin: expected 200/301/302, got {resp.status_code}"
-        )
+        assert resp.status_code in (200, 301, 302), f"Admin: expected 200/301/302, got {resp.status_code}"
 
     def test_admin_login_page_renders(self, http):
         """Following redirects from ``/admin/`` should reach an HTML page."""
         resp = _get(http, "/admin/", allow_redirects=True)
         assert resp.status_code == 200, f"Admin login: expected 200, got {resp.status_code}"
-        assert "<!doctype html>" in resp.text.lower() or "<html" in resp.text.lower(), (
-            "Admin should return HTML"
-        )
+        assert "<!doctype html>" in resp.text.lower() or "<html" in resp.text.lower(), "Admin should return HTML"
 
 
 # ===================================================================
@@ -230,12 +222,8 @@ class TestP2Infrastructure:
         """A known static asset should be reachable (e.g. admin CSS)."""
         # Django admin CSS is always present when collectstatic has run.
         resp = _get(http, "/static/admin/css/base.css", allow_redirects=True)
-        assert resp.status_code == 200, (
-            f"Static file: expected 200, got {resp.status_code}"
-        )
-        assert "text/css" in resp.headers.get("Content-Type", ""), (
-            "Static CSS file should have text/css content type"
-        )
+        assert resp.status_code == 200, f"Static file: expected 200, got {resp.status_code}"
+        assert "text/css" in resp.headers.get("Content-Type", ""), "Static CSS file should have text/css content type"
 
     def test_https_enforcement(self, http):
         """If the base URL is HTTPS, verify the server enforces it."""
@@ -271,9 +259,7 @@ class TestP2ResponseQuality:
         """Homepage should include basic security headers."""
         resp = _get(http, "/", allow_redirects=True)
         # X-Content-Type-Options is set by Django's SecurityMiddleware
-        assert "x-content-type-options" in {
-            k.lower() for k in resp.headers
-        }, "Missing X-Content-Type-Options header"
+        assert "x-content-type-options" in {k.lower() for k in resp.headers}, "Missing X-Content-Type-Options header"
 
     def test_health_does_not_leak_debug_info(self, http):
         """``/health`` response must not contain stack traces or DEBUG artifacts."""
@@ -285,9 +271,7 @@ class TestP2ResponseQuality:
     def test_404_returns_proper_status(self, http):
         """A nonsense path should return 404, not 500."""
         resp = _get(http, "/this-path-should-not-exist-abc123/", allow_redirects=True)
-        assert resp.status_code == 404, (
-            f"Unknown path: expected 404, got {resp.status_code}"
-        )
+        assert resp.status_code == 404, f"Unknown path: expected 404, got {resp.status_code}"
 
 
 # ===================================================================
