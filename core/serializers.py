@@ -145,6 +145,25 @@ class PractitionerSerializer(serializers.ModelSerializer):
         ]
 
 
+class PatientProfileSerializer(serializers.ModelSerializer):
+    """Patient serializer with PHI stripped for patient-facing profile endpoint."""
+
+    organizations = serializers.SerializerMethodField()
+
+    def get_organizations(self, obj):
+        organizations = obj.organizations.all()
+        return OrganizationSerializer(organizations, many=True).data
+
+    class Meta:
+        model = Patient
+        fields = [
+            "id",
+            "jhe_user_id",
+            "identifier",
+            "organizations",
+        ]
+
+
 class JheUserSerializer(serializers.ModelSerializer):
 
     patient = PatientSerializer(many=False, read_only=True)
@@ -152,6 +171,16 @@ class JheUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = JheUser
         fields = ["id", "email", "first_name", "last_name", "patient", "user_type", "is_superuser"]
+
+
+class JheUserPatientProfileSerializer(serializers.ModelSerializer):
+    """User serializer with PHI stripped for patient users on the profile endpoint."""
+
+    patient = PatientProfileSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = JheUser
+        fields = ["id", "patient", "user_type", "is_superuser"]
 
 
 class StudySerializer(serializers.ModelSerializer):

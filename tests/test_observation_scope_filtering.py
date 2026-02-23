@@ -24,10 +24,10 @@ from .utils import (
     create_study,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def org(db):
@@ -373,15 +373,24 @@ class TestObservationBoundaryConditions:
         add_observations(patient=patient_a, code=Code.BloodPressure, n=4)
         add_observations(patient=patient_a, code=Code.BloodGlucose, n=6)
 
-        hr = list(Observation.for_practitioner_organization_study_patient(
-            jhe_user_id=practitioner.id, study_id=hr_study.id,
-        ))
-        bp = list(Observation.for_practitioner_organization_study_patient(
-            jhe_user_id=practitioner.id, study_id=bp_study.id,
-        ))
-        bg = list(Observation.for_practitioner_organization_study_patient(
-            jhe_user_id=practitioner.id, study_id=bg_study.id,
-        ))
+        hr = list(
+            Observation.for_practitioner_organization_study_patient(
+                jhe_user_id=practitioner.id,
+                study_id=hr_study.id,
+            )
+        )
+        bp = list(
+            Observation.for_practitioner_organization_study_patient(
+                jhe_user_id=practitioner.id,
+                study_id=bp_study.id,
+            )
+        )
+        bg = list(
+            Observation.for_practitioner_organization_study_patient(
+                jhe_user_id=practitioner.id,
+                study_id=bg_study.id,
+            )
+        )
         assert len(hr) == 2
         assert len(bp) == 4
         assert len(bg) == 6
@@ -413,9 +422,7 @@ class TestSeedNoDuplicateObservations:
         #   paul  → olgin_o2(O2) = 1 obs
         #   pat   → cardio_rr(RR) + olgin_o2(O2) = 2 obs
         # Total = 5 + 4 = 9
-        assert observations.count() == 9, (
-            f"Expected 9 observations (5 berkeley + 4 ucsf), got {observations.count()}"
-        )
+        assert observations.count() == 9, f"Expected 9 observations (5 berkeley + 4 ucsf), got {observations.count()}"
 
         # Verify no cross-contamination from Bug 1:
         # Berkeley patients should not have UCSF-only codes (RR, BT, O2)
@@ -430,6 +437,6 @@ class TestSeedNoDuplicateObservations:
             subject_patient__in=berkeley_patients,
             codeable_concept__in=ucsf_only_codes,
         )
-        assert cross_contaminated.count() == 0, (
-            f"Bug 1 regression: Berkeley patients have UCSF observations: {list(cross_contaminated.values_list('subject_patient__jhe_user__email', 'codeable_concept__coding_code'))}"
-        )
+        assert (
+            cross_contaminated.count() == 0
+        ), f"Bug 1 regression: Berkeley patients have UCSF observations: {list(cross_contaminated.values_list('subject_patient__jhe_user__email', 'codeable_concept__coding_code'))}"
