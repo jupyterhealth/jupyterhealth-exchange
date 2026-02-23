@@ -2,9 +2,9 @@ import json
 import time
 from urllib.parse import parse_qs
 
-from django.conf import settings
 import pytest
 import responses
+from django.conf import settings
 
 from core.models import JheUser
 
