@@ -158,15 +158,25 @@ Then in another terminal:
 pipenv run pytest tests/test_smoke.py --smoke-url=http://localhost:8000 -m smoke -v
 ```
 
-### Running against Fly.io
+### Running against any JHE instance
+
+The `--smoke-url` flag accepts **any** URL.  JHE is deployed to multiple
+environments — just point the tests at whichever one you need:
 
 ```bash
+# Fly.io dev instance
 pipenv run pytest tests/test_smoke.py --smoke-url=https://jhe.fly.dev -m smoke -v
+
+# UCSF production
+pipenv run pytest tests/test_smoke.py --smoke-url=https://jhe.ucsf.edu -m smoke -v
+
+# Local dev server
+pipenv run pytest tests/test_smoke.py --smoke-url=http://localhost:8000 -m smoke -v
 ```
 
 > **Note:** The first request may take 10-15 seconds if Fly machines are
 > stopped.  The test suite has built-in retries (3 attempts, exponential
-> backoff) to handle this.
+> backoff) to handle this.  Non-Fly instances respond immediately.
 
 ### How the `--smoke-url` opt-in works
 
@@ -299,7 +309,8 @@ class TestMyNewEndpoint:
 |----------|------|---------|--------------|
 | Backend tests | `.github/workflows/be_test.yml` | Push/PR to `main` | Full pytest suite with Postgres |
 | Frontend tests | `.github/workflows/fe_test.yml` | Push/PR to `main` | Jest tests for JS |
-| Deploy | `.github/workflows/fly_dev.yml` | Push to `main` | Fly.io deploy + smoke tests |
+| Deploy | `.github/workflows/fly_dev.yml` | Push to `main` | Fly.io deploy + smoke tests (jhe.fly.dev) |
+| Smoke (on-demand) | `.github/workflows/smoke_test.yml` | Manual dispatch | Smoke tests against **any** URL |
 | Container image | `.github/workflows/image.yaml` | Push/PR to `main` | Build + push to GHCR |
 
 ### Deploy + smoke workflow (`fly_dev.yml`)
@@ -319,7 +330,29 @@ push to main
 The smoke tests run as a **separate job** that depends on the deploy job.
 If smoke tests fail, the workflow fails — giving you a red check on the commit.
 
-> **Important:** The smoke CI job uses `--override-ini="DJANGO_SETTINGS_MODULE="`
+### On-demand smoke workflow (`smoke_test.yml`)
+
+Use this to run smoke tests against **any** JHE instance — UCSF, a staging
+environment, etc.:
+
+1. Go to **Actions → Smoke Tests (on-demand)** in GitHub
+2. Click **Run workflow**
+3. Enter the base URL (e.g., `https://jhe.ucsf.edu`)
+4. Click **Run workflow** again to start
+
+```
+workflow_dispatch (manual trigger)
+    │
+    └── Job: smoke-test
+          ├── pip install pytest requests
+          ├── Warm-up ping to /health (handles cold starts)
+          └── pytest tests/test_smoke.py --smoke-url=<user-provided URL> -m smoke
+```
+
+This keeps CI simple: the auto-deploy workflow only tests `jhe.fly.dev`,
+and you manually trigger tests for other instances only when needed.
+
+> **Important:** Both smoke CI jobs use `--override-ini="DJANGO_SETTINGS_MODULE="`
 > to clear the Django settings module.  Smoke tests don't import Django — they
 > only use `requests` to make HTTP calls.  This prevents import errors when
 > Django dependencies (Postgres, etc.) aren't available in the CI runner.
