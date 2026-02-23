@@ -1,4 +1,5 @@
 import logging
+import secrets
 import urllib
 
 import jwt
@@ -9,9 +10,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.views import LoginView as BaseLoginView
-from django.http import HttpRequest, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.template import TemplateDoesNotExist
+from django.utils import timezone
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.csrf import csrf_exempt
@@ -32,8 +34,12 @@ from django_saml2_auth.utils import (
     is_jwt_well_formed,
     run_hook,
 )
+from oauth2_provider.models import get_access_token_model
+from oauth2_provider.oauth2_validators import OAuth2Validator
+from oauthlib.common import Request
 
 from core.jhe_settings.service import get_setting
+from core.models import JheUser
 from core.utils import get_or_create_user
 
 from ..forms import UserRegistrationForm
@@ -42,6 +48,7 @@ from ..tokens import account_activation_token
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
+AccessToken = get_access_token_model()
 
 
 def home(request):
@@ -374,3 +381,145 @@ def acs(request: HttpRequest):
             return redirect(next_url)
     else:
         return redirect(next_url)
+
+
+def json_error(msg, status_code=400):
+    """Return a JSON error message"""
+    response = JsonResponse({"error": msg})
+    response.status_code = status_code
+    return response
+
+
+@csrf_exempt
+def token_exchange(request: HttpRequest):
+    """
+    RFC 8693: OAuth 2.0 Token Exchange
+
+    Requires setting:
+    - TRUSTED_TOKEN_IDP: OIDC base URL
+
+    Ref: https://datatracker.ietf.org/doc/html/rfc8693
+    """
+
+    if not request.POST:
+        return json_error("Method not allowed", status_code=405)
+    for name in (
+        "audience",
+        "requested_token_type",
+        "subject_token_type",
+        "subject_token",
+        "grant_type",
+    ):
+        if not request.POST.get(name):
+            return json_error(f"Missing required argument: {name}")
+
+    site_url = get_setting("site.url", settings.SITE_URL)
+
+    # standard arguments:
+    audience = request.POST.get("audience")
+    requested_token_type = request.POST.get("requested_token_type")
+    subject_token_type = request.POST.get("subject_token_type")
+    subject_token = request.POST.get("subject_token")
+    grant_type = request.POST.get("grant_type")
+    scope = request.POST.get("scope", "openid")
+
+    # argument validation
+    if grant_type != "urn:ietf:params:oauth:grant-type:token-exchange":
+        return json_error(f"grant_type must be urn:ietf:params:oauth:grant-type:token-exchange, not {grant_type}")
+    _access_token_type = "urn:ietf:params:oauth:token-type:access_token"
+    if subject_token_type != _access_token_type:
+        return json_error(f"subject_token_type must be {_access_token_type}, not {subject_token_type}")
+    if requested_token_type != _access_token_type:
+        return json_error(f"requested_token_type must be {_access_token_type}, not {requested_token_type}")
+    if audience != site_url:
+        return json_error(f"audience must be {site_url}, not {audience}")
+    if scope != "openid":
+        return json_error(f"Only 'openid' scope is supported, not {scope}")
+
+    # lookup via userinfo/introspection
+    # sample SMART-on-FHIR doesn't have userinfo
+    # curl -X POST -H "Authorization: Bearer $token" -d "token=$token" $introspection
+    trusted_idp = get_setting("trusted_token_idp", settings.TRUSTED_TOKEN_IDP)
+    r = requests.get(
+        f"{trusted_idp}/.well-known/openid-configuration",
+        headers={"Accept": "application/json"},
+    )
+    r.raise_for_status()
+    openid_config = r.json()
+
+    # TODO: do we need config to select external id claim? Currently hardcoded 'sub'
+    external_id_claim = "sub"
+
+    if "userinfo_endpoint" in openid_config:
+        # fetch userinfo
+        url = openid_config["userinfo_endpoint"]
+        logger.info("Looking up token via userinfo %s", url)
+        r = requests.get(url, headers={"Authorization": f"Bearer {subject_token}"})
+        if r.status_code >= 400:
+            logger.warning("Failed to lookup subject_token %s: %s", r.status_code, r.text)
+            return json_error(f"Token not found in {trusted_idp}")
+        user_info = r.json()
+        if external_id_claim not in user_info:
+            logger.error("%s not in %s", external_id_claim, user_info)
+            return json_error("Error retrieving user info for access token", status_code=500)
+        identifier = user_info[external_id_claim]
+    elif "introspection_endpoint" in openid_config:
+        url = openid_config["introspection_endpoint"]
+        logger.info("Looking up token via introspection %s", url)
+        r = requests.post(url, data={"token": subject_token}, headers={"Authorization": f"Bearer {subject_token}"})
+        if r.status_code >= 400:
+            logger.warning("Failed to lookup subject_token %s: %s", r.status_code, r.text)
+            return json_error(f"Token not found in {trusted_idp}")
+        token_info = r.json()
+        # introspection must always set 'active'
+        if not token_info["active"]:
+            logger.warning("subject_token not active")
+            return json_error(f"Token not found in {trusted_idp}")
+
+        if external_id_claim in token_info:
+            identifier = token_info[external_id_claim]
+        else:
+            logger.error("%s not in %s", external_id_claim, token_info)
+            if "fhirUser" in token_info:
+                kind, _, fhir_id = token_info["fhirUser"].partition("/")
+                if kind == "Practitioner":
+                    identifier = fhir_id
+                else:
+                    return json_error("Error introspecting access token", status_code=500)
+            else:
+                return json_error("Error introspecting access token", status_code=500)
+
+    try:
+        user = JheUser.objects.get(identifier=identifier)
+    except JheUser.DoesNotExist:
+        return json_error(f"Practitioner not found for {identifier}", status_code=404)
+
+    # only allowed for Practitioners
+    if not user.practitioner:
+        return json_error(f"Practitioner not found for {identifier}", status_code=404)
+    # issue token
+    access_token = secrets.token_urlsafe(32)
+    oauth_request = Request("")
+    oauth_request.user = user
+    validator = OAuth2Validator()
+    validator.save_bearer_token(
+        {
+            "access_token": access_token,
+            "scope": "openid",
+        },
+        oauth_request,
+    )
+
+    # get record from db
+    token_model = AccessToken.objects.get(token=access_token)
+    expires_in = int((token_model.expires - timezone.now()).total_seconds())
+
+    return JsonResponse(
+        {
+            "access_token": access_token,
+            "issued_token_type": _access_token_type,
+            "token_type": "Bearer",
+            "expires_in": expires_in,
+            "scope": scope,
+        }
+    )

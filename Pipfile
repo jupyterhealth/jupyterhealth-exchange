@@ -28,6 +28,7 @@ ipython = "*"
 
 [dev-packages]
 coverage = "*"
+responses = "*"
 pre-commit = "*"
 pytest-django = "*"
 pytest = "*"
