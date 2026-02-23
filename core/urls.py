@@ -1,10 +1,9 @@
-from django.urls import path
+from django.urls import include, path, re_path
 from django.views.generic import TemplateView
+from rest_framework.routers import DefaultRouter
+
 from . import views
 from .views import common
-from rest_framework.routers import DefaultRouter
-from django.urls import include
-from django.urls import re_path
 
 # https://www.django-rest-framework.org/api-guide/routers/#defaultrouter
 api_router = DefaultRouter(trailing_slash=False)

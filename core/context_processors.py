@@ -3,11 +3,11 @@ import logging
 from functools import lru_cache
 
 from django.conf import settings
-from core.permissions import ROLE_PERMISSIONS
 from oauth2_provider.models import get_application_model
 
-from core.models import DataSource, JheSetting, Organization
 from core.jhe_settings.service import get_setting
+from core.models import DataSource, JheSetting, Organization
+from core.permissions import ROLE_PERMISSIONS
 
 logger = logging.getLogger(__name__)
 

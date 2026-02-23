@@ -2,18 +2,19 @@ import inspect
 import logging
 
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+
+from core.admin_pagination import CustomPageNumberPagination
+from core.fhir_pagination import FHIRBundlePagination
+from core.models import Observation, Study
 from core.serializers import (
     FHIRBundledObservationSerializer,
     FHIRObservationSerializer,
     ObservationSerializer,
 )
-from core.models import Observation, Study
-from core.admin_pagination import CustomPageNumberPagination
-from core.fhir_pagination import FHIRBundlePagination
 from core.views.fhir_base import FHIRBase
-from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError, PermissionDenied
 
 logger = logging.getLogger(__name__)
 

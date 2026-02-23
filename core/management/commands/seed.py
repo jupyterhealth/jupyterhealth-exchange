@@ -1,12 +1,11 @@
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
-from django.db import connection
-from django.db import transaction
+from django.db import connection, transaction
 from django.utils import timezone
 from django.utils.crypto import get_random_string
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
 from faker import Faker
 from oauth2_provider.models import get_application_model
 
@@ -14,13 +13,13 @@ from core.models import (
     CodeableConcept,
     DataSource,
     JheSetting,
-    Organization,
-    StudyPatientScopeConsent,
-    Study,
-    PractitionerOrganization,
-    StudyPatient,
-    Observation,
     JheUser,
+    Observation,
+    Organization,
+    PractitionerOrganization,
+    Study,
+    StudyPatient,
+    StudyPatientScopeConsent,
     StudyScopeRequest,
 )
 from core.utils import generate_observation_value_attachment_data

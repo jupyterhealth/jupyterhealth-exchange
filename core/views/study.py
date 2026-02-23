@@ -1,11 +1,11 @@
 import logging
 
 from pydantic import ValidationError
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import status
 
 from core.admin_pagination import CustomPageNumberPagination
 from core.models import Patient, Study, StudyClient, StudyDataSource, StudyPatient, StudyScopeRequest
@@ -14,10 +14,10 @@ from core.serializers import (
     PatientSerializer,
     StudyClientSerializer,
     StudyDataSourceSerializer,
+    StudyOrganizationSerializer,
     StudyPatientSerializer,
     StudyScopeRequestSerializer,
     StudySerializer,
-    StudyOrganizationSerializer,
 )
 
 logger = logging.getLogger(__name__)

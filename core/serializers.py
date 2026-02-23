@@ -2,9 +2,10 @@ import json
 
 import humps
 from django.core.exceptions import BadRequest
-from rest_framework import serializers
 from fhir.resources.observation import Observation as FHIRObservation
 from fhir.resources.patient import Patient as FHIRPatient
+from oauth2_provider.models import get_application_model
+from rest_framework import serializers
 
 from core.models import (
     ClientDataSource,
@@ -12,20 +13,18 @@ from core.models import (
     DataSource,
     DataSourceSupportedScope,
     JheSetting,
+    JheUser,
     Observation,
     Organization,
-    JheUser,
     Patient,
+    PractitionerOrganization,
     Study,
     StudyClient,
     StudyDataSource,
     StudyPatient,
     StudyPatientScopeConsent,
     StudyScopeRequest,
-    PractitionerOrganization,
 )
-
-from oauth2_provider.models import get_application_model
 
 
 class PractitionerOrganizationSerializer(serializers.ModelSerializer):
@@ -47,7 +46,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         self.fields["children"] = OrganizationSerializer(many=True, read_only=True)
-        return super(OrganizationSerializer, self).to_representation(instance)
+        return super().to_representation(instance)
 
     class Meta:
         model = Organization

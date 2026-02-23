@@ -2,22 +2,22 @@ from django.test import TestCase
 from django.utils import timezone
 
 from core.models import (
-    JheUser,
-    Organization,
     CodeableConcept,
+    DataSource,
+    DataSourceSupportedScope,
+    JheUser,
+    Observation,
+    ObservationIdentifier,
+    Organization,
+    Patient,
+    PatientOrganization,
+    Practitioner,
+    PractitionerOrganization,
     Study,
+    StudyDataSource,
     StudyPatient,
     StudyPatientScopeConsent,
     StudyScopeRequest,
-    DataSource,
-    DataSourceSupportedScope,
-    StudyDataSource,
-    Observation,
-    ObservationIdentifier,
-    Practitioner,
-    PractitionerOrganization,
-    Patient,
-    PatientOrganization,
 )
 
 

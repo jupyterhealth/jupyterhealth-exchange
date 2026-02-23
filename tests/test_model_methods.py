@@ -1,31 +1,30 @@
-import json
 import base64
+import json
 
+from django.core import mail
 from django.db import connection
-from django.conf import settings
+from django.db.models.query import RawQuerySet
 from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
-from django.core import mail
-from django.db.models.query import RawQuerySet
 from oauth2_provider.models import get_application_model
-from core.utils import generate_observation_value_attachment_data
 
 from core.models import (
+    CodeableConcept,
+    DataSource,
+    DataSourceSupportedScope,
     JheUser,
+    Observation,
     Organization,
     Patient,
-    CodeableConcept,
+    PatientOrganization,
+    Practitioner,
+    PractitionerOrganization,
     Study,
     StudyPatient,
     StudyPatientScopeConsent,
-    DataSource,
-    DataSourceSupportedScope,
-    Observation,
-    Practitioner,
-    PractitionerOrganization,
-    PatientOrganization,
 )
+from core.utils import generate_observation_value_attachment_data
 
 
 # -----------------------------------------------------

@@ -14,7 +14,7 @@ Test categories:
 import pytest
 from rest_framework.test import APIClient
 
-from core.models import JheUser, Organization, Patient, PractitionerOrganization
+from core.models import JheUser
 from core.serializers import (
     JheUserPatientProfileSerializer,
     JheUserSerializer,

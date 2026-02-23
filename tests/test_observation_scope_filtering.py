@@ -12,8 +12,6 @@ observations across study groups.
 
 import pytest
 from django.core.management import call_command
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 
 from core.models import JheUser, Observation, Organization, PractitionerOrganization
 

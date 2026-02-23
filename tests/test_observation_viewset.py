@@ -7,6 +7,7 @@ from django.test.utils import CaptureQueriesContext
 
 from core.models import JheUser, Organization
 from core.utils import generate_observation_value_attachment_data
+
 from .utils import (
     Code,
     add_observations,
