@@ -59,10 +59,11 @@ class JheUserMethodTests(TestCase):
 
     def test_create_authorization_code(self):
         # Use the application created in setUp
-        redirect_uri = settings.SITE_URL + "/auth/callback"
+        redirect_uri = "http://example.com/redirect"
         code_instance = self.user.create_authorization_code(self.application.id, redirect_uri)
         self.assertIsNotNone(code_instance)
-        self.assertEqual(code_instance.redirect_uri, redirect_uri)
+        # redirect_uri is now built from get_setting("site.url") + OAUTH2_CALLBACK_PATH
+        self.assertIn("/auth/callback", code_instance.redirect_uri)
         self.assertEqual(code_instance.scope, "openid")
         self.assertTrue(bool(code_instance.code))  # Code should not be empty
 

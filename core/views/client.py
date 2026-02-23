@@ -1,5 +1,6 @@
 from core.models import ClientDataSource, DataSource
 from jhe import settings
+from core.jhe_settings.service import get_setting
 from rest_framework.viewsets import ModelViewSet
 from oauth2_provider.models import get_application_model
 from rest_framework.response import Response
@@ -46,7 +47,8 @@ class ClientViewSet(ModelViewSet):
             client_type=Application.CLIENT_PUBLIC,
             authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
             skip_authorization=True,
-            redirect_uris=settings.SITE_URL + settings.OAUTH2_CALLBACK_PATH,  # required but not actually used
+            redirect_uris=get_setting("site.url", settings.SITE_URL)
+            + settings.OAUTH2_CALLBACK_PATH,  # required but not actually used
             algorithm="RS256",  # RSA with SHA-256
         )
 

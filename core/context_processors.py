@@ -23,19 +23,18 @@ def _get_oidc_client_id():
 
 
 def constants(request):
+    site_url = get_setting("site.url", settings.SITE_URL)
 
     return {
         "JHE_VERSION": settings.JHE_VERSION,
         "SITE_TITLE": get_setting("site.ui.title"),
-        "SITE_URL": settings.SITE_URL,
+        "SITE_URL": site_url,
         "OIDC_CLIENT_AUTHORITY_PATH": settings.OIDC_CLIENT_AUTHORITY_PATH,
         "OAUTH2_CALLBACK_PATH": settings.OAUTH2_CALLBACK_PATH,
         "OIDC_CLIENT_ID": _get_oidc_client_id(),
-        "SAML2_ENABLED": settings.SAML2_ENABLED,
+        "SAML2_ENABLED": get_setting("auth.sso.saml2", 0),
         "ORGANIZATION_TYPES": json.dumps(Organization.ORGANIZATION_TYPES),
         "DATA_SOURCE_TYPES": json.dumps(DataSource.DATA_SOURCE_TYPES),
         "JHE_SETTING_VALUE_TYPES": json.dumps(JheSetting.JHE_SETTING_VALUE_TYPES),
-        "PATIENT_AUTHORIZATION_CODE_CHALLENGE": settings.PATIENT_AUTHORIZATION_CODE_CHALLENGE,
-        "PATIENT_AUTHORIZATION_CODE_VERIFIER": settings.PATIENT_AUTHORIZATION_CODE_VERIFIER,
         "ROLE_PERMISSIONS": json.dumps(ROLE_PERMISSIONS),
     }

@@ -5,12 +5,15 @@ from django.db import connection
 from django.db import transaction
 from django.utils import timezone
 from django.utils.crypto import get_random_string
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from faker import Faker
 from oauth2_provider.models import get_application_model
 
 from core.models import (
     CodeableConcept,
     DataSource,
+    JheSetting,
     Organization,
     StudyPatientScopeConsent,
     Study,
@@ -43,6 +46,7 @@ class Command(BaseCommand):
         with transaction.atomic():
             self.reset_sequences()
             self.generate_superuser()
+            self.seed_jhe_settings()
             self.seed_codeable_concept()
             self.seed_data_source()
             root_organization = self.create_root_organization()
@@ -51,6 +55,41 @@ class Command(BaseCommand):
             self.seed_oauth_application()
 
         self.stdout.write(self.style.SUCCESS("Seeding complete."))
+
+    def seed_jhe_settings(self):
+        invite_code = get_random_string(12)
+        secret_key = get_random_string(50, "abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)")
+
+        private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        private_key_pem = private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption(),
+        ).decode()
+
+        jhe_settings = [
+            ("site.url", "string", "http://localhost:8000"),
+            ("site.ui.title", "string", "JupyterHealth Exchange"),
+            ("site.time_zone", "string", "America/Los_Angeles"),
+            ("site.registration_invite_code", "string", invite_code),
+            ("site.secret_key", "string", secret_key),
+            ("auth.default_orgs", "string", "20001:viewer;20002:manager"),
+            ("auth.private_key", "string", private_key_pem),
+            ("auth.sso.saml2", "int", 0),
+            ("auth.sso.idp_metadata_url", "string", ""),
+            ("auth.sso.valid_domains", "string", ""),
+        ]
+        for key, value_type, value in jhe_settings:
+            setting, _ = JheSetting.objects.update_or_create(
+                key=key,
+                setting_id=None,
+                defaults={"value_type": value_type},
+            )
+            setting.set_value(value_type, str(value) if value_type == "int" else value)
+            setting.save()
+
+        self.stdout.write(f"  Registration invite code: {invite_code}")
+        self.stdout.write(f"  Secret key: {secret_key}")
 
     @staticmethod
     def us_phone_number():
@@ -307,8 +346,7 @@ class Command(BaseCommand):
                 value_attachment_data=generate_observation_value_attachment_data(consent.scope_code.coding_code),
             )
 
-    @staticmethod
-    def seed_oauth_application(name="JHE Dev"):
+    def seed_oauth_application(self, name="JHE Dev"):
 
         application = get_application_model()
         application.objects.create(
@@ -327,6 +365,33 @@ class Command(BaseCommand):
             hash_client_secret=True,
             allowed_origins="",
         )
+
+        # Per-client JheSettings (setting_id = application PK)
+        import base64
+
+        code_verifier = base64.urlsafe_b64encode(get_random_string(48).encode()).decode()
+        client_settings = [
+            (
+                "client.code_verifier",
+                "string",
+                code_verifier,
+            ),
+            (
+                "client.invitation_url",
+                "string",
+                "https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr.dev&referrer=cloud_sharing=CODE",
+            ),
+        ]
+        for key, value_type, value in client_settings:
+            setting, _ = JheSetting.objects.update_or_create(
+                key=key,
+                setting_id=1,
+                defaults={"value_type": value_type},
+            )
+            setting.set_value(value_type, value)
+            setting.save()
+
+        self.stdout.write(f"  Client code_verifier: {code_verifier}")
 
     def create_user_with_profile(self, email, user_type="practitioner", password="Jhe1234!"):
         user = JheUser.objects.create_user(
