@@ -1,19 +1,16 @@
 import logging
 import urllib
-from typing import Optional
 
 import jwt
 import requests
 from dictor import dictor  # type: ignore
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth import login
+from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.views import LoginView as BaseLoginView
 from django.http import HttpRequest, HttpResponseRedirect
-from django.shortcuts import redirect
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.template import TemplateDoesNotExist
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
@@ -36,8 +33,9 @@ from django_saml2_auth.utils import (
     run_hook,
 )
 
-from core.utils import get_or_create_user
 from core.jhe_settings.service import get_setting
+from core.utils import get_or_create_user
+
 from ..forms import UserRegistrationForm
 from ..tokens import account_activation_token
 
@@ -239,7 +237,7 @@ def smart_callback(request):
 
     login(request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
 
-    logger.info(f'Save to server state, patient_id: {token_data.get("patient")}')
+    logger.info(f"Save to server state, patient_id: {token_data.get('patient')}")
 
     return redirect("client-auth-login")
 
@@ -355,7 +353,7 @@ def acs(request: HttpRequest):
 
         return HttpResponseRedirect(frontend_url + query)
 
-    def redirect(redirect_url: Optional[str] = None) -> HttpResponseRedirect:
+    def redirect(redirect_url: str | None = None) -> HttpResponseRedirect:
         """Redirect to the redirect_url or the root page.
 
         Args:

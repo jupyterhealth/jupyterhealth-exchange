@@ -1,11 +1,11 @@
 import logging
 
 from pydantic import ValidationError
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import status
 
 from core.admin_pagination import CustomPageNumberPagination
 from core.models import Patient, Study, StudyClient, StudyDataSource, StudyPatient, StudyScopeRequest
@@ -14,17 +14,16 @@ from core.serializers import (
     PatientSerializer,
     StudyClientSerializer,
     StudyDataSourceSerializer,
+    StudyOrganizationSerializer,
     StudyPatientSerializer,
     StudyScopeRequestSerializer,
     StudySerializer,
-    StudyOrganizationSerializer,
 )
 
 logger = logging.getLogger(__name__)
 
 
 class StudyViewSet(ModelViewSet):
-
     model_class = Study
     serializer_class = StudyOrganizationSerializer
     pagination_class = CustomPageNumberPagination
@@ -56,7 +55,6 @@ class StudyViewSet(ModelViewSet):
 
     @action(detail=True, methods=["GET", "POST", "DELETE"])
     def patients(self, request, pk):
-
         if request.method == "GET":
             serializer = PatientSerializer(Patient.for_study(self.request.user.id, pk), many=True)
             return Response(serializer.data)
@@ -79,7 +77,6 @@ class StudyViewSet(ModelViewSet):
 
     @action(detail=True, methods=["GET", "POST", "DELETE"])
     def scope_requests(self, request, pk):
-
         if request.method == "GET":
             scopes = StudyScopeRequest.objects.filter(study_id=pk).order_by("id")
             serializer = StudyScopeRequestSerializer(scopes, many=True)
@@ -97,7 +94,6 @@ class StudyViewSet(ModelViewSet):
 
     @action(detail=True, methods=["GET", "POST", "DELETE"])
     def clients(self, request, pk):
-
         if request.method == "GET":
             study_clients = StudyClient.objects.filter(study_id=pk).order_by("id")
             serializer = StudyClientSerializer(study_clients, many=True)
@@ -118,7 +114,6 @@ class StudyViewSet(ModelViewSet):
 
     @action(detail=True, methods=["GET", "POST", "DELETE"])
     def data_sources(self, request, pk):
-
         if request.method == "GET":
             study_data_sources = StudyDataSource.objects.filter(study_id=pk).order_by("id")
             serializer = StudyDataSourceSerializer(study_data_sources, many=True)

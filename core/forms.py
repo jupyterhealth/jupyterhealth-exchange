@@ -24,4 +24,4 @@ class UserRegistrationForm(forms.ModelForm):
             raise forms.ValidationError("Your Password should have more than 5 characters")
         if registration_invite_code != get_setting("site.registration_invite_code"):
             raise forms.ValidationError("Your Invite Code is invalid.")
-        return super(UserRegistrationForm, self).clean(*args, **kwargs)
+        return super().clean(*args, **kwargs)

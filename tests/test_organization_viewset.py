@@ -1,7 +1,8 @@
 import pytest
 from rest_framework.test import APIClient
 
-from core.models import Organization, JheUser
+from core.models import JheUser, Organization
+
 from .utils import fetch_paginated
 
 

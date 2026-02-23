@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import urllib.parse
+
 import django
 import requests
 from dotenv import load_dotenv
@@ -68,7 +69,6 @@ OMH_BLOOD_GLUCOSE_JSON = {
 
 
 class Command:
-
     def __init__(self):
         self.session = requests.Session()
         self.BASE_URL = SITE_URL

@@ -11,27 +11,22 @@ Covers:
 - seed command seed_jhe_settings (integration)
 """
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from django.core import mail
 from django.core.cache import cache
-from django.test import TestCase, RequestFactory, override_settings
+from django.test import RequestFactory, TestCase, override_settings
 from oauth2_provider.models import get_application_model
 
 from core.jhe_settings.service import get_setting
 from core.models import (
     JheSetting,
     JheUser,
+    Observation,
     Organization,
     Patient,
     Practitioner,
     PractitionerOrganization,
-    PatientOrganization,
-    Observation,
-    CodeableConcept,
-    DataSource,
-    Study,
-    StudyPatient,
 )
 
 Application = get_application_model()
@@ -129,10 +124,8 @@ class ContextProcessorTests(TestCase):
             "auth.sso.saml2": 0,
         }.get(key, default)
 
-        from core.context_processors import constants
-
         # Clear the lru_cache so the test app is picked up
-        from core.context_processors import _get_oidc_client_id
+        from core.context_processors import _get_oidc_client_id, constants
 
         _get_oidc_client_id.cache_clear()
 
@@ -326,7 +319,7 @@ class FhirSearchGetSettingTests(TestCase):
         """Unit: Patient.fhir_search should call get_setting for SITE_URL.
         We don't execute the raw SQL (requires full schema joins); we just
         verify the method obtains the setting before building the query."""
-        qs = Patient.fhir_search(self.user.id)
+        Patient.fhir_search(self.user.id)
         # RawQuerySet is lazy — calling fhir_search builds SQL but doesn't execute
         # Verify get_setting was called for site.url
         calls = [c for c in mock_gs.call_args_list if c[0][0] == "site.url"]

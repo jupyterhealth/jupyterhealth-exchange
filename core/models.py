@@ -3,7 +3,6 @@ import hashlib
 import json
 import logging
 from datetime import timedelta
-
 from random import SystemRandom
 from urllib.parse import urlparse
 
@@ -11,10 +10,10 @@ import humps
 from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, BadRequest
+from django.core.exceptions import BadRequest, ObjectDoesNotExist, PermissionDenied
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import EmailMessage
-from django.db import models, connection, transaction
+from django.db import connection, models, transaction
 from django.db.models import Q
 from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404
@@ -25,10 +24,11 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 from fhir.resources.observation import Observation as FHIRObservation
 from jsonschema import ValidationError
-from core.utils import validate_with_registry
+from oauth2_provider.models import AccessToken, Grant, IDToken, RefreshToken, get_application_model, get_grant_model
+
 from core.admin_pagination import PaginatedRawQuerySet
 from core.jhe_settings.service import get_setting
-from oauth2_provider.models import AccessToken, RefreshToken, Grant, IDToken, get_application_model, get_grant_model
+from core.utils import validate_with_registry
 
 from .tokens import account_activation_token
 
@@ -263,7 +263,6 @@ class JheUser(AbstractUser):
 
     # https://github.com/jazzband/django-oauth-toolkit/blob/102c85141ec44549e17080c676292e79e5eb46cc/oauth2_provider/oauth2_validators.py#L675
     def create_authorization_code(self, application_id, code_verifier):
-
         self.last_login = timezone.now()
         self.save()
 
@@ -272,7 +271,7 @@ class JheUser(AbstractUser):
         Grant.objects.filter(user_id=self.id, application_id=application_id).delete()
 
         # https://github.com/oauthlib/oauthlib/blob/f9a07c6c07d0ddac255dd322ef5fc54a7a46366d/oauthlib/common.py#L188
-        UNICODE_ASCII_CHARACTER_SET = "abcdefghijklmnopqrstuvwxyz" "ABCDEFGHIJKLMNOPQRSTUVWXYZ" "0123456789"
+        UNICODE_ASCII_CHARACTER_SET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         authorization_code = "".join(SystemRandom().choice(UNICODE_ASCII_CHARACTER_SET) for _ in range(30))
 
         return Grant.objects.create(
@@ -297,7 +296,6 @@ class JheUser(AbstractUser):
 
 
 class Organization(models.Model):
-
     # https://build.fhir.org/valueset-organizations-type.html
     ORGANIZATION_TYPES = {
         "root": "ROOT",
@@ -327,7 +325,6 @@ class Organization(models.Model):
     # Helper method to return all users in this organization
     @property
     def users(self):
-
         patient_user_ids = (
             PatientOrganization.objects.filter(organization=self)
             .select_related("patient__jhe_user")
@@ -501,7 +498,6 @@ class Patient(models.Model):
 
     @staticmethod
     def for_study(jhe_user_id, study_id):
-
         q = """
             SELECT core_patient.*
             FROM core_patient
@@ -531,7 +527,7 @@ class Patient(models.Model):
         # Explicitly cast to ints so no injection vulnerability
         study_sql_where = ""
         if study_id:
-            study_sql_where = "AND core_studypatient.study_id={study_id}".format(study_id=int(study_id))
+            study_sql_where = f"AND core_studypatient.study_id={int(study_id)}"
 
         patient_identifier_value_sql_where = ""
         if patient_identifier_value:
@@ -721,13 +717,12 @@ class Study(models.Model):
 
     @staticmethod
     def studies_with_scopes(patient_id, pending=False):
-
         sql_scope_code = "NOT NULL"
         if pending:
             sql_scope_code = "NULL"
 
         # noqa
-        q = """
+        q = f"""
             SELECT
                 core_study.id,
                 core_studyscoperequest.scope_code_id as scope_code_id,
@@ -743,7 +738,7 @@ class Study(models.Model):
           LEFT JOIN core_studypatientscopeconsent ON core_studypatientscopeconsent.study_patient_id=core_studypatient.id
                 AND core_studypatientscopeconsent.scope_code_id=core_studyscoperequest.scope_code_id
   WHERE core_studypatientscopeconsent.scope_code_id IS {sql_scope_code} AND core_studypatient.patient_id=%(patient_id)s;
-            """.format(sql_scope_code=sql_scope_code)
+            """
 
         studies_with_scopes = Study.objects.raw(q, {"patient_id": patient_id, "sql_scope_code": sql_scope_code})
 
@@ -807,7 +802,6 @@ class StudyPatientScopeConsent(models.Model):
 
     @staticmethod
     def patient_scopes(jhe_user_id):
-
         q = """
             SELECT DISTINCT core_codeableconcept.* FROM core_codeableconcept
             JOIN core_studypatientscopeconsent ON core_studypatientscopeconsent.scope_code_id=core_codeableconcept.id
@@ -854,23 +848,22 @@ class DataSource(models.Model):
     # this will never be large
     @staticmethod
     def data_sources_with_scopes(data_source_id=None, study_id=None):
-
         # Explicitly cast to ints so no injection vulnerability
         sql_where = ""
         sql_join = ""
         if data_source_id:
-            sql_where = "WHERE core_datasource.id={data_source_id}".format(data_source_id=int(data_source_id))
+            sql_where = f"WHERE core_datasource.id={int(data_source_id)}"
         elif study_id:
             sql_join = "JOIN core_studydatasource ON core_studydatasource.data_source_id=core_datasource.id"
-            sql_where = "WHERE core_studydatasource.study_id={study_id}".format(study_id=int(study_id))
+            sql_where = f"WHERE core_studydatasource.study_id={int(study_id)}"
 
-        q = """
+        q = f"""
             SELECT core_datasource.*
             FROM core_datasource
             {sql_join}
             {sql_where}
             ORDER BY core_datasource.name
-            """.format(sql_join=sql_join, sql_where=sql_where)
+            """
 
         data_sources = DataSource.objects.raw(q)
 
@@ -975,30 +968,26 @@ class Observation(models.Model):
         # Explicitly cast to ints so no injection vulnerability
         organization_sql_where = ""
         if organization_id:
-            organization_sql_where = "AND core_organization.id={organization_id}".format(
-                organization_id=int(organization_id)
-            )
+            organization_sql_where = f"AND core_organization.id={int(organization_id)}"
 
         study_sql_where = ""
         study_scope_join = ""
         study_scope_where = ""
         if study_id:
-            study_sql_where = "AND core_study.id={study_id}".format(study_id=int(study_id))
+            study_sql_where = f"AND core_study.id={int(study_id)}"
             study_scope_join = "JOIN core_studyscoperequest ON core_studyscoperequest.study_id=core_study.id"
             study_scope_where = "AND core_observation.codeable_concept_id=core_studyscoperequest.scope_code_id"
 
         patient_id_sql_where = ""
         if patient_id:
-            patient_id_sql_where = "AND core_patient.id={patient_id}".format(patient_id=int(patient_id))
+            patient_id_sql_where = f"AND core_patient.id={int(patient_id)}"
 
         observation_sql_where = ""
         if observation_id:
-            observation_sql_where = "AND core_observation.id={observation_id}".format(
-                observation_id=int(observation_id)
-            )
+            observation_sql_where = f"AND core_observation.id={int(observation_id)}"
 
         # noqa
-        q = """
+        q = f"""
         SELECT DISTINCT(core_observation.*),
         core_observation.value_attachment_data as value_attachment_data_json,
         core_codeableconcept.coding_system as coding_system,
@@ -1024,14 +1013,7 @@ class Observation(models.Model):
         {patient_id_sql_where}
         {observation_sql_where}
         ORDER BY core_observation.last_updated DESC
-        """.format(
-            organization_sql_where=organization_sql_where,
-            study_sql_where=study_sql_where,
-            study_scope_join=study_scope_join,
-            study_scope_where=study_scope_where,
-            patient_id_sql_where=patient_id_sql_where,
-            observation_sql_where=observation_sql_where,
-        )
+        """
 
         practitioner = get_object_or_404(Practitioner, jhe_user_id=jhe_user_id)
         practitioner_id = practitioner.id
@@ -1070,13 +1052,13 @@ class Observation(models.Model):
         study_scope_join = ""
         study_scope_where = ""
         if study_id:
-            study_sql_where = "AND core_study.id={study_id}".format(study_id=int(study_id))
+            study_sql_where = f"AND core_study.id={int(study_id)}"
             study_scope_join = "JOIN core_studyscoperequest ON core_studyscoperequest.study_id=core_study.id"
             study_scope_where = "AND core_observation.codeable_concept_id=core_studyscoperequest.scope_code_id"
 
         patient_id_sql_where = ""
         if patient_id:
-            patient_id_sql_where = "AND core_patient.id={patient_id}".format(patient_id=int(patient_id))
+            patient_id_sql_where = f"AND core_patient.id={int(patient_id)}"
 
         patient_identifier_value_sql_where = ""
         if patient_identifier_value:
@@ -1084,9 +1066,7 @@ class Observation(models.Model):
 
         observation_sql_where = ""
         if observation_id:
-            observation_sql_where = "AND core_observation.id={observation_id}".format(
-                observation_id=int(observation_id)
-            )
+            observation_sql_where = f"AND core_observation.id={int(observation_id)}"
 
         # TBD: Query optimization: https://stackoverflow.com/a/6037376
         # pagination: https://github.com/mattbuck85/django-paginator-rawqueryset
@@ -1171,7 +1151,6 @@ class Observation(models.Model):
     # base64 it eg https://cryptii.com/pipes/binary-to-base64
     @staticmethod
     def fhir_create(data, user):
-
         # Validate Structure
         fhir_observation = None
         try:
@@ -1193,11 +1172,7 @@ class Observation(models.Model):
         try:
             subject_patient = Patient.objects.get(pk=subject_patient_id)
         except Patient.DoesNotExist:
-            raise (
-                BadRequest(
-                    "Patient id={subject_patient_id} can not be found.".format(subject_patient_id=subject_patient_id)
-                )
-            )  # TBD: move to view
+            raise (BadRequest(f"Patient id={subject_patient_id} can not be found."))  # TBD: move to view
 
         if user.is_practitioner():
             if not subject_patient.practitioner_authorized(user.pk, subject_patient.id):
@@ -1217,9 +1192,7 @@ class Observation(models.Model):
                 existing_ids = ObservationIdentifier.objects.filter(system=identifier.system, value=identifier.value)
                 if len(existing_ids) > 0:
                     raise IntegrityError(
-                        "Identifier already exists: system={system} value={value}".format(
-                            system=identifier.system, value=identifier.value
-                        )
+                        f"Identifier already exists: system={identifier.system} value={identifier.value}"
                     )
 
         # Check Device
@@ -1236,9 +1209,7 @@ class Observation(models.Model):
         try:
             data_source = DataSource.objects.get((Q(type="personal_device") | Q(type="device")), id=device_id)
         except DataSource.DoesNotExist:
-            raise (
-                BadRequest("Device Data Source id={device_id} can not be found.".format(device_id=device_id))
-            )  # TBD: move to view
+            raise (BadRequest(f"Device Data Source id={device_id} can not be found."))  # TBD: move to view
 
         # Check Scope
         if len(fhir_observation.code.coding) == 0 or len(fhir_observation.code.coding) > 1:
@@ -1251,19 +1222,13 @@ class Observation(models.Model):
 
         if len(codeable_concepts) == 0:
             raise BadRequest(
-                "Code not found: system={system} code={code}".format(
-                    system=fhir_observation.code.coding[0].system,
-                    code=fhir_observation.code.coding[0].code,
-                )  # TBD: move to view
+                f"Code not found: system={fhir_observation.code.coding[0].system} code={fhir_observation.code.coding[0].code}"  # TBD: move to view
             )
 
         if codeable_concepts[0].id not in [scope.id for scope in user_patient.consolidated_consented_scopes()]:
             raise PermissionDenied(
-                "Observation data with coding_system={coding_system} coding_code={coding_code} has not been consented"
-                " for any studies by this Patient.".format(
-                    coding_system=codeable_concepts[0].coding_system,
-                    coding_code=codeable_concepts[0].coding_code,
-                )
+                f"Observation data with coding_system={codeable_concepts[0].coding_system} coding_code={codeable_concepts[0].coding_code} has not been consented"
+                " for any studies by this Patient."
             )
 
         try:
@@ -1352,7 +1317,6 @@ class ObservationIdentifier(models.Model):
 
 
 class JheSetting(models.Model):
-
     JHE_SETTING_VALUE_TYPES = {
         "string": "string",
         "int": "int",

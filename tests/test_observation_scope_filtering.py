@@ -12,8 +12,6 @@ observations across study groups.
 
 import pytest
 from django.core.management import call_command
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 
 from core.models import JheUser, Observation, Organization, PractitionerOrganization
 
@@ -437,6 +435,6 @@ class TestSeedNoDuplicateObservations:
             subject_patient__in=berkeley_patients,
             codeable_concept__in=ucsf_only_codes,
         )
-        assert (
-            cross_contaminated.count() == 0
-        ), f"Bug 1 regression: Berkeley patients have UCSF observations: {list(cross_contaminated.values_list('subject_patient__jhe_user__email', 'codeable_concept__coding_code'))}"
+        assert cross_contaminated.count() == 0, (
+            f"Bug 1 regression: Berkeley patients have UCSF observations: {list(cross_contaminated.values_list('subject_patient__jhe_user__email', 'codeable_concept__coding_code'))}"
+        )

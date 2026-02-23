@@ -2,9 +2,10 @@ import json
 
 import humps
 from django.core.exceptions import BadRequest
-from rest_framework import serializers
 from fhir.resources.observation import Observation as FHIRObservation
 from fhir.resources.patient import Patient as FHIRPatient
+from oauth2_provider.models import get_application_model
+from rest_framework import serializers
 
 from core.models import (
     ClientDataSource,
@@ -12,20 +13,18 @@ from core.models import (
     DataSource,
     DataSourceSupportedScope,
     JheSetting,
+    JheUser,
     Observation,
     Organization,
-    JheUser,
     Patient,
+    PractitionerOrganization,
     Study,
     StudyClient,
     StudyDataSource,
     StudyPatient,
     StudyPatientScopeConsent,
     StudyScopeRequest,
-    PractitionerOrganization,
 )
-
-from oauth2_provider.models import get_application_model
 
 
 class PractitionerOrganizationSerializer(serializers.ModelSerializer):
@@ -47,7 +46,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         self.fields["children"] = OrganizationSerializer(many=True, read_only=True)
-        return super(OrganizationSerializer, self).to_representation(instance)
+        return super().to_representation(instance)
 
     class Meta:
         model = Organization
@@ -69,7 +68,6 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
 
 class OrganizationWithoutLineageSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Organization
         fields = ["id", "name", "type"]
@@ -90,7 +88,6 @@ class OrganizationUsersSerializer(serializers.ModelSerializer):
 
 
 class PatientSerializer(serializers.ModelSerializer):
-
     telecom_email = serializers.SerializerMethodField()
     organizations = serializers.SerializerMethodField()
 
@@ -120,7 +117,6 @@ class PatientSerializer(serializers.ModelSerializer):
 
 
 class PractitionerSerializer(serializers.ModelSerializer):
-
     telecom_email = serializers.SerializerMethodField()
     organizations = serializers.SerializerMethodField()
 
@@ -165,7 +161,6 @@ class PatientProfileSerializer(serializers.ModelSerializer):
 
 
 class JheUserSerializer(serializers.ModelSerializer):
-
     patient = PatientSerializer(many=False, read_only=True)
 
     class Meta:
@@ -184,14 +179,12 @@ class JheUserPatientProfileSerializer(serializers.ModelSerializer):
 
 
 class StudySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Study
         fields = ["id", "name", "description", "organization", "icon_url"]
 
 
 class StudyOrganizationSerializer(serializers.ModelSerializer):
-
     organization = OrganizationWithoutLineageSerializer(many=False, read_only=True)
 
     class Meta:
@@ -200,7 +193,6 @@ class StudyOrganizationSerializer(serializers.ModelSerializer):
 
 
 class StudyPatientSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = StudyPatient
         fields = ["id", "study", "patient"]
@@ -208,7 +200,6 @@ class StudyPatientSerializer(serializers.ModelSerializer):
 
 
 class StudyScopeRequestSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = StudyScopeRequest
         fields = ["id", "study", "scope_code"]
@@ -216,7 +207,6 @@ class StudyScopeRequestSerializer(serializers.ModelSerializer):
 
 
 class StudyPatientScopeConsentSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = StudyPatientScopeConsent
         fields = ["id", "study_patient", "scope_code", "consented", "consented_time"]
@@ -224,14 +214,12 @@ class StudyPatientScopeConsentSerializer(serializers.ModelSerializer):
 
 
 class CodeableConceptSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = CodeableConcept
         fields = ["id", "coding_system", "coding_code", "text"]
 
 
 class DataSourceSerializer(serializers.ModelSerializer):
-
     supported_scopes = CodeableConceptSerializer(many=True, read_only=True)
 
     class Meta:
@@ -245,7 +233,6 @@ Application = get_application_model()
 # !!! NB: weird stuff is going on here with how djangorestframework-camel-case selectively transforms some fields but not all
 # Do not make any changes without manual testing
 class ClientSerializer(serializers.ModelSerializer):
-
     clientId = serializers.CharField(source="client_id", required=False)
     invitationUrl = serializers.CharField(
         source="invitation_url", required=False, allow_blank=True, allow_null=True, write_only=True
@@ -338,7 +325,6 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class ClientDataSourceSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ClientDataSource
         fields = ["id", "client_id", "data_source_id"]
@@ -346,7 +332,6 @@ class ClientDataSourceSerializer(serializers.ModelSerializer):
 
 
 class StudyClientSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = StudyClient
         fields = ["id", "study", "client"]
@@ -354,7 +339,6 @@ class StudyClientSerializer(serializers.ModelSerializer):
 
 
 class DataSourceSupportedScopeSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = DataSourceSupportedScope
         fields = ["id", "data_source", "scope_code"]
@@ -362,7 +346,6 @@ class DataSourceSupportedScopeSerializer(serializers.ModelSerializer):
 
 
 class StudyDataSourceSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = StudyDataSource
         fields = ["id", "study", "data_source"]
@@ -370,7 +353,6 @@ class StudyDataSourceSerializer(serializers.ModelSerializer):
 
 
 class StudyPendingConsentsSerializer(serializers.ModelSerializer):
-
     organization = OrganizationWithoutLineageSerializer(many=False, read_only=True)
     data_sources = DataSourceSerializer(many=True, read_only=True)
     pending_scope_consents = serializers.JSONField()
@@ -388,7 +370,6 @@ class StudyPendingConsentsSerializer(serializers.ModelSerializer):
 
 
 class StudyConsentsSerializer(serializers.ModelSerializer):
-
     organization = OrganizationWithoutLineageSerializer(many=False, read_only=True)
     data_sources = DataSourceSerializer(many=True, read_only=True)
     scope_consents = serializers.JSONField()
@@ -406,7 +387,6 @@ class StudyConsentsSerializer(serializers.ModelSerializer):
 
 
 class ObservationSerializer(serializers.ModelSerializer):
-
     patient_name_family = serializers.CharField()
     patient_name_given = serializers.CharField()
     coding_system = serializers.CharField()
@@ -430,7 +410,6 @@ class ObservationSerializer(serializers.ModelSerializer):
 
 
 class ObservationWithoutDataSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Observation
         fields = ["id", "subject_patient", "codeable_concept", "last_updated"]
@@ -497,7 +476,6 @@ class JheSettingSerializer(serializers.ModelSerializer):
 
 
 class FHIRObservationSerializer(serializers.ModelSerializer):
-
     # top-level fields not in table
     resource_type = serializers.CharField()
     id = serializers.CharField()  # cast as string as per spec
@@ -545,7 +523,6 @@ class FHIRBundledObservationSerializer(serializers.Serializer):
 
 
 class FHIRPatientSerializer(serializers.ModelSerializer):
-
     # top-level fields not in table
     resource_type = serializers.CharField()
     id = serializers.CharField()  # cast as string as per spec

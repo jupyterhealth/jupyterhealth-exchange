@@ -1,32 +1,32 @@
-from datetime import datetime
 import inspect
+from datetime import datetime
 
 from django.core.mail import EmailMessage
+from django.db.models import OuterRef, Prefetch, Subquery
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
+from oauth2_provider.models import Grant, get_application_model
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError, PermissionDenied, APIException
+from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from oauth2_provider.models import Grant, get_application_model
-from django.db.models import Prefetch, OuterRef, Subquery
 
 from core.admin_pagination import CustomPageNumberPagination
 from core.fhir_pagination import FHIRBundlePagination
 from core.models import (
+    CodeableConcept,
     JheSetting,
     JheUser,
-    CodeableConcept,
-    Patient,
-    StudyPatient,
-    StudyPatientScopeConsent,
-    Study,
-    Organization,
-    PatientOrganization,
     Observation,
+    Organization,
+    Patient,
+    PatientOrganization,
     Practitioner,
     PractitionerOrganization,
+    Study,
+    StudyPatient,
+    StudyPatientScopeConsent,
 )
 from core.permissions import IfUserCan
 from core.serializers import (
@@ -34,9 +34,9 @@ from core.serializers import (
     CodeableConceptSerializer,
     FHIRBundledPatientSerializer,
     PatientSerializer,
-    StudyPendingConsentsSerializer,
     StudyConsentsSerializer,
     StudyPatientScopeConsentSerializer,
+    StudyPendingConsentsSerializer,
 )
 
 
@@ -280,7 +280,6 @@ class PatientViewSet(ModelViewSet):
                         raise PermissionDenied("Only Patient users can update their own consents.")
 
                 for scope_consent in study_scope_consent["scope_consents"]:
-
                     scope_coding_system = scope_consent["coding_system"]
                     scope_coding_code = scope_consent["coding_code"]
                     scope_code_id = CodeableConcept.objects.get(
@@ -322,7 +321,6 @@ class FHIRPatientViewSet(ModelViewSet):
     pagination_class = FHIRBundlePagination
 
     def get_queryset(self):
-
         patient_identifier_system_and_value = self.request.GET.get("identifier", None)
 
         # GET /Patient?_has:Group:member:_id=<group-id>

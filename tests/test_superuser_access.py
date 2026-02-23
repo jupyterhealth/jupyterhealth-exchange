@@ -15,7 +15,7 @@ Test categories:
 import pytest
 from rest_framework.test import APIClient
 
-from core.models import JheSetting, JheUser, Practitioner
+from core.models import JheSetting
 from core.permissions import IsSuperUser
 
 SETTINGS_URL = "/api/v1/jhe_settings"
@@ -99,6 +99,7 @@ class TestIsSuperUserPermissionUnit:
 
     def test_anonymous_is_denied(self):
         from unittest.mock import MagicMock
+
         from django.contrib.auth.models import AnonymousUser
 
         perm = IsSuperUser()
