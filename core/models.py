@@ -280,7 +280,7 @@ class JheUser(AbstractUser):
             code=authorization_code,
             expires=timezone.now() + timedelta(seconds=settings.PATIENT_AUTHORIZATION_CODE_EXPIRE_SECONDS),
             redirect_uri=get_setting("site.url", settings.SITE_URL) + settings.OAUTH2_CALLBACK_PATH,
-            scope="openid",
+            scope="openid email",
             # https://github.com/oauthlib/oauthlib/blob/f9a07c6c07d0ddac255dd322ef5fc54a7a46366d/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L18
             code_challenge=base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest())
             .rstrip(b"=")
@@ -474,7 +474,11 @@ class Patient(models.Model):
     @staticmethod
     def construct_invitation_link(invitation_url, client_id, auth_code, code_verifier):
         site_url = get_setting("site.url", settings.SITE_URL)
-        invitation_code = f"{urlparse(site_url).hostname}~{client_id}~{auth_code}~{code_verifier}"
+        # Use netloc (host:port) instead of hostname (host only) so the
+        # consuming app can reach JHE on non-standard ports (e.g. localhost:8000).
+        parsed = urlparse(site_url)
+        host = parsed.netloc or parsed.hostname
+        invitation_code = f"{host}~{client_id}~{auth_code}~{code_verifier}"
         return invitation_url.replace("CODE", invitation_code)
 
     @staticmethod

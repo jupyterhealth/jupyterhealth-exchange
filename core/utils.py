@@ -166,3 +166,4 @@ def get_or_create_user(user: dict[str, Any]) -> tuple[bool, User]:
         target_user.groups.set(groups)
 
     return (created, target_user)
+

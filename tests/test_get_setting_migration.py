@@ -229,6 +229,55 @@ class ConstructInvitationLinkTests(TestCase):
         )
         self.assertIn("env-fallback.example.com", result)
 
+    @patch(GET_SETTING_MODELS, return_value="http://localhost:8000")
+    def test_preserves_port_in_hostname(self, mock_gs):
+        """Regression: netloc must include port so PGD Sync can reach JHE on non-standard ports."""
+        result = Patient.construct_invitation_link(
+            invitation_url="https://app.example.com?code=CODE",
+            client_id="c1",
+            auth_code="a1",
+            code_verifier="v1",
+        )
+        # Must contain localhost:8000 (not just localhost)
+        self.assertIn("localhost:8000", result)
+
+    @patch(GET_SETTING_MODELS, return_value="https://jhe.production.org")
+    def test_production_url_no_port(self, mock_gs):
+        """Accuracy: production URLs without explicit port use netloc = hostname."""
+        result = Patient.construct_invitation_link(
+            invitation_url="https://app.example.com?code=CODE",
+            client_id="c1",
+            auth_code="a1",
+            code_verifier="v1",
+        )
+        self.assertIn("jhe.production.org", result)
+        # Should be tilde-delimited
+        self.assertIn("~c1~a1~v1", result)
+
+    @patch(GET_SETTING_MODELS, return_value="http://127.0.0.1:9000")
+    def test_preserves_non_standard_port(self, mock_gs):
+        """Regression: non-standard ports like 9000 must be preserved."""
+        result = Patient.construct_invitation_link(
+            invitation_url="https://app.example.com?code=CODE",
+            client_id="c1",
+            auth_code="a1",
+            code_verifier="v1",
+        )
+        self.assertIn("127.0.0.1:9000", result)
+
+    @patch(GET_SETTING_MODELS, return_value="http://localhost:8000")
+    def test_tilde_delimited_format(self, mock_gs):
+        """Accuracy: output must be tilde-delimited: host~client_id~auth_code~code_verifier."""
+        result = Patient.construct_invitation_link(
+            invitation_url="https://app.example.com?code=CODE",
+            client_id="clientX",
+            auth_code="authY",
+            code_verifier="verifierZ",
+        )
+        # The CODE placeholder should be replaced with the tilde-delimited string
+        self.assertNotIn("CODE", result)
+        self.assertIn("localhost:8000~clientX~authY~verifierZ", result)
+
 
 class SendEmailVerificationTests(TestCase):
     """Regression: send_email_verificaion must use get_setting for site_url."""

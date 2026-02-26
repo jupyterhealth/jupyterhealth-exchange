@@ -208,7 +208,11 @@ LOGIN_URL = "/accounts/login/"
 OAUTH2_PROVIDER = {
     "OIDC_ENABLED": True,
     "OIDC_RSA_PRIVATE_KEY": os.getenv("OIDC_RSA_PRIVATE_KEY"),
-    "SCOPES": {"openid": "OpenID Connect scope"},
+    "SCOPES": {
+        "openid": "OpenID Connect scope",
+        "email": "Email address",
+    },
+    "OAUTH2_VALIDATOR_CLASS": "core.oauth2_validators.JheOAuth2Validator",
     "ACCESS_TOKEN_EXPIRE_SECONDS": 1209600,  # 2 weeks
 }
 OAUTH2_PROVIDER_APPLICATION_MODEL = "oauth2_provider.Application"
