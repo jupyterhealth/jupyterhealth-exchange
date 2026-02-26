@@ -100,6 +100,34 @@ class FHIRObservationViewSet(ModelViewSet):
             logger.error(f"error in creating observation: {e}")
             return Response(FHIRBase.error_outcome(str(e)), status=status.HTTP_400_BAD_REQUEST)
 
+        # Patients don't have Practitioner records, so fhir_search (which
+        # requires a Practitioner) would 404.  For the create response we only
+        # need the single observation we just persisted.  FHIRObservation-
+        # Serializer expects SQL-computed JSON annotations (meta, identifier,
+        # subject, code, value_attachment) that only fhir_search provides, so
+        # build a minimal FHIR-compliant response for the patient path.
+        if request.user.is_patient():
+            obs = Observation.objects.select_related(
+                "subject_patient",
+                "codeable_concept",
+            ).get(pk=observation.id)
+            data = {
+                "resourceType": "Observation",
+                "id": str(obs.id),
+                "status": "final",
+                "meta": {"lastUpdated": obs.last_updated.isoformat() if obs.last_updated else None},
+                "subject": {"reference": f"Patient/{obs.subject_patient_id}"},
+                "code": {
+                    "coding": [
+                        {
+                            "system": obs.codeable_concept.coding_system,
+                            "code": obs.codeable_concept.coding_code,
+                        }
+                    ]
+                },
+            }
+            return Response(data, status=status.HTTP_201_CREATED)
+
         fhir_observation = Observation.fhir_search(
             self.request.user.id, None, None, None, None, None, None, observation.id
         )[0]

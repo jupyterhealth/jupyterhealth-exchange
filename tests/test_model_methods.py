@@ -63,7 +63,7 @@ class JheUserMethodTests(TestCase):
         self.assertIsNotNone(code_instance)
         # redirect_uri is now built from get_setting("site.url") + OAUTH2_CALLBACK_PATH
         self.assertIn("/auth/callback", code_instance.redirect_uri)
-        self.assertEqual(code_instance.scope, "openid")
+        self.assertEqual(code_instance.scope, "openid email")
         self.assertTrue(bool(code_instance.code))  # Code should not be empty
 
 
