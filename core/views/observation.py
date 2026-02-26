@@ -108,7 +108,8 @@ class FHIRObservationViewSet(ModelViewSet):
         # build a minimal FHIR-compliant response for the patient path.
         if request.user.is_patient():
             obs = Observation.objects.select_related(
-                "subject_patient", "codeable_concept",
+                "subject_patient",
+                "codeable_concept",
             ).get(pk=observation.id)
             data = {
                 "resourceType": "Observation",
@@ -117,10 +118,12 @@ class FHIRObservationViewSet(ModelViewSet):
                 "meta": {"lastUpdated": obs.last_updated.isoformat() if obs.last_updated else None},
                 "subject": {"reference": f"Patient/{obs.subject_patient_id}"},
                 "code": {
-                    "coding": [{
-                        "system": obs.codeable_concept.coding_system,
-                        "code": obs.codeable_concept.coding_code,
-                    }]
+                    "coding": [
+                        {
+                            "system": obs.codeable_concept.coding_system,
+                            "code": obs.codeable_concept.coding_code,
+                        }
+                    ]
                 },
             }
             return Response(data, status=status.HTTP_201_CREATED)
