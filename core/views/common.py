@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.views import LoginView as BaseLoginView
-from django.http import HttpRequest, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.template import TemplateDoesNotExist
 from django.utils.encoding import force_str
@@ -42,6 +42,11 @@ from ..tokens import account_activation_token
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
+
+
+def health(request):
+    """Lightweight liveness probe — no DB, no auth."""
+    return JsonResponse({"status": "ok", "version": settings.JHE_VERSION})
 
 
 def home(request):

@@ -1,0 +1,47 @@
+name: Smoke Tests (on-demand)
+
+on:
+  workflow_dispatch:
+    inputs:
+      smoke_url:
+        description: "Base URL of the JHE instance to test (e.g. https://jhe.fly.dev)"
+        required: true
+        type: string
+      python_version:
+        description: "Python version to use"
+        required: false
+        default: "3.12"
+        type: string
+
+jobs:
+  smoke-test:
+    name: "Smoke → ${{ inputs.smoke_url }}"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up Python ${{ inputs.python_version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ inputs.python_version }}
+
+    - name: Install test dependencies
+      run: pip install pytest requests
+
+    - name: Wait for instance to wake up
+      run: |
+        echo "Pinging ${{ inputs.smoke_url }}/health to warm up the instance..."
+        curl -sf --retry 3 --retry-delay 5 --max-time 30 \
+          "${{ inputs.smoke_url }}/health" || echo "Warm-up ping failed (may cold-start during tests)"
+
+    - name: Run smoke tests
+      run: |
+        pytest tests/test_smoke.py \
+          --smoke-url=${{ inputs.smoke_url }} \
+          -m smoke \
+          -v \
+          --tb=short \
+          --no-header \
+          -p no:cacheprovider \
+          --override-ini="addopts=" \
+          --override-ini="DJANGO_SETTINGS_MODULE="
