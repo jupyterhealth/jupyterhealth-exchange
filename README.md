@@ -4,13 +4,17 @@ JupyterHealth Exchange is a Django web application that facilitates sharing pati
 
 Researchers create studies and recruit patients, who consent and submit observations via client applications, and the data is then stored in JupyterHealth Exchange and queried by researchers using Jupyter Notebooks or other systems.
 
-<img src="doc/jupyterhealth-exchange-user_flow.jpg" height="400">
+<p align="center">
+	<img src="doc/jupyterhealth-exchange-user_flow.jpg" height="400">
+</p>
 
 **Typical Data Flow**
 
 Users manage the system via the Web UI, and data producers receive invitation credentials by email, manage consents through the Admin API, and upload data to JupyterHealth Exchange using the FHIR API. Data consumers such as Jupyter Notebooks or other systems then query and download the data through REST and MCP APIs.
 
-<img src="doc/jupyterhealth-exchange-data_flow.jpg" height="400">
+<p align="center">
+	<img src="doc/jupyterhealth-exchange-data_flow.jpg" height="400">
+</p>
 
 Features include:
 
