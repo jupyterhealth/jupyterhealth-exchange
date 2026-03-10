@@ -81,9 +81,7 @@ Browse to `/admin` → **Core → Jhe settings** and create the following record
 | `site.ui.title` | string | `JupyterHealth Exchange` | Displayed in the UI header |
 | `site.time_zone` | string | `America/Los_Angeles` | Used for date display |
 | `site.registration_invite_code` | string | *(your invite code)* | Code given to new users to register |
-| `site.secret_key` | string | *(random 50+ chars)* | Used for CSRF/session signing; generate with `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"` |
 | `auth.default_orgs` | string | e.g. `20001:viewer;20002:manager` | Semicolon-separated `org_id:role` pairs assigned to new users on registration |
-| `auth.private_key` | string | *(RSA PEM)* | OIDC signing key; generate per [django-oauth-toolkit docs](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#creating-rsa-private-key) |
 | `auth.sso.saml2` | int | `0` | Set to `1` to enable SAML SSO |
 | `auth.sso.idp_metadata_url` | string | `""` | SAML IdP metadata URL (if SSO enabled) |
 | `auth.sso.valid_domains` | string | `""` | Comma-separated email domains for SSO |
@@ -96,8 +94,6 @@ from core.models import JheSetting
 settings_to_create = [
     ("site.url", "string", "https://your-domain.fly.dev"),
     ("site.registration_invite_code", "string", "your-invite-code"),
-    ("site.secret_key", "string", "generate-a-random-value"),
-    ("auth.private_key", "string", "-----BEGIN RSA PRIVATE KEY-----\n..."),
     ("auth.default_orgs", "string", ""),
 ]
 
@@ -159,7 +155,7 @@ If you are integrating with CommonHealth or another patient-facing app, the PKCE
 | Variable | Notes |
 |----------|-------|
 | `OIDC_RSA_PRIVATE_KEY` | Still read from env as fallback; prefer migrating to `JheSetting` `auth.private_key` |
-| `SECRET_KEY` | Still read from env as fallback; prefer migrating to `JheSetting` `site.secret_key` |
+| `SECRET_KEY` | Still read from env as fallback; used for bootstrappping can not be migrated |
 | `DB_*` | Database connection — unchanged |
 | `SMTP_*` | Email config — unchanged |
 | `ALLOWED_HOSTS` | **New in v0.0.9** — comma-separated hostnames (defaults to `["*"]`) |
