@@ -343,10 +343,9 @@ class Command(BaseCommand):
                 value_attachment_data=generate_observation_value_attachment_data(consent.scope_code.coding_code),
             )
 
-    def seed_oauth_application(self, name="JHE Dev"):
+    def seed_oauth_application(self, name="JHE Admin UI"):
         application = get_application_model()
         application.objects.create(
-            id=1,
             redirect_uris=settings.SITE_URL + settings.OAUTH2_CALLBACK_PATH,
             client_type="public",
             authorization_grant_type="authorization-code",

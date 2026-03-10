@@ -14,7 +14,6 @@ window.OIDCSettings = {
 
 const CONSTANTS = {
   JHE_VERSION: "{{ JHE_VERSION }}",
-  client_id: "{{ OIDC_CLIENT_ID }}",
   ORGANIZATION_TOP_LEVEL_PART_OF_ID: 0,
   ORGANIZATION_TOP_LEVEL_PART_OF_LABEL: "None (Top Level Organization)",
   ORGANIZATION_TYPES: {{ ORGANIZATION_TYPES }},
