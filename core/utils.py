@@ -3,7 +3,7 @@ import json
 import random
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any
 from uuid import uuid4
 
 from dictor import dictor  # type: ignore
@@ -15,7 +15,7 @@ from django_saml2_auth.errors import (
     SHOULD_NOT_CREATE_USER,
 )
 from django_saml2_auth.exceptions import SAMLAuthError
-from django_saml2_auth.user import get_user, get_user_id, create_new_user
+from django_saml2_auth.user import create_new_user, get_user, get_user_id
 from django_saml2_auth.utils import run_hook
 from jsonschema import validators
 from referencing import Registry, Resource
@@ -84,7 +84,7 @@ def generate_observation_value_attachment_data(coding_code):
     return placeholder
 
 
-def get_or_create_user(user: Dict[str, Any]) -> Tuple[bool, User]:
+def get_or_create_user(user: dict[str, Any]) -> tuple[bool, User]:
     """Get or create a new user and optionally add it to one or more group(s)
 
     Args:

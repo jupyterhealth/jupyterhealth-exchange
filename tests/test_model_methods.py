@@ -1,31 +1,30 @@
-import json
 import base64
+import json
 
+from django.core import mail
 from django.db import connection
-from django.conf import settings
+from django.db.models.query import RawQuerySet
 from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
-from django.core import mail
-from django.db.models.query import RawQuerySet
 from oauth2_provider.models import get_application_model
-from core.utils import generate_observation_value_attachment_data
 
 from core.models import (
+    CodeableConcept,
+    DataSource,
+    DataSourceSupportedScope,
     JheUser,
+    Observation,
     Organization,
     Patient,
-    CodeableConcept,
+    PatientOrganization,
+    Practitioner,
+    PractitionerOrganization,
     Study,
     StudyPatient,
     StudyPatientScopeConsent,
-    DataSource,
-    DataSourceSupportedScope,
-    Observation,
-    Practitioner,
-    PractitionerOrganization,
-    PatientOrganization,
 )
+from core.utils import generate_observation_value_attachment_data
 
 
 # -----------------------------------------------------
@@ -59,10 +58,11 @@ class JheUserMethodTests(TestCase):
 
     def test_create_authorization_code(self):
         # Use the application created in setUp
-        redirect_uri = settings.SITE_URL + "/auth/callback"
+        redirect_uri = "http://example.com/redirect"
         code_instance = self.user.create_authorization_code(self.application.id, redirect_uri)
         self.assertIsNotNone(code_instance)
-        self.assertEqual(code_instance.redirect_uri, redirect_uri)
+        # redirect_uri is now built from get_setting("site.url") + OAUTH2_CALLBACK_PATH
+        self.assertIn("/auth/callback", code_instance.redirect_uri)
         self.assertEqual(code_instance.scope, "openid")
         self.assertTrue(bool(code_instance.code))  # Code should not be empty
 

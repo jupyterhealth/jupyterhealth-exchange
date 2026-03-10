@@ -2,12 +2,12 @@ import pytest
 from rest_framework.test import APIClient
 
 from core.models import (
+    Organization,
     Patient,
     StudyPatientScopeConsent,
-    Organization,
 )
 
-from .utils import add_patients, add_patient_to_study, Code, fetch_paginated
+from .utils import Code, add_patient_to_study, add_patients, fetch_paginated
 
 
 def test_patient_practitioner_can_update_own_consents(hr_study):

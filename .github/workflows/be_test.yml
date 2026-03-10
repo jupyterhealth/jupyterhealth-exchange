@@ -31,6 +31,7 @@ jobs:
           --health-retries 5
 
     env:
+
       REGISTRATION_INVITE_CODE: "jhe"
       SITE_URL: "http://localhost:8000"
       DB_NAME: "test_jhe_dev"

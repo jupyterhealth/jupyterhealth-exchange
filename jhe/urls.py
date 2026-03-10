@@ -15,11 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+import django_saml2_auth.views
 from django.contrib import admin
 from django.contrib.auth import views as auth_views  # noqa
-from django.urls import path, include, re_path
-import django_saml2_auth.views
-
+from django.urls import include, path, re_path
 from drf_spectacular.views import SpectacularRedocView, SpectacularSwaggerView
 
 urlpatterns = [

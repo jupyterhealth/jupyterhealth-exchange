@@ -1,5 +1,4 @@
 from django.core.cache import cache
-from core.models import JheSetting
 
 DEFAULT_CACHE_TTL = 60  # seconds
 
@@ -10,6 +9,9 @@ def get_setting(key: str, default=None):
 
     if value is not None:
         return value
+
+    # Lazy import to avoid circular dependency with core.models
+    from core.models import JheSetting
 
     try:
         setting = JheSetting.objects.get(key=key)

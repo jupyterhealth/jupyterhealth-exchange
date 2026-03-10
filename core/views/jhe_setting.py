@@ -1,8 +1,10 @@
 import logging
 
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from core.models import JheSetting
+from core.permissions import IsSuperUser
 from core.serializers import (
     JheSettingSerializer,
 )
@@ -13,6 +15,7 @@ logger = logging.getLogger(__name__)
 class JheSettingViewSet(ModelViewSet):
     serializer_class = JheSettingSerializer
     queryset = JheSetting.objects.all()
+    permission_classes = [IsAuthenticated, IsSuperUser]
 
     # def get_permissions(self):
     #     """

@@ -1,6 +1,26 @@
-[tool.black]
-line-length = 120
-
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "jhe.test_settings"
 addopts = "--cov=core --cov=jhe"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+exclude = [
+    "core/data",
+    "core/migrations",
+]
+
+[tool.ruff.lint]
+select = [
+    "E9", # syntax
+    # too much lint
+    # "DJ", # pyflakes-django
+    "F", # pyflakes
+    "I", # isort
+    "UP", # pyupgrade
+]
+
+[tool.ruff.format]
+exclude = [
+    "migrations",
+]

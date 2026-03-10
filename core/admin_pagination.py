@@ -1,14 +1,13 @@
-from rest_framework.pagination import PageNumberPagination
-
 from django.db import connection
 from django.db.models import sql
 from django.db.models.query import RawQuerySet
+from rest_framework.pagination import PageNumberPagination
 
 
 # https://stackoverflow.com/questions/32191853/best-way-to-paginate-a-raw-sql-query-in-a-django-rest-listapi-view#:~:text=A%20more%20efficient%20solution%20than,in%20your%20raw%20SQL%20query
 class PaginatedRawQuerySet(RawQuerySet):
     def __init__(self, raw_query, **kwargs):
-        super(PaginatedRawQuerySet, self).__init__(raw_query, **kwargs)
+        super().__init__(raw_query, **kwargs)
         self.original_raw_query = raw_query
         self._count = None
 

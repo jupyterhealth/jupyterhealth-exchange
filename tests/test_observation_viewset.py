@@ -7,6 +7,7 @@ from django.test.utils import CaptureQueriesContext
 
 from core.models import JheUser, Organization
 from core.utils import generate_observation_value_attachment_data
+
 from .utils import (
     Code,
     add_observations,
@@ -191,9 +192,7 @@ def test_get_observation_by_study(api_client, patient, hr_study):
     assert len(observations) == 10
 
 
-@pytest.mark.xfail(reason="studies have access to all patient data if a patient is in the study")
 def test_get_observation_one_patient_two_studies(api_client, patient, hr_study):
-
     org2 = Organization.objects.create(
         name="org2",
         type="other",

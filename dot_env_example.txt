@@ -22,8 +22,3 @@ TIME_ZONE="America/Los_Angeles"
 REGISTRATION_INVITE_CODE="jhe"
 SSO_VALID_DOMAINS="example.com,example.org"
 IDENTITY_PROVIDER_METADATA_URL="https://mocksaml.com/api/saml/metadata"
-
-
-
-
-

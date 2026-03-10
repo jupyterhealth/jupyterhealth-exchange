@@ -5,6 +5,7 @@ export DB_USER="postgres"
 export DB_PASSWORD="postgres"
 export DB_HOST="localhost"
 export DB_PORT="5432"
+export SECRET_KEY="super-secret-key"
 export OIDC_RSA_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
 MIIJQQIBADANBgkqhkiG9w0BAQEFAASCCSswggknAgEAAoICAQC4FaxiLBy7ttiN
 yjgQRNGtLP9uvqcco0ieUNM+X+x5trTX90FldupRTX47s7QIKLpLPyQE5KBAx4Qz
@@ -57,5 +58,3 @@ z/HPpaGyn4YlcDJGsLiKqElqQBZcCgscxLvP0s7TaA7Py7d0Sg+BXkb/w37hojs7
 9612yTNicWsNYVmVJ6BYDN3yxuF1OxqtJaros5YvP7ZWxC9r0ldP6MFgdJKzU2pl
 w28cmsrmgsEJRLWSh8XG8C86JH67
 -----END PRIVATE KEY-----"
-
-export SECRET_KEY="super-secret-key"

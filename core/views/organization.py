@@ -8,15 +8,14 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from core.admin_pagination import CustomPageNumberPagination
-from core.models import JheUser
-from core.models import Organization, PractitionerOrganization, PatientOrganization
+from core.models import JheUser, Organization, PatientOrganization, PractitionerOrganization
 from core.permissions import IfUserCan
 from core.serializers import (
     OrganizationSerializer,
     OrganizationUsersSerializer,
-    StudySerializer,
-    PractitionerOrganizationSerializer,
     PatientOrganizationSerializer,
+    PractitionerOrganizationSerializer,
+    StudySerializer,
 )
 
 logger = logging.getLogger(__name__)

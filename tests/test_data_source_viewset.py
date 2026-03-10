@@ -2,7 +2,7 @@ import pytest
 
 from core.models import CodeableConcept
 
-from .utils import fetch_paginated, Code
+from .utils import Code, fetch_paginated
 
 
 def test_list_data_sources(api_client, device):

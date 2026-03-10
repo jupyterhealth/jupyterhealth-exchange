@@ -8,7 +8,7 @@ from rest_framework.viewsets import ModelViewSet
 from core.admin_pagination import CustomPageNumberPagination
 from core.models import JheUser, Organization
 from core.permissions import IsSelfUrlPath
-from core.serializers import JheUserSerializer, OrganizationSerializer
+from core.serializers import JheUserPatientProfileSerializer, JheUserSerializer, OrganizationSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +37,11 @@ class JheUserViewSet(ModelViewSet):
     def profile(self, request):
         user_with_patient = request.user
         user_with_patient.patient = request.user.get_patient
-        jhe_user_serializer = JheUserSerializer(request.user, many=False)
-        return Response(jhe_user_serializer.data)
+        if request.user.is_patient():
+            serializer = JheUserPatientProfileSerializer(request.user, many=False)
+        else:
+            serializer = JheUserSerializer(request.user, many=False)
+        return Response(serializer.data)
 
     @action(detail=False, methods=["GET"])
     def organizations(self, request):
