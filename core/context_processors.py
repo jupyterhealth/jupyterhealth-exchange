@@ -16,10 +16,17 @@ logger = logging.getLogger(__name__)
 def _get_oidc_client_id():
     try:
         Application = get_application_model()
-        return Application.objects.order_by("id").values_list("client_id", flat=True).first() or ""
+        return (
+            Application.objects
+            .filter(name="JHE Admin UI")
+            .values_list("client_id", flat=True)
+            .first()
+        )
     except Exception as exc:
-        logger.warning("Unable to load the default OAuth2 client ID from the database: %s", exc)
-        return ""
+        logger.warning(
+            "Unable to load the OAuth2 client ID for 'JHE Admin UI' from the database: %s",
+            exc,
+        )
 
 
 def constants(request):
@@ -35,7 +42,5 @@ def constants(request):
         "ORGANIZATION_TYPES": json.dumps(Organization.ORGANIZATION_TYPES),
         "DATA_SOURCE_TYPES": json.dumps(DataSource.DATA_SOURCE_TYPES),
         "JHE_SETTING_VALUE_TYPES": json.dumps(JheSetting.JHE_SETTING_VALUE_TYPES),
-        "PATIENT_AUTHORIZATION_CODE_CHALLENGE": settings.PATIENT_AUTHORIZATION_CODE_CHALLENGE,
-        "PATIENT_AUTHORIZATION_CODE_VERIFIER": settings.PATIENT_AUTHORIZATION_CODE_VERIFIER,
         "ROLE_PERMISSIONS": json.dumps(ROLE_PERMISSIONS),
     }

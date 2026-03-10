@@ -1,14 +1,23 @@
 # JupyterHealth Exchange
-JupyterHealth Exchange is a Django web application that facilitates the sharing of user-consented medical data with authorized consumers through a web UI, REST and FHIR APIs.
+JupyterHealth Exchange is a Django web application that facilitates sharing patient-consented medical data with authorized users via a web UI and REST, MCP, and FHIR APIs.
+##### Typical User Flow
 
-In the context of JupyterHealth, data producers are typically study participants (FHIR *Patients*) using the [CommonHealth Android App](https://play.google.com/store/apps/details?id=org.thecommonsproject.android.phr) linked to personal devices (eg Glucose Monitors) and data consumers are typically researchers (FHIR *Practitioners*).
+Researchers create studies and recruit patients, who consent and submit observations via client applications, and the data is then stored in JupyterHealth Exchange and queried by researchers using Jupyter Notebooks or other systems.
 
-<img src="doc/jupyterhealth-exchange-overview.jpg" width="800">
+<img src="doc/jupyterhealth-exchange-user_flow.jpg" height="400">
+
+**Typical Data Flow**
+
+Users manage the system via the Web UI, and data producers receive invitation credentials by email, manage consents through the Admin API, and upload data to JupyterHealth Exchange using the FHIR API. Data consumers such as Jupyter Notebooks or other systems then query and download the data through REST and MCP APIs.
+
+<img src="doc/jupyterhealth-exchange-data_flow.jpg" height="400">
 
 Features include:
 
-- OAuth 2.0, OIDC and SMART on FHIR Identity Provision using [django-oauth-toolkit](https://github.com/jazzband/django-oauth-toolkit)
-- FHIR R5 schema validation using [fhir.resources](https://github.com/glichtner/fhir.resources)
+- OAuth 2.0, OIDC using [django-oauth-toolkit](https://github.com/jazzband/django-oauth-toolkit) and [grafana-django-saml2-auth](https://github.com/grafana/django-saml2-auth) for SAML/SSO
+- Simple Role Based Access Control
+- FHIR R5 validation using [fhir.resources](https://github.com/glichtner/fhir.resources)
+- Open mHealth validation using JSON schema
 - REST APIs using [Django Rest Framework](https://github.com/encode/django-rest-framework)
 - Built-in, light-weight Vanilla JS SPA UI (npm not required) using [oidc-clinet-ts](https://github.com/authts/oidc-client-ts), [handlebars](https://github.com/handlebars-lang/handlebars.js) and [bootstrap](https://github.com/twbs/bootstrap)
 
@@ -16,114 +25,102 @@ Features include:
 
 This project is currently in a Proof of Concept stage, the project can be viewed on GitHub at the following URL:
 
-https://github.com/orgs/the-commons-project/projects/8
+https://github.com/orgs/jupyterhealth/projects/3
 
 ## Getting Started
 
-> [!TIP]
-> **If you are a user (Practitioner or Patient), please take note of the following access information for the [JupyterHealth Website](https://jhe.fly.dev):**
-> - JHE Default Invite Code is ```helloworld``` (see [here](https://github.com/the-commons-project/jupyterhealth-exchange/blob/main/dot_env_example.txt#L3))
-> - JHE Default Super User ```sam@example.com/Jhe1234!``` can create and edit top level organizations. Any user can create sub-organizations.
+1. Set up your Python environment and install dependencies from `Pipfile` - this project uses Django **version 5.2** which requires python  **3.12**
 
-> [!TIP]
->**Quick start:** For local development, Skip the steps 8–12 as the `seed_db` command will register the Django OAuth2 application. Also, Pre‑generated values of  `OIDC_RSA_PRIVATE_KEY`, `PATIENT_AUTHORIZATION_CODE_CHALLENGE`, and `PATIENT_AUTHORIZATION_CODE_VERIFIER` are provided in `dot_env_example.txt` for dev/demo use only.
+    - NB: If using pipenv it is recommended to run `pipenv sync` against the lock file to match package versions
 
+1. Create a new Postgres DB (currently only Postgres is supported)
+
+1. Copy `dot_env_example.txt` to `.env` and update the `DB_*` parameters to match (2) above.
+
+   -  Optionally you can add a Django `SECRET_KEY` by running the command below or you can leave this for now to use a randomly generated value at runtime (this will not work with more than one worker)
+      `$ openssl rand -base64 32`
+
+1. Ensure the `.env` is loaded into your Python environment, eg for pipenv run `$ pipenv shell`
+
+1. Run the Django migration `$ python manage.py migrate` to create the database tables.
+
+1. Seed the database by running the Django management command `$ python manage.py seed`
+
+1. Start the server with `$ python manage.py runserver`
+
+1. Browse to http://localhost:8000/admin and enter the credentials `sam@example.com` `Jhe1234!`
+
+1. Under *Django OAuth Toolkit* > *Applications* you should see the seeded OAuth2 application named `JHE Admin UI` with a Redirect URI for `http://localhost:8000/auth/callback` - this is used for the Web UI OAuth 2.0 login.
+
+1. Click the LOG OUT button at the top
+
+1. Finally, we need to create an RS256 Private Key for signing the JWT
+
+      - Run `openssl genrsa -out oidc.key 4096` 
+      - Run `awk '{printf "%s%s", (NR==1?"":"\\n"), $0}' oidc.key` to remove line breaks
+        **Note: some python environments and OS combinations do not handle the "\n" so you may need to include line breaks in the `.env` file.**
+
+      - Return to the `.env` file and update the `OIDC_RSA_PRIVATE_KEY` 
+      - Keep the `oidc.key` somewhere safe
+
+1. Browse to http://localhost:8000/ and log in with the credentials `mary@example.com` `Jhe1234!` and you should be directed to the `/portal/organizations` path with some example Organizations is the dropdown
+
+1. New users can be signed up from the base URL (eg http://localhost:8000/) with the default invitation code "jhe" which is set from the `REGISTRATION_INVITE_CODE` in `.env`
 > [!NOTE]
 > Due to browser security restrictions and the [oidc-client-ts](https://github.com/authts/oidc-client-ts) used for authentication, the web app **must be accessed over HTTPS for any hostname other than localhost** - see [Running in Production](#running-in-production) below.
 
+### Remote debugging tips
 
+1. Control log verbosity – the backend reads the `DJANGO_LOG_LEVEL` env with a default if `INFO` for both the root logger and the Django logger.
 
-1. Set up your Python environment and install dependencies from `Pipfile` - this project uses Django **version 5.2** which requires python  **3.10, 3.11, 3.12 or 3.13**
+2. SPA debug banner – temporarily enabling Django `DEBUG` surfaces server-side tracebacks in the portal so you can correlate HTTP logs with richer context. Turn it off afterward to avoid exposing stack traces.
 
-    - NB: If using pipenv it is recommended to run `pipenv sync` against the lock file to match package versions
-1. Create a new Postgres DB (currently only Postgres is supported because of json functions)
-1. Copy `dot_env_example.txt` to `.env` and update the `DB_*` parameters to match (2)
-   and generate a new value for `SECRET_KEY`, e.g. with `openssl rand -base64 32`.
-1. Ensure the `.env` is loaded into your Python environment, eg for pipenv run `$ pipenv shell`
-1. Run the Django migration `$ python manage.py migrate` to create the database tables.
-1. Seed the database by running the Django management command `$ python manage.py seed`
-1. Start the server with `$ python manage.py runserver`
+## Understanding the different Entities
 
-     ***Skip steps 8-12 below if doing Quick start above***
-1. Browse to http://localhost:8000/admin and enter the credentials `sam@example.com` `Jhe1234!`
-1. Under *Django OAuth Toolkit* > *Applications* you should already see the seeded OAuth2 application (redirects include `http://localhost:8000/auth/callback`). Create a new application only if you need a custom client for testing or multi-tenant scenarios.
-1. Create an RS256 Private Key (step by step [here](https://django-oauth-toolkit.readthedocs.io/en/latest/oidc.html#creating-rsa-private-key))
-1. Create a new static PKCE verifier - a random alphanumeric string 44 chars long, and then create the challenge [here](https://tonyxu-io.github.io/pkce-generator).
-1. Return to the `.env` file
-    - Update the `OIDC_RSA_PRIVATE_KEY` with the newly created Private Key
-    - Update `PATIENT_AUTHORIZATION_CODE_CHALLENGE` and `PATIENT_AUTHORIZATION_CODE_VERIFIER` with PKCE static values generated above
-    - Restart the python environment and Django server
-1. Browse to http://localhost:8000/ and log in with the credentials `mary@example.com` `Jhe1234!` and you should be directed to the `/portal/organizations` path with some example Organizations is the dropdown
-1. Before the each commit always make sure to execute `pre-commit run --all-files` to make sure the PEP8 standards.
-1. Git hook for the pre-commit can also be installed `pre-commit install` to automate the process.
-1. If a hook fails, fix the issues, stage the changes, and commit again — the commit only succeeds when hooks pass.
-> [!WARNING]
-> The `OIDC_RSA_PRIVATE_KEY`, `PATIENT_AUTHORIZATION_CODE_CHALLENGE`, and `PATIENT_AUTHORIZATION_CODE_VERIFIER` provided in `dot_env_example.txt` are public demo keys for development only and must not be used in production.
-
-## Troubleshooting Local Development
-
-**Issue:** Developers running Django on Windows (Visual Studio Code, Git Bash, etc.) might hit a blank screen after login even though authentication succeeds. That usually happens because the OIDC settings in `settings.py` get polluted with local paths (e.g. `OAUTH2_CALLBACK_PATH: http://localhost:8000C:/Program Files/Git/auth/callback`).
-
-**Cause:** The environment loader injects the shell’s current working directory or other path fragments into the OIDC URLs, producing malformed authorization/redirect addresses.
-
-**Solution:** Explicitly define the two OIDC URLs in `settings.py` rather than relying on environment interpolation. For example:
-
-```python
-OAUTH2_CALLBACK_PATH = '/auth/callback'
-OIDC_CLIENT_AUTHORITY_PATH = '/o/'
-```
-
-By hardcoding the values you prevent the path injection and keep the SPA from seeing broken URLs, which resolves the blank screen after login on Windows hosts.
-
-## Remote debugging tips
-
-1. **Control log verbosity** with DJANGO_LOG_LEVEL – The backend now reads the `DJANGO_LOG_LEVEL` environment variable (default: INFO) for both the root logger and the django logger. For `Fly.io` deployments, set `DJANGO_LOG_LEVEL=DEBUG` in `fly.toml` and run `fly deploy`. For local development, set `DJANGO_LOG_LEVEL` using the appropriate environment configuration for your operating system.
-
-2. **Don’t forget the SPA debug banner** – temporarily enabling Django `DEBUG` surfaces server-side tracebacks in the portal so you can correlate HTTP logs with richer context. Turn it off afterward to avoid exposing stack traces.
-
-> **Note:** `DJANGO_LOG_LEVEL` is a configuration flag, not a secret. Keep `fly secrets` and your `.env` strictly for secrets. This keeps local CI environments aligned with the same value.
-
-## Working with the Web UI
+Entities are based on the [HL7 FHIR model](https://build.fhir.org/).
 
 ### Patients & Practitioners
 
-- Any user accessing the Web UI is a [Practitioner](https://build.fhir.org/practitioner.html) (data consumer) by default
-- [Patient](https://build.fhir.org/patient.html) users (data producers) are registered by Practitioners and sent a link to authenticate and upload data
-- The same OAuth 2.0 strategy is used for both Practitioners and Patients, the only difference being that the authorization code is provided out-of-band for Patients (invitation link)
+- Any user accessing the Web UI is a [Practitioner](https://build.fhir.org/practitioner.html) (data consumer) by default.
+- [Patient](https://build.fhir.org/patient.html) users (data producers) are registered by Practitioners and sent a link to authenticate and upload data.
+- The same OAuth 2.0 strategy is used for both Practitioners and Patients, the only difference being that the authorization code is provided out-of-band for Patients (ie invitation links) and has a longer expiration date (2 weeks).
 
 ### Organizations
 
-- An [Organization](https://build.fhir.org/organization.html) is a group of Practitioners, Patients and Studies
-- An Organization is typically hierarchical with sub-Organizations eg Institution, Department, Lab etc
-- A Practitioner belongs to one or more Organization
-- A Patient belongs to one or more Organization
-- A Study belongs to one single Organization
+- An [Organization](https://build.fhir.org/organization.html) is a group of Practitioners, Patients and Studies (FHIR Groups).
+- An Organization is typically hierarchical with sub-Organizations eg Institution, Department, Lab etc.
+- A Practitioner belongs to one or more Organization.
+- A Patient belongs to one or more Organization.
+- A Study belongs to one single Organization.
 
 ### Studies
 
-- A Study is a [Group](https://build.fhir.org/group.html) of Patients and belongs to a single Organization
-- A Study has one or more Data Sources and one or more Scope Requests
-- When a Patient is added to a Study, they must explicitly consent to sharing the requested Scopes before any data (Observations) can be uploaded or shared
+- A Study is a [Group](https://build.fhir.org/group.html) of Patients and belongs to a single Organization.
+- A Study has one or more Clients, one or more matching Data Sources and one or more Scope Requests.
+- When a Patient is added to a Study, they must explicitly consent to sharing the requested Scopes before any personal data (Observations) can be uploaded or shared.
 
 ### Observations
 
-- An [Observation](https://www.hl7.org/fhir/observation.html) is Patient data and belongs to a single Patient
-- An Observation must reference a Patient ID as the *subject* and a Data Source ID as the *device*
-- Personal device data is expected to be in the [Open mHealth](https://www.openmhealth.org/documentation/#/overview/get-started) (JSON) format however the system can be easily extended to support any binary data attachments or discrete Observation records
-- Observation data is stored as a *valueAttachment* in Base 64 encoded JSON binary
-- Authorization to view Observations depends on the relationship of Organization, Study and Consents as described above
+- An [Observation](https://www.hl7.org/fhir/observation.html) is Patient data and belongs to a single Patient.
+- An Observation must reference a Patient ID as the *subject* and a Data Source ID as the *device*.
+- Personal device data is expected to be in the [Open mHealth](https://www.openmhealth.org/documentation/#/overview/get-started) (JSON) format however the system can be easily extended to support any binary data attachments or discrete Observation records.
+- Observation data is stored as a *valueAttachment* in Base 64 encoded JSON binary.
+- Authorization to view Observations depends on the relationship of Organization, Study and Consents as described above.
 
 ### Data Sources
 
-- A Data Source is anything that produces Observations (typically a device app eg iHealth)
-- A Data Source supports one or more Scopes (types) of Observations (eg Blood Glucose)
-- An Observation references a Data Source ID in the *device* field
+- A Data Source is anything that produces Observations (typically a device app eg iHealth).
+- A Data Source supports one or more Scopes (types) of Observations (eg Blood Glucose).
+- An Observation references a Data Source ID in the *device* field.
+- A Study has one or more associated Data Sources.
 
-### Front-end configuration hints for developers
+### Clients
 
-- The vanilla JavaScript SPA pulls runtime settings via `core/templates/client/client_settings.js`, which exposes a global `CONSTANTS` object.
-- `CONSTANTS` is populated by the Django context processor `core/context_processors.py`, so any new value you expose there becomes available both to the template and to `core/static/js/client.js`.
-- Keep secrets and URLs on the Django side (settings or database-backed values) and let the context processor synthesize them, to prevent duplication and to keep the SPA reusable across environments.
+- Clients are apps that talk to JupyterHealth Exchange.
+- Each Client has its own OAuth 2.0 Client ID.
+- A Client has one or more associated Data Sources.
+- In some cases a single app may be both a Data Source and a Client, in which case a record is created for each and both are added to the Study.
+- A Study has one or more associated Clients.
 
 ### Use Case Example
 
@@ -1072,3 +1069,19 @@ This image is published to `ghcr.io/jupyterhealth/jupyterhealth-exchange`.
    ```
    docker run -v$PWD/.env:/code/.env -p8000:8000 ghcr.io/jupyterhealth/jupyterhealth-exchange:$TAG
    ```
+
+
+
+# Development
+
+### Git
+
+1. Before the each commit always make sure to execute `pre-commit run --all-files` to make sure the PEP8 standards.
+1. Git hook for the pre-commit can also be installed `pre-commit install` to automate the process.
+1. If a hook fails, fix the issues, stage the changes, and commit again — the commit only succeeds when hooks pass.
+
+### Front-end configuration tips
+
+- The vanilla JavaScript SPA pulls runtime settings via `core/templates/client/client_settings.js`, which exposes a global `CONSTANTS` object.
+- `CONSTANTS` is populated by the Django context processor `core/context_processors.py`, so any new value you expose there becomes available both to the template and to `core/static/js/client.js`.
+- Keep secrets and URLs on the Django side (settings or database-backed values) and let the context processor synthesize them, to prevent duplication and to keep the SPA reusable across environments.

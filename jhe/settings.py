@@ -33,10 +33,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
-if SECRET_KEY is None:
-    logging.warning(
-        "SECRET_KEY unset, using a randomly generated SECRET_KEY; this will not work with more than one worker."
-    )
+if not SECRET_KEY:
+    if os.environ.get("RUN_MAIN") == "true":
+        logging.warning(
+            "SECRET_KEY unset, using a randomly generated SECRET_KEY; this will not work with more than one worker."
+        )
     SECRET_KEY = get_random_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -44,8 +45,6 @@ DEBUG = bool(os.getenv("DEBUG"))
 
 SITE_URL = os.getenv("SITE_URL", "http://localhost:8000").rstrip("/")
 OAUTH2_CALLBACK_PATH = "/auth/callback"
-CH_INVITATION_LINK_PREFIX = os.getenv("CH_INVITATION_LINK_PREFIX", "")
-CH_INVITATION_LINK_EXCLUDE_HOST = os.getenv("CH_INVITATION_LINK_EXCLUDE_HOST", "")
 PRACTITIONER_DEFAULT_ORGS = os.getenv("PRACTITIONER_DEFAULT_ORGS", "")
 OIDC_CLIENT_AUTHORITY_PATH = "/o/"
 
@@ -213,9 +212,7 @@ OAUTH2_PROVIDER = {
 }
 OAUTH2_PROVIDER_APPLICATION_MODEL = "oauth2_provider.Application"
 
-PATIENT_AUTHORIZATION_CODE_EXPIRE_SECONDS = 1209600  # 2 weeks
-PATIENT_AUTHORIZATION_CODE_CHALLENGE = "C-rdBzEtxD82FMuHF0_76l6NNu_AIqnVJDL1Ba5j0gs"
-PATIENT_AUTHORIZATION_CODE_VERIFIER = "EIlWNRU1_7yyUdw27ryzBvgcoU8ZJ6bgg_F-wkNbbDQ"
+
 
 X_FRAME_OPTIONS = os.getenv("X_FRAME_OPTIONS", "SAMEORIGIN")
 

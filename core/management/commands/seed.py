@@ -306,11 +306,10 @@ class Command(BaseCommand):
             )
 
     @staticmethod
-    def seed_oauth_application(name="JHE Dev"):
+    def seed_oauth_application(name="JHE Admin UI"):
 
         application = get_application_model()
         application.objects.create(
-            id=1,
             redirect_uris=settings.SITE_URL + settings.OAUTH2_CALLBACK_PATH,
             client_type="public",
             authorization_grant_type="authorization-code",
