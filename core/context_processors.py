@@ -16,10 +16,12 @@ logger = logging.getLogger(__name__)
 def _get_oidc_client_id():
     try:
         Application = get_application_model()
-        return Application.objects.order_by("id").values_list("client_id", flat=True).first() or ""
+        return Application.objects.filter(name="JHE Admin UI").values_list("client_id", flat=True).first()
     except Exception as exc:
-        logger.warning("Unable to load the default OAuth2 client ID from the database: %s", exc)
-        return ""
+        logger.warning(
+            "Unable to load the OAuth2 client ID for 'JHE Admin UI' from the database: %s",
+            exc,
+        )
 
 
 def constants(request):
