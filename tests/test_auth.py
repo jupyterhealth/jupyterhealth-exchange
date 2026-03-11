@@ -10,7 +10,7 @@ from core.models import JheUser
 
 practitioner_id = "practitioner-c56c"
 patient_id = "patient-1fbe0b2f"
-idp_url = idp_url = "https://example.localhost"
+idp_url = "https://example.localhost"
 
 
 def userinfo_response(request):

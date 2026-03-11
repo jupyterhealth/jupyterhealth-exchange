@@ -17,6 +17,7 @@ from django.utils import timezone
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django_saml2_auth.errors import INACTIVE_USER, USER_MISMATCH
 from django_saml2_auth.exceptions import SAMLAuthError
 from django_saml2_auth.saml import (
@@ -391,6 +392,7 @@ def json_error(msg, status_code=400):
 
 
 @csrf_exempt
+@require_POST
 def token_exchange(request: HttpRequest):
     """
     RFC 8693: OAuth 2.0 Token Exchange
@@ -401,8 +403,6 @@ def token_exchange(request: HttpRequest):
     Ref: https://datatracker.ietf.org/doc/html/rfc8693
     """
 
-    if not request.POST:
-        return json_error("Method not allowed", status_code=405)
     for name in (
         "audience",
         "requested_token_type",
@@ -440,11 +440,16 @@ def token_exchange(request: HttpRequest):
     # sample SMART-on-FHIR doesn't have userinfo
     # curl -X POST -H "Authorization: Bearer $token" -d "token=$token" $introspection
     trusted_idp = get_setting("trusted_token_idp", settings.TRUSTED_TOKEN_IDP)
+    if not trusted_idp:
+        return json_error("Token exchange is not configured.")
+
     r = requests.get(
         f"{trusted_idp}/.well-known/openid-configuration",
         headers={"Accept": "application/json"},
     )
-    r.raise_for_status()
+    if not r.ok:
+        logger.error("Error looking up token oidc config %s: %s", r.url, r.text)
+        return json_error("Error retrieving user info for access token", status_code=500)
     openid_config = r.json()
 
     # TODO: do we need config to select external id claim? Currently hardcoded 'sub'
@@ -455,7 +460,7 @@ def token_exchange(request: HttpRequest):
         url = openid_config["userinfo_endpoint"]
         logger.info("Looking up token via userinfo %s", url)
         r = requests.get(url, headers={"Authorization": f"Bearer {subject_token}"})
-        if r.status_code >= 400:
+        if not r.ok:
             logger.warning("Failed to lookup subject_token %s: %s", r.status_code, r.text)
             return json_error(f"Token not found in {trusted_idp}")
         user_info = r.json()
@@ -467,7 +472,7 @@ def token_exchange(request: HttpRequest):
         url = openid_config["introspection_endpoint"]
         logger.info("Looking up token via introspection %s", url)
         r = requests.post(url, data={"token": subject_token}, headers={"Authorization": f"Bearer {subject_token}"})
-        if r.status_code >= 400:
+        if not r.ok:
             logger.warning("Failed to lookup subject_token %s: %s", r.status_code, r.text)
             return json_error(f"Token not found in {trusted_idp}")
         token_info = r.json()
@@ -488,6 +493,9 @@ def token_exchange(request: HttpRequest):
                     return json_error("Error introspecting access token", status_code=500)
             else:
                 return json_error("Error introspecting access token", status_code=500)
+    else:
+        logger.error("No token id method in %s", openid_config)
+        return json_error("Error retrieving user info for access token", status_code=500)
 
     try:
         user = JheUser.objects.get(identifier=identifier)
