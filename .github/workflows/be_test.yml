@@ -31,7 +31,8 @@ jobs:
           --health-retries 5
 
     env:
-      SITE_TITLE: "JupyterHealth Exchange Dev"
+
+      REGISTRATION_INVITE_CODE: "jhe"
       SITE_URL: "http://localhost:8000"
       DB_NAME: "test_jhe_dev"
       DB_USER: "postgres"
