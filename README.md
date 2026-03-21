@@ -29,7 +29,19 @@ Features include:
 
 This project is currently in a Proof of Concept stage, the project can be viewed on GitHub at the following URL:
 
-https://github.com/orgs/jupyterhealth/projects/3
+https://github.com/orgs/the-commons-project/projects/8
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for test requirements, coding standards, and PR checklist.
+
+## Testing
+
+See [doc/TESTING.md](doc/TESTING.md) for the full testing guide — unit tests, integration tests, smoke tests, and CI pipelines.
+
+## Upgrade / Migration Guides
+
+- [v0.0.8 → v0.0.9](doc/MIGRATION_v0.0.9.md) — DB-backed settings, multi-client support, breaking API changes
 
 ## Getting Started
 

@@ -52,6 +52,11 @@ User = get_user_model()
 AccessToken = get_access_token_model()
 
 
+def health(request):
+    """Lightweight liveness probe — no DB, no auth."""
+    return JsonResponse({"status": "ok", "version": settings.JHE_VERSION})
+
+
 def home(request):
     return render(request, "home/home.html")
 

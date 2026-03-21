@@ -1,6 +1,9 @@
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "jhe.test_settings"
 addopts = "--cov=core --cov=jhe"
+markers = [
+    "smoke: live deployment smoke tests (require --smoke-url)",
+]
 
 [tool.ruff]
 line-length = 120
