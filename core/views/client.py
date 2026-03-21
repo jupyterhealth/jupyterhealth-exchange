@@ -17,7 +17,7 @@ class ClientViewSet(ModelViewSet):
     serializer_class = ClientSerializer
 
     def get_queryset(self):
-        return Application.objects.exclude(name__contains="JHE").order_by(
+        return Application.objects.exclude(name="JHE Admin UI").order_by(
             "-created"
         )  # We don't want to include the JHE Portal client here
 

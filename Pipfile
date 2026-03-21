@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "==5.2.*"
+django = "==6.0.*"
 python-dotenv = "*"
 psycopg2-binary = "*"
 django-oauth-toolkit = "*"
@@ -28,6 +28,7 @@ ipython = "*"
 
 [dev-packages]
 coverage = "*"
+responses = "*"
 pre-commit = "*"
 pytest-django = "*"
 pytest = "*"
