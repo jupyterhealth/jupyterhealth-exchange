@@ -112,7 +112,7 @@ tests/
 - Still use the test database — no external dependencies.
 - Test the full request/response cycle including auth, serializers, and views.
 
-### Smoke tests  *(new)*
+### Smoke tests
 
 - Make **real HTTP requests** to a live, deployed JHE instance.
 - Require `--smoke-url` (auto-skipped otherwise).
