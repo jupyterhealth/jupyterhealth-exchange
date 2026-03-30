@@ -3,11 +3,10 @@
 <!DOCTYPE html>
 <html class="h-100">
   <head>
-    <title>{{ SITE_TITLE }} - {% block title %}{% endblock %}</title>
+    <title>{{ SITE_TITLE }} Open Wearables Client - {% block title %}{% endblock %}</title>
     <script src="/portal/client_settings.js"></script> <!-- dynamically rendered by Django view, not static file --->
-    <script src="{% static 'js/oidc.js' %}"></script>
     <script src="{% static 'js/common.js' %}"></script>
-    <script src="{% static 'js/client.js' %}"></script>
+    <script src="{% static 'js/ow-client.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
     <link
       rel="stylesheet"
@@ -16,7 +15,7 @@
     <link
       rel="shortcut icon"
       type="image/png"
-      href="{% static 'favicon.ico' %}"
+      href="{% static 'favicon-ow.ico' %}"
     />
     {% block head %} {% endblock %}
   </head>
@@ -49,11 +48,6 @@
       </div>
     </div>
 
-    <!-- Load order for OIDC is finicky -->
-    <script
-      onload="window.initOidc();"
-      src="{% static 'js/oidc-client-ts.min.js' %}"
-    ></script>
     <script src="{% static 'js/handlebars.min.js' %}"></script>
     <!-- For Bootstrap support, see: https://getbootstrap.com/docs/4.0/getting-started/introduction/#js-->
     <script src="{% static 'js/popper.min.js' %}"></script>

@@ -1,0 +1,33 @@
+{% extends "partials/base_ow_client.html" %} {% block title %}Launch{% endblock %}
+
+{% block body_content %}
+
+<div class="w-100 text-center mt-5">
+  <h1>OW Client</h1>
+  <pre id="out" class="text-start ms-5 me-5">
+  </pre>
+</div>
+<!-- put any constants etc directly into this file this is just a POC -->
+<!-- put functions in core/static/js/ow-client.js and core/static/js/common.js as needed and keep formatting consistent -->
+<!-- eg dont start putting fucntons into constants or whatever - keep it consistent with the existing structure -->
+<script>
+    const out = document.getElementById("out");
+    out.textContent = "Processing link...";
+    // For each of the steps below add output as in example above
+    // 1. Get the components of the invite link ?code=abc...~def...~ghi...~jkl <== this fucntion should live in common.js
+    // see debugGetPatientTokenFromCode in client.js and swap out for new single function in common.js instead
+    out.textContent += "\n<Display link components>";
+    // 2. Swap auth code for access token
+    // 3. Fetch and update consents (assume yes to all for POC demo)
+    // 4. Create a new JHE endpoint: POST /api/v1/ow/users (no params needed - use bearer token to get user on JHE end)
+    //    -> JHE finds or creates user in OW using OW endpoint
+    //    -> JHE updates the JHE user's identifier field with the returned OW user_id
+    // 5. Do the POST in 4 above
+    // 6. Create a new JHE endpoint: GET /api/v1/oauth/oura/authorize
+    //    -> passes through to the OW on the same path and populates user_id from a lookup from the bearer token
+    //    -> set redirect uri to: window.location.origin + "/ow/complete"
+    // 7. Do the GET in 6 above to get the Oura auth URL
+    // 8. Redirect this page to the Oura auth URL
+</script>
+
+{% endblock %}
