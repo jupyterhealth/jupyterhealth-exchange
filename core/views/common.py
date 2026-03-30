@@ -61,6 +61,14 @@ def home(request):
     return render(request, "home/home.html")
 
 
+def ow_client(request):
+    return render(request, "ow_client/launch.html")
+
+
+def ow_client_complete(request):
+    return render(request, "ow_client/complete.html")
+
+
 class LoginView(BaseLoginView):
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)

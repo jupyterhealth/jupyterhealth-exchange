@@ -28,6 +28,9 @@ urlpatterns = [
     path("health", common.health, name="health"),
     # Home
     path("", common.home, name="home"),
+    # OW Portal
+    path("ow/", common.ow_client, name="ow_client"),
+    path("ow/complete", common.ow_client_complete, name="ow_client_complete"),
     # Django auth and accounts
     path("accounts/login/", common.LoginView.as_view(), name="login"),
     path("accounts/signup/", common.signup, name="signup"),
