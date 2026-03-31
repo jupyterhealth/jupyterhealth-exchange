@@ -1236,9 +1236,12 @@ class Observation(models.Model):
             )
 
         try:
-            value_attachment_data_binary = base64.b64decode(fhir_observation.valueAttachment.data)
-            value_attachment_data_json = value_attachment_data_binary.decode("ascii")
-            value_attachment_data = json.loads(value_attachment_data_json)
+            raw = fhir_observation.valueAttachment.data
+            decoded = raw.decode("utf-8") if isinstance(raw, bytes) else raw
+            try:
+                value_attachment_data = json.loads(decoded)
+            except (json.JSONDecodeError, ValueError):
+                value_attachment_data = json.loads(base64.b64decode(decoded).decode("utf-8"))
         except Exception:
             raise BadRequest("valueAttachment.data must be Base 64 Encoded Binary JSON.")  # TBD: move to view
 
