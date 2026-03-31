@@ -1,0 +1,30 @@
+name: RFC
+description: Request for comments on a proposed change
+title: "[RFC]: "
+labels: ["rfc"]
+body:
+  - type: textarea
+    id: rfc
+    attributes:
+      label: RFC
+      description: Describe your proposal
+      value: |
+        ## Problem
+        What are we trying to fix?
+
+        ## Goal
+        What does success look like?
+
+        ## Current Approach
+        How does it work today?
+
+        ## Proposal
+        High-level idea (no deep technical detail)
+
+        ## Tradeoffs
+        Pros, cons, and risks
+
+        ## Open Questions
+        Where do we need input?
+    validations:
+      required: true

@@ -1,17 +1,7 @@
 name: Issue
-description: Standard issue (requires Story Points estimate)
+description: Standard task
 labels: [ "triage" ]
 body:
-- type: dropdown
-  id: story_points
-  attributes:
-    label: Story Points (or TBE)
-    description: >
-      Story Points are a relative estimate of effort/complexity/risk (not exact time). If unsure, choose TBE (to be estimated) and describe the problem. Time hint: 1=few hrs–1 day, 2=1–2 days, 3=2–3 days, 5=~1 week, 8=>2 weeks (consider splitting).
-    options: [ "TBE", "1", "2", "3", "5", "8" ]
-    default: 0
-  validations:
-    required: true
 
 - type: input
   id: effort_hours
@@ -26,7 +16,7 @@ body:
   id: description
   attributes:
     label: Description
-    description: What’s happening / what do you need? Include steps, expected vs actual, links/screenshots if helpful.
-    placeholder: "Type your description here…"
+    description: What's happening / what do you need? Include steps, expected vs actual, links/screenshots if helpful.
+    placeholder: "Type your description here..."
   validations:
     required: true
