@@ -1,4 +1,4 @@
-name: Issue
+name: Task
 description: Standard task
 labels: [ "triage" ]
 body:
