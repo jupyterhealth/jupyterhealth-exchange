@@ -3,7 +3,7 @@ from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
 
 from . import views
-from .views import common
+from .views import common, ow
 
 # https://www.django-rest-framework.org/api-guide/routers/#defaultrouter
 api_router = DefaultRouter(trailing_slash=False)
@@ -71,6 +71,9 @@ urlpatterns = [
     re_path(r"^portal/(?P<path>([^/]+/)*)$", common.portal, name="portal"),
     # Admin API
     path("api/v1/", include(api_router.urls)),
+    # OW API
+    path("api/v1/ow/users", ow.create_ow_user, name="ow_create_user"),
+    path("api/v1/ow/oauth/oura/authorize", ow.oura_authorize, name="ow_oura_authorize"),
     # FHIR API
     path("fhir/r5/", include(fhir_router.urls)),
 ]
