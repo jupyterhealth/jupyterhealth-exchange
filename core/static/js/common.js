@@ -63,7 +63,9 @@ function parseInvitationCode(invitationCode) {
  * Exchange an authorization code for an access token via the OIDC token endpoint.
  */
 async function exchangeCodeForToken({ host, client_id, code, code_verifier, redirect_uri }) {
-  const tokenEndpoint = `${host}/o/token/`;
+  // Use window.location.origin for token endpoint (host from invite code is
+  // just hostname:port without protocol, and we're always same-origin).
+  const tokenEndpoint = `${window.location.origin}/o/token/`;
   const payload = {
     code,
     grant_type: "authorization_code",

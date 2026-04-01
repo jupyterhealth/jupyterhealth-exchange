@@ -37,7 +37,7 @@ async function owProcessInviteLink() {
       client_id: invite.client_id,
       code: invite.code,
       code_verifier: invite.code_verifier,
-      redirect_uri: window.location.origin + "/ow/",
+      redirect_uri: window.location.origin + "/auth/callback",
     });
     const accessToken = tokens.access_token;
     out.textContent += "\n  Access token obtained successfully.";
@@ -70,7 +70,7 @@ async function owProcessInviteLink() {
     }
 
     const owUserData = await owUserResp.json();
-    out.textContent += `\n  OW User ID: ${owUserData.ow_user_id}`;
+    out.textContent += `\n  OW User ID: ${owUserData.owUserId}`;
     out.textContent += `\n  Created: ${owUserData.created}`;
 
     // Steps 6-7: Get Oura OAuth authorization URL
@@ -90,12 +90,12 @@ async function owProcessInviteLink() {
     }
 
     const ouraData = await ouraResp.json();
-    out.textContent += `\n  Authorization URL: ${ouraData.authorization_url}`;
+    out.textContent += `\n  Authorization URL: ${ouraData.authorizationUrl}`;
 
     // Step 8: Redirect to Oura OAuth
     out.textContent += "\n\nStep 8: Redirecting to Oura for authorization...";
     setTimeout(() => {
-      window.location.href = ouraData.authorization_url;
+      window.location.href = ouraData.authorizationUrl;
     }, 2000);
   } catch (err) {
     out.textContent += `\n\nError: ${err.message}`;
