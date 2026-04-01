@@ -73,7 +73,10 @@ urlpatterns = [
     path("api/v1/", include(api_router.urls)),
     # OW API
     path("api/v1/ow/users", ow.create_ow_user, name="ow_create_user"),
-    path("api/v1/ow/oauth/oura/authorize", ow.oura_authorize, name="ow_oura_authorize"),
+    path("api/v1/ow/providers", ow.list_providers, name="ow_list_providers"),
+    path("api/v1/ow/oauth/<str:provider>/authorize", ow.provider_authorize, name="ow_provider_authorize"),
+    # OW OAuth callback proxy (provider redirects here; we forward to OW)
+    path("api/v1/oauth/<str:provider>/callback", ow.provider_callback_proxy, name="ow_provider_callback_proxy"),
     # FHIR API
     path("fhir/r5/", include(fhir_router.urls)),
 ]

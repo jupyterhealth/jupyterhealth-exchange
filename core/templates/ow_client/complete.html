@@ -2,8 +2,21 @@
 
 {% block body_content %}
 
-<div class="w-100 text-center mt-5">
-  <h1>Complete</h1>
+<div class="container mt-5" style="max-width: 600px;">
+  <div class="text-center">
+    <div class="mb-4">
+      <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+    </div>
+    <h2 class="mb-3">Successfully Connected!</h2>
+    <p id="ow-complete-status" class="text-muted mb-4">
+      Your device has been connected and will start syncing data shortly.
+    </p>
+    <p class="text-muted small">You may close this window.</p>
+  </div>
 </div>
+
+<script>
+    owProcessComplete();
+</script>
 
 {% endblock %}

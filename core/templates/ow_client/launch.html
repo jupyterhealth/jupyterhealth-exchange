@@ -2,11 +2,27 @@
 
 {% block body_content %}
 
-<div class="w-100 text-center mt-5">
-  <h1>OW Client</h1>
-  <pre id="out" class="text-start ms-5 me-5">
-  </pre>
+<div class="container mt-5" style="max-width: 800px;">
+  <!-- Status / Loading -->
+  <div id="ow-setup" class="text-center">
+    <h2 class="mb-3">Connect Your Wearable</h2>
+    <p id="ow-status" class="text-muted">
+      <span class="spinner-border spinner-border-sm me-2"></span>
+      Setting up your account...
+    </p>
+  </div>
+
+  <!-- Provider Picker (hidden until providers load) -->
+  <div id="ow-provider-picker" style="display: none;">
+    <div class="text-center mb-4">
+      <h2>Connect a Device</h2>
+      <p class="text-muted">Select your wearable platform to get started</p>
+    </div>
+    <div id="ow-provider-grid" class="row justify-content-center">
+    </div>
+  </div>
 </div>
+
 <script>
     owProcessInviteLink();
 </script>
