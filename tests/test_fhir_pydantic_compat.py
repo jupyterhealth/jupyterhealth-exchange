@@ -18,7 +18,6 @@ from core.views.fhir_base import FHIRBase
 
 from .utils import Code, add_patient_to_study, create_study
 
-
 # ---------------------------------------------------------------------------
 # Unit tests for FHIRBase.bundle_create_response_entry
 # ---------------------------------------------------------------------------
@@ -189,9 +188,7 @@ class TestFhirCreateValueAttachmentDecoding:
 # ---------------------------------------------------------------------------
 
 
-def test_bundle_response_contains_string_resource_id(
-    api_client, device, patient, hr_study
-):
+def test_bundle_response_contains_string_resource_id(api_client, device, patient, hr_study):
     """After uploading via bundle, each response entry must have a Resource with a string id."""
     record = generate_observation_value_attachment_data(Code.HeartRate.value)
     payload = {
