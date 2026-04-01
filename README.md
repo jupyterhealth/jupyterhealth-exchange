@@ -177,86 +177,112 @@ If Observations are sent with data attached in the Open mHealth format (eg `Obse
 - The initial Database is seeded with a minimal set of records to provide an example of the different entity relationships, see the diagram below.
 
 ```mermaid
+---
+config:
+  flowchart:
+    nodeSpacing: 50
+    rankSpacing: 60
+---
 flowchart TD
-    sam("SuperUser Sam<br/><small>sam\@example.com</small>")
+    %% node definitions
+    sam("SuperUser Sam<br/><small>sam@example.com</small>")
+    eri("Organization:<br/>Example Research Institute")
+    esds("Organization:<br/>Example School of Data Science")
+    eglab("Organization:<br/>Example Lab")
+    victor("ViewerVictor<br/><small>victor@example.com</small>")
+    megan("MemberMegan<br/><small>megan@example.com</small>")
+    mary("ManagerMary<br/><small>mary@example.com</small>")
+    tom("ThreeOrgTom<br/><small>tom@example.com</small>")
+    exStudyOnBPHR("Example Study on BP & HR<br/><small>Blood Pressure<br/>Heart Rate</small>")
+    exStudyOnBP("Example Study on BP<br/><small>Blood Pressure</small>")
+    peter("LabPatientPeter<br/><small>peter@example.com</small>")
+    pamela("LabPatientPamela<br/><small>pamela@example.com</small>")
+    eguni("Organization:<br/>Example University")
+    med("Organization:<br/>Example Department")
+    cardio("Organization:<br/>Heart Research Division")
+    mosl("Organization:<br/>Example Lab Alpha")
+    beta("Organization:<br/>Example Lab Beta")
+    mark("ManagerMark<br/><small>mark@example.com</small>")
+    exStudyOnRR("Example Study on RR<br/><small>Respiratory rate</small>")
+    exStudyOnBT("Example Study on BT<br/><small>Body Temperature</small>")
+    exStudyOnO2("Example Study on O2<br/><small>Oxygen Saturation</small>")
+    percy("AlphaPatientPercy<br/><small>percy@example.com</small>")
+    paul("BetaPatientPaul<br/><small>paul@example.com</small>")
+    pat("HeartBetaPatientPat<br/><small>pat@example.com</small>")
+
+    %% styles
     style sam fill:#CFC
-
-    %% berkeley
-    ucb("Organization:<br/>University of California Berkeley") --> ccdss("Organization:<br/>College of Computing, Data Science and Society")
-    ccdss --> bids("Organization:<br/>Berkeley Institute for Data Science (BIDS)")
-
-    %% berkeley users
-    ucb --Manager--> mary("ManagerMary<br/><small>mary\@example.com</small>")
     style mary fill:#CFC
-    ccdss --Manager--> mary
-    bids --Manager--> mary
-    bids --Memeber--> megan("MemberMegan<br/><small>megan\@example.com</small>")
     style megan fill:#CFC
-    bids --Viewer--> victor("ViewerVictor<br/><small>victor\@example.com</small>")
     style victor fill:#CFC
-    tom("ThreeOrgTom<br/><small>tom\@example.com</small>")
-    bids --Viewer--> tom
     style tom fill:#CFC
-
-    %% berkeley studies
-    bids --> bidsStudyOnBPHR("BIDS Study on BP & HR<br/><small>Blood Pressure<br/>Heart Rate</small>")
-    style bidsStudyOnBPHR fill:#CFF
-    bids --> bidsStudyOnBP("BIDS Study on BP<br/><small>Blood Pressure </small>")
-    style bidsStudyOnBP fill:#CFF
-
-    %% berkeley patients
-    bids --> peter("BidsPatientPeter<br/><small>peter\@example.com</small>")
-    style peter fill:#FCC
-    peter --Consented--> bidsStudyOnBPHR
-    peter --Requested--> bidsStudyOnBP
-    pamela("BidsPatientPamela<br/><small>pamela\@example.com</small>")
-    style pamela fill:#FCC
-    bids --> pamela
-    pamela --Consented--> bidsStudyOnBPHR
-    pamela --Consented--> bidsStudyOnBP
-
-    %% ucsf
-    ucsf("Organization:<br/>University of California San Francisco") --> med("Organization:<br/>Department of Medicine")
-    med --> cardio("Organization:<br/>Cardiology")
-    cardio --> moslehi("Organization:<br/>Moslehi Lab")
-    cardio --> olgin("Organization:<br/>Olgin Lab")
-
-    %% ucsf users
-    ucsf --Manager-->mark("ManagerMark<br/><small>mark\@example.com</small>")
     style mark fill:#CFC
-    med --Manager--> mark
-    cardio --Manager--> mark
-    moslehi --Member--> tom
-    moslehi --Manager-->mark
-    olgin --Manager--> tom
-
-    %% ucsf studies
-    cardio --> cardioStudyOnRR("Cardio Study on RR<br/><small>Respiratory rate</small>")
-    style cardioStudyOnRR fill:#CFF
-    moslehi --> moslehiStudyOnBT("Moslehi Study on BT<br/><small>Body Temperature</small>")
-    style moslehiStudyOnBT fill:#CFF
-    olgin --> olginStudyOnO2("Olgin Study on O2<br/><small>Oxygen Saturation</small>")
-    style olginStudyOnO2 fill:#CFF
-
-    %% ucsf patients
-    moslehi --> percy("MoslehiPatientPercy<br/><small>percy\@example.com</small>")
+    style exStudyOnBPHR fill:#CFF
+    style exStudyOnBP fill:#CFF
+    style exStudyOnRR fill:#CFF
+    style exStudyOnBT fill:#CFF
+    style exStudyOnO2 fill:#CFF
+    style peter fill:#FCC
+    style pamela fill:#FCC
     style percy fill:#FCC
-    percy --Consented--> moslehiStudyOnBT
-    olgin --> paul("OlginPatientPaul<br/><small>paul\@example.com</small>")
     style paul fill:#FCC
-    paul --Consented--> olginStudyOnO2
-    cardio --> pat("CardioOlginPatientPat<br/><small>pat\@example.com</small>")
     style pat fill:#FCC
-    pat --Consented--> cardioStudyOnRR
-    pat --Consented--> olginStudyOnO2
-    olgin --> pat
+
+    %% example institute org hierarchy
+    eri --> esds
+    esds --> eglab
+
+    %% example institute user roles
+    eri -- Manager --> mary
+    esds -- Manager --> mary
+    eglab -- Viewer --> victor
+    eglab -- Member --> megan
+    eglab -- Viewer --> tom
+    eglab -- Manager --> mary
+
+    %% example institute studies & patients
+    eglab --> peter
+    eglab --> pamela
+    eglab --> exStudyOnBPHR
+    eglab --> exStudyOnBP
+    peter -- Consented --> exStudyOnBPHR
+    peter -- Requested --> exStudyOnBP
+    pamela -- Consented --> exStudyOnBPHR
+    pamela -- Consented --> exStudyOnBP
+
+    %% example university org hierarchy
+    eguni --> med
+    med --> cardio
+    cardio --> mosl
+    cardio --> beta
+
+    %% example university user roles
+    eguni -- Manager --> mark
+    med -- Manager --> mark
+    cardio -- Manager --> mark
+    mosl -- Manager --> mark
+    mosl -- Member --> tom
+    beta -- Manager --> tom
+
+    %% example university studies & patients
+    cardio --> exStudyOnRR
+    mosl --> exStudyOnBT
+    beta --> exStudyOnO2
+    mosl --> percy
+    beta --> paul
+    cardio --> pat
+    beta --> pat
+    percy -- Consented --> exStudyOnBT
+    paul -- Consented --> exStudyOnO2
+    pat -- Consented --> exStudyOnRR
+    pat -- Consented --> exStudyOnO2
 ```
 
 ### Iglu Test Data
 
 - Additional test data from the [iglu project](https://github.com/irinagain/iglu) can be seeded by running the following command (please note this can take 10-20 minutes to run)
   `$ python manage.py iglu`
-- This creates a new study under the "Berkeley Institute for Data Science (BIDS)" Organization with 19 mock patients and 1745 real Observation data points
+- This creates a new study under the "Example Research Institute" Organization with 19 mock patients and 1745 real Observation data points
 
 
 ## Working with APIs
@@ -644,14 +670,14 @@ When `DEBUG` is enabled the SPA debug page now summarizes server errors (includi
 ## Test Procedure
 
 1. **Select Parent Organization**
-   Choose **University of California, Berkeley**.
+   Choose **Example Research Institute**.
 
 2. **Open Sub-Organization**
-   Click **View** for **Berkeley Institute for Data Science (BIDS)**.
+   Navigate to **Example School of Data Science**, then click **View** for **Example Lab**.
 
 3. **Create a New Study**
 
-   * Under BIDS, create a study.
+   * Under Example Lab, create a study.
    * Add the **iHealth** data source.
    * Set the data scope to **blood glucose**.
 
