@@ -68,6 +68,6 @@ jobs:
           pip install coverage
 
       - name: upload coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           use_oidc: true
