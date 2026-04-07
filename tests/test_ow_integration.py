@@ -152,6 +152,7 @@ class TestCreateOwUser:
     @patch("core.views.ow.requests.post")
     def test_handles_connection_error(self, mock_post, ow_client, ow_settings):
         import requests as req
+
         mock_post.side_effect = req.ConnectionError("Connection refused")
 
         resp = ow_client.post(self.URL)
@@ -228,6 +229,7 @@ class TestOuraAuthorize:
     @patch("core.views.ow.requests.get")
     def test_handles_connection_error(self, mock_get, ow_linked_client, ow_settings):
         import requests as req
+
         mock_get.side_effect = req.ConnectionError("Connection refused")
 
         resp = ow_linked_client.get(self.URL)

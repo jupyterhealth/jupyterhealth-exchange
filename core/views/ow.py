@@ -1,7 +1,6 @@
 import logging
 
 import requests
-from django.conf import settings
 from django.http import HttpResponseRedirect
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
