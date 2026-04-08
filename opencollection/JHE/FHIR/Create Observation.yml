@@ -1,0 +1,49 @@
+info:
+  name: Create Observation
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/fhir/r5/Observation"
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "resourceType": "Observation",
+        "identifier": [
+          {
+            "system": "https://chcs.org",
+            "value": "A1234X49"
+          }
+        ],
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "https://w3id.org/openmhealth",
+              "code": "omh:blood-glucose:4.0"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/{{PATIENT_ID}}"
+        },
+        "device": {
+          "reference": "Device/{{DATA_SOURCE_ID}}"
+        },
+        "valueAttachment": {
+          "contentType": "application/json",
+          "data": "eyJibG9vZF9nbHVjb3NlIjp7InVuaXQiOiJtZy9kTCIsInZhbHVlIjo5NX0sImVmZmVjdGl2ZV90aW1lX2ZyYW1lIjp7InRpbWVfaW50ZXJ2YWwiOnsic3RhcnRfZGF0ZV90aW1lIjoiMjAxMy0wMi0wNVQwNzoyNTowMFoiLCJlbmRfZGF0ZV90aW1lIjoiMjAxMy0wNi0wNVQwNzoyNTowMFoifX0sInNwZWNpbWVuX3NvdXJjZSI6ImNhcGlsbGFyeWJsb29kIiwidGVtcG9yYWxfcmVsYXRpb25zaGlwX3RvX21lYWwiOiJmYXN0aW5nIiwidGVtcG9yYWxfcmVsYXRpb25zaGlwX3RvX3NsZWVwIjoib253YWtpbmciLCJkZXNjcmlwdGl2ZV9zdGF0aXN0aWMiOiJtaW5pbXVtIn0="
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

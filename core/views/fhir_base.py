@@ -101,7 +101,7 @@ class FHIRBase(viewsets.GenericViewSet):
     def bundle_create_response_entry(status, outcome=None, obj=None):
         entry = {"response": {"status": str(status) + " " + http.HTTPStatus(status).phrase}}
         if obj:
-            entry["resource"] = Resource(id=str(obj.id))
+            entry["resource"] = Resource(id=obj.id)
         if outcome:
             entry["response"]["outcome"] = outcome
         return entry

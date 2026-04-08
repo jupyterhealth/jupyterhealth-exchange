@@ -48,6 +48,7 @@ urlpatterns = [
     ),
     # Client Auth
     path("auth/callback/", common.client_auth_callback, name="client_auth_callback"),
+    path("auth/callback/simple/", common.client_auth_callback_simple, name="client_auth_callback_simple"),
     path(
         "auth/callback_popup/",
         common.client_auth_callback_popup,

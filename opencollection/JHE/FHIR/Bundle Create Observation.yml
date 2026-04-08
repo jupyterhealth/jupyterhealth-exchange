@@ -1,0 +1,63 @@
+info:
+    name: Bundle Create Observation
+    type: http
+    seq: 2
+
+http:
+    method: POST
+    url: "{{BASE_URL}}/fhir/r5/"
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Accept-Encoding
+        value: application/json
+    body:
+        type: json
+        data: |-
+            {
+                "resourceType": "Bundle",
+                "type": "batch",
+                "entry": [
+                    {
+                        "resource": {
+                            "resourceType": "Observation",
+                            "identifier": [
+                                {
+                                    "system": "https://jhe.fly.dev/Observation/",
+                                    "value": "A1234Z7"
+                                }
+                            ],
+                            "status": "final",
+                            "code": {
+                                "coding": [
+                                    {
+                                        "system": "https://w3id.org/openmhealth",
+                                        "code": "omh:blood-pressure:4.0"
+                                    }
+                                ]
+                            },
+                            "subject": {
+                                "reference": "Patient/{{PATIENT_ID}}"
+                            },
+                            "device": {
+                                "reference": "Device/{{DATA_SOURCE_ID}}"
+                            },
+                            "valueAttachment": {
+                                "contentType": "application/json",
+                                "data": "ewogICJoZWFkZXIiOiB7CiAgICAidXVpZCI6ICJhYWFhMTIzNC0xYTJiLTNjNGQtNWU2Zi0wMDAwMDAwMDAwMDIiLAogICAgInNjaGVtYV9pZCI6IHsKICAgICAgIm5hbWUiOiAiYmxvb2QtcHJlc3N1cmUiLAogICAgICAidmVyc2lvbiI6ICI0LjAiLAogICAgICAibmFtZXNwYWNlIjogIm9taCIKICAgIH0sCiAgICAic291cmNlX2NyZWF0aW9uX2RhdGVfdGltZSI6ICIyMDI1LTAxLTAxVDAxOjAyOjAxLTA4OjAwIiwKICAgICJtb2RhbGl0eSI6ICJzZW5zZWQiLAogICAgImV4dGVybmFsX2RhdGFzaGVldHMiOiBbCiAgICAgIHsKICAgICAgICAiZGF0YXNoZWV0X3R5cGUiOiAibWFudWZhY3R1cmVyIiwKICAgICAgICAiZGF0YXNoZWV0X3JlZmVyZW5jZSI6ICJpSGVhbHRoIgogICAgICB9CiAgICBdCiAgfSwKICAiYm9keSI6IHsKICAgICJzeXN0b2xpY19ibG9vZF9wcmVzc3VyZSI6IHsKICAgICAgInZhbHVlIjogMTE1LAogICAgICAidW5pdCI6ICJtbUhnIgogICAgfSwKICAgICJkaWFzdG9saWNfYmxvb2RfcHJlc3N1cmUiOiB7CiAgICAgICJ2YWx1ZSI6IDYwLAogICAgICAidW5pdCI6ICJtbUhnIgogICAgfSwKICAgICJlZmZlY3RpdmVfdGltZV9mcmFtZSI6IHsKICAgICAgImRhdGVfdGltZSI6ICIyMDI1LTAxLTAxVDAwOjAyOjAwLTA4OjAwIgogICAgfQogIH0KfQ=="
+                            }
+                        },
+                        "request": {
+                            "method": "POST",
+                            "url": "Observation"
+                        }
+                    }
+                ]
+            }
+    auth: inherit
+
+settings:
+    encodeUrl: true
+    timeout: 0
+    followRedirects: true
+    maxRedirects: 5
