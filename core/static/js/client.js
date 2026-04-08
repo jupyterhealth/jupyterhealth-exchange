@@ -28,13 +28,11 @@ const ROUTES = {
     label: "System Settings",
     iconClass: "bi-gear",
     action: "renderJheSettings",
-    superuserOnly: true,
   },
   practitioners: {
     label: "Practitioners",
     iconClass: "bi-person-badge",
     action: "renderPractitioners",
-    superuserOnly: true,
   },
   organizations: {
     label: "Organizations",
@@ -157,16 +155,6 @@ function hideNavLoadingOverlay() {
 async function nav(newRoute, queryParams, appendQueryParams) {
   showNavLoadingOverlay();
   try {
-    // Block non-superusers from navigating to superuser-only routes
-    if (ROUTES[newRoute]?.superuserOnly) {
-      if (!userProfile || !userProfile.email) {
-        userProfile = await getUserProfile();
-      }
-      if (!userProfile.isSuperuser) {
-        newRoute = DEFAULT_ROUTE;
-      }
-    }
-
     const newRouteSettings = ROUTES[newRoute];
     const current = getCurrentRouteAndParams();
 
@@ -196,17 +184,12 @@ async function nav(newRoute, queryParams, appendQueryParams) {
     const oldMain = document.getElementById("mainContent");
     if (oldMain) oldMain.remove();
 
-    // Build nav items (hide superuser-only routes for non-superusers)
-    if (!userProfile || !userProfile.email) {
-      userProfile = await getUserProfile();
-    }
-    const navItems = Object.entries(ROUTES)
-      .filter(([, settings]) => !settings.superuserOnly || userProfile.isSuperuser)
-      .map(([route, settings]) => ({
-        ...settings,
-        active: route === newRoute,
-        route,
-      }));
+    // Build nav items
+    const navItems = Object.entries(ROUTES).map(([route, settings]) => ({
+      ...settings,
+      active: route === newRoute,
+      route,
+    }));
 
     // Replace body content
     const baseBody = document.getElementById("baseBody");

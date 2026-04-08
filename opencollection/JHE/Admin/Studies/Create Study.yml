@@ -1,0 +1,26 @@
+info:
+  name: Create Study
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/api/v1/studies"
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "Heart and Diet ",
+          "description": "We're trying to predict heart problems...",
+          "organization": {{ORG_ID}}
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -296,22 +296,24 @@ class PatientViewSet(ModelViewSet):
                             )
                         )
                     elif request.method == "PATCH":
+                        StudyPatientScopeConsent.objects.filter(
+                            study_patient_id=study_patient.id,
+                            scope_code_id=scope_code_id,
+                        ).update(
+                            consented=scope_consent["consented"],
+                            consented_time=consented_time,
+                        )
                         responses.append(
                             StudyPatientScopeConsent.objects.get(
                                 study_patient_id=study_patient.id,
                                 scope_code_id=scope_code_id,
-                            ).update(
-                                consented=scope_consent["consented"],
-                                consented_time=consented_time,
                             )
                         )
                     elif request.method == "DELETE":
-                        responses.append(
-                            StudyPatientScopeConsent.objects.get(
-                                study_patient_id=study_patient.id,
-                                scope_code_id=scope_code_id,
-                            ).delete()
-                        )
+                        StudyPatientScopeConsent.objects.filter(
+                            study_patient_id=study_patient.id,
+                            scope_code_id=scope_code_id,
+                        ).delete()
 
             return Response({"study_scope_consents": StudyPatientScopeConsentSerializer(responses, many=True).data})
 

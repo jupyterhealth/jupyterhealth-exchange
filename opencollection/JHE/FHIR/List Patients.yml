@@ -1,0 +1,23 @@
+info:
+  name: List Patients
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{BASE_URL}}/fhir/r5/Patient?identifier=http://tcp.org|fhir-777"
+  params:
+    - name: _has:Group:member:_id
+      value: "{{STUDY_ID}}"
+      type: query
+      disabled: true
+    - name: identifier
+      value: http://tcp.org|fhir-777
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

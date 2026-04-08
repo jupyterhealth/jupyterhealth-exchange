@@ -1,0 +1,26 @@
+info:
+  name: Create Organization
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/api/v1/organizations"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "Department or Urology",
+          "type": "dept",
+          "part_of": {{ORG_ID}}
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

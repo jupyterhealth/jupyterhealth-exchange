@@ -177,115 +177,141 @@ If Observations are sent with data attached in the Open mHealth format (eg `Obse
 - The initial Database is seeded with a minimal set of records to provide an example of the different entity relationships, see the diagram below.
 
 ```mermaid
----
-config:
-  flowchart:
-    nodeSpacing: 50
-    rankSpacing: 60
----
 flowchart TD
-    %% node definitions
-    sam("SuperUser Sam<br/><small>sam@example.com</small>")
-    eri("Organization:<br/>Example Research Institute")
-    esds("Organization:<br/>Example School of Data Science")
-    eglab("Organization:<br/>Example Lab")
-    victor("ViewerVictor<br/><small>victor@example.com</small>")
-    megan("MemberMegan<br/><small>megan@example.com</small>")
-    mary("ManagerMary<br/><small>mary@example.com</small>")
-    tom("ThreeOrgTom<br/><small>tom@example.com</small>")
-    exStudyOnBPHR("Example Study on BP & HR<br/><small>Blood Pressure<br/>Heart Rate</small>")
-    exStudyOnBP("Example Study on BP<br/><small>Blood Pressure</small>")
-    peter("LabPatientPeter<br/><small>peter@example.com</small>")
-    pamela("LabPatientPamela<br/><small>pamela@example.com</small>")
-    eguni("Organization:<br/>Example University")
-    med("Organization:<br/>Example Department")
-    cardio("Organization:<br/>Heart Research Division")
-    mosl("Organization:<br/>Example Lab Alpha")
-    beta("Organization:<br/>Example Lab Beta")
-    mark("ManagerMark<br/><small>mark@example.com</small>")
-    exStudyOnRR("Example Study on RR<br/><small>Respiratory rate</small>")
-    exStudyOnBT("Example Study on BT<br/><small>Body Temperature</small>")
-    exStudyOnO2("Example Study on O2<br/><small>Oxygen Saturation</small>")
-    percy("AlphaPatientPercy<br/><small>percy@example.com</small>")
-    paul("BetaPatientPaul<br/><small>paul@example.com</small>")
-    pat("HeartBetaPatientPat<br/><small>pat@example.com</small>")
-
-    %% styles
+    sam("SuperUser Sam<br/><small>sam\@example.com</small>")
     style sam fill:#CFC
+
+    %% berkeley
+    ucb("Organization:<br/>University of California Berkeley") --> ccdss("Organization:<br/>College of Computing, Data Science and Society")
+    ccdss --> bids("Organization:<br/>Berkeley Institute for Data Science (BIDS)")
+
+    %% berkeley users
+    ucb --Manager--> mary("ManagerMary<br/><small>mary\@example.com</small>")
     style mary fill:#CFC
+    ccdss --Manager--> mary
+    bids --Manager--> mary
+    bids --Memeber--> megan("MemberMegan<br/><small>megan\@example.com</small>")
     style megan fill:#CFC
+    bids --Viewer--> victor("ViewerVictor<br/><small>victor\@example.com</small>")
     style victor fill:#CFC
+    tom("ThreeOrgTom<br/><small>tom\@example.com</small>")
+    bids --Viewer--> tom
     style tom fill:#CFC
-    style mark fill:#CFC
-    style exStudyOnBPHR fill:#CFF
-    style exStudyOnBP fill:#CFF
-    style exStudyOnRR fill:#CFF
-    style exStudyOnBT fill:#CFF
-    style exStudyOnO2 fill:#CFF
+
+    %% berkeley studies
+    bids --> bidsStudyOnBPHR("BIDS Study on BP & HR<br/><small>Blood Pressure<br/>Heart Rate</small>")
+    style bidsStudyOnBPHR fill:#CFF
+    bids --> bidsStudyOnBP("BIDS Study on BP<br/><small>Blood Pressure </small>")
+    style bidsStudyOnBP fill:#CFF
+
+    %% berkeley patients
+    bids --> peter("BidsPatientPeter<br/><small>peter\@example.com</small>")
     style peter fill:#FCC
+    peter --Consented--> bidsStudyOnBPHR
+    peter --Requested--> bidsStudyOnBP
+    pamela("BidsPatientPamela<br/><small>pamela\@example.com</small>")
     style pamela fill:#FCC
+    bids --> pamela
+    pamela --Consented--> bidsStudyOnBPHR
+    pamela --Consented--> bidsStudyOnBP
+
+    %% ucsf
+    ucsf("Organization:<br/>University of California San Francisco") --> med("Organization:<br/>Department of Medicine")
+    med --> cardio("Organization:<br/>Cardiology")
+    cardio --> moslehi("Organization:<br/>Moslehi Lab")
+    cardio --> olgin("Organization:<br/>Olgin Lab")
+
+    %% ucsf users
+    ucsf --Manager-->mark("ManagerMark<br/><small>mark\@example.com</small>")
+    style mark fill:#CFC
+    med --Manager--> mark
+    cardio --Manager--> mark
+    moslehi --Member--> tom
+    moslehi --Manager-->mark
+    olgin --Manager--> tom
+
+    %% ucsf studies
+    cardio --> cardioStudyOnRR("Cardio Study on RR<br/><small>Respiratory rate</small>")
+    style cardioStudyOnRR fill:#CFF
+    moslehi --> moslehiStudyOnBT("Moslehi Study on BT<br/><small>Body Temperature</small>")
+    style moslehiStudyOnBT fill:#CFF
+    olgin --> olginStudyOnO2("Olgin Study on O2<br/><small>Oxygen Saturation</small>")
+    style olginStudyOnO2 fill:#CFF
+
+    %% ucsf patients
+    moslehi --> percy("MoslehiPatientPercy<br/><small>percy\@example.com</small>")
     style percy fill:#FCC
+    percy --Consented--> moslehiStudyOnBT
+    olgin --> paul("OlginPatientPaul<br/><small>paul\@example.com</small>")
     style paul fill:#FCC
+    paul --Consented--> olginStudyOnO2
+    cardio --> pat("CardioOlginPatientPat<br/><small>pat\@example.com</small>")
     style pat fill:#FCC
-
-    %% example institute org hierarchy
-    eri --> esds
-    esds --> eglab
-
-    %% example institute user roles
-    eri -- Manager --> mary
-    esds -- Manager --> mary
-    eglab -- Viewer --> victor
-    eglab -- Member --> megan
-    eglab -- Viewer --> tom
-    eglab -- Manager --> mary
-
-    %% example institute studies & patients
-    eglab --> peter
-    eglab --> pamela
-    eglab --> exStudyOnBPHR
-    eglab --> exStudyOnBP
-    peter -- Consented --> exStudyOnBPHR
-    peter -- Requested --> exStudyOnBP
-    pamela -- Consented --> exStudyOnBPHR
-    pamela -- Consented --> exStudyOnBP
-
-    %% example university org hierarchy
-    eguni --> med
-    med --> cardio
-    cardio --> mosl
-    cardio --> beta
-
-    %% example university user roles
-    eguni -- Manager --> mark
-    med -- Manager --> mark
-    cardio -- Manager --> mark
-    mosl -- Manager --> mark
-    mosl -- Member --> tom
-    beta -- Manager --> tom
-
-    %% example university studies & patients
-    cardio --> exStudyOnRR
-    mosl --> exStudyOnBT
-    beta --> exStudyOnO2
-    mosl --> percy
-    beta --> paul
-    cardio --> pat
-    beta --> pat
-    percy -- Consented --> exStudyOnBT
-    paul -- Consented --> exStudyOnO2
-    pat -- Consented --> exStudyOnRR
-    pat -- Consented --> exStudyOnO2
+    pat --Consented--> cardioStudyOnRR
+    pat --Consented--> olginStudyOnO2
+    olgin --> pat
 ```
 
 ### Iglu Test Data
 
 - Additional test data from the [iglu project](https://github.com/irinagain/iglu) can be seeded by running the following command (please note this can take 10-20 minutes to run)
   `$ python manage.py iglu`
-- This creates a new study under the "Example Research Institute" Organization with 19 mock patients and 1745 real Observation data points
+- This creates a new study under the "Berkeley Institute for Data Science (BIDS)" Organization with 19 mock patients and 1745 real Observation data points
 
 
 ## Working with APIs
+
+### Bruno API Collection
+
+A [Bruno](https://www.usebruno.com/) API collection is included at `opencollection/JHE/` with pre-configured requests for all Admin and FHIR endpoints. All requests use environment variables - no hardcoded IDs.
+
+#### Setup
+
+1. Install [Bruno](https://www.usebruno.com/downloads) (v3.2+)
+2. Seed the database and generate an access token:
+   ```bash
+   python manage.py seed          # creates sample orgs, patients, studies, etc.
+   python manage.py create_bruno_app --email sam@example.com
+   ```
+   The `create_bruno_app` command creates an OAuth app, generates a 1-year access token, and adds the user as manager to all organizations.
+3. Open Bruno > **Open Collection** > select `opencollection/JHE/`
+4. Go to **Workspace** (top-left) > **Environments** tab > create a **Local** environment with:
+
+   | Variable | Value | Description |
+   |----------|-------|-------------|
+   | `BASE_URL` | `http://localhost:8000` | Local dev server |
+   | `ACCESS_TOKEN` | *(paste token from step 2)* | Bearer token for API auth |
+   | `ORG_ID` | `20003` | Example Lab (has patients and studies) |
+   | `PATIENT_ID` | `40001` | peter@example.com |
+   | `STUDY_ID` | `30001` | Example Study on BP & HR |
+   | `USER_ID` | `10002` | mary@example.com |
+   | `DATA_SOURCE_ID` | `70001` | CareX data source |
+   | `CLIENT_APP_ID` | `1` | JHE Admin UI OAuth app |
+
+5. Select **Local** from the environment dropdown (top-right)
+6. Send any request (e.g. **Admin > Settings > List Settings**)
+
+> [!NOTE]
+> The token expires after 1 year. Run `create_bruno_app` again to generate a new one.
+
+#### Collection Structure
+
+| Folder | Requests | Description |
+|--------|----------|-------------|
+| **FHIR** | 5 | FHIR R5 Patient and Observation endpoints |
+| **Admin > Settings** | 1 | JHE settings (superuser only) |
+| **Admin > Organizations** | 10 | CRUD, tree, users, studies |
+| **Admin > Patients** | 8 | CRUD, consents, global lookup, invitation link |
+| **Admin > Studies** | 7 | CRUD, scope requests, patients, clients, data sources |
+| **Admin > Users** | 4 | Profile, search, organizations |
+| **Admin > Practitioners** | 2 | List and create |
+| **Admin > Data Sources** | 4 | List, details, scopes |
+| **Admin > Clients** | 3 | List, details, data sources |
+| **Admin > Observations** | 1 | Paginated list |
+
+#### Known Issues
+
+- **FHIR Create Observation**: Returns 400 if the patient has not consented to the observation's scope code in a study. This is expected validation behavior.
 
 ### Auth API
 
@@ -670,14 +696,14 @@ When `DEBUG` is enabled the SPA debug page now summarizes server errors (includi
 ## Test Procedure
 
 1. **Select Parent Organization**
-   Choose **Example Research Institute**.
+   Choose **University of California, Berkeley**.
 
 2. **Open Sub-Organization**
-   Navigate to **Example School of Data Science**, then click **View** for **Example Lab**.
+   Click **View** for **Berkeley Institute for Data Science (BIDS)**.
 
 3. **Create a New Study**
 
-   * Under Example Lab, create a study.
+   * Under BIDS, create a study.
    * Add the **iHealth** data source.
    * Set the data scope to **blood glucose**.
 

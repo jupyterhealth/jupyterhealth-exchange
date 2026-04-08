@@ -1,0 +1,35 @@
+info:
+  name: Create Consents
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/api/v1/patients/{{PATIENT_ID}}/consents"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "study_scope_consents": [
+              {
+                  "study_id": {{STUDY_ID}},
+                  "scope_consents": [
+                      {
+                          "coding_system": "https://w3id.org/openmhealth",
+                          "coding_code": "omh:heart-rate:2.0",
+                          "consented": false
+                      }
+                  ]
+              }
+          ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

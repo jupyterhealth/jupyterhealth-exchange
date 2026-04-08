@@ -1,0 +1,19 @@
+info:
+  name: List Clients
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{BASE_URL}}/api/v1/clients"
+  params:
+  - name: pageSize
+    value: "10"
+    type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

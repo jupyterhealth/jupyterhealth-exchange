@@ -1,0 +1,30 @@
+info:
+  name: List Observations for Patient
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{BASE_URL}}/fhir/r5/Observation?patient={{PATIENT_ID}}&patient._has:Group:member:_id={{STUDY_ID}}"
+  params:
+    - name: code
+      value: https://w3id.org/openmhealth|omh:blood-pressure:4.0
+      type: query
+      disabled: true
+    - name: patient
+      value: "{{PATIENT_ID}}"
+      type: query
+    - name: patient.identifier
+      value: http://app.medplum.com|testpatient-min
+      type: query
+      disabled: true
+    - name: patient._has:Group:member:_id
+      value: "{{STUDY_ID}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

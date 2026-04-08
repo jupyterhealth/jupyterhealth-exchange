@@ -50,6 +50,10 @@ class Command(BaseCommand):
             self.seed_example_institute(root_organization)
             self.seed_example_university(root_organization)
             self.seed_oauth_application()
+            self.seed_oauth_application(
+                name="Bruno API Collection",
+                redirect_uri=settings.SITE_URL + "/auth/callback/simple/",
+            )
 
         self.stdout.write(self.style.SUCCESS("Seeding complete."))
 
@@ -328,10 +332,10 @@ class Command(BaseCommand):
                 value_attachment_data=generate_observation_value_attachment_data(consent.scope_code.coding_code),
             )
 
-    def seed_oauth_application(self, name="JHE Admin UI"):
+    def seed_oauth_application(self, name="JHE Admin UI", redirect_uri=None):
         application = get_application_model()
         application.objects.create(
-            redirect_uris=settings.SITE_URL + settings.OAUTH2_CALLBACK_PATH,
+            redirect_uris=redirect_uri or (settings.SITE_URL + settings.OAUTH2_CALLBACK_PATH),
             client_type="public",
             authorization_grant_type="authorization-code",
             client_secret="pbkdf2_sha256$870000$Hrxk93CVKgRSGJdyusw4go$umXWiaCn152vXWiXl1bQZwupccDt18QiQcotff+hBmQ=",

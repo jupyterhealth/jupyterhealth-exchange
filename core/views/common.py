@@ -79,6 +79,12 @@ def client_auth_callback(request):
     return render(request, "client/client_auth/callback.html")
 
 
+def client_auth_callback_simple(request):
+    """Minimal callback page for API testing tools (e.g. Bruno, Postman).
+    No JS - just a static page that lets the tool capture the auth code from the URL."""
+    return render(request, "client/client_auth/callback_simple.html")
+
+
 def client_auth_callback_popup(request):
     return render(request, "client/client_auth/callback_popup.html")
 
