@@ -503,13 +503,16 @@ class Patient(models.Model):
     @staticmethod
     def for_study(jhe_user_id, study_id):
         q = """
-            SELECT core_patient.*
+            SELECT DISTINCT core_patient.*
             FROM core_patient
             JOIN core_studypatient ON core_studypatient.patient_id=core_patient.id
             JOIN core_study ON core_study.id=core_studypatient.study_id
             JOIN core_organization ON core_organization.id=core_study.organization_id
-            JOIN core_patientorganization ON core_patientorganization.organization_id=core_organization.id
-            WHERE core_patientorganization.jhe_user_id=%(jhe_user_id)s AND core_study.id=%(study_id)s
+            JOIN core_practitionerorganization
+              ON core_practitionerorganization.organization_id=core_organization.id
+            JOIN core_practitioner
+              ON core_practitioner.id=core_practitionerorganization.practitioner_id
+            WHERE core_practitioner.jhe_user_id=%(jhe_user_id)s AND core_study.id=%(study_id)s
             """
         return Patient.objects.raw(q, {"jhe_user_id": jhe_user_id, "study_id": study_id})
 
@@ -581,8 +584,12 @@ class Patient(models.Model):
             FROM core_patient
             JOIN core_jheuser AS patient_user ON patient_user.id=core_patient.jhe_user_id
             JOIN core_studypatient ON core_studypatient.patient_id=core_patient.id
+            JOIN core_patientorganization
+              ON core_patientorganization.patient_id=core_patient.id
+            JOIN core_organization
+              ON core_organization.id=core_patientorganization.organization_id
             JOIN core_practitionerorganization
-            ON core_practitionerorganization.organization_id = core_organization.id
+              ON core_practitionerorganization.organization_id=core_organization.id
             WHERE core_practitionerorganization.practitioner_id = %(practitioner_id)s
 
             {study_sql_where}
@@ -1236,12 +1243,9 @@ class Observation(models.Model):
             )
 
         try:
-            raw = fhir_observation.valueAttachment.data
-            decoded = raw.decode("utf-8") if isinstance(raw, bytes) else raw
-            try:
-                value_attachment_data = json.loads(decoded)
-            except (json.JSONDecodeError, ValueError):
-                value_attachment_data = json.loads(base64.b64decode(decoded).decode("utf-8"))
+            value_attachment_data_binary = base64.b64decode(fhir_observation.valueAttachment.data)
+            value_attachment_data_json = value_attachment_data_binary.decode("ascii")
+            value_attachment_data = json.loads(value_attachment_data_json)
         except Exception:
             raise BadRequest("valueAttachment.data must be Base 64 Encoded Binary JSON.")  # TBD: move to view
 
