@@ -26,11 +26,8 @@ from core.models import (
     DataSource,
     JheSetting,
     JheUser,
-    Observation,
     Organization,
-    Patient,
     PractitionerOrganization,
-    Study,
 )
 
 from .utils import Code, add_observations, add_patient_to_study, create_study
@@ -159,9 +156,11 @@ def parse_request(path):
 
 def resolve_url(url_template, env):
     """Replace {{VAR}} placeholders with values from env dict."""
+
     def replacer(match):
         var = match.group(1)
         return str(env.get(var, match.group(0)))
+
     return BRUNO_VARIABLE_RE.sub(replacer, url_template)
 
 
@@ -304,19 +303,25 @@ class TestOrganizationEndpoints:
         assert data["name"] == organization.name
 
     def test_create_organization(self, manager_client, organization):
-        r = manager_client.post("/api/v1/organizations", {
-            "name": "Bruno Test Org",
-            "type": "dept",
-            "part_of": organization.id,
-        })
+        r = manager_client.post(
+            "/api/v1/organizations",
+            {
+                "name": "Bruno Test Org",
+                "type": "dept",
+                "part_of": organization.id,
+            },
+        )
         assert r.status_code == 201
         created = r.json()
         assert created["name"] == "Bruno Test Org"
 
     def test_update_organization(self, manager_client, organization):
-        r = manager_client.patch(f"/api/v1/organizations/{organization.id}", {
-            "name": "Updated Org Name",
-        })
+        r = manager_client.patch(
+            f"/api/v1/organizations/{organization.id}",
+            {
+                "name": "Updated Org Name",
+            },
+        )
         assert r.status_code == 200
         assert r.json()["name"] == "Updated Org Name"
 
@@ -346,10 +351,13 @@ class TestOrganizationEndpoints:
             email="bruno-add-user@example.org",
             user_type="practitioner",
         )
-        r = manager_client.post(f"/api/v1/organizations/{organization.id}/user", {
-            "jhe_user_id": new_user.id,
-            "organization_partitioner_role": "viewer",
-        })
+        r = manager_client.post(
+            f"/api/v1/organizations/{organization.id}/user",
+            {
+                "jhe_user_id": new_user.id,
+                "organization_partitioner_role": "viewer",
+            },
+        )
         assert r.status_code == 200
         assert r.json()["role"] == "viewer"
 
@@ -359,10 +367,13 @@ class TestOrganizationEndpoints:
             user_type="practitioner",
         )
         # Add first
-        manager_client.post(f"/api/v1/organizations/{organization.id}/user", {
-            "jhe_user_id": new_user.id,
-            "organization_partitioner_role": "viewer",
-        })
+        manager_client.post(
+            f"/api/v1/organizations/{organization.id}/user",
+            {
+                "jhe_user_id": new_user.id,
+                "organization_partitioner_role": "viewer",
+            },
+        )
         # Remove
         r = manager_client.delete(
             f"/api/v1/organizations/{organization.id}/remove_user",
@@ -387,30 +398,37 @@ class TestPatientEndpoints:
         assert data["count"] >= 1
 
     def test_create_patient(self, manager_client, organization):
-        r = manager_client.post("/api/v1/patients", {
-            "organizationId": organization.id,
-            "telecomEmail": "bruno-patient@example.org",
-            "birthDate": "2000-01-01",
-        })
+        r = manager_client.post(
+            "/api/v1/patients",
+            {
+                "organizationId": organization.id,
+                "telecomEmail": "bruno-patient@example.org",
+                "birthDate": "2000-01-01",
+            },
+        )
         assert r.status_code == 200
         assert r.json()["telecomEmail"] == "bruno-patient@example.org"
 
     def test_delete_patient(self, manager_client, organization):
-        r = manager_client.post("/api/v1/patients", {
-            "organizationId": organization.id,
-            "telecomEmail": "bruno-delete@example.org",
-            "birthDate": "2000-01-01",
-        })
-        patient_id = r.json()["id"]
-        r = manager_client.delete(
-            f"/api/v1/patients/{patient_id}?organization_id={organization.id}"
+        r = manager_client.post(
+            "/api/v1/patients",
+            {
+                "organizationId": organization.id,
+                "telecomEmail": "bruno-delete@example.org",
+                "birthDate": "2000-01-01",
+            },
         )
+        patient_id = r.json()["id"]
+        r = manager_client.delete(f"/api/v1/patients/{patient_id}?organization_id={organization.id}")
         assert r.status_code == 200
 
     def test_global_lookup(self, manager_client, patient):
-        r = manager_client.get("/api/v1/patients/global_lookup", {
-            "email": patient.jhe_user.email,
-        })
+        r = manager_client.get(
+            "/api/v1/patients/global_lookup",
+            {
+                "email": patient.jhe_user.email,
+            },
+        )
         assert r.status_code == 200
 
     def test_patient_consents_get(self, manager_client, patient, hr_study):
@@ -456,46 +474,67 @@ class TestPatientEndpoints:
         # Use a fresh study with BloodPressure code so no pre-existing consents
         study = create_study(organization=organization, codes=[Code.BloodPressure])
         add_patient_to_study(patient=patient, study=study, consent=False)
-        r = manager_client.post(f"/api/v1/patients/{patient.id}/consents", {
-            "study_scope_consents": [{
-                "study_id": study.id,
-                "scope_consents": [{
-                    "coding_system": Code.OpenMHealth.value,
-                    "coding_code": Code.BloodPressure.value,
-                    "consented": False,
-                }],
-            }],
-        })
+        r = manager_client.post(
+            f"/api/v1/patients/{patient.id}/consents",
+            {
+                "study_scope_consents": [
+                    {
+                        "study_id": study.id,
+                        "scope_consents": [
+                            {
+                                "coding_system": Code.OpenMHealth.value,
+                                "coding_code": Code.BloodPressure.value,
+                                "consented": False,
+                            }
+                        ],
+                    }
+                ],
+            },
+        )
         assert r.status_code == 200
 
     def test_update_consents(self, manager_client, patient, hr_study):
         """Admin/Patients/Update Consents.yml"""
         # hr_study fixture already creates consented=True for HeartRate
-        r = manager_client.patch(f"/api/v1/patients/{patient.id}/consents", {
-            "study_scope_consents": [{
-                "study_id": hr_study.id,
-                "scope_consents": [{
-                    "coding_system": Code.OpenMHealth.value,
-                    "coding_code": Code.HeartRate.value,
-                    "consented": False,
-                }],
-            }],
-        })
+        r = manager_client.patch(
+            f"/api/v1/patients/{patient.id}/consents",
+            {
+                "study_scope_consents": [
+                    {
+                        "study_id": hr_study.id,
+                        "scope_consents": [
+                            {
+                                "coding_system": Code.OpenMHealth.value,
+                                "coding_code": Code.HeartRate.value,
+                                "consented": False,
+                            }
+                        ],
+                    }
+                ],
+            },
+        )
         assert r.status_code == 200
 
     def test_delete_consents(self, manager_client, patient, hr_study):
         """Admin/Patients/Delete Consents.yml"""
         # hr_study fixture already creates consented=True for HeartRate
-        r = manager_client.delete(f"/api/v1/patients/{patient.id}/consents", {
-            "study_scope_consents": [{
-                "study_id": hr_study.id,
-                "scope_consents": [{
-                    "coding_system": Code.OpenMHealth.value,
-                    "coding_code": Code.HeartRate.value,
-                    "consented": True,
-                }],
-            }],
-        })
+        r = manager_client.delete(
+            f"/api/v1/patients/{patient.id}/consents",
+            {
+                "study_scope_consents": [
+                    {
+                        "study_id": hr_study.id,
+                        "scope_consents": [
+                            {
+                                "coding_system": Code.OpenMHealth.value,
+                                "coding_code": Code.HeartRate.value,
+                                "consented": True,
+                            }
+                        ],
+                    }
+                ],
+            },
+        )
         assert r.status_code == 200
 
 
@@ -508,11 +547,14 @@ class TestStudyEndpoints:
         assert r.json()["count"] >= 1
 
     def test_create_study(self, manager_client, organization):
-        r = manager_client.post("/api/v1/studies", {
-            "organization": organization.id,
-            "name": "Bruno Test Study",
-            "description": "Created by test",
-        })
+        r = manager_client.post(
+            "/api/v1/studies",
+            {
+                "organization": organization.id,
+                "name": "Bruno Test Study",
+                "description": "Created by test",
+            },
+        )
         assert r.status_code == 201
 
     def test_list_study_patients(self, manager_client, hr_study, patient):
@@ -566,9 +608,12 @@ class TestUserEndpoints:
         assert any(o["id"] == organization.id for o in orgs)
 
     def test_search_by_email(self, manager_client, user):
-        r = manager_client.get("/api/v1/users/search_by_email", {
-            "email": user.email,
-        })
+        r = manager_client.get(
+            "/api/v1/users/search_by_email",
+            {
+                "email": user.email,
+            },
+        )
         assert r.status_code == 200
 
     def test_user_consents_get(self, manager_client, patient, hr_study):
@@ -592,9 +637,12 @@ class TestPractitionerEndpoints:
             email="bruno-practitioner@example.org",
             user_type="practitioner",
         )
-        r = superuser_client.post("/api/v1/practitioners", {
-            "user": new_user.id,
-        })
+        r = superuser_client.post(
+            "/api/v1/practitioners",
+            {
+                "user": new_user.id,
+            },
+        )
         # May succeed or 400 if practitioner already auto-created
         assert r.status_code in (200, 201, 400)
 
@@ -649,22 +697,28 @@ class TestObservationEndpoints:
     """Admin > Observations"""
 
     def test_paginate_observations(self, manager_client, organization, study_with_observations):
-        r = manager_client.get("/api/v1/observations", {
-            "organizationId": organization.id,
-            "page": 1,
-            "pageSize": 3,
-        })
+        r = manager_client.get(
+            "/api/v1/observations",
+            {
+                "organizationId": organization.id,
+                "page": 1,
+                "pageSize": 3,
+            },
+        )
         assert r.status_code == 200
         data = r.json()
         assert data["count"] == 5
         assert len(data["results"]) == 3
 
     def test_paginate_page_2(self, manager_client, organization, study_with_observations):
-        r = manager_client.get("/api/v1/observations", {
-            "organizationId": organization.id,
-            "page": 2,
-            "pageSize": 3,
-        })
+        r = manager_client.get(
+            "/api/v1/observations",
+            {
+                "organizationId": organization.id,
+                "page": 2,
+                "pageSize": 3,
+            },
+        )
         assert r.status_code == 200
         data = r.json()
         assert len(data["results"]) == 2  # 5 total, page 2 of size 3
@@ -674,19 +728,25 @@ class TestFHIREndpoints:
     """FHIR R5 endpoints"""
 
     def test_list_observations_for_org(self, manager_client, study_with_observations):
-        r = manager_client.get("/fhir/r5/Observation", {
-            "patient._has:Group:member:_id": study_with_observations.id,
-        })
+        r = manager_client.get(
+            "/fhir/r5/Observation",
+            {
+                "patient._has:Group:member:_id": study_with_observations.id,
+            },
+        )
         assert r.status_code == 200
         bundle = r.json()
         assert bundle["resourceType"] == "Bundle"
         assert bundle["total"] == 5
 
     def test_list_observations_for_patient(self, manager_client, patient, study_with_observations):
-        r = manager_client.get("/fhir/r5/Observation", {
-            "patient": patient.id,
-            "patient._has:Group:member:_id": study_with_observations.id,
-        })
+        r = manager_client.get(
+            "/fhir/r5/Observation",
+            {
+                "patient": patient.id,
+                "patient._has:Group:member:_id": study_with_observations.id,
+            },
+        )
         assert r.status_code == 200
         bundle = r.json()
         assert bundle["resourceType"] == "Bundle"
@@ -697,9 +757,12 @@ class TestFHIREndpoints:
         patient.name_family = "TestFamily"
         patient.name_given = "TestGiven"
         patient.save()
-        r = manager_client.get("/fhir/r5/Patient", {
-            "_has:Group:member:_id": study_with_observations.id,
-        })
+        r = manager_client.get(
+            "/fhir/r5/Patient",
+            {
+                "_has:Group:member:_id": study_with_observations.id,
+            },
+        )
         assert r.status_code == 200
         bundle = r.json()
         assert bundle["resourceType"] == "Bundle"
@@ -711,59 +774,72 @@ class TestFHIREndpoints:
 
     def test_create_observation_without_consent(self, manager_client, patient, data_source, scope_code):
         """FHIR Create Observation returns 400 when patient hasn't consented."""
-        r = manager_client.post("/fhir/r5/Observation", {
-            "resourceType": "Observation",
-            "identifier": [{"system": "https://test.org", "value": "bruno-test"}],
-            "status": "final",
-            "code": {
-                "coding": [{
-                    "system": Code.OpenMHealth.value,
-                    "code": Code.BloodGlucose.value,
-                }],
+        r = manager_client.post(
+            "/fhir/r5/Observation",
+            {
+                "resourceType": "Observation",
+                "identifier": [{"system": "https://test.org", "value": "bruno-test"}],
+                "status": "final",
+                "code": {
+                    "coding": [
+                        {
+                            "system": Code.OpenMHealth.value,
+                            "code": Code.BloodGlucose.value,
+                        }
+                    ],
+                },
+                "subject": {"reference": f"Patient/{patient.id}"},
+                "device": {"reference": f"Device/{data_source.id}"},
+                "valueAttachment": {
+                    "contentType": "application/json",
+                    "data": "e30=",  # base64 of {}
+                },
             },
-            "subject": {"reference": f"Patient/{patient.id}"},
-            "device": {"reference": f"Device/{data_source.id}"},
-            "valueAttachment": {
-                "contentType": "application/json",
-                "data": "e30=",  # base64 of {}
-            },
-        })
+        )
         # 400 expected: patient hasn't consented to blood glucose in any study
         assert r.status_code == 400
 
     def test_bundle_create_observation(self, manager_client, patient, data_source, study_with_observations):
         """FHIR Bundle POST to /fhir/r5/."""
-        from core.utils import generate_observation_value_attachment_data
         import base64
         import json
+
+        from core.utils import generate_observation_value_attachment_data
 
         record = generate_observation_value_attachment_data(Code.HeartRate.value)
         encoded = base64.b64encode(json.dumps(record).encode()).decode()
 
-        r = manager_client.post("/fhir/r5/", {
-            "resourceType": "Bundle",
-            "type": "batch",
-            "entry": [{
-                "resource": {
-                    "resourceType": "Observation",
-                    "identifier": [{"system": "https://test.org", "value": "bruno-bundle-test"}],
-                    "status": "final",
-                    "code": {
-                        "coding": [{
-                            "system": Code.OpenMHealth.value,
-                            "code": Code.HeartRate.value,
-                        }],
-                    },
-                    "subject": {"reference": f"Patient/{patient.id}"},
-                    "device": {"reference": f"Device/{data_source.id}"},
-                    "valueAttachment": {
-                        "contentType": "application/json",
-                        "data": encoded,
-                    },
-                },
-                "request": {"method": "POST", "url": "Observation"},
-            }],
-        })
+        r = manager_client.post(
+            "/fhir/r5/",
+            {
+                "resourceType": "Bundle",
+                "type": "batch",
+                "entry": [
+                    {
+                        "resource": {
+                            "resourceType": "Observation",
+                            "identifier": [{"system": "https://test.org", "value": "bruno-bundle-test"}],
+                            "status": "final",
+                            "code": {
+                                "coding": [
+                                    {
+                                        "system": Code.OpenMHealth.value,
+                                        "code": Code.HeartRate.value,
+                                    }
+                                ],
+                            },
+                            "subject": {"reference": f"Patient/{patient.id}"},
+                            "device": {"reference": f"Device/{data_source.id}"},
+                            "valueAttachment": {
+                                "contentType": "application/json",
+                                "data": encoded,
+                            },
+                        },
+                        "request": {"method": "POST", "url": "Observation"},
+                    }
+                ],
+            },
+        )
         assert r.status_code == 200
         result = r.json()
         assert result["resourceType"] == "Bundle"
@@ -779,11 +855,14 @@ class TestRegressions:
 
     def test_observation_page_out_of_range(self, manager_client, organization, study_with_observations):
         """Pagination beyond available data should return an error, not crash."""
-        r = manager_client.get("/api/v1/observations", {
-            "organizationId": organization.id,
-            "page": 999,
-            "pageSize": 3,
-        })
+        r = manager_client.get(
+            "/api/v1/observations",
+            {
+                "organizationId": organization.id,
+                "page": 999,
+                "pageSize": 3,
+            },
+        )
         assert r.status_code == 404
 
     def test_patient_requires_org_membership(self, db):
@@ -874,9 +953,12 @@ class TestResponseSchemas:
             assert "organization" in s
 
     def test_fhir_bundle_schema(self, manager_client, study_with_observations):
-        r = manager_client.get("/fhir/r5/Observation", {
-            "patient._has:Group:member:_id": study_with_observations.id,
-        })
+        r = manager_client.get(
+            "/fhir/r5/Observation",
+            {
+                "patient._has:Group:member:_id": study_with_observations.id,
+            },
+        )
         bundle = r.json()
         assert bundle["resourceType"] == "Bundle"
         assert bundle["type"] == "searchset"
@@ -895,9 +977,12 @@ class TestResponseSchemas:
         assert data["email"] == user.email
 
     def test_observation_list_schema(self, manager_client, organization, study_with_observations):
-        r = manager_client.get("/api/v1/observations", {
-            "organizationId": organization.id,
-        })
+        r = manager_client.get(
+            "/api/v1/observations",
+            {
+                "organizationId": organization.id,
+            },
+        )
         data = r.json()
         assert "count" in data
         assert "results" in data
@@ -934,11 +1019,14 @@ class TestEdgeCases:
 
     def test_observation_page_size_one(self, manager_client, organization, study_with_observations):
         """Page size of 1 should work correctly."""
-        r = manager_client.get("/api/v1/observations", {
-            "organizationId": organization.id,
-            "page": 1,
-            "pageSize": 1,
-        })
+        r = manager_client.get(
+            "/api/v1/observations",
+            {
+                "organizationId": organization.id,
+                "page": 1,
+                "pageSize": 1,
+            },
+        )
         assert r.status_code == 200
         data = r.json()
         assert len(data["results"]) == 1
@@ -968,9 +1056,12 @@ class TestEdgeCases:
 
     def test_search_by_email_nonexistent(self, manager_client):
         """Searching for a nonexistent email should not crash."""
-        r = manager_client.get("/api/v1/users/search_by_email", {
-            "email": "nonexistent-99999@example.org",
-        })
+        r = manager_client.get(
+            "/api/v1/users/search_by_email",
+            {
+                "email": "nonexistent-99999@example.org",
+            },
+        )
         assert r.status_code in (200, 404)
 
     def test_observation_no_org_filter(self, manager_client, study_with_observations):
@@ -985,10 +1076,13 @@ class TestEdgeCases:
 
     def test_fhir_observation_with_code_filter(self, manager_client, study_with_observations):
         """FHIR observations filtered by code."""
-        r = manager_client.get("/fhir/r5/Observation", {
-            "patient._has:Group:member:_id": study_with_observations.id,
-            "code": f"{Code.OpenMHealth.value}|{Code.HeartRate.value}",
-        })
+        r = manager_client.get(
+            "/fhir/r5/Observation",
+            {
+                "patient._has:Group:member:_id": study_with_observations.id,
+                "code": f"{Code.OpenMHealth.value}|{Code.HeartRate.value}",
+            },
+        )
         assert r.status_code == 200
         assert r.json()["total"] == 5
 
@@ -1016,9 +1110,12 @@ class TestStress:
     def test_rapid_fhir_observations(self, manager_client, study_with_observations):
         """Hit FHIR observation list 50 times."""
         for _ in range(50):
-            r = manager_client.get("/fhir/r5/Observation", {
-                "patient._has:Group:member:_id": study_with_observations.id,
-            })
+            r = manager_client.get(
+                "/fhir/r5/Observation",
+                {
+                    "patient._has:Group:member:_id": study_with_observations.id,
+                },
+            )
             assert r.status_code == 200
 
     def test_rapid_mixed_endpoints(self, manager_client, organization, hr_study, user):

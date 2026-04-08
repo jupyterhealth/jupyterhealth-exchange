@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from oauthlib.common import generate_token
 from oauth2_provider.models import AccessToken, get_application_model
+from oauthlib.common import generate_token
 
 from core.models import JheUser, Organization, PractitionerOrganization
 
@@ -79,9 +79,7 @@ class Command(BaseCommand):
             return
 
         existing_org_ids = set(
-            PractitionerOrganization.objects.filter(practitioner=practitioner).values_list(
-                "organization_id", flat=True
-            )
+            PractitionerOrganization.objects.filter(practitioner=practitioner).values_list("organization_id", flat=True)
         )
 
         orgs_to_add = Organization.objects.exclude(type="root").exclude(id__in=existing_org_ids)
@@ -90,8 +88,7 @@ class Command(BaseCommand):
             return
 
         links = [
-            PractitionerOrganization(practitioner=practitioner, organization=org, role="manager")
-            for org in orgs_to_add
+            PractitionerOrganization(practitioner=practitioner, organization=org, role="manager") for org in orgs_to_add
         ]
         PractitionerOrganization.objects.bulk_create(links)
         self.stdout.write(self.style.SUCCESS(f"  Added {user.email} as manager to {len(links)} organizations"))
