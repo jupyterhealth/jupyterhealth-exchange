@@ -65,6 +65,7 @@ urlpatterns = [
     # OW API proxy endpoints
     path("api/v1/ow/users", ow.create_ow_user, name="ow-create-user"),
     path("api/v1/ow/oauth/oura/authorize", ow.get_oura_auth_url, name="ow-oura-authorize"),
+    path("api/v1/oauth/oura/callback", ow.oura_oauth_callback, name="ow-oura-callback"),
     # Client UI
     path(
         "portal/client_settings.js",

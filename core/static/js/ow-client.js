@@ -123,7 +123,7 @@ async function createOwUser(accessToken) {
 }
 
 // Get the Oura OAuth authorization URL via JHE proxy endpoint.
-// Returns the response JSON (contains authorization_url), or null on failure.
+// Returns the response JSON (contains authorizationUrl), or null on failure.
 async function getOuraAuthUrl(accessToken, redirectUri) {
   var params = new URLSearchParams({ redirect_uri: redirectUri });
   var response = await fetch(

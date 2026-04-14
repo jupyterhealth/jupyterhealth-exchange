@@ -7,6 +7,10 @@
   <pre id="out" class="text-start ms-5 me-5">
   </pre>
 </div>
+
+{% endblock %}
+
+{% block body_footer %}
 <!-- put any constants etc directly into this file this is just a POC -->
 <!-- put functions in core/static/js/ow-client.js and core/static/js/common.js as needed and keep formatting consistent -->
 <script>
@@ -65,18 +69,17 @@
         var owCompleteUri = window.location.origin + "/ow/complete";
         out.textContent += "\n\nGetting Oura auth URL...";
         var ouraAuth = await getOuraAuthUrl(accessToken, owCompleteUri);
-        if (!ouraAuth || !ouraAuth.authorization_url) {
+        if (!ouraAuth || !ouraAuth.authorizationUrl) {
             out.textContent += "\nError: failed to get Oura auth URL";
             return;
         }
-        out.textContent += "\nOura auth URL: " + ouraAuth.authorization_url;
+        out.textContent += "\nOura auth URL: " + ouraAuth.authorizationUrl;
 
         // 8. Redirect to Oura auth URL
         out.textContent += "\n\nRedirecting to Oura...";
-        window.location.href = ouraAuth.authorization_url;
+        window.location.href = ouraAuth.authorizationUrl;
     }
 
     run();
 </script>
-
 {% endblock %}
