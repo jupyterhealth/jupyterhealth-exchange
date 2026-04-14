@@ -46,6 +46,10 @@ DEBUG = bool(os.getenv("DEBUG"))
 SITE_URL = os.getenv("SITE_URL", "http://localhost:8000").rstrip("/")
 OAUTH2_CALLBACK_PATH = "/auth/callback"
 PRACTITIONER_DEFAULT_ORGS = os.getenv("PRACTITIONER_DEFAULT_ORGS", "")
+
+# Open Wearables integration
+OW_API_URL = os.getenv("OW_API_URL", "").rstrip("/")
+OW_API_KEY = os.getenv("OW_API_KEY", "")
 OIDC_CLIENT_AUTHORITY_PATH = "/o/"
 
 if "ALLOWED_HOSTS" in os.environ:

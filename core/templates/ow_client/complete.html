@@ -1,0 +1,26 @@
+{% extends "partials/base_ow_client.html" %} {% block title %}Complete{% endblock %}
+
+{% block body_content %}
+
+<div class="w-100 text-center mt-5">
+  <h1>OW Client</h1>
+  <pre id="out" class="text-start ms-5 me-5">
+  </pre>
+</div>
+<script>
+    var out = document.getElementById("out");
+    var params = new URLSearchParams(window.location.search);
+    var provider = params.get("provider");
+    var error = params.get("error");
+
+    if (error) {
+        out.textContent = "Error: " + error;
+    } else {
+        out.textContent = "Oura OAuth complete.";
+        if (provider) {
+            out.textContent += "\nProvider: " + provider;
+        }
+    }
+</script>
+
+{% endblock %}

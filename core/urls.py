@@ -3,7 +3,7 @@ from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
 
 from . import views
-from .views import common
+from .views import common, ow
 
 # https://www.django-rest-framework.org/api-guide/routers/#defaultrouter
 api_router = DefaultRouter(trailing_slash=False)
@@ -59,6 +59,12 @@ urlpatterns = [
     # path("smart/callback/", common.smart_callback, name="smart-callback"),
     # oauth token exchange
     path("o/token-exchange", common.token_exchange, name="token-exchange"),
+    # OW Client pages
+    path("ow/launch", common.ow_launch, name="ow-launch"),
+    path("ow/complete", common.ow_complete, name="ow-complete"),
+    # OW API proxy endpoints
+    path("api/v1/ow/users", ow.create_ow_user, name="ow-create-user"),
+    path("api/v1/ow/oauth/oura/authorize", ow.get_oura_auth_url, name="ow-oura-authorize"),
     # Client UI
     path(
         "portal/client_settings.js",
