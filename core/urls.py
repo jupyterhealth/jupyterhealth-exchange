@@ -66,6 +66,7 @@ urlpatterns = [
     path("api/v1/ow/users", ow.create_ow_user, name="ow-create-user"),
     path("api/v1/ow/oauth/oura/authorize", ow.get_oura_auth_url, name="ow-oura-authorize"),
     path("api/v1/oauth/oura/callback", ow.oura_oauth_callback, name="ow-oura-callback"),
+    path("api/v1/ow/sync", ow.sync_ow_data, name="ow-sync"),
     # Client UI
     path(
         "portal/client_settings.js",
