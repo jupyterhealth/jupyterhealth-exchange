@@ -195,10 +195,7 @@ def sync_ow_data(request):
 
     # Resume from the last synced S3 key
     last_key = (
-        Observation.objects.filter(ow_key__isnull=False)
-        .order_by("-ow_key")
-        .values_list("ow_key", flat=True)
-        .first()
+        Observation.objects.filter(ow_key__isnull=False).order_by("-ow_key").values_list("ow_key", flat=True).first()
     )
 
     list_kwargs = {"Bucket": bucket, "Prefix": prefix}
@@ -244,7 +241,7 @@ def sync_ow_data(request):
             # Extract OW user UUID from key path
             relative_key = key
             if key.startswith(s3_prefix + "/"):
-                relative_key = key[len(s3_prefix) + 1:]
+                relative_key = key[len(s3_prefix) + 1 :]
             rel_parts = relative_key.split("/")
             if len(rel_parts) < 5:
                 errors.append(f"Unexpected key format: {key}")
@@ -319,9 +316,11 @@ def sync_ow_data(request):
             total_observations += created_count
             logger.info("Synced %d/%d from %s", created_count, len(measurements), key)
 
-    return Response({
-        "files_processed": total_files,
-        "files_skipped": total_skipped,
-        "observations_created": total_observations,
-        "errors": errors if errors else None,
-    })
+    return Response(
+        {
+            "files_processed": total_files,
+            "files_skipped": total_skipped,
+            "observations_created": total_observations,
+            "errors": errors if errors else None,
+        }
+    )
