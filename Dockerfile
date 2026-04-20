@@ -3,7 +3,7 @@ ARG PYTHON_VERSION=3.12-slim-trixie
 FROM python:${PYTHON_VERSION}
 
 RUN apt-get -y update \
- && apt-get -y install --no-install-recommends postgresql-client \
+ && apt-get -y install --no-install-recommends postgresql-client git \
  && rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONDONTWRITEBYTECODE=1 \

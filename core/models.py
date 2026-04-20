@@ -322,6 +322,9 @@ class Organization(models.Model):
     type = models.CharField(choices=list(ORGANIZATION_TYPES.items()), null=False, blank=False)
     part_of = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True)
 
+    def __str__(self):
+        return self.name or f"Organization {self.pk}"
+
     # Helper method to return all users in this organization
     @property
     def users(self):
@@ -395,6 +398,10 @@ class Practitioner(models.Model):
         Organization, through="PractitionerOrganization", related_name="practitioners"
     )
 
+    def __str__(self):
+        name = f"{self.name_given or ''} {self.name_family or ''}".strip()
+        return name or f"Practitioner {self.pk}"
+
 
 class Patient(models.Model):
     """
@@ -417,6 +424,9 @@ class Patient(models.Model):
     telecom_phone = models.CharField(null=True)
     last_updated = models.DateTimeField(auto_now=True)
     organizations = models.ManyToManyField(Organization, through="PatientOrganization", related_name="patients")
+
+    def __str__(self):
+        return f"{self.name_family}, {self.name_given}"
 
     def consolidated_consented_scopes(self):
         q = """
@@ -669,6 +679,9 @@ class CodeableConcept(models.Model):
     coding_code = models.CharField()
     text = models.CharField()
 
+    def __str__(self):
+        return self.text or self.coding_code
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -684,6 +697,9 @@ class Study(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     patients = models.ManyToManyField("Patient", through="StudyPatient")
     icon_url = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name or f"Study {self.pk}"
 
     @staticmethod
     def for_practitioner_organization(jhe_user_id, organization_id=None, study_id=None):
@@ -849,6 +865,9 @@ class DataSource(models.Model):
         default="personal_device",
     )
 
+    def __str__(self):
+        return self.name or f"DataSource {self.pk}"
+
     # this will never be large
     @staticmethod
     def data_sources_with_scopes(data_source_id=None, study_id=None):
@@ -945,6 +964,7 @@ class Observation(models.Model):
     data_source = models.ForeignKey(DataSource, on_delete=models.SET_NULL, null=True)
     value_attachment_data = models.JSONField()
     last_updated = models.DateTimeField(auto_now=True)
+    ow_key = models.CharField(max_length=512, null=True, blank=True, db_index=True)
 
     # https://build.fhir.org/valueset-observation-status.html
     OBSERVATION_STATUSES = {

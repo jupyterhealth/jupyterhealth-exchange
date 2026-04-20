@@ -41,3 +41,18 @@ function base64UrlEncode(bytes) {
     .replace(/\//g, "_")
     .replace(/=+$/, "");
 }
+
+// Parse invitation link code parameter into its components.
+// Format: host~client_id~code~code_verifier
+function parseInvitationCode(code) {
+  var parts = code.split("~");
+  if (parts.length !== 4) {
+    return null;
+  }
+  return {
+    host: parts[0],
+    clientId: parts[1],
+    code: parts[2],
+    codeVerifier: parts[3],
+  };
+}

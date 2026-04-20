@@ -155,6 +155,14 @@ def portal(request, path):
     return render(request, "client/portal.html", {"foo": "bar"})
 
 
+def ow_launch(request):
+    return render(request, "ow_client/launch.html")
+
+
+def ow_complete(request):
+    return render(request, "ow_client/complete.html")
+
+
 def smart_launch(request):
     raise NotImplementedError()
     # TBD: this is an incomplete implementation,

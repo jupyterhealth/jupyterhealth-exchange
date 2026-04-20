@@ -46,6 +46,19 @@ DEBUG = bool(os.getenv("DEBUG"))
 SITE_URL = os.getenv("SITE_URL", "http://localhost:8000").rstrip("/")
 OAUTH2_CALLBACK_PATH = "/auth/callback"
 PRACTITIONER_DEFAULT_ORGS = os.getenv("PRACTITIONER_DEFAULT_ORGS", "")
+
+# Open Wearables integration
+OW_API_URL = os.getenv("OW_API_URL", "").rstrip("/")
+OW_API_KEY = os.getenv("OW_API_KEY", "")
+
+# OW MinIO (S3-compatible) - for syncing raw payload data
+OW_S3_ENDPOINT_URL = os.getenv("OW_S3_ENDPOINT_URL", "")
+OW_S3_BUCKET = os.getenv("OW_S3_BUCKET", "raw-payloads")
+OW_S3_PREFIX = os.getenv("OW_S3_PREFIX", "raw-payloads")
+OW_S3_ACCESS_KEY = os.getenv("OW_S3_ACCESS_KEY", "")
+OW_S3_SECRET_KEY = os.getenv("OW_S3_SECRET_KEY", "")
+OW_S3_REGION = os.getenv("OW_S3_REGION", "us-east-1")
+
 OIDC_CLIENT_AUTHORITY_PATH = "/o/"
 
 if "ALLOWED_HOSTS" in os.environ:

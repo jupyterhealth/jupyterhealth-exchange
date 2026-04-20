@@ -1,0 +1,85 @@
+{% extends "partials/base_ow_client.html" %} {% block title %}Launch{% endblock %}
+
+{% block body_content %}
+
+<div class="w-100 text-center mt-5">
+  <h1>OW Client</h1>
+  <pre id="out" class="text-start ms-5 me-5">
+  </pre>
+</div>
+
+{% endblock %}
+
+{% block body_footer %}
+<!-- put any constants etc directly into this file this is just a POC -->
+<!-- put functions in core/static/js/ow-client.js and core/static/js/common.js as needed and keep formatting consistent -->
+<script>
+    var out = document.getElementById("out");
+    var redirectUri = window.location.origin + "/auth/callback";
+
+    async function run() {
+        out.textContent = "Processing link...";
+
+        // 1. Get the components of the invite link ?code=abc...~def...~ghi...~jkl
+        var params = new URLSearchParams(window.location.search);
+        var code = params.get("code");
+        if (!code) {
+            out.textContent += "\nError: no code parameter in URL";
+            return;
+        }
+        var link = parseInvitationCode(code);
+        if (!link) {
+            out.textContent += "\nError: invalid invitation code format";
+            return;
+        }
+        out.textContent += "\nHost: " + link.host;
+        out.textContent += "\nClient ID: " + link.clientId;
+        out.textContent += "\nCode: " + link.code;
+        out.textContent += "\nCode Verifier: " + link.codeVerifier;
+
+        // 2. Swap auth code for access token
+        out.textContent += "\n\nSwapping auth code for access token...";
+        var tokens = await exchangeCodeForToken(link.clientId, link.code, link.codeVerifier, redirectUri);
+        if (!tokens || !tokens.access_token) {
+            out.textContent += "\nError: failed to exchange code for token";
+            return;
+        }
+        out.textContent += "\nAccess token received";
+        var accessToken = tokens.access_token;
+
+        // 3. Fetch and update consents (assume yes to all for POC demo)
+        out.textContent += "\n\nFetching and accepting consents...";
+        var consents = await fetchAndAcceptConsents(accessToken);
+        if (!consents) {
+            out.textContent += "\nError: failed to fetch/accept consents";
+            return;
+        }
+        out.textContent += "\nConsents accepted";
+
+        // 4-5. Create OW user via JHE proxy
+        out.textContent += "\n\nCreating OW user...";
+        var owUser = await createOwUser(accessToken);
+        if (!owUser) {
+            out.textContent += "\nError: failed to create OW user";
+            return;
+        }
+        out.textContent += "\nOW user ID: " + owUser.ow_user_id;
+
+        // 6-7. Get Oura auth URL via JHE proxy
+        var owCompleteUri = window.location.origin + "/ow/complete";
+        out.textContent += "\n\nGetting Oura auth URL...";
+        var ouraAuth = await getOuraAuthUrl(accessToken, owCompleteUri);
+        if (!ouraAuth || !ouraAuth.authorizationUrl) {
+            out.textContent += "\nError: failed to get Oura auth URL";
+            return;
+        }
+        out.textContent += "\nOura auth URL: " + ouraAuth.authorizationUrl;
+
+        // 8. Redirect to Oura auth URL
+        out.textContent += "\n\nRedirecting to Oura...";
+        window.location.href = ouraAuth.authorizationUrl;
+    }
+
+    run();
+</script>
+{% endblock %}
