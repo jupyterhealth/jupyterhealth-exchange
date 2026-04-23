@@ -56,7 +56,7 @@ class OrganizationViewSet(ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         is_sub_organization = bool(request.data.get("part_of"))
-        if is_sub_organization:
+        if is_sub_organization and request.user.practitioner:
             PractitionerOrganization.objects.create(
                 organization_id=serializer.data.get("id"),
                 practitioner=request.user.practitioner,
