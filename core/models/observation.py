@@ -244,6 +244,7 @@ class Observation(models.Model):
         fhir_observation = None
         try:
             import humps
+
             fhir_observation = FHIRObservation.parse_obj(humps.camelize(data))
         except Exception as e:
             raise (BadRequest(e))  # TBD: move to view

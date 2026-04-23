@@ -12,7 +12,6 @@ from django.core.exceptions import BadRequest, ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import EmailMessage
 from django.db import connection, models, transaction
-from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.encoding import force_bytes
