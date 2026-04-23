@@ -108,7 +108,11 @@ class JheUser(AbstractUser):
         Application = get_application_model()
         Application.objects.filter(user=self).delete()
 
-        # 2) Now delete the user row itself (bypasses Django's M2M cleanup)
+        # 2) Delete profile rows via ORM so Django cascades (PractitionerOrganization, etc.)
+        Practitioner.objects.filter(jhe_user=self).delete()
+        Patient.objects.filter(jhe_user=self).delete()
+
+        # 3) Now delete the user row itself (bypasses Django's M2M cleanup)
         with connection.cursor() as cursor:
             cursor.execute("DELETE FROM core_jheuser WHERE id = %s", [self.id])
             deleted = cursor.rowcount
