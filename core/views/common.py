@@ -57,6 +57,11 @@ def health(request):
     return JsonResponse({"status": "ok", "version": settings.JHE_VERSION})
 
 
+def health(request):
+    """Lightweight liveness probe — no DB, no auth."""
+    return JsonResponse({"status": "ok", "version": settings.JHE_VERSION})
+
+
 def home(request):
     return render(request, "home/home.html")
 
