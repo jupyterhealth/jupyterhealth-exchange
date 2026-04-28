@@ -18,7 +18,7 @@ Features include:
 
 ## Documentation
 
-https://jupyterhealth.org/software-documentation/
+- https://jupyterhealth.org/software-documentation/
 
 
 ## What It Does
@@ -38,9 +38,6 @@ Users manage the system via the Web UI, and data producers receive invitation cr
 <p align="center">
 	<img src="doc/jupyterhealth-exchange-data_flow.jpg" height="400">
 </p>
-
-## Documentation
-- https://jupyterhealth.org/software-documentation/
 
 
 ## Getting Started
@@ -151,4 +148,4 @@ Entities are based on the [HL7 FHIR model](https://build.fhir.org/), a widely us
 
 ## Contributing
 
-See [here](https://jupyterhealth.org/software-documentation/) for test requirements, coding standards, and PR checklist.
+See [doc](https://jupyterhealth.org/software-documentation/) for test requirements, coding standards, and PR checklist.
