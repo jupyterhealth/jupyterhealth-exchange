@@ -63,7 +63,7 @@ Users manage the system via the Web UI, and data producers receive invitation cr
 
 1. Start the server with `$ python manage.py runserver`
 
-1. Browse to http://localhost:8000/admin and enter the credentials `sam@example.com` `Jhe1234!`
+1. Browse to http://localhost:8000/admin and enter the credentials `admin@example.com` `Jhe1234!`
 
 1. Under *Django OAuth Toolkit* > *Applications* you should see the seeded OAuth2 application named `JHE Admin UI` with a Redirect URI for `http://localhost:8000/auth/callback` - this is used for the Web UI OAuth 2.0 login.
 
@@ -78,7 +78,7 @@ Users manage the system via the Web UI, and data producers receive invitation cr
       - Return to the `.env` file and update the `OIDC_RSA_PRIVATE_KEY`
       - Keep the `oidc.key` somewhere safe
 
-1. Browse to http://localhost:8000/ and log in with the credentials `mary@example.com` `Jhe1234!` and you should be directed to the `/portal/organizations` path with some example Organizations is the dropdown
+1. Browse to http://localhost:8000/ and log in with the credentials `manager_mary@example.com` `Jhe1234!` and you should be directed to the `/portal/organizations` path with some example Organizations is the dropdown
 
 1. New users can be signed up from the base URL (eg http://localhost:8000/) with the default invitation code "jhe" which is set from the `REGISTRATION_INVITE_CODE` in `.env`
 

@@ -48,7 +48,7 @@ class Command(BaseCommand):
             self.seed_data_source()
             root_organization = self.create_root_organization()
             self.seed_example_institute(root_organization)
-            self.seed_example_university(root_organization)
+            self.seed_health_system(root_organization)
             self.seed_oauth_application()
 
         self.stdout.write(self.style.SUCCESS("Seeding complete."))
@@ -146,58 +146,57 @@ class Command(BaseCommand):
         return Organization.objects.create(id=0, name="ROOT", type="root")
 
     def seed_example_institute(self, root_organization):
-        eri = Organization.objects.create(
-            name="Example Research Institute",
+        planetary_research_institute = Organization.objects.create(
+            name="Planetary Research Institute",
             type="edu",
             part_of=root_organization,
         )
-        esds = Organization.objects.create(
-            name="Example School of Data Science",
+        saturn_school_of_data_science = Organization.objects.create(
+            name="Saturn School of Data Science",
             type="team",
-            part_of=eri,
+            part_of=planetary_research_institute,
         )
-        eglab = Organization.objects.create(name="Example Lab", type="laboratory", part_of=esds)
+        lifespan_lab = Organization.objects.create(name="Lifespan Lab", type="laboratory", part_of=saturn_school_of_data_science)
 
-        mary = self.create_user_with_profile("mary@example.com")
+        manager_mary = self.create_user_with_profile("manager_mary@example.com")
 
         manager_links = [
-            PractitionerOrganization(practitioner=mary, organization=org, role="manager") for org in [eri, esds, eglab]
+            PractitionerOrganization(practitioner=manager_mary, organization=org, role="manager") for org in [planetary_research_institute, saturn_school_of_data_science, lifespan_lab]
         ]
         PractitionerOrganization.objects.bulk_create(manager_links)
 
-        megan = self.create_user_with_profile("megan@example.com")
-        PractitionerOrganization.objects.create(practitioner=megan, organization=eglab, role="member")
+        member_megan = self.create_user_with_profile("member_megan@example.com")
+        PractitionerOrganization.objects.create(practitioner=member_megan, organization=lifespan_lab, role="member")
 
-        victor = self.create_user_with_profile("victor@example.com")
-        PractitionerOrganization.objects.create(practitioner=victor, organization=eglab, role="viewer")
+        viewer_victor = self.create_user_with_profile("viewer_victor@example.com")
+        PractitionerOrganization.objects.create(practitioner=viewer_victor, organization=lifespan_lab, role="viewer")
 
-        tom = self.create_user_with_profile("tom@example.com")
-        PractitionerOrganization.objects.create(practitioner=tom, organization=eglab, role="viewer")
+        three_org_tom = self.create_user_with_profile("three_org_tom@example.com")
+        PractitionerOrganization.objects.create(practitioner=three_org_tom, organization=lifespan_lab, role="viewer")
 
-        # 3) Create ERI studies
-        bp_hr = Study.objects.create(
-            name="Example Study on BP & HR",
+        lifespan_study_bp_hr = Study.objects.create(
+            name="Lifespan Study on BP & HR",
             description="Blood Pressure & Heart Rate",
-            organization=eglab,
+            organization=lifespan_lab,
         )
-        bp = Study.objects.create(name="Example Study on BP", description="Blood Pressure", organization=eglab)
+        lifespan_study_bp = Study.objects.create(name="Lifespan Study on BP", description="Blood Pressure", organization=lifespan_lab)
 
         bp_code = CodeableConcept.objects.get(coding_code="omh:blood-pressure:4.0")
         hr_code = CodeableConcept.objects.get(coding_code="omh:heart-rate:2.0")
 
-        StudyScopeRequest.objects.create(study=bp_hr, scope_code=bp_code)
-        StudyScopeRequest.objects.create(study=bp_hr, scope_code=hr_code)
-        StudyScopeRequest.objects.create(study=bp, scope_code=bp_code)
+        StudyScopeRequest.objects.create(study=lifespan_study_bp_hr, scope_code=bp_code)
+        StudyScopeRequest.objects.create(study=lifespan_study_bp_hr, scope_code=hr_code)
+        StudyScopeRequest.objects.create(study=lifespan_study_bp, scope_code=bp_code)
 
-        peter = self.create_user_with_profile("peter@example.com", user_type="patient")
-        peter.organizations.add(eglab)
-        pamela = self.create_user_with_profile("pamela@example.com", user_type="patient")
-        pamela.organizations.add(eglab)
+        ll_patient_pete = self.create_user_with_profile("ll_patient_peter@example.com", user_type="patient")
+        ll_patient_pete.organizations.add(lifespan_lab)
+        ll_patient_pamela = self.create_user_with_profile("ll_patient_pamela@example.com", user_type="patient")
+        ll_patient_pamela.organizations.add(lifespan_lab)
 
-        sp_peter_bp_hr = StudyPatient.objects.create(study=bp_hr, patient=peter)
-        sp_peter_bp = StudyPatient.objects.create(study=bp, patient=peter)  # noqa
-        sp_pamela_bp_hr = StudyPatient.objects.create(study=bp_hr, patient=pamela)
-        sp_pamela_bp = StudyPatient.objects.create(study=bp, patient=pamela)
+        sp_peter_bp_hr = StudyPatient.objects.create(study=lifespan_study_bp_hr, patient=ll_patient_pete)
+        sp_peter_bp = StudyPatient.objects.create(study=lifespan_study_bp, patient=ll_patient_pete)  # noqa
+        sp_pamela_bp_hr = StudyPatient.objects.create(study=lifespan_study_bp_hr, patient=ll_patient_pamela)
+        sp_pamela_bp = StudyPatient.objects.create(study=lifespan_study_bp, patient=ll_patient_pamela)
 
         now = timezone.now()
         StudyPatientScopeConsent.objects.create(
@@ -225,8 +224,8 @@ class Command(BaseCommand):
                     consented_time=now,
                 )
 
-        eri_study_patients = [sp_peter_bp_hr, sp_peter_bp, sp_pamela_bp_hr, sp_pamela_bp]
-        for consent in StudyPatientScopeConsent.objects.filter(consented=True, study_patient__in=eri_study_patients):
+        planetary_research_institute_study_patients = [sp_peter_bp_hr, sp_peter_bp, sp_pamela_bp_hr, sp_pamela_bp]
+        for consent in StudyPatientScopeConsent.objects.filter(consented=True, study_patient__in=planetary_research_institute_study_patients):
             scope_code = consent.scope_code
             Observation.objects.create(
                 subject_patient=consent.study_patient.patient,
@@ -234,63 +233,63 @@ class Command(BaseCommand):
                 value_attachment_data=generate_observation_value_attachment_data(consent.scope_code.coding_code),
             )
 
-    def seed_example_university(self, root_organization):
-        eguni = Organization.objects.create(
-            name="Example University",
-            type="edu",
+    def seed_health_system(self, root_organization):
+        nhs = Organization.objects.create(
+            name="Neptune Health System",
+            type="prov",
             part_of=root_organization,
         )
-        med = Organization.objects.create(name="Example Department", type="dept", part_of=eguni)
-        cardio = Organization.objects.create(name="Heart Research Division", type="dept", part_of=med)
-        mosl = Organization.objects.create(name="Example Lab Alpha", type="laboratory", part_of=cardio)
-        olgin = Organization.objects.create(name="Example Lab Beta", type="laboratory", part_of=cardio)
+        department_of_medicine = Organization.objects.create(name="Department of Medicine", type="dept", part_of=nhs)
+        cardiology_division = Organization.objects.create(name="Cardiology Division", type="dept", part_of=department_of_medicine)
+        neptunian_pulse_lab = Organization.objects.create(name="Neptunian Pulse Lab", type="laboratory", part_of=cardiology_division)
+        cosmic_cardio_lab = Organization.objects.create(name="Cosmic Cardio Lab", type="laboratory", part_of=cardiology_division)
 
-        mark = self.create_user_with_profile("mark@example.com", user_type="practitioner")
+        manager_mark = self.create_user_with_profile("manager_mark@example.com", user_type="practitioner")
         practitioner_org_links = [
-            PractitionerOrganization(practitioner=mark, organization=org, role="manager")
-            for org in [eguni, med, cardio, mosl]
+            PractitionerOrganization(practitioner=manager_mark, organization=org, role="manager")
+            for org in [nhs, department_of_medicine, cardiology_division, neptunian_pulse_lab]
         ]
         PractitionerOrganization.objects.bulk_create(practitioner_org_links)
 
-        tom = JheUser.objects.get(email="tom@example.com").practitioner
-        PractitionerOrganization.objects.create(practitioner=tom, organization=mosl, role="member")
-        PractitionerOrganization.objects.create(practitioner=tom, organization=olgin, role="manager")
+        three_org_tom = JheUser.objects.get(email="three_org_tom@example.com").practitioner
+        PractitionerOrganization.objects.create(practitioner=three_org_tom, organization=neptunian_pulse_lab, role="member")
+        PractitionerOrganization.objects.create(practitioner=three_org_tom, organization=cosmic_cardio_lab, role="manager")
 
         rr_code = CodeableConcept.objects.get(coding_code="omh:respiratory-rate:2.0")
         bt_code = CodeableConcept.objects.get(coding_code="omh:body-temperature:4.0")
         o2_code = CodeableConcept.objects.get(coding_code="omh:oxygen-saturation:2.0")
 
         cardio_rr = Study.objects.create(
-            name="Example Study on RR",
+            name="Cardiology Div Study on RR",
             description="Respiratory rate",
-            organization=cardio,
+            organization=cardiology_division,
         )
-        mosl_bt = Study.objects.create(
-            name="Example Study on BT",
+        neptunian_pulse_lab_bt = Study.objects.create(
+            name="Nep Pulse Lab Study on BT",
             description="Body Temperature",
-            organization=mosl,
+            organization=neptunian_pulse_lab,
         )
-        olgin_o2 = Study.objects.create(
-            name="Example Study on O2",
+        cosmic_cardio_lab_o2 = Study.objects.create(
+            name="Cosmic Cardio Lab Study on O2",
             description="Oxygen Saturation",
-            organization=olgin,
+            organization=cosmic_cardio_lab,
         )
 
         StudyScopeRequest.objects.create(study=cardio_rr, scope_code=rr_code)
-        StudyScopeRequest.objects.create(study=mosl_bt, scope_code=bt_code)
-        StudyScopeRequest.objects.create(study=olgin_o2, scope_code=o2_code)
+        StudyScopeRequest.objects.create(study=neptunian_pulse_lab_bt, scope_code=bt_code)
+        StudyScopeRequest.objects.create(study=cosmic_cardio_lab_o2, scope_code=o2_code)
 
-        percy = self.create_user_with_profile("percy@example.com", user_type="patient")
-        percy.organizations.add(mosl)
-        paul = self.create_user_with_profile("paul@example.com", user_type="patient")
-        paul.organizations.add(olgin)
-        pat = self.create_user_with_profile("pat@example.com", user_type="patient")
-        pat.organizations.add(cardio, olgin)
+        neptunian_pulse_lab_patient_percy = self.create_user_with_profile("npl_patient_percy@example.com", user_type="patient")
+        neptunian_pulse_lab_patient_percy.organizations.add(neptunian_pulse_lab)
+        neptunian_pulse_lab_ccl_patient_paul = self.create_user_with_profile("ccl_patient_paul@example.com", user_type="patient")
+        neptunian_pulse_lab_ccl_patient_paul.organizations.add(cosmic_cardio_lab)
+        ccl_cardio_patient_pat = self.create_user_with_profile("ccl_cardio_patient_pat@example.com", user_type="patient")
+        ccl_cardio_patient_pat.organizations.add(cardiology_division, cosmic_cardio_lab)
 
-        sp_percy_bt = StudyPatient.objects.create(study=mosl_bt, patient=percy)
-        sp_paul_o2 = StudyPatient.objects.create(study=olgin_o2, patient=paul)
-        sp_pat_rr = StudyPatient.objects.create(study=cardio_rr, patient=pat)
-        sp_pat_o2 = StudyPatient.objects.create(study=olgin_o2, patient=pat)
+        sp_percy_bt = StudyPatient.objects.create(study=neptunian_pulse_lab_bt, patient=neptunian_pulse_lab_patient_percy)
+        sp_paul_o2 = StudyPatient.objects.create(study=cosmic_cardio_lab_o2, patient=neptunian_pulse_lab_ccl_patient_paul)
+        sp_pat_rr = StudyPatient.objects.create(study=cardio_rr, patient=ccl_cardio_patient_pat)
+        sp_pat_o2 = StudyPatient.objects.create(study=cosmic_cardio_lab_o2, patient=ccl_cardio_patient_pat)
 
         now = timezone.now()
 
@@ -371,7 +370,7 @@ class Command(BaseCommand):
         return None
 
     @staticmethod
-    def generate_superuser(email="sam@example.com", password="Jhe1234!"):
+    def generate_superuser(email="admin@example.com", password="Jhe1234!"):
         JheUser.objects.create_superuser(
             email=email,
             password=password,
