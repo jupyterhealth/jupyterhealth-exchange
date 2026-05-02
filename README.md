@@ -78,7 +78,7 @@ Users manage the system via the Web UI, and data producers receive invitation cr
       - Return to the `.env` file and update the `OIDC_RSA_PRIVATE_KEY`
       - Keep the `oidc.key` somewhere safe
 
-1. Browse to http://localhost:8000/ and log in with the credentials `manager_mary@example.com` / `Jhe1234!` or `manager_mark@example.com` / `Jhe1234!` and you should be directed to the `/portal/organizations` path with some example Organizations in the dropdown. View [the diagram] to understand how these example Users and Organizations are structured.
+1. Browse to http://localhost:8000/ and log in with the credentials `manager_mary@example.com` / `Jhe1234!` or `manager_mark@example.com` / `Jhe1234!` and you should be directed to the `/portal/organizations` path with some example Organizations in the dropdown. See [Seed Data](doc/seed-data.md) to understand how these example Users and Organizations are structured.
 
 1. New users can be signed up from the base URL (eg http://localhost:8000/) with the default invitation code "**jhe**". This invitation code and other settings can be changed from the same URL by logging in as the Admin user (`admin@example.com` / `Jhe1234!`) and opening the System Settings menu.
 

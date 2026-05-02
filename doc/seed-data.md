@@ -1,4 +1,4 @@
-# JupyterHealth Seed Data Model ERD
+# JupyterHealth Seed Data
 
 ```mermaid
 flowchart TD
@@ -95,3 +95,19 @@ flowchart TD
     ccl_cardio_patient_pat -- Consented --> cardiology_div_study_on_bgl
     ccl_cardio_patient_pat -- Consented --> cosmic_cardio_lab_study_on_o2
 ```
+
+- Password for all users: `Jhe1234!`
+
+| Email | Organizations (Role) | Studies |
+|---|---|---|
+| admin@example.com | All | All |
+| manager_mary@example.com | Planetary Research Institute (Manager), Saturn School of Data Science (Manager), Lifespan Lab (Manager) | Lifespan Study on BP & HR, Lifespan Study on BP |
+| member_megan@example.com | Lifespan Lab (Member) | Lifespan Study on BP & HR, Lifespan Study on BP |
+| viewer_victor@example.com | Lifespan Lab (Viewer) | Lifespan Study on BP & HR, Lifespan Study on BP |
+| three_org_tom@example.com | Lifespan Lab (Viewer), Neptunian Pulse Lab (Member), Cosmic Cardio Lab (Manager) | Lifespan Study on BP & HR, Lifespan Study on BP, Nep Pulse Lab Study on BT, Cosmic Cardio Lab Study on O2 |
+| manager_mark@example.com | Neptune Health System (Manager), Department of Medicine (Manager), Cardiology Division (Manager), Neptunian Pulse Lab (Manager) | Cardiology Div Study on BGL, Nep Pulse Lab Study on BT |
+| ll_patient_peter@example.com | Lifespan Lab (Patient) | Lifespan Study on BP & HR, Lifespan Study on BP |
+| ll_patient_pamela@example.com | Lifespan Lab (Patient) | Lifespan Study on BP & HR, Lifespan Study on BP |
+| npl_patient_percy@example.com | Neptunian Pulse Lab (Patient) | Nep Pulse Lab Study on BT |
+| ccl_patient_paul@example.com | Cosmic Cardio Lab (Patient) | Cosmic Cardio Lab Study on O2 |
+| ccl_cardio_patient_pat@example.com | Cardiology Division (Patient), Cosmic Cardio Lab (Patient) | Cardiology Div Study on BGL, Cosmic Cardio Lab Study on O2 |
