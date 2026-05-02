@@ -8,17 +8,6 @@ DB_HOST="localhost" # Use host.docker.internal if connecting to localhost from D
 DB_PORT=5432
 
 OIDC_RSA_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMII... <output of: $ openssl genrsa -out oidc.key 4096> ...H67\n-----END PRIVATE KEY-----"
-SAML2_ENABLED=0
 
 #  if unset a randomly generated value is used which will not work with more than one worker
 SECRET_KEY=
-
-# Advanced configuration used to bootstrap users into specific organizations
-# PRACTITIONER_DEFAULT_ORGS="20001:viewer;20002:manager" # "<org id>:<role>;..." role=manager|member|viewer
-
-#  ==== TBD: Move all below to get_settings ===
-
-TIME_ZONE="America/Los_Angeles"
-REGISTRATION_INVITE_CODE="jhe"
-SSO_VALID_DOMAINS="example.com,example.org"
-IDENTITY_PROVIDER_METADATA_URL="https://mocksaml.com/api/saml/metadata"

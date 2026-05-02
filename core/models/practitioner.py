@@ -16,6 +16,14 @@ class Practitioner(models.Model):
     organizations = models.ManyToManyField(
         "Organization", through="PractitionerOrganization", related_name="practitioners"
     )
+    settings = models.JSONField(default=dict, blank=True)
+
+    def save_setting(self, key, value):
+        self.settings[key] = value
+        self.save(update_fields=["settings"])
+
+    def get_setting(self, key):
+        return self.settings.get(key)
 
     def __str__(self):
         name = f"{self.name_given or ''} {self.name_family or ''}".strip()

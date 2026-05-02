@@ -21,7 +21,7 @@ flowchart TD
     neptunian_pulse_lab("Organization:<br/>Neptunian Pulse Lab")
     cosmic_cardio_lab("Organization:<br/>Cosmic Cardio Lab")
     manager_mark("ManagerMark<br/><small>manager_mark@example.com</small>")
-    cardiology_div_study_on_rr("Cardiology Div Study on RR<br/><small>Respiratory rate</small>")
+    cardiology_div_study_on_bgl("Cardiology Div Study on BGL<br/><small>Blood glucose</small>")
     nep_pulse_lab_study_on_bt("Nep Pulse Lab Study on BT<br/><small>Body Temperature</small>")
     cosmic_cardio_lab_study_on_o2("Cosmic Cardio Lab Study on O2<br/><small>Oxygen Saturation</small>")
     npl_patient_percy("NPLPatientPercy<br/><small>npl_patient_percy@example.com</small>")
@@ -37,7 +37,7 @@ flowchart TD
     style manager_mark fill:#CFC
     style lifespan_study_on_bp_hr fill:#CFF
     style lifespan_study_on_bp fill:#CFF
-    style cardiology_div_study_on_rr fill:#CFF
+    style cardiology_div_study_on_bgl fill:#CFF
     style nep_pulse_lab_study_on_bt fill:#CFF
     style cosmic_cardio_lab_study_on_o2 fill:#CFF
     style lifespan_lab_patient_peter fill:#FCC
@@ -83,7 +83,7 @@ flowchart TD
     cosmic_cardio_lab -- Manager --> three_org_tom
 
     %% Neptune Health System studies & patients
-    cardiology_division --> cardiology_div_study_on_rr
+    cardiology_division --> cardiology_div_study_on_bgl
     neptunian_pulse_lab --> nep_pulse_lab_study_on_bt
     cosmic_cardio_lab --> cosmic_cardio_lab_study_on_o2
     neptunian_pulse_lab --> npl_patient_percy
@@ -92,6 +92,6 @@ flowchart TD
     cosmic_cardio_lab --> ccl_cardio_patient_pat
     npl_patient_percy -- Consented --> nep_pulse_lab_study_on_bt
     ccl_patient_paul -- Consented --> cosmic_cardio_lab_study_on_o2
-    ccl_cardio_patient_pat -- Consented --> cardiology_div_study_on_rr
+    ccl_cardio_patient_pat -- Consented --> cardiology_div_study_on_bgl
     ccl_cardio_patient_pat -- Consented --> cosmic_cardio_lab_study_on_o2
 ```

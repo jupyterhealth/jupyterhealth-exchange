@@ -41,7 +41,10 @@ class JheUserViewSet(ModelViewSet):
             serializer = JheUserPatientProfileSerializer(request.user, many=False)
         else:
             serializer = JheUserSerializer(request.user, many=False)
-        return Response(serializer.data)
+        data = serializer.data
+        if hasattr(request.user, "practitioner_profile"):
+            data["settings"] = request.user.practitioner_profile.settings
+        return Response(data)
 
     @action(detail=False, methods=["GET"])
     def organizations(self, request):

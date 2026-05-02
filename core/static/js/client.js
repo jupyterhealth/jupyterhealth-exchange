@@ -70,6 +70,7 @@ const ROUTES = {
     label: "Debug",
     iconClass: "bi-bug",
     action: "renderDebug",
+    superuserOnly: true,
   },
 };
 
@@ -292,11 +293,11 @@ window.addEventListener("popstate", function (event) {
 
 async function navReturnFromCrud() {
   const currentRouteAndParams = getCurrentRouteAndParams();
-  const params = currentRouteAndParams.params;
-  delete params.create;
-  delete params.read;
-  delete params.update;
-  delete params.delete;
+  const params = Object.fromEntries(
+    Object.entries(currentRouteAndParams.params).filter(([k]) =>
+      ["organizationId", "tloId"].includes(k)
+    )
+  );
   crudModal.hide(); // This returns immediately but kicks of an async process
   await new Promise((resolve) => setTimeout(resolve, 600)); // wait for modal to hide (300 ms)
   nav(currentRouteAndParams.route, params);
@@ -822,13 +823,22 @@ async function renderPatients(queryParams) {
     return;
   }
 
-  if (!queryParams.organizationId && organizations[0]) {
-    nav("patients", { organizationId: organizations[0].id });
-    return;
+  // If no org is selected, lets check what they were last using in the profile,
+  // otherwise default to the first organization in the list
+  if (!queryParams.organizationId) {
+    const currentOrganizationId = (await getUserProfile()).settings
+      ?.currentOrganizationId;
+    if (currentOrganizationId) {
+      console.log(
+        "Setting currentOrganizationId from user profile settings: ",
+        currentOrganizationId,
+      );
+      queryParams.organizationId = currentOrganizationId;
+    } else {
+      queryParams.organizationId = organizations[0].id;
+    }
   }
-
   let selectedOrganization;
-
   const organizationForPatientsSelect = organizations.map((organization) => {
     if (organization.id === parseInt(queryParams.organizationId)) {
       organization.selected = true;
@@ -844,16 +854,35 @@ async function renderPatients(queryParams) {
   });
   const studies = await studiesResponse.json();
 
+  // If no study is selected, lets check what they were last using in the profile,
+  // otherwise default to the first study in the list
+  if (!queryParams.studyId) {
+    const currentStudyId = (await getUserProfile()).settings
+      ?.currentStudyId;
+    if (currentStudyId) {
+      console.log(
+        "Setting currentStudyId from user profile settings: ",
+        currentStudyId,
+      );
+      queryParams.studyId = currentStudyId;
+    } else {
+      queryParams.studyId = studies.results[0]?.id;
+    }
+  }
   const studyForPatientsSelect = studies.results.map((study) => {
     study.selected = study.id === parseInt(queryParams.studyId);
     return study;
   });
 
   const content = Handlebars.compile(
-    document.getElementById("t-patients").innerHTML
+    document.getElementById("t-patients").innerHTML,
   );
 
-  let patientsPaginated, patientRecord, studiesPendingConsent, studiesConsented, consolidatedClients;
+  let patientsPaginated,
+    patientRecord,
+    studiesPendingConsent,
+    studiesConsented,
+    consolidatedClients;
 
   const pageSize = parseInt(queryParams.pageSize) || 20;
   const page = parseInt(queryParams.page) || 1;
@@ -881,14 +910,14 @@ async function renderPatients(queryParams) {
   if (queryParams.read || queryParams.update || queryParams.delete) {
     const patientRecordResponse = await apiRequest(
       "GET",
-      `patients/${queryParams.id}`
+      `patients/${queryParams.id}`,
     );
     patientRecord = await patientRecordResponse.json();
 
     if (queryParams.read) {
       const patientRecordConsentsResponse = await apiRequest(
         "GET",
-        `patients/${queryParams.id}/consents`
+        `patients/${queryParams.id}/consents`,
       );
       patientRecordConsents = await patientRecordConsentsResponse.json();
       studiesPendingConsent = patientRecordConsents.studiesPendingConsent;
@@ -896,11 +925,11 @@ async function renderPatients(queryParams) {
 
       const patientRecordConsolidatedClientsResponse = await apiRequest(
         "GET",
-        `patients/${queryParams.id}/consolidated_clients`
+        `patients/${queryParams.id}/consolidated_clients`,
       );
-      consolidatedClients = await patientRecordConsolidatedClientsResponse.json();
+      consolidatedClients =
+        await patientRecordConsolidatedClientsResponse.json();
     }
-
   } else if (queryParams.create && queryParams.lookedUpEmail) {
     patientRecord = {
       telecomEmail: queryParams.lookedUpEmail,
@@ -909,7 +938,7 @@ async function renderPatients(queryParams) {
 
   Handlebars.registerPartial(
     "crudButton",
-    document.getElementById("t-crudButton").innerHTML
+    document.getElementById("t-crudButton").innerHTML,
   );
 
   Handlebars.registerHelper("eq", function (v1, v2) {
@@ -919,7 +948,7 @@ async function renderPatients(queryParams) {
   const canManagePatientsInOrg = await hasOrganizationPermission(
     selectedOrganization,
     queryParams.organizationId,
-    "patient.manage_for_organization"
+    "patient.manage_for_organization",
   );
 
   const renderParams = {
@@ -937,7 +966,7 @@ async function renderPatients(queryParams) {
     studiesConsented: studiesConsented,
     pageSizes: [20, 100, 500, 1000],
     canManagePatientsInOrg: canManagePatientsInOrg,
-    consolidatedClients: consolidatedClients
+    consolidatedClients: consolidatedClients,
   };
 
   return content(renderParams);
@@ -1061,11 +1090,17 @@ async function renderStudies(queryParams) {
     return;
   }
 
-  if (!queryParams.organizationId && organizations[0]) {
-    nav("studies", { organizationId: organizations[0].id });
-    return;
+  // If no org is selected, lets check what they were last using in the profile,
+  // otherwise default to the first organization in the list
+  if (!queryParams.organizationId) {
+    const currentOrganizationId = (await getUserProfile()).settings?.currentOrganizationId
+    if(currentOrganizationId){
+      console.log("Setting currentOrganizationId from user profile settings: ", currentOrganizationId)
+      queryParams.organizationId = currentOrganizationId;
+    } else {
+      queryParams.organizationId = organizations[0].id;
+    }
   }
-
   let selectedOrganization;
   const organizationForStudiesSelect = organizations.map((organization) => {
     if (organization.id === parseInt(queryParams.organizationId)) {
@@ -1358,17 +1393,32 @@ async function renderObservations(queryParams) {
     return;
   }
 
-  if (!queryParams.organizationId && organizations[0]) {
-    nav("observations", { organizationId: organizations[0].id });
-    return;
+  // If no org is selected, lets check what they were last using in the profile,
+  // otherwise default to the first organization in the list
+  if (!queryParams.organizationId) {
+    const currentOrganizationId = (await getUserProfile()).settings
+      ?.currentOrganizationId;
+    if (currentOrganizationId) {
+      console.log(
+        "Setting currentOrganizationId from user profile settings: ",
+        currentOrganizationId,
+      );
+      queryParams.organizationId = currentOrganizationId;
+    } else {
+      queryParams.organizationId = organizations[0].id;
+    }
   }
-
+  let selectedOrganization;
   const organizationForObservationsSelect = organizations.map(
     (organization) => {
-      organization.selected =
-        organization.id === parseInt(queryParams.organizationId);
+      if (organization.id === parseInt(queryParams.organizationId)) {
+        organization.selected = true;
+        selectedOrganization = organization;
+      } else {
+        organization.selected = false;
+      }
       return organization;
-    }
+    },
   );
 
   const studiesResponse = await apiRequest("GET", "studies", {
@@ -1376,13 +1426,27 @@ async function renderObservations(queryParams) {
   });
   const studies = await studiesResponse.json();
 
+  // If no study is selected, lets check what they were last using in the profile,
+  // otherwise default to the first study in the list
+  if (!queryParams.studyId) {
+    const currentStudyId = (await getUserProfile()).settings?.currentStudyId;
+    if (currentStudyId) {
+      console.log(
+        "Setting currentStudyId from user profile settings: ",
+        currentStudyId,
+      );
+      queryParams.studyId = currentStudyId;
+    } else {
+      queryParams.studyId = studies.results[0]?.id;
+    }
+  }
   const studyForObservationsSelect = studies.results.map((study) => {
     study.selected = study.id === parseInt(queryParams.studyId);
     return study;
   });
 
   const content = Handlebars.compile(
-    document.getElementById("t-observations").innerHTML
+    document.getElementById("t-observations").innerHTML,
   );
 
   // Parse the page and pageSize from queryParams
@@ -1403,7 +1467,7 @@ async function renderObservations(queryParams) {
   const observationsResponse = await apiRequest(
     "GET",
     "observations",
-    observationParams
+    observationParams,
   );
 
   const observationsPaginated = await observationsResponse.json();
@@ -1415,7 +1479,7 @@ async function renderObservations(queryParams) {
   ) {
     observationsPaginated.results = observationsPaginated.results.slice(
       0,
-      currentPageSize
+      currentPageSize,
     );
   }
 
@@ -1424,17 +1488,17 @@ async function renderObservations(queryParams) {
       observation.valueAttachmentData = JSON.stringify(
         observation.valueAttachmentData,
         null,
-        2
+        2,
       );
       return observation;
-    }
+    },
   );
 
   let observationRecord;
 
   Handlebars.registerPartial(
     "crudButton",
-    document.getElementById("t-crudButton").innerHTML
+    document.getElementById("t-crudButton").innerHTML,
   );
 
   Handlebars.registerHelper("eq", function (v1, v2) {
@@ -1449,7 +1513,7 @@ async function renderObservations(queryParams) {
     pageSize: isNaN(pageSizeParsed) ? 20 : pageSizeParsed,
     totalPages: Math.ceil(
       observationsPaginated.count /
-        (isNaN(pageSizeParsed) ? 20 : pageSizeParsed)
+        (isNaN(pageSizeParsed) ? 20 : pageSizeParsed),
     ),
     organizationForObservationsSelect: organizationForObservationsSelect,
     studyForObservationsSelect: studyForObservationsSelect,
@@ -1514,7 +1578,7 @@ async function renderClients(queryParams) {
     clients: clientsPaginated.results,
     clientRecord: clientRecord,
     allDataSources: allDataSources,
-    canManageClients: true //await hasGlobalPermission("client.manage"),
+    canManageClients: await hasGlobalPermission("client.manage"),
   };
 
   return content(renderParams);

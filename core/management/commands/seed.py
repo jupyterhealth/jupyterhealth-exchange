@@ -1,3 +1,7 @@
+import base64
+import secrets
+import string
+
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
@@ -8,14 +12,18 @@ from faker import Faker
 from oauth2_provider.models import get_application_model
 
 from core.models import (
+    ClientDataSource,
     CodeableConcept,
     DataSource,
+    DataSourceSupportedScope,
     JheSetting,
     JheUser,
     Observation,
     Organization,
     PractitionerOrganization,
     Study,
+    StudyClient,
+    StudyDataSource,
     StudyPatient,
     StudyPatientScopeConsent,
     StudyScopeRequest,
@@ -44,8 +52,9 @@ class Command(BaseCommand):
             self.reset_sequences()
             self.generate_superuser()
             self.seed_jhe_settings()
-            self.seed_codeable_concept()
-            self.seed_data_source()
+            self.seed_codeable_concepts()
+            self.seed_data_sources()
+            self.seed_clients()
             root_organization = self.create_root_organization()
             self.seed_example_institute(root_organization)
             self.seed_health_system(root_organization)
@@ -98,7 +107,7 @@ class Command(BaseCommand):
                 restart_with = restart_with + 10000
 
     @staticmethod
-    def seed_codeable_concept():
+    def seed_codeable_concepts():
         codes = [
             ("https://w3id.org/openmhealth", "omh:blood-glucose:4.0", "Blood glucose"),
             (
@@ -132,14 +141,69 @@ class Command(BaseCommand):
                 text=text,
             )
 
-    def seed_data_source(self):
-        data_source = [
-            ("CareX", "personal_device"),
-            ("Dexcom", "personal_device"),
-            ("iHealth", "personal_device"),
+    def seed_data_sources(self):
+        data_sources = [
+            ("CareX", "personal_device", ["omh:blood-pressure:4.0", "omh:heart-rate:2.0"]),
+            ("Dexcom", "personal_device", ["omh:blood-glucose:4.0"]),
+            ("iHealth", "personal_device", ["omh:body-temperature:4.0", "omh:heart-rate:2.0"]),
         ]
-        for name, type in data_source:
-            DataSource.objects.update_or_create(name=name, type=type)
+        for name, type, scope_codes in data_sources:
+            ds, _ = DataSource.objects.update_or_create(name=name, type=type)
+            for coding_code in scope_codes:
+                scope = CodeableConcept.objects.get(coding_code=coding_code)
+                DataSourceSupportedScope.objects.get_or_create(data_source=ds, scope_code=scope)
+
+    def seed_clients(self):
+        _alphabet = string.ascii_letters + string.digits
+
+        def _generate_client_id(length=40):
+            return "".join(secrets.choice(_alphabet) for _ in range(length))
+
+        def _generate_code_verifier():
+            return base64.urlsafe_b64encode(secrets.token_bytes(32)).rstrip(b"=").decode()
+
+        Application = get_application_model()
+
+        clients = [
+            {
+                "name": "CareX",
+                "invitation_url": "https://carex.ai/invitation/CODE",
+                "data_sources": ["CareX"],
+            },
+            {
+                "name": "CommonHealth",
+                "invitation_url": "https://commonhealth.tcp.org?invitation=CODE",
+                "data_sources": ["Dexcom", "iHealth"],
+            },
+        ]
+
+        for client in clients:
+            app, created = Application.objects.get_or_create(
+                name=client["name"],
+                defaults={
+                    "client_id": _generate_client_id(),
+                    "client_type": Application.CLIENT_PUBLIC,
+                    "authorization_grant_type": Application.GRANT_AUTHORIZATION_CODE,
+                    "skip_authorization": True,
+                    "redirect_uris": settings.SITE_URL + settings.OAUTH2_CALLBACK_PATH,
+                    "algorithm": "RS256",
+                },
+            )
+            if created:
+                for key, value in [
+                    ("client.code_verifier", _generate_code_verifier()),
+                    ("client.invitation_url", client["invitation_url"]),
+                ]:
+                    setting, _ = JheSetting.objects.update_or_create(
+                        setting_id=app.id, key=key, defaults={"value_type": "string"}
+                    )
+                    setting.set_value("string", value)
+                    setting.save()
+
+            for ds_name in client["data_sources"]:
+                ds = DataSource.objects.get(name=ds_name)
+                ClientDataSource.objects.get_or_create(client=app, data_source=ds)
+
 
     @staticmethod
     def create_root_organization():
@@ -188,6 +252,12 @@ class Command(BaseCommand):
         StudyScopeRequest.objects.create(study=lifespan_study_bp_hr, scope_code=hr_code)
         StudyScopeRequest.objects.create(study=lifespan_study_bp, scope_code=bp_code)
 
+        carex_ds = DataSource.objects.get(name="CareX")
+        carex_client = get_application_model().objects.get(name="CareX")
+        for study in [lifespan_study_bp_hr, lifespan_study_bp]:
+            StudyDataSource.objects.create(study=study, data_source=carex_ds)
+            StudyClient.objects.create(study=study, client=carex_client)
+
         ll_patient_pete = self.create_user_with_profile("ll_patient_peter@example.com", user_type="patient")
         ll_patient_pete.organizations.add(lifespan_lab)
         ll_patient_pamela = self.create_user_with_profile("ll_patient_pamela@example.com", user_type="patient")
@@ -233,6 +303,10 @@ class Command(BaseCommand):
                 value_attachment_data=generate_observation_value_attachment_data(consent.scope_code.coding_code),
             )
 
+        for practitioner in [manager_mary, member_megan, viewer_victor]:
+            practitioner.save_setting("current_organization_id", lifespan_lab.id)
+            practitioner.save_setting("current_study_id", lifespan_study_bp_hr.id)
+
     def seed_health_system(self, root_organization):
         nhs = Organization.objects.create(
             name="Neptune Health System",
@@ -255,13 +329,13 @@ class Command(BaseCommand):
         PractitionerOrganization.objects.create(practitioner=three_org_tom, organization=neptunian_pulse_lab, role="member")
         PractitionerOrganization.objects.create(practitioner=three_org_tom, organization=cosmic_cardio_lab, role="manager")
 
-        rr_code = CodeableConcept.objects.get(coding_code="omh:respiratory-rate:2.0")
+        bg_code = CodeableConcept.objects.get(coding_code="omh:blood-glucose:4.0")
         bt_code = CodeableConcept.objects.get(coding_code="omh:body-temperature:4.0")
         o2_code = CodeableConcept.objects.get(coding_code="omh:oxygen-saturation:2.0")
 
-        cardio_rr = Study.objects.create(
-            name="Cardiology Div Study on RR",
-            description="Respiratory rate",
+        cardio_bgl = Study.objects.create(
+            name="Cardiology Div Study on BGL",
+            description="Blood Glucose",
             organization=cardiology_division,
         )
         neptunian_pulse_lab_bt = Study.objects.create(
@@ -275,9 +349,15 @@ class Command(BaseCommand):
             organization=cosmic_cardio_lab,
         )
 
-        StudyScopeRequest.objects.create(study=cardio_rr, scope_code=rr_code)
+        StudyScopeRequest.objects.create(study=cardio_bgl, scope_code=bg_code)
         StudyScopeRequest.objects.create(study=neptunian_pulse_lab_bt, scope_code=bt_code)
         StudyScopeRequest.objects.create(study=cosmic_cardio_lab_o2, scope_code=o2_code)
+
+        commonhealth_client = get_application_model().objects.get(name="CommonHealth")
+        StudyDataSource.objects.create(study=neptunian_pulse_lab_bt, data_source=DataSource.objects.get(name="iHealth"))
+        StudyClient.objects.create(study=neptunian_pulse_lab_bt, client=commonhealth_client)
+        StudyDataSource.objects.create(study=cardio_bgl, data_source=DataSource.objects.get(name="Dexcom"))
+        StudyClient.objects.create(study=cardio_bgl, client=commonhealth_client)
 
         neptunian_pulse_lab_patient_percy = self.create_user_with_profile("npl_patient_percy@example.com", user_type="patient")
         neptunian_pulse_lab_patient_percy.organizations.add(neptunian_pulse_lab)
@@ -288,7 +368,7 @@ class Command(BaseCommand):
 
         sp_percy_bt = StudyPatient.objects.create(study=neptunian_pulse_lab_bt, patient=neptunian_pulse_lab_patient_percy)
         sp_paul_o2 = StudyPatient.objects.create(study=cosmic_cardio_lab_o2, patient=neptunian_pulse_lab_ccl_patient_paul)
-        sp_pat_rr = StudyPatient.objects.create(study=cardio_rr, patient=ccl_cardio_patient_pat)
+        sp_pat_bg = StudyPatient.objects.create(study=cardio_bgl, patient=ccl_cardio_patient_pat)
         sp_pat_o2 = StudyPatient.objects.create(study=cosmic_cardio_lab_o2, patient=ccl_cardio_patient_pat)
 
         now = timezone.now()
@@ -306,8 +386,8 @@ class Command(BaseCommand):
             consented_time=now,
         )
         StudyPatientScopeConsent.objects.create(
-            study_patient=sp_pat_rr,
-            scope_code=rr_code,
+            study_patient=sp_pat_bg,
+            scope_code=bg_code,
             consented=True,
             consented_time=now,
         )
@@ -318,7 +398,7 @@ class Command(BaseCommand):
             consented_time=now,
         )
 
-        med_study_patients = [sp_percy_bt, sp_paul_o2, sp_pat_rr, sp_pat_o2]
+        med_study_patients = [sp_percy_bt, sp_paul_o2, sp_pat_bg, sp_pat_o2]
         for consent in StudyPatientScopeConsent.objects.filter(consented=True, study_patient__in=med_study_patients):
             scope_code = consent.scope_code
             Observation.objects.create(
@@ -326,6 +406,11 @@ class Command(BaseCommand):
                 codeable_concept=scope_code,
                 value_attachment_data=generate_observation_value_attachment_data(consent.scope_code.coding_code),
             )
+
+        manager_mark.save_setting("current_organization_id", neptunian_pulse_lab.id)
+        manager_mark.save_setting("current_study_id", neptunian_pulse_lab_bt.id)
+        three_org_tom.save_setting("current_organization_id", cosmic_cardio_lab.id)
+        three_org_tom.save_setting("current_study_id", cosmic_cardio_lab_o2.id)
 
     def seed_oauth_application(self, name="JHE Admin UI"):
         application = get_application_model()
@@ -349,7 +434,7 @@ class Command(BaseCommand):
         user = JheUser.objects.create_user(
             email=email,
             password=password or get_random_string(length=16),
-            first_name=email.split("@")[0].capitalize(),
+            first_name=email.split("@")[0].replace("_", " ").title().replace(" ", ""),
             last_name=fake.last_name(),
             user_type=user_type,
         )
