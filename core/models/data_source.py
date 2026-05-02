@@ -37,7 +37,7 @@ class DataSource(models.Model):
             ORDER BY core_datasource.name
             """
 
-        data_sources = DataSource.objects.raw(q)
+        data_sources = list(DataSource.objects.raw(q))
 
         q = """
             SELECT core_codeableconcept.*

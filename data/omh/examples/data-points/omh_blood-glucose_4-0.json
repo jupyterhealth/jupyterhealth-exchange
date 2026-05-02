@@ -17,7 +17,7 @@
   },
   "body": {
     "blood_glucose": {
-      "unit": "mg/dl",
+      "unit": "mg/dL",
       "value": 129
     },
     "effective_time_frame": {

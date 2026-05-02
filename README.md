@@ -63,9 +63,9 @@ Users manage the system via the Web UI, and data producers receive invitation cr
 
 1. Start the server with `$ python manage.py runserver`
 
-1. Browse to http://localhost:8000/admin and enter the credentials `sam@example.com` `Jhe1234!`
+1. Browse to http://localhost:8000/admin and enter the credentials `admin@example.com` `Jhe1234!`
 
-1. Under *Django OAuth Toolkit* > *Applications* you should see the seeded OAuth2 application named `JHE Admin UI` with a Redirect URI for `http://localhost:8000/auth/callback` - this is used for the Web UI OAuth 2.0 login.
+1. Under *Django OAuth Toolkit* > *Applications* you should see the seeded OAuth2 application named `JHE Admin UI` . Click on the PK and under *Redirect uris* there should be an entry of `http://localhost:8000/auth/callback` - this is used for the Web UI OAuth 2.0 login.
 
 1. Click the LOG OUT button at the top
 
@@ -78,9 +78,9 @@ Users manage the system via the Web UI, and data producers receive invitation cr
       - Return to the `.env` file and update the `OIDC_RSA_PRIVATE_KEY`
       - Keep the `oidc.key` somewhere safe
 
-1. Browse to http://localhost:8000/ and log in with the credentials `mary@example.com` `Jhe1234!` and you should be directed to the `/portal/organizations` path with some example Organizations is the dropdown
+1. Browse to http://localhost:8000/ and log in with the credentials `manager_mary@example.com` / `Jhe1234!` or `manager_mark@example.com` / `Jhe1234!` and you should be directed to the `/portal/organizations` path with some example Organizations in the dropdown. See [Seed Data](doc/seed-data.md) to understand how these example Users and Organizations are structured.
 
-1. New users can be signed up from the base URL (eg http://localhost:8000/) with the default invitation code "jhe" which is set from the `REGISTRATION_INVITE_CODE` in `.env`
+1. New users can be signed up from the base URL (eg http://localhost:8000/) with the default invitation code "**jhe**". This invitation code and other settings can be changed from the same URL by logging in as the Admin user (`admin@example.com` / `Jhe1234!`) and opening the System Settings menu.
 
 > [!NOTE]
 > Due to browser security restrictions and the [oidc-client-ts](https://github.com/authts/oidc-client-ts) used for authentication, the web app **must be accessed over HTTPS for any hostname other than localhost** - see [Running in Production](#running-in-production) below.

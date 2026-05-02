@@ -36,6 +36,16 @@ class ObservationViewSet(ModelViewSet):
             **{key: value for key, value in self.request.query_params.items() if key in self.supported_query_params},
         )
 
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        if hasattr(request.user, "practitioner_profile"):
+            practitioner = request.user.practitioner_profile
+            if organization_id := request.query_params.get("organization_id"):
+                practitioner.save_setting("current_organization_id", int(organization_id))
+            if study_id := request.query_params.get("study_id"):
+                practitioner.save_setting("current_study_id", int(study_id))
+        return response
+
 
 class FHIRObservationViewSet(ModelViewSet):
     pagination_class = FHIRBundlePagination
