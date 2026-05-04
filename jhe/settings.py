@@ -269,10 +269,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-SAML2_ENABLED = int(os.getenv("SAML2_ENABLED", 0))
-SSO_VALID_DOMAINS = os.getenv("SSO_VALID_DOMAINS", "").split(",")
 SAML2_AUTH = {
-    "METADATA_AUTO_CONF_URL": os.getenv("IDENTITY_PROVIDER_METADATA_URL"),
+    "TRIGGER": {
+        "GET_METADATA_AUTO_CONF_URLS": "core.jhe_settings.service.get_saml_metadata_urls",
+    },
     "ASSERTION_URL": SITE_URL,
     "ENTITY_ID": f"{SITE_URL}/sso/acs/",
     # Attributes according to the Identity Provider.
