@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python manage.py makemigrations core --name=\"organization_part_of_cascade\")"
-    ]
-  }
-}
