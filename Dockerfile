@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=${XDG_CACHE_DIR} \
     export PIP_CACHE_DIR=$XDG_CACHE_DIR/pip \
  && export PIPENV_CACHE_DIR=$XDG_CACHE_DIR/pipenv \
  && pip install pipenv \
- && pipenv install --deploy --system \
+ && pipenv install --system \
  && pip uninstall -y pipenv
 
 COPY . /code
