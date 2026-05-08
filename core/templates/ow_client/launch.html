@@ -2,42 +2,84 @@
 
 {% block body_content %}
 
-<div class="container mt-5" style="max-width: 800px;">
-  <!-- Status / Loading -->
-  <div id="ow-setup" class="text-center">
-    <h2 class="mb-3">Connect Your Wearable</h2>
-    <p id="ow-status" class="text-muted">
-      <span class="spinner-border spinner-border-sm me-2"></span>
-      Setting up your account...
-    </p>
-  </div>
-
-  <!-- Provider Picker (hidden until providers load) -->
-  <div id="ow-provider-picker" style="display: none;">
-    <div class="text-center mb-4">
-      <h2>Connect a Device</h2>
-      <p class="text-muted">Select your wearable platform to get started</p>
-    </div>
-    <div id="ow-provider-grid" class="row justify-content-center">
-    </div>
-  </div>
-
-  <!-- Log Panel (hidden until flow starts) -->
-  <div id="ow-log-panel" class="mt-4" style="display: none;">
-    <div class="card border-secondary">
-      <div class="card-header bg-dark text-light d-flex justify-content-between align-items-center py-2">
-        <span><i class="bi bi-terminal me-2"></i>Integration Log</span>
-        <small class="text-muted">JHE + Open Wearables</small>
-      </div>
-      <div class="card-body log-body p-3"
-           style="background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 12px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6;">
-      </div>
-    </div>
-  </div>
+<div class="w-100 text-center mt-5">
+  <h1>OW Client</h1>
+  <pre id="out" class="text-start ms-5 me-5">
+  </pre>
 </div>
 
-<script>
-    owProcessInviteLink();
-</script>
+{% endblock %}
 
+{% block body_footer %}
+<!-- put any constants etc directly into this file this is just a POC -->
+<!-- put functions in core/static/js/ow-client.js and core/static/js/common.js as needed and keep formatting consistent -->
+<script>
+    var out = document.getElementById("out");
+    var redirectUri = window.location.origin + "/auth/callback";
+
+    async function run() {
+        out.textContent = "Processing link...";
+
+        // 1. Get the components of the invite link ?code=abc...~def...~ghi...~jkl
+        var params = new URLSearchParams(window.location.search);
+        var code = params.get("code");
+        if (!code) {
+            out.textContent += "\nError: no code parameter in URL";
+            return;
+        }
+        var link = parseInvitationCode(code);
+        if (!link) {
+            out.textContent += "\nError: invalid invitation code format";
+            return;
+        }
+        out.textContent += "\nHost: " + link.host;
+        out.textContent += "\nClient ID: " + link.clientId;
+        out.textContent += "\nCode: " + link.code;
+        out.textContent += "\nCode Verifier: " + link.codeVerifier;
+
+        // 2. Swap auth code for access token
+        out.textContent += "\n\nSwapping auth code for access token...";
+        var tokens = await exchangeCodeForToken(link.clientId, link.code, link.codeVerifier, redirectUri);
+        if (!tokens || !tokens.access_token) {
+            out.textContent += "\nError: failed to exchange code for token";
+            return;
+        }
+        out.textContent += "\nAccess token received";
+        var accessToken = tokens.access_token;
+
+        // 3. Fetch and update consents (assume yes to all for POC demo)
+        out.textContent += "\n\nFetching and accepting consents...";
+        var consents = await fetchAndAcceptConsents(accessToken);
+        if (!consents) {
+            out.textContent += "\nError: failed to fetch/accept consents";
+            return;
+        }
+        out.textContent += "\nConsents accepted";
+
+        // 4-5. Create OW user via JHE proxy
+        out.textContent += "\n\nCreating OW user...";
+        var owUser = await createOwUser(accessToken);
+        if (!owUser) {
+            out.textContent += "\nError: failed to create OW user";
+            return;
+        }
+        out.textContent += "\nOW user ID: " + owUser.ow_user_id;
+
+        // 6-7. Get Oura auth URL via JHE proxy
+        var owCompleteUri = window.location.origin + "/ow/complete";
+        out.textContent += "\n\nGetting Oura auth URL...";
+        var ouraAuth = await getOuraAuthUrl(accessToken, owCompleteUri);
+        if (!ouraAuth || !ouraAuth.authorizationUrl) {
+            out.textContent += "\nError: failed to get Oura auth URL";
+            return;
+        }
+        out.textContent += "\nOura auth URL: " + ouraAuth.authorizationUrl;
+
+        // 8. Redirect to Oura auth URL
+        out.textContent += "\n\nRedirecting to Oura...";
+        window.location.href = ouraAuth.authorizationUrl;
+    }
+
+    run();
+</script>
 {% endblock %}

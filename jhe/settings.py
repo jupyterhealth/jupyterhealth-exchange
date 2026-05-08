@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
 
-JHE_VERSION = "v0.0.8"
+JHE_VERSION = "v0.0.10"
 
 """
 Django settings for jhe project.
@@ -46,6 +46,19 @@ DEBUG = bool(os.getenv("DEBUG"))
 SITE_URL = os.getenv("SITE_URL", "http://localhost:8000").rstrip("/")
 OAUTH2_CALLBACK_PATH = "/auth/callback"
 PRACTITIONER_DEFAULT_ORGS = os.getenv("PRACTITIONER_DEFAULT_ORGS", "")
+
+# Open Wearables integration
+OW_API_URL = os.getenv("OW_API_URL", "").rstrip("/")
+OW_API_KEY = os.getenv("OW_API_KEY", "")
+
+# OW MinIO (S3-compatible) - for syncing raw payload data
+OW_S3_ENDPOINT_URL = os.getenv("OW_S3_ENDPOINT_URL", "")
+OW_S3_BUCKET = os.getenv("OW_S3_BUCKET", "raw-payloads")
+OW_S3_PREFIX = os.getenv("OW_S3_PREFIX", "raw-payloads")
+OW_S3_ACCESS_KEY = os.getenv("OW_S3_ACCESS_KEY", "")
+OW_S3_SECRET_KEY = os.getenv("OW_S3_SECRET_KEY", "")
+OW_S3_REGION = os.getenv("OW_S3_REGION", "us-east-1")
+
 OIDC_CLIENT_AUTHORITY_PATH = "/o/"
 
 if "ALLOWED_HOSTS" in os.environ:
@@ -256,10 +269,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-SAML2_ENABLED = int(os.getenv("SAML2_ENABLED", 0))
-SSO_VALID_DOMAINS = os.getenv("SSO_VALID_DOMAINS", "").split(",")
 SAML2_AUTH = {
-    "METADATA_AUTO_CONF_URL": os.getenv("IDENTITY_PROVIDER_METADATA_URL"),
+    "TRIGGER": {
+        "GET_METADATA_AUTO_CONF_URLS": "core.jhe_settings.service.get_saml_metadata_urls",
+    },
     "ASSERTION_URL": SITE_URL,
     "ENTITY_ID": f"{SITE_URL}/sso/acs/",
     # Attributes according to the Identity Provider.

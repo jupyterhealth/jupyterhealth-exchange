@@ -35,7 +35,9 @@ Application = get_application_model()
 # GET_SETTING_SVC — patches the function in the service module (for service/form tests)
 # GET_SETTING_MODELS — patches the top-level import in models.py (for model method tests)
 GET_SETTING_SVC = "core.jhe_settings.service.get_setting"
-GET_SETTING_MODELS = "core.models.get_setting"
+GET_SETTING_USER = "core.models.jhe_user.get_setting"
+GET_SETTING_OBSERVATION = "core.models.observation.get_setting"
+GET_SETTING_PATIENT = "core.models.patient.get_setting"
 
 
 # =====================================================================
@@ -203,7 +205,7 @@ class InviteCodeFormTests(TestCase):
 class ConstructInvitationLinkTests(TestCase):
     """Regression: construct_invitation_link must use DB site.url, not ENV."""
 
-    @patch(GET_SETTING_MODELS, return_value="https://db-host.example.com")
+    @patch(GET_SETTING_PATIENT, return_value="https://db-host.example.com")
     def test_uses_db_site_url(self, mock_gs):
         result = Patient.construct_invitation_link(
             invitation_url="https://app.example.com?code=CODE",
@@ -229,7 +231,7 @@ class ConstructInvitationLinkTests(TestCase):
         )
         self.assertIn("env-fallback.example.com", result)
 
-    @patch(GET_SETTING_MODELS, return_value="http://localhost:8000")
+    @patch(GET_SETTING_PATIENT, return_value="http://localhost:8000")
     def test_preserves_port_in_hostname(self, mock_gs):
         """Regression: netloc must include port so PGD Sync can reach JHE on non-standard ports."""
         result = Patient.construct_invitation_link(
@@ -241,7 +243,7 @@ class ConstructInvitationLinkTests(TestCase):
         # Must contain localhost:8000 (not just localhost)
         self.assertIn("localhost:8000", result)
 
-    @patch(GET_SETTING_MODELS, return_value="https://jhe.production.org")
+    @patch(GET_SETTING_PATIENT, return_value="https://jhe.production.org")
     def test_production_url_no_port(self, mock_gs):
         """Accuracy: production URLs without explicit port use netloc = hostname."""
         result = Patient.construct_invitation_link(
@@ -254,7 +256,7 @@ class ConstructInvitationLinkTests(TestCase):
         # Should be tilde-delimited
         self.assertIn("~c1~a1~v1", result)
 
-    @patch(GET_SETTING_MODELS, return_value="http://127.0.0.1:9000")
+    @patch(GET_SETTING_PATIENT, return_value="http://127.0.0.1:9000")
     def test_preserves_non_standard_port(self, mock_gs):
         """Regression: non-standard ports like 9000 must be preserved."""
         result = Patient.construct_invitation_link(
@@ -265,7 +267,7 @@ class ConstructInvitationLinkTests(TestCase):
         )
         self.assertIn("127.0.0.1:9000", result)
 
-    @patch(GET_SETTING_MODELS, return_value="http://localhost:8000")
+    @patch(GET_SETTING_PATIENT, return_value="http://localhost:8000")
     def test_tilde_delimited_format(self, mock_gs):
         """Accuracy: output must be tilde-delimited: host~client_id~auth_code~code_verifier."""
         result = Patient.construct_invitation_link(
@@ -285,7 +287,7 @@ class SendEmailVerificationTests(TestCase):
     def setUp(self):
         self.user = JheUser.objects.create_user(email="email-test@example.com", password="pw", identifier="em1")
 
-    @patch(GET_SETTING_MODELS, return_value="https://db-email.example.com")
+    @patch(GET_SETTING_USER, return_value="https://db-email.example.com")
     def test_email_contains_db_site_url(self, mock_gs):
         mail.outbox = []
         self.user.send_email_verificaion()
@@ -306,7 +308,7 @@ class CreateAuthorizationCodeTests(TestCase):
             redirect_uris="http://example.com/redirect",
         )
 
-    @patch(GET_SETTING_MODELS, return_value="https://db-auth.example.com")
+    @patch(GET_SETTING_USER, return_value="https://db-auth.example.com")
     def test_redirect_uri_uses_db_setting(self, mock_gs):
         code = self.user.create_authorization_code(self.app.id, "http://example.com/redirect")
         self.assertTrue(code.redirect_uri.startswith("https://db-auth.example.com"))
@@ -322,7 +324,7 @@ class GetDefaultOrgsTests(TestCase):
     def tearDown(self):
         cache.clear()
 
-    @patch(GET_SETTING_MODELS)
+    @patch(GET_SETTING_USER)
     def test_practitioner_assigned_to_default_org(self, mock_gs):
         # ROLE_CHOICES is a dict; valid_roles = {c[0] for c in dict} gives first char of keys
         # So valid roles are 'm', 'v' (from 'member', 'manager', 'viewer')
@@ -338,7 +340,7 @@ class GetDefaultOrgsTests(TestCase):
             PractitionerOrganization.objects.filter(practitioner=practitioner, organization=self.org, role="v").exists()
         )
 
-    @patch(GET_SETTING_MODELS, return_value="")
+    @patch(GET_SETTING_USER, return_value="")
     def test_empty_default_orgs_skips_assignment(self, mock_gs):
         user = JheUser.objects.create_user(
             email="no-default-org@example.com",
@@ -363,7 +365,7 @@ class FhirSearchGetSettingTests(TestCase):
         )
         self.user.practitioner.organizations.add(self.org)
 
-    @patch(GET_SETTING_MODELS, return_value="https://db-fhir.example.com")
+    @patch(GET_SETTING_PATIENT, return_value="https://db-fhir.example.com")
     def test_patient_fhir_search_calls_get_setting(self, mock_gs):
         """Unit: Patient.fhir_search should call get_setting for SITE_URL.
         We don't execute the raw SQL (requires full schema joins); we just
@@ -374,7 +376,7 @@ class FhirSearchGetSettingTests(TestCase):
         calls = [c for c in mock_gs.call_args_list if c[0][0] == "site.url"]
         self.assertGreaterEqual(len(calls), 1)
 
-    @patch(GET_SETTING_MODELS, return_value="https://db-fhir.example.com")
+    @patch(GET_SETTING_OBSERVATION, return_value="https://db-fhir.example.com")
     def test_observation_fhir_search_calls_get_setting(self, mock_gs):
         """Integration: Observation.fhir_search should call get_setting for SITE_URL."""
         qs = Observation.fhir_search(self.user.id)

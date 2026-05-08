@@ -7,6 +7,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from core.jhe_settings.service import get_setting
 from core.models import ClientDataSource, DataSource
+from core.permissions import IfUserCan
 from core.serializers import ClientDataSourceSerializer, ClientSerializer, DataSourceSerializer
 from jhe import settings
 
@@ -15,6 +16,11 @@ Application = get_application_model()
 
 class ClientViewSet(ModelViewSet):
     serializer_class = ClientSerializer
+
+    def get_permissions(self):
+        if self.action in ["create", "destroy", "update", "partial_update"]:
+            return [IfUserCan("client.manage")()]
+        return [permission() for permission in self.permission_classes]
 
     def get_queryset(self):
         return Application.objects.exclude(name="JHE Admin UI").order_by(

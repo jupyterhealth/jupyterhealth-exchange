@@ -13,15 +13,20 @@ on:
         default: "3.12"
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   smoke-test:
     name: "Smoke → ${{ inputs.smoke_url }}"
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      with:
+        persist-credentials: false
 
     - name: Set up Python ${{ inputs.python_version }}
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
       with:
         python-version: ${{ inputs.python_version }}
 
@@ -30,14 +35,16 @@ jobs:
 
     - name: Wait for instance to wake up
       run: |
-        echo "Pinging ${{ inputs.smoke_url }}/health to warm up the instance..."
+        echo "Pinging ${INPUTS_SMOKE_URL}/health to warm up the instance..."
         curl -sf --retry 3 --retry-delay 5 --max-time 30 \
-          "${{ inputs.smoke_url }}/health" || echo "Warm-up ping failed (may cold-start during tests)"
+          "${INPUTS_SMOKE_URL}/health" || echo "Warm-up ping failed (may cold-start during tests)"
+      env:
+        INPUTS_SMOKE_URL: ${{ inputs.smoke_url }}
 
     - name: Run smoke tests
       run: |
         pytest tests/test_smoke.py \
-          --smoke-url=${{ inputs.smoke_url }} \
+          --smoke-url=${INPUTS_SMOKE_URL} \
           -m smoke \
           -v \
           --tb=short \
@@ -45,3 +52,5 @@ jobs:
           -p no:cacheprovider \
           --override-ini="addopts=" \
           --override-ini="DJANGO_SETTINGS_MODULE="
+      env:
+        INPUTS_SMOKE_URL: ${{ inputs.smoke_url }}

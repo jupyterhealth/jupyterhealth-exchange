@@ -426,7 +426,7 @@ class TestSeedNoDuplicateObservations:
         # Berkeley patients should not have UCSF-only codes (RR, BT, O2)
         from core.models import CodeableConcept, JheUser
 
-        berkeley_emails = ["peter@example.com", "pamela@example.com"]
+        berkeley_emails = ["ll_patient_peter@example.com", "ll_patient_pamela@example.com"]
         berkeley_patients = [JheUser.objects.get(email=e).patient for e in berkeley_emails]
         ucsf_only_codes = CodeableConcept.objects.filter(
             coding_code__in=["omh:respiratory-rate:2.0", "omh:body-temperature:4.0", "omh:oxygen-saturation:2.0"]

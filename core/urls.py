@@ -57,11 +57,16 @@ urlpatterns = [
         name="client_auth_callback_popup",
     ),
     path("auth/login/", common.client_auth_login, name="client-auth-login"),
-    # Smart Launch
-    # path("smart/launch", common.smart_launch, name="smart-launch"),
-    # path("smart/callback/", common.smart_callback, name="smart-callback"),
     # oauth token exchange
     path("o/token-exchange", common.token_exchange, name="token-exchange"),
+    # OW Client pages
+    path("ow/launch", common.ow_launch, name="ow-launch"),
+    path("ow/complete", common.ow_complete, name="ow-complete"),
+    # OW API proxy endpoints
+    path("api/v1/ow/users", ow.create_ow_user, name="ow-create-user"),
+    path("api/v1/ow/oauth/oura/authorize", ow.get_oura_auth_url, name="ow-oura-authorize"),
+    path("api/v1/oauth/oura/callback", ow.oura_oauth_callback, name="ow-oura-callback"),
+    path("api/v1/ow/sync", ow.sync_ow_data, name="ow-sync"),
     # Client UI
     path(
         "portal/client_settings.js",
@@ -71,12 +76,6 @@ urlpatterns = [
     re_path(r"^portal/(?P<path>([^/]+/)*)$", common.portal, name="portal"),
     # Admin API
     path("api/v1/", include(api_router.urls)),
-    # OW API
-    path("api/v1/ow/users", ow.create_ow_user, name="ow_create_user"),
-    path("api/v1/ow/providers", ow.list_providers, name="ow_list_providers"),
-    path("api/v1/ow/oauth/<str:provider>/authorize", ow.provider_authorize, name="ow_provider_authorize"),
-    # OW OAuth callback proxy (provider redirects here; we forward to OW)
-    path("api/v1/oauth/<str:provider>/callback", ow.provider_callback_proxy, name="ow_provider_callback_proxy"),
     # FHIR API
     path("fhir/r5/", include(fhir_router.urls)),
 ]

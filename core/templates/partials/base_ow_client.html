@@ -3,56 +3,19 @@
 <!DOCTYPE html>
 <html class="h-100">
   <head>
-    <title>{{ SITE_TITLE }} Open Wearables Client - {% block title %}{% endblock %}</title>
-    <script src="/portal/client_settings.js"></script> <!-- dynamically rendered by Django view, not static file --->
+    <title>{% block title %}{% endblock %}</title>
     <script src="{% static 'js/common.js' %}"></script>
     <script src="{% static 'js/ow-client.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
     <link
-      rel="stylesheet"
-      href="{% static 'css/bootstrap-icons.min.css' %}"
-    />
-    <link
       rel="shortcut icon"
       type="image/png"
-      href="{% static 'favicon-ow.ico' %}"
+      href="{% static 'favicon.ico' %}"
     />
     {% block head %} {% endblock %}
   </head>
-  <body class="h-100" id="baseBody" {% block body_tag %}{% endblock %}>
+  <body class="h-100">
     {% block body_content %} {% endblock %}
-
-    <!-- Global Navigation Loading Overlay -->
-    <div id="navLoadingOverlay"
-         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; opacity: 0.75; z-index: 9999; flex-direction: column; justify-content: center; align-items: center;"
-         role="dialog"
-         aria-modal="true"
-         aria-labelledby="loadingHeading"
-         tabindex="-1">
-
-      <!-- Close button (top-left) - Initially hidden -->
-      <button
-        type="button"
-        class="btn-close"
-        style="position: absolute; top: 1rem; left: 1rem; font-size: 1.5rem; z-index: 10000; outline: none !important; box-shadow: none !important; display: none;"
-        onclick="hideNavLoadingOverlay()"
-        aria-label="Close loading overlay"
-        id="cancelLoadingBtn"
-      >
-      </button>
-
-      <div class="text-center">
-        <h5 id="loadingHeading" class="mb-3">Loading...</h5>
-        <div class="spinner-border text-primary" role="status">
-        </div>
-      </div>
-    </div>
-
-    <script src="{% static 'js/handlebars.min.js' %}"></script>
-    <!-- For Bootstrap support, see: https://getbootstrap.com/docs/4.0/getting-started/introduction/#js-->
-    <script src="{% static 'js/popper.min.js' %}"></script>
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
     {% block body_footer %}{% endblock %}
   </body>
-  {% block html_footer %}{% endblock %}
 </html>

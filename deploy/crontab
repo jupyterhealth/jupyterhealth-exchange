@@ -1,0 +1,9 @@
+# JHE Open Wearables polling cron — read by supercronic in the jhe_cron sidecar.
+#
+# The `ow_poll` management command no-ops automatically when `module.ow=false`
+# in JheSettings, so this crontab can stay enabled even when the OW pipeline
+# is disabled at the operator level.
+#
+# Default: poll every 15 minutes. Operators can adjust by editing this file
+# and rebuilding the jhe_cron image.
+*/15 * * * * cd /code && python manage.py ow_poll

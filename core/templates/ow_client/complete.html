@@ -2,20 +2,25 @@
 
 {% block body_content %}
 
-<div class="container mt-5" style="max-width: 600px;">
-  <div class="text-center">
-    <div class="mb-4">
-      <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-    </div>
-    <h2 class="mb-3">Successfully Connected!</h2>
-    <p id="ow-complete-status" class="text-muted mb-4">
-      Your device has been connected and will start syncing data shortly.
-    </p>
-    <p class="text-muted small">You may close this window.</p>
-  </div>
+<div class="w-100 text-center mt-5">
+  <h1>OW Client</h1>
+  <pre id="out" class="text-start ms-5 me-5">
+  </pre>
 </div>
-
 <script>
-    owProcessComplete();
+    var out = document.getElementById("out");
+    var params = new URLSearchParams(window.location.search);
+    var provider = params.get("provider");
+    var error = params.get("error");
+
+    if (error) {
+        out.textContent = "Error: " + error;
+    } else {
+        out.textContent = "Oura OAuth complete.";
+        if (provider) {
+            out.textContent += "\nProvider: " + provider;
+        }
+    }
 </script>
+
 {% endblock %}

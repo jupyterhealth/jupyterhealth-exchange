@@ -42,52 +42,17 @@ function base64UrlEncode(bytes) {
     .replace(/=+$/, "");
 }
 
-/**
- * Parse an invitation code string into its components.
- * Format: host~client_id~code~code_verifier
- */
-function parseInvitationCode(invitationCode) {
-  const parts = invitationCode.split("~");
+// Parse invitation link code parameter into its components.
+// Format: host~client_id~code~code_verifier
+function parseInvitationCode(code) {
+  var parts = code.split("~");
   if (parts.length !== 4) {
-    throw new Error("Invalid invitation code format. Expected: host~client_id~code~code_verifier");
+    return null;
   }
   return {
     host: parts[0],
-    client_id: parts[1],
+    clientId: parts[1],
     code: parts[2],
-    code_verifier: parts[3],
+    codeVerifier: parts[3],
   };
-}
-
-/**
- * Exchange an authorization code for an access token via the OIDC token endpoint.
- */
-async function exchangeCodeForToken({ host, client_id, code, code_verifier, redirect_uri }) {
-  // Use window.location.origin for token endpoint (host from invite code is
-  // just hostname:port without protocol, and we're always same-origin).
-  const tokenEndpoint = `${window.location.origin}/o/token/`;
-  const payload = {
-    code,
-    grant_type: "authorization_code",
-    redirect_uri: redirect_uri || `${window.location.origin}/auth/callback/`,
-    client_id,
-    code_verifier,
-  };
-
-  const formData = new URLSearchParams(payload).toString();
-  const response = await fetch(tokenEndpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Cache-Control": "no-cache",
-    },
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`Token exchange failed (${response.status}): ${errorBody}`);
-  }
-
-  return response.json();
 }

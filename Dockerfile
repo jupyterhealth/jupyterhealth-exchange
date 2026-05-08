@@ -3,7 +3,7 @@ ARG PYTHON_VERSION=3.12-slim-trixie
 FROM python:${PYTHON_VERSION}
 
 RUN apt-get -y update \
- && apt-get -y install --no-install-recommends postgresql-client \
+ && apt-get -y install --no-install-recommends postgresql-client git \
  && rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -22,6 +22,10 @@ RUN --mount=type=cache,target=${XDG_CACHE_DIR} \
  && pip install pipenv \
  && pipenv install --deploy --system \
  && pip uninstall -y pipenv
+
+# supercronic for the optional jhe_cron sidecar (runs ow_poll on a schedule).
+ADD https://github.com/aptible/supercronic/releases/download/v0.2.29/supercronic-linux-amd64 /usr/local/bin/supercronic
+RUN chmod +x /usr/local/bin/supercronic
 
 COPY . /code
 RUN python manage.py collectstatic --no-input

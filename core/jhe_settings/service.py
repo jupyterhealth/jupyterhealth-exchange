@@ -21,3 +21,11 @@ def get_setting(key: str, default=None):
 
     cache.set(cache_key, value, DEFAULT_CACHE_TTL)
     return value
+
+
+def get_saml_metadata_urls(user_id=None):
+    """SAML trigger hook — called at request time, safe to use get_setting() here."""
+    url = get_setting("auth.sso.idp_metadata_url")
+    if url:
+        return [{"url": url}]
+    return []
