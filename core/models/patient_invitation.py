@@ -10,6 +10,7 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from oauth2_provider.models import get_grant_model
+from oauth2_provider.settings import oauth2_settings
 
 from core.jhe_settings.service import get_setting
 
@@ -141,7 +142,7 @@ class PatientInvitation(models.Model):
             application_id=invitation.client_id,
             user_id=jhe_user.id,
             code=authorization_code,
-            expires=timezone.now() + timedelta(seconds=settings.PATIENT_AUTHORIZATION_CODE_EXPIRE_SECONDS),
+            expires=timezone.now() + timedelta(seconds=oauth2_settings.AUTHORIZATION_CODE_EXPIRE_SECONDS),
             redirect_uri=get_setting("site.url", settings.SITE_URL) + settings.OAUTH2_CALLBACK_PATH,
             scope="openid email",
             # https://github.com/oauthlib/oauthlib/blob/f9a07c6c07d0ddac255dd322ef5fc54a7a46366d/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L18

@@ -21,7 +21,7 @@
 
 const ROUTE_PREFIX = "/portal/";
 const DEFAULT_ROUTE = "organizations";
-const API_PATH = "/api/v1/";
+const API_PATH = "/api/v1";
 
 const ROUTES = {
   jheSettings: {
@@ -324,7 +324,7 @@ async function apiRequest(method, resourcePath, params) {
   };
   const user = await userManager.getUser();
   if (user) headers["Authorization"] = `Bearer ${user.access_token}`;
-  let url = API_PATH + resourcePath;
+  let url = API_PATH + '/' + resourcePath;
   let body;
   if (params) {
     if (method === "GET") {
@@ -1843,9 +1843,6 @@ async function deleteJheSetting(id) {
 // call the urlLocationHandler function to handle the initial url
 // locationHandler();
 
-const DEBUG_TOKEN_ENDPOINT = `${window.location.origin}/o/token/`;
-const DEBUG_API_ENDPOINT = `${window.location.origin}${API_PATH}`;
-
 function renderDebug() {
   const content = Handlebars.compile(
     document.getElementById("t-debug").innerHTML,
@@ -1988,28 +1985,26 @@ async function debugGetPatientTokenFromCode() {
     // Split on _"
     const { host, token } = parseInvitationCode(invitationCode);
 
-    // Generate PKCE code_challenge (S256)
-    const encoder = new TextEncoder();
-    const data = encoder.encode(code_verifier);
-    const digest = await crypto.subtle.digest("SHA-256", data);
-    const code_challenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "");
+    const invitationResponse = await fetch(`http://${host}${API_PATH}/invitation/${token}`, {
+      method: "POST",
+      headers: {
+        "Cache-Control": "no-cache",
+      },
+    });
 
-    // Final JSON
-    const payload = {
-      code,
-      grant_type: "authorization_code",
-      redirect_uri: OIDCSettings.redirect_uri,
-      client_id,
-      code_verifier,
-    };
+    const grant = await readResponsePayload(invitationResponse);
 
-    document.getElementById("debugOAuthPayload").value = JSON.stringify(payload, null, 2);
+    document.getElementById("debugGrantPayload").value = JSON.stringify(
+      grant,
+      null,
+      2,
+    );
 
-    const formData = new URLSearchParams(payload).toString();
-    const response = await fetch(DEBUG_TOKEN_ENDPOINT, {
+    grant.grant["code_verifier"] = btoa(token).replace(/=/g, '');
+
+    const formData = new URLSearchParams(grant.grant).toString();
+    console.log("Exchanging code for token with form data: ", formData);
+    const response = await fetch(grant.token_endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",

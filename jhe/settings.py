@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
 
-JHE_VERSION = "v0.0.10"
+JHE_VERSION = "v0.0.11"
 
 """
 Django settings for jhe project.
@@ -125,6 +125,7 @@ REST_FRAMEWORK = {
             "code_challenge_method",
             "grant_type",
             "code_verifier",
+            "token_endpoint",
         ),
         "ignore_fields": ("value_attachment_data",),
     },
@@ -231,9 +232,6 @@ OAUTH2_PROVIDER_APPLICATION_MODEL = "oauth2_provider.Application"
 
 TRUSTED_TOKEN_IDP = os.getenv("TRUSTED_TOKEN_IDP")
 
-PATIENT_AUTHORIZATION_CODE_EXPIRE_SECONDS = 1209600  # 2 weeks
-
-
 X_FRAME_OPTIONS = os.getenv("X_FRAME_OPTIONS", "SAMEORIGIN")
 
 EMAIL_HOST = os.getenv("SMTP_HOST")
@@ -248,8 +246,6 @@ EMAIL_BACKEND = (
     if not EMAIL_HOST
     else "django.core.mail.backends.smtp.EmailBackend"
 )
-
-CODE_VERIFIER = "N0hHRVk2WDNCUUFPQTIwVDNZWEpFSjI4UElNV1pSTlpRUFBXNTEzU0QzRTMzRE85WDFWTzU2WU9ESw=="
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
