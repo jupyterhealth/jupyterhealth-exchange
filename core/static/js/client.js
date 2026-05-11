@@ -253,13 +253,18 @@ async function nav(newRoute, queryParams, appendQueryParams) {
       newRoute !== current.route ||
       !isShallowEq(queryParams, current.params)
     ) {
+      // Strip null values (e.g. studyId: null means "All Studies" — present as a key
+      // to suppress settings restoration, but must not appear in the URL as "studyId=null")
+      const urlParams = Object.fromEntries(
+        Object.entries(queryParams).filter(([, v]) => v != null)
+      );
       window.history.pushState(
         {},
         "",
         ROUTE_PREFIX +
           newRoute +
           "?" +
-          new URLSearchParams(queryParams).toString()
+          new URLSearchParams(urlParams).toString()
       );
     }
   } catch (e) {
@@ -854,23 +859,18 @@ async function renderPatients(queryParams) {
   });
   const studies = await studiesResponse.json();
 
-  // If no study is selected, lets check what they were last using in the profile,
-  // otherwise default to the first study in the list
-  if (!queryParams.studyId) {
-    const currentStudyId = (await getUserProfile()).settings
-      ?.currentStudyId;
-    if (currentStudyId) {
-      console.log(
-        "Setting currentStudyId from user profile settings: ",
-        currentStudyId,
-      );
-      queryParams.studyId = currentStudyId;
-    } else {
-      queryParams.studyId = studies.results[0]?.id;
-    }
+  // Restore the last-used study from settings when arriving without an explicit studyId
+  // (e.g. navigating here from another route). If studyId is present as a key — even as
+  // null, which "All Studies" passes — skip restoration so the user's choice is honoured.
+  const currentStudyId = (await getUserProfile()).settings?.currentStudyId;
+  if (currentStudyId && !("studyId" in queryParams)) {
+    queryParams.studyId = currentStudyId;
   }
+
+  const selectedStudyId = queryParams.studyId ? parseInt(queryParams.studyId) : null;
   const studyForPatientsSelect = studies.results.map((study) => {
-    study.selected = study.id === parseInt(queryParams.studyId);
+    const studyIsSelected = selectedStudyId !== null && study.id === selectedStudyId;
+    study.selected = studyIsSelected;
     return study;
   });
 
@@ -1433,22 +1433,21 @@ async function renderObservations(queryParams) {
   });
   const studies = await studiesResponse.json();
 
-  // If no study is selected, lets check what they were last using in the profile,
-  // otherwise default to the first study in the list
-  if (!queryParams.studyId) {
-    const currentStudyId = (await getUserProfile()).settings?.currentStudyId;
-    if (currentStudyId) {
-      console.log(
-        "Setting currentStudyId from user profile settings: ",
-        currentStudyId,
-      );
-      queryParams.studyId = currentStudyId;
-    } else {
-      queryParams.studyId = studies.results[0]?.id;
-    }
+  // Restore the last-used study from settings when arriving without an explicit studyId
+  // (e.g. navigating here from another route). If studyId is present as a key — even as
+  // null, which "All Studies" passes — skip restoration so the user's choice is honoured.
+  const currentStudyId = (await getUserProfile()).settings?.currentStudyId;
+  if (currentStudyId && !("studyId" in queryParams)) {
+    queryParams.studyId = currentStudyId;
   }
+
+  const selectedStudyId = queryParams.studyId
+    ? parseInt(queryParams.studyId)
+    : null;
   const studyForObservationsSelect = studies.results.map((study) => {
-    study.selected = study.id === parseInt(queryParams.studyId);
+    const studyIsSelected =
+      selectedStudyId !== null && study.id === selectedStudyId;
+    study.selected = studyIsSelected;
     return study;
   });
 

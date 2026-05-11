@@ -21,7 +21,7 @@
           <select
             id="studyForObservations"
             class="form-control form-select"
-            onchange="this.value == 'all' ? nav('observations',{ organizationId: {{organizationId}} }) : nav('observations',{studyId: this.value, organizationId: {{organizationId}} })"
+            onchange="this.value == 'all' ? nav('observations',{ organizationId: {{organizationId}}, page: 1, studyId: null }) : nav('observations',{studyId: this.value, organizationId: {{organizationId}}, page: 1 })"
           >
               <option value="all">All Studies</option>
             {{#studyForObservationsSelect}} {{#if selected}}

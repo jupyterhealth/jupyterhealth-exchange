@@ -83,6 +83,8 @@ class PatientViewSet(ModelViewSet):
                 practitioner.save_setting("current_organization_id", int(organization_id))
             if study_id := request.query_params.get("study_id"):
                 practitioner.save_setting("current_study_id", int(study_id))
+            else:
+                practitioner.delete_setting("current_study_id")
         return response
 
     def create(self, request, *args, **kwargs):
