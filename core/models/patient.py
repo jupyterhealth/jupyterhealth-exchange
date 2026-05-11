@@ -122,13 +122,16 @@ class Patient(models.Model):
     @staticmethod
     def for_study(jhe_user_id, study_id):
         q = """
-            SELECT core_patient.*
+            SELECT DISTINCT core_patient.*
             FROM core_patient
             JOIN core_studypatient ON core_studypatient.patient_id=core_patient.id
             JOIN core_study ON core_study.id=core_studypatient.study_id
             JOIN core_organization ON core_organization.id=core_study.organization_id
-            JOIN core_patientorganization ON core_patientorganization.organization_id=core_organization.id
-            WHERE core_patientorganization.jhe_user_id=%(jhe_user_id)s AND core_study.id=%(study_id)s
+            JOIN core_practitionerorganization
+              ON core_practitionerorganization.organization_id=core_organization.id
+            JOIN core_practitioner
+              ON core_practitioner.id=core_practitionerorganization.practitioner_id
+            WHERE core_practitioner.jhe_user_id=%(jhe_user_id)s AND core_study.id=%(study_id)s
             """
         return Patient.objects.raw(q, {"jhe_user_id": jhe_user_id, "study_id": study_id})
 
@@ -200,8 +203,12 @@ class Patient(models.Model):
             FROM core_patient
             JOIN core_jheuser AS patient_user ON patient_user.id=core_patient.jhe_user_id
             JOIN core_studypatient ON core_studypatient.patient_id=core_patient.id
+            JOIN core_patientorganization
+              ON core_patientorganization.patient_id=core_patient.id
+            JOIN core_organization
+              ON core_organization.id=core_patientorganization.organization_id
             JOIN core_practitionerorganization
-            ON core_practitionerorganization.organization_id = core_organization.id
+            ON core_practitionerorganization.organization_id=core_organization.id
             WHERE core_practitionerorganization.practitioner_id = %(practitioner_id)s
 
             {study_sql_where}
