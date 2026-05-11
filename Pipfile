@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "==6.0.*"
+django = "5.2.14"
 python-dotenv = "*"
 psycopg2-binary = "*"
 django-oauth-toolkit = "*"
@@ -27,7 +27,7 @@ jsonschema = "*"
 ipython = "*"
 dictor = "*"
 boto3 = "*"
-"omh-shim " = {ref = "main", git = "https://github.com/the-commons-project/omh-shim.git"}
+#TEMP"omh-shim " = {ref = "main", git = "https://github.com/the-commons-project/omh-shim.git"}
 
 [dev-packages]
 coverage = "*"
@@ -38,4 +38,4 @@ pytest = "*"
 pytest-cov = "*"
 
 [requires]
-python_version = "3.12"
+python_version = "3.11"
