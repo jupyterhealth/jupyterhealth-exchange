@@ -1847,12 +1847,6 @@ function renderDebug() {
   const content = Handlebars.compile(
     document.getElementById("t-debug").innerHTML,
   );
-  setTimeout(() => {
-    document.getElementById("debugTokenEndpointLabel").textContent = `POST ${DEBUG_TOKEN_ENDPOINT}`;
-    document.getElementById("debugUserProfileEndpointLabel").textContent = `GET ${DEBUG_API_ENDPOINT}users/profile`;
-    document.getElementById("debugPatientConsentsUrl").value =
-      `${DEBUG_API_ENDPOINT}patients/PASTE_PATIENT_ID_HERE/consents`;
-  }, 200);
   return content({});
 }
 
@@ -2081,7 +2075,7 @@ function setDebugPatientToken(accessToken) {
 async function debugGetUserProfile() {
   showDebugError();
   try {
-    const response = await fetch(`${DEBUG_API_ENDPOINT}users/profile`, {
+    const response = await fetch(`${API_PATH}/users/profile`, {
       headers: {
         "Cache-Control": "no-cache",
         Authorization: `Bearer ${debugPatientToken}`,
