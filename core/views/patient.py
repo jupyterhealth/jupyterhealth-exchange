@@ -154,9 +154,7 @@ class PatientViewSet(ModelViewSet):
     def consolidated_clients(self, request, pk):
         Client = get_application_model()
 
-        patient_clients = list(
-            Client.objects.filter(studies__study__studypatient__patient_id=pk).distinct()
-        )
+        patient_clients = list(Client.objects.filter(studies__study__studypatient__patient_id=pk).distinct())
 
         invitations_by_client = {}
         for inv in PatientInvitation.objects.filter(patient_id=pk).order_by("-last_updated"):
@@ -171,7 +169,6 @@ class PatientViewSet(ModelViewSet):
             data.append(client_data)
 
         return Response(data)
-
 
     @action(detail=True, methods=["GET", "POST", "PATCH", "DELETE"])
     def consents(self, request, pk):

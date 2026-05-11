@@ -59,9 +59,9 @@ class PatientInvitation(models.Model):
 
     @staticmethod
     def issue(patient, client):
-        PatientInvitation.objects.filter(
-            patient=patient, client=client, status=PatientInvitation.Status.ISSUED
-        ).update(status=PatientInvitation.Status.REISSUED)
+        PatientInvitation.objects.filter(patient=patient, client=client, status=PatientInvitation.Status.ISSUED).update(
+            status=PatientInvitation.Status.REISSUED
+        )
 
         token = "".join(secrets.choice(_TOKEN_ALPHABET) for _ in range(_TOKEN_LENGTH))
         token_hash = PatientInvitation._hash_token(token)
@@ -76,9 +76,7 @@ class PatientInvitation(models.Model):
 
     @staticmethod
     def build_link(patient, client):
-        invitation_url_setting = JheSetting.objects.filter(
-            setting_id=client.id, key="client.invitation_url"
-        ).first()
+        invitation_url_setting = JheSetting.objects.filter(setting_id=client.id, key="client.invitation_url").first()
 
         if not invitation_url_setting:
             raise ValueError("Missing JheSetting: client.invitation_url")
