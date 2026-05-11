@@ -306,15 +306,14 @@ class PatientViewSet(ModelViewSet):
                             )
                         )
                     elif request.method == "PATCH":
-                        responses.append(
-                            StudyPatientScopeConsent.objects.get(
-                                study_patient_id=study_patient.id,
-                                scope_code_id=scope_code_id,
-                            ).update(
-                                consented=scope_consent["consented"],
-                                consented_time=consented_time,
-                            )
+                        spsc = StudyPatientScopeConsent.objects.get(
+                            study_patient_id=study_patient.id,
+                            scope_code_id=scope_code_id,
                         )
+                        spsc.consented = scope_consent["consented"]
+                        spsc.consented_time = consented_time
+                        spsc.save()
+                        responses.append(spsc)
                     elif request.method == "DELETE":
                         responses.append(
                             StudyPatientScopeConsent.objects.get(

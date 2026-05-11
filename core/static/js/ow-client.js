@@ -32,78 +32,152 @@ async function exchangeCodeForToken(clientId, code, codeVerifier, redirectUri) {
   return await response.json();
 }
 
-// Fetch the patient's pending consents and auto-accept all of them.
-// Returns the consents response from the GET, or null on failure.
-async function fetchAndAcceptConsents(accessToken) {
-  // Step 1: Get the patient profile to find patient id
-  var profileResponse = await fetch(API_ENDPOINT + "users/profile", {
+// Fetch the patient's profile (including patient.id).
+async function getPatientProfile(accessToken) {
+  var response = await fetch(API_ENDPOINT + "users/profile", {
     headers: {
       Authorization: "Bearer " + accessToken,
       "Cache-Control": "no-cache",
     },
   });
-  if (!profileResponse.ok) {
+  if (!response.ok) {
     return null;
   }
-  var profile = await profileResponse.json();
-  var patientId = profile.patient.id;
+  return await response.json();
+}
 
-  // Step 2: Get pending consents
-  var consentsResponse = await fetch(
-    API_ENDPOINT + "patients/" + patientId + "/consents",
-    {
-      headers: {
-        Authorization: "Bearer " + accessToken,
-        "Cache-Control": "no-cache",
-      },
-    }
-  );
-  if (!consentsResponse.ok) {
+// Fetch the patient's consents (pending + already-consented).
+async function getConsents(accessToken, patientId) {
+  var response = await fetch(API_ENDPOINT + "patients/" + patientId + "/consents", {
+    headers: {
+      Authorization: "Bearer " + accessToken,
+      "Cache-Control": "no-cache",
+    },
+  });
+  if (!response.ok) {
     return null;
   }
-  var consentsData = await consentsResponse.json();
+  return await response.json();
+}
 
-  // Step 3: Build consent payload from pending studies (accept all)
-  var pendingStudies = consentsData.studies_pending_consent || [];
-  if (pendingStudies.length === 0) {
-    return consentsData;
-  }
+// POST consent decisions. Use method="POST" for first-time consents on
+// pending scopes, and method="PATCH" to update existing consent rows.
+async function submitConsents(accessToken, patientId, studyScopeConsents, method) {
+  if (!studyScopeConsents.length) return true;
+  var response = await fetch(API_ENDPOINT + "patients/" + patientId + "/consents", {
+    method: method || "POST",
+    headers: {
+      Authorization: "Bearer " + accessToken,
+      "Content-Type": "application/json",
+      "Cache-Control": "no-cache",
+    },
+    body: JSON.stringify({ study_scope_consents: studyScopeConsents }),
+  });
+  return response.ok;
+}
 
-  var studyScopeConsents = [];
-  for (var i = 0; i < pendingStudies.length; i++) {
-    var study = pendingStudies[i];
-    var scopeConsents = [];
-    var scopes = study.scope_requests || [];
-    for (var j = 0; j < scopes.length; j++) {
-      scopeConsents.push({
-        coding_system: scopes[j].scope_code.coding_system,
-        coding_code: scopes[j].scope_code.coding_code,
-        consented: true,
-      });
-    }
-    studyScopeConsents.push({
-      study_id: study.id,
-      scope_consents: scopeConsents,
+// Render the consent form into `container`. Lists every study (pending
+// AND already-consented) with one checkbox per requested scope. Default
+// state matches the patient's current JHE consent record (not Oura's
+// OAuth grants - JHE is the single source of truth that gates ow_poll).
+//
+// Calls `onSubmit(studyScopeConsents)` when the user clicks "Save".
+function renderConsentForm(container, consentsData, onSubmit) {
+  container.innerHTML = "";
+
+  var pending = consentsData.studiesPendingConsent || consentsData.studies_pending_consent || [];
+  var responded = consentsData.studies || [];
+
+  // Build a unified list. Each entry: { study, scopes: [{coding_system, coding_code, text, consented}] }.
+  var rows = [];
+  function mapScopes(list) {
+    return (list || []).map(function (r) {
+      var code = r.code || {};
+      var system = code.codingSystem || code.coding_system;
+      var codeStr = code.codingCode || code.coding_code;
+      return {
+        coding_system: system,
+        coding_code: codeStr,
+        text: code.text || codeStr,
+        consented: r.consented === true,
+      };
     });
   }
+  pending.forEach(function (s) {
+    rows.push({ study: s, isPending: true, scopes: mapScopes(s.pendingScopeConsents || s.pending_scope_consents) });
+  });
+  responded.forEach(function (s) {
+    rows.push({ study: s, isPending: false, scopes: mapScopes(s.scopeConsents || s.scope_consents) });
+  });
 
-  // Step 4: POST consents
-  var postResponse = await fetch(
-    API_ENDPOINT + "patients/" + patientId + "/consents",
-    {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer " + accessToken,
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache",
-      },
-      body: JSON.stringify({ study_scope_consents: studyScopeConsents }),
-    }
-  );
-  if (!postResponse.ok) {
-    return null;
+  if (rows.length === 0) {
+    container.innerHTML = '<p class="text-muted">No studies require your consent.</p>';
+    return;
   }
-  return consentsData;
+
+  var form = document.createElement("form");
+  form.className = "text-start";
+
+  rows.forEach(function (row, i) {
+    var section = document.createElement("div");
+    section.className = "mb-3 p-3 border rounded";
+    var title = document.createElement("h5");
+    title.textContent = row.study.name || "Study";
+    section.appendChild(title);
+
+    row.scopes.forEach(function (scope, j) {
+      var id = "consent_" + i + "_" + j;
+      var wrap = document.createElement("div");
+      wrap.className = "form-check";
+      var input = document.createElement("input");
+      input.type = "checkbox";
+      input.className = "form-check-input";
+      input.id = id;
+      input.checked = scope.consented;
+      input.dataset.studyId = row.study.id;
+      input.dataset.isPending = row.isPending ? "1" : "0";
+      input.dataset.codingSystem = scope.coding_system;
+      input.dataset.codingCode = scope.coding_code;
+      var label = document.createElement("label");
+      label.className = "form-check-label";
+      label.htmlFor = id;
+      label.textContent = scope.text;
+      wrap.appendChild(input);
+      wrap.appendChild(label);
+      section.appendChild(wrap);
+    });
+
+    form.appendChild(section);
+  });
+
+  var btn = document.createElement("button");
+  btn.type = "submit";
+  btn.className = "btn btn-primary";
+  btn.textContent = "Save";
+  form.appendChild(btn);
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    // Pending scopes (no row yet) need POST; existing rows need PATCH.
+    var newByStudy = {};
+    var updateByStudy = {};
+    form.querySelectorAll('input[type="checkbox"]').forEach(function (input) {
+      var sid = input.dataset.studyId;
+      var bucket = input.dataset.isPending === "1" ? newByStudy : updateByStudy;
+      if (!bucket[sid]) bucket[sid] = { study_id: parseInt(sid, 10), scope_consents: [] };
+      bucket[sid].scope_consents.push({
+        coding_system: input.dataset.codingSystem,
+        coding_code: input.dataset.codingCode,
+        consented: input.checked,
+      });
+    });
+    onSubmit({
+      created: Object.values(newByStudy),
+      updated: Object.values(updateByStudy),
+    });
+  });
+
+  container.appendChild(form);
 }
 
 // Create an OW user via JHE proxy endpoint.

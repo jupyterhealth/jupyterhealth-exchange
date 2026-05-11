@@ -6,6 +6,7 @@
   <h1>OW Client</h1>
   <pre id="out" class="text-start ms-5 me-5">
   </pre>
+  <div id="consent_form" class="text-start ms-5 me-5 mt-4"></div>
 </div>
 
 {% endblock %}
@@ -15,6 +16,7 @@
 <!-- put functions in core/static/js/ow-client.js and core/static/js/common.js as needed and keep formatting consistent -->
 <script>
     var out = document.getElementById("out");
+    var consentForm = document.getElementById("consent_form");
     var redirectUri = window.location.origin + "/auth/callback";
 
     async function run() {
@@ -47,15 +49,39 @@
         out.textContent += "\nAccess token received";
         var accessToken = tokens.access_token;
 
-        // 3. Fetch and update consents (assume yes to all for POC demo)
-        out.textContent += "\n\nFetching and accepting consents...";
-        var consents = await fetchAndAcceptConsents(accessToken);
-        if (!consents) {
-            out.textContent += "\nError: failed to fetch/accept consents";
+        // 3. Fetch consents and let the patient choose what to share.
+        // JHE study consents are the single source of truth for what
+        // ow_poll will actually pull and store; the Oura OAuth scope
+        // grant on the next step is just a capability ceiling.
+        out.textContent += "\n\nLoading consents...";
+        var profile = await getPatientProfile(accessToken);
+        if (!profile || !profile.patient) {
+            out.textContent += "\nError: failed to load patient profile";
             return;
         }
-        out.textContent += "\nConsents accepted";
+        var patientId = profile.patient.id;
+        var consentsData = await getConsents(accessToken, patientId);
+        if (!consentsData) {
+            out.textContent += "\nError: failed to load consents";
+            return;
+        }
+        out.textContent += "\nReview the data each study may collect, then click Save to continue.";
 
+        renderConsentForm(consentForm, consentsData, async function (decisions) {
+            consentForm.innerHTML = "";
+            out.textContent += "\n\nSaving consents...";
+            var createdOk = await submitConsents(accessToken, patientId, decisions.created, "POST");
+            var updatedOk = await submitConsents(accessToken, patientId, decisions.updated, "PATCH");
+            if (!createdOk || !updatedOk) {
+                out.textContent += "\nError: failed to save consents";
+                return;
+            }
+            out.textContent += "\nConsents saved";
+            await continueOwFlow(accessToken);
+        });
+    }
+
+    async function continueOwFlow(accessToken) {
         // 4-5. Create OW user via JHE proxy
         out.textContent += "\n\nCreating OW user...";
         var owUser = await createOwUser(accessToken);
