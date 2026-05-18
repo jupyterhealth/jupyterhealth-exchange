@@ -1019,7 +1019,7 @@ async function globalLookupPatientByEmail(email, organizationId) {
 async function createPatient(organizationId) {
   const patientRecord = {
     organizationId: organizationId,
-    identifier: document.getElementById("patientIdentifier").value || null,
+    identifiers: collectPatientIdentifiers(),
     nameFamily: document.getElementById("patientFamilyName").value || null,
     nameGiven: document.getElementById("patientGivenName").value || null,
     birthDate: document.getElementById("patientBirthDate").value || null,
@@ -1032,7 +1032,7 @@ async function createPatient(organizationId) {
 
 async function updatePatient(id) {
   const patientRecord = {
-    identifier: document.getElementById("patientIdentifier").value || null,
+    identifiers: collectPatientIdentifiers(),
     nameFamily: document.getElementById("patientFamilyName").value || null,
     nameGiven: document.getElementById("patientGivenName").value || null,
     birthDate: document.getElementById("patientBirthDate").value || null,
@@ -1066,6 +1066,46 @@ async function deletePatient(id) {
     )
   )
     await navReturnFromCrud();
+}
+
+function collectPatientIdentifiers() {
+  const rows = document.querySelectorAll(
+    "#patientIdentifiersContainer .patient-identifier-row"
+  );
+  const identifiers = [];
+  rows.forEach((row) => {
+    const system = row.querySelector(".patient-identifier-system")?.value?.trim();
+    const value = row.querySelector(".patient-identifier-value")?.value?.trim();
+    if (system && value) identifiers.push({ system, value });
+  });
+  return identifiers;
+}
+
+function renderPatientAddIdentifierInput() {
+  const container = document.getElementById("patientIdentifiersContainer");
+  if (!container) return;
+  const row = document.createElement("div");
+  row.className = "patient-identifier-row d-flex gap-2 mb-2";
+  row.innerHTML =
+    '<input type="text" class="form-control patient-identifier-system" placeholder="System" />' +
+    '<input type="text" class="form-control patient-identifier-value" placeholder="Value" />' +
+    '<button type="button" class="btn btn-outline-danger" onclick="renderPatientRemoveIdentifierInput(this)">' +
+    '<i class="bi bi-trash"></i></button>';
+  container.appendChild(row);
+}
+
+function renderPatientRemoveIdentifierInput(target) {
+  if (typeof target === "number") {
+    const rows = document.querySelectorAll(
+      "#patientIdentifiersContainer .patient-identifier-row"
+    );
+    if (rows[target]) rows[target].remove();
+    return;
+  }
+  if (target && target.closest) {
+    const row = target.closest(".patient-identifier-row");
+    if (row) row.remove();
+  }
 }
 
 async function getInvitationLink(patientId, clientId, sendEmail) {

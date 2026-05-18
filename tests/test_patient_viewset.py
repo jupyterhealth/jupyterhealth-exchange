@@ -1,9 +1,11 @@
 import pytest
+from django.db.utils import IntegrityError
 from rest_framework.test import APIClient
 
 from core.models import (
     Organization,
     Patient,
+    PatientIdentifier,
     StudyPatientScopeConsent,
 )
 
@@ -136,3 +138,68 @@ def test_fhir_list_patients_by_study(api_client, organization, hr_study):
 
 def test_fhir_list_patients_by_identifier(api_client, organization):
     pytest.skip("not implemented")
+
+
+def test_create_with_identifiers(api_client, organization):
+    r = api_client.post(
+        "/api/v1/patients",
+        {
+            "organizationId": organization.id,
+            "telecomEmail": "multi-id@example.com",
+            "birthDate": "2000-01-01",
+            "identifiers": [
+                {"system": "http://hospital-a.org", "value": "MRN-001"},
+                {"system": "http://hospital-b.org", "value": "MRN-002"},
+            ],
+        },
+        format="json",
+    )
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert len(data["identifiers"]) == 2
+    systems = {i["system"] for i in data["identifiers"]}
+    assert systems == {"http://hospital-a.org", "http://hospital-b.org"}
+
+
+def test_identifier_unique_system_value_constraint(organization):
+    patient_a, patient_b = add_patients(2, organization=organization)
+    PatientIdentifier.objects.create(
+        patient=patient_a, system="http://hospital-a.org", value="MRN-DUP"
+    )
+    with pytest.raises(IntegrityError):
+        PatientIdentifier.objects.create(
+            patient=patient_b, system="http://hospital-a.org", value="MRN-DUP"
+        )
+
+
+def test_update_replaces_identifiers(api_client, organization):
+    r = api_client.post(
+        "/api/v1/patients",
+        {
+            "organizationId": organization.id,
+            "telecomEmail": "replace-ids@example.com",
+            "birthDate": "2000-01-01",
+            "identifiers": [
+                {"system": "http://hospital-a.org", "value": "OLD-001"},
+            ],
+        },
+        format="json",
+    )
+    assert r.status_code == 200, r.text
+    patient_id = r.json()["id"]
+
+    r = api_client.patch(
+        f"/api/v1/patients/{patient_id}?organizationId={organization.id}",
+        {
+            "identifiers": [
+                {"system": "http://hospital-b.org", "value": "NEW-001"},
+                {"system": "http://hospital-c.org", "value": "NEW-002"},
+            ],
+        },
+        format="json",
+    )
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert len(data["identifiers"]) == 2
+    systems = {i["system"] for i in data["identifiers"]}
+    assert systems == {"http://hospital-b.org", "http://hospital-c.org"}

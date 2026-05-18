@@ -4,7 +4,7 @@ from .jhe_setting import JheSetting
 from .jhe_user import JheUser, JheUserManager
 from .observation import Observation, ObservationIdentifier
 from .organization import Organization
-from .patient import Patient, PatientOrganization
+from .patient import Patient, PatientIdentifier, PatientOrganization
 from .patient_invitation import PatientInvitation
 from .practitioner import Practitioner, PractitionerOrganization
 from .study import Study, StudyClient, StudyDataSource, StudyPatient, StudyPatientScopeConsent, StudyScopeRequest
@@ -21,6 +21,7 @@ __all__ = [
     "ObservationIdentifier",
     "Organization",
     "Patient",
+    "PatientIdentifier",
     "PatientInvitation",
     "PatientOrganization",
     "Practitioner",

@@ -17,6 +17,7 @@ from core.models import (
     Observation,
     Organization,
     Patient,
+    PatientIdentifier,
     PatientInvitation,
     PatientOrganization,
     Practitioner,
@@ -98,12 +99,42 @@ class PatientViewSet(ModelViewSet):
                 jhe_user.save()
             request.data["jhe_user_id"] = jhe_user.id
             del request.data["telecom_email"]
+            identifiers = request.data.pop("identifiers", None)
             patient = Patient.objects.create(**request.data)
+            if identifiers is not None:
+                self._replace_patient_identifiers(patient, identifiers)
         else:
             raise ValidationError
 
         serializer = PatientSerializer(patient)
         return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        return self._update_with_identifiers(request, partial=False, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        return self._update_with_identifiers(request, partial=True, *args, **kwargs)
+
+    def _update_with_identifiers(self, request, partial=False, *args, **kwargs):
+        identifiers = request.data.pop("identifiers", None) if hasattr(request.data, "pop") else None
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        if identifiers is not None:
+            self._replace_patient_identifiers(instance, identifiers)
+        instance.refresh_from_db()
+        return Response(PatientSerializer(instance).data)
+
+    @staticmethod
+    def _replace_patient_identifiers(patient, identifiers):
+        PatientIdentifier.objects.filter(patient=patient).delete()
+        for item in identifiers:
+            system = item.get("system")
+            value = item.get("value")
+            if system is None or value is None:
+                continue
+            PatientIdentifier.objects.create(patient=patient, system=system, value=value)
 
     def destroy(self, request, pk=None, *args, **kwargs):
         if organization_id := request.query_params.get("organization_id"):

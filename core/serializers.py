@@ -17,6 +17,7 @@ from core.models import (
     Observation,
     Organization,
     Patient,
+    PatientIdentifier,
     PatientInvitation,
     PractitionerOrganization,
     Study,
@@ -91,6 +92,7 @@ class OrganizationUsersSerializer(serializers.ModelSerializer):
 class PatientSerializer(serializers.ModelSerializer):
     telecom_email = serializers.SerializerMethodField()
     organizations = serializers.SerializerMethodField()
+    identifiers = serializers.SerializerMethodField()
 
     def get_telecom_email(self, obj):
         if obj.telecom_email:
@@ -102,12 +104,16 @@ class PatientSerializer(serializers.ModelSerializer):
         organizations = obj.organizations.all()
         return OrganizationSerializer(organizations, many=True).data
 
+    def get_identifiers(self, obj):
+        return PatientIdentifierSerializer(obj.identifiers.all(), many=True).data
+
     class Meta:
         model = Patient
         fields = [
             "id",
             "jhe_user_id",
             "identifier",
+            "identifiers",
             "name_family",
             "name_given",
             "birth_date",
@@ -115,6 +121,12 @@ class PatientSerializer(serializers.ModelSerializer):
             "telecom_email",
             "organizations",
         ]
+
+
+class PatientIdentifierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientIdentifier
+        fields = ["id", "system", "value"]
 
 
 class PractitionerSerializer(serializers.ModelSerializer):

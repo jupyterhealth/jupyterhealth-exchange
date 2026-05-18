@@ -27,7 +27,7 @@ jsonschema = "*"
 ipython = "*"
 dictor = "*"
 boto3 = "*"
-"omh-shim " = {ref = "main", git = "https://github.com/the-commons-project/omh-shim.git"}
+omh-shim = "==1.0.2"
 
 [dev-packages]
 coverage = "*"

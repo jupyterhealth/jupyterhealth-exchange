@@ -249,15 +249,31 @@
                       />
                   </div>
                   <div class="mb-3">
-                    <label for="patientIdentifier" class="form-label"
-                      >External Identifier</label
-                    >
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="patientIdentifier"
-                      value="{{patientRecord.identifier}}"
-                    />
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <label class="form-label mb-0">External Identifiers</label>
+                      {{#unless @root.read}}{{#unless @root.delete}}
+                      <button type="button" class="btn btn-sm btn-outline-primary"
+                        onclick="renderPatientAddIdentifierInput()">
+                        <i class="bi bi-plus"></i>
+                      </button>
+                      {{/unless}}{{/unless}}
+                    </div>
+                    <div id="patientIdentifiersContainer">
+                      {{#each patientRecord.identifiers}}
+                      <div class="patient-identifier-row d-flex gap-2 mb-2">
+                        <input type="text" class="form-control patient-identifier-system"
+                          placeholder="System" value="{{this.system}}" />
+                        <input type="text" class="form-control patient-identifier-value"
+                          placeholder="Value" value="{{this.value}}" />
+                        {{#unless @root.read}}{{#unless @root.delete}}
+                        <button type="button" class="btn btn-outline-danger"
+                          onclick="renderPatientRemoveIdentifierInput(this)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                        {{/unless}}{{/unless}}
+                      </div>
+                      {{/each}}
+                    </div>
                   </div>
                   <div class="mb-3">
                     <label for="patientFamilyName" class="form-label"

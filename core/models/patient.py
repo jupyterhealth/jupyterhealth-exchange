@@ -256,3 +256,17 @@ class PatientOrganization(models.Model):
                 name="core_patientorganization_unique_patient_id_organization_id",
             )
         ]
+
+
+class PatientIdentifier(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="identifiers", db_index=True)
+    system = models.CharField(db_index=True)
+    value = models.CharField(db_index=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["system", "value"],
+                name="core_patientidentifier_unique_system_value",
+            )
+        ]
