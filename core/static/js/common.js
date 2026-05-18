@@ -50,7 +50,7 @@ function parseInvitationCode(code) {
     return null;
   }
   return {
-    host: parts[0],
+    host: decodeURIComponent(parts[0]),
     token: parts[1],
   };
 }

@@ -21,7 +21,7 @@
 
 const ROUTE_PREFIX = "/portal/";
 const DEFAULT_ROUTE = "organizations";
-const API_PATH = "/api/v1/";
+const API_PATH = "/api/v1";
 
 const ROUTES = {
   jheSettings: {
@@ -253,13 +253,18 @@ async function nav(newRoute, queryParams, appendQueryParams) {
       newRoute !== current.route ||
       !isShallowEq(queryParams, current.params)
     ) {
+      // Strip null values (e.g. studyId: null means "All Studies" — present as a key
+      // to suppress settings restoration, but must not appear in the URL as "studyId=null")
+      const urlParams = Object.fromEntries(
+        Object.entries(queryParams).filter(([, v]) => v != null)
+      );
       window.history.pushState(
         {},
         "",
         ROUTE_PREFIX +
           newRoute +
           "?" +
-          new URLSearchParams(queryParams).toString()
+          new URLSearchParams(urlParams).toString()
       );
     }
   } catch (e) {
@@ -324,7 +329,7 @@ async function apiRequest(method, resourcePath, params) {
   };
   const user = await userManager.getUser();
   if (user) headers["Authorization"] = `Bearer ${user.access_token}`;
-  let url = API_PATH + resourcePath;
+  let url = API_PATH + '/' + resourcePath;
   let body;
   if (params) {
     if (method === "GET") {
@@ -854,23 +859,18 @@ async function renderPatients(queryParams) {
   });
   const studies = await studiesResponse.json();
 
-  // If no study is selected, lets check what they were last using in the profile,
-  // otherwise default to the first study in the list
-  if (!queryParams.studyId) {
-    const currentStudyId = (await getUserProfile()).settings
-      ?.currentStudyId;
-    if (currentStudyId) {
-      console.log(
-        "Setting currentStudyId from user profile settings: ",
-        currentStudyId,
-      );
-      queryParams.studyId = currentStudyId;
-    } else {
-      queryParams.studyId = studies.results[0]?.id;
-    }
+  // Restore the last-used study from settings when arriving without an explicit studyId
+  // (e.g. navigating here from another route). If studyId is present as a key — even as
+  // null, which "All Studies" passes — skip restoration so the user's choice is honoured.
+  const currentStudyId = (await getUserProfile()).settings?.currentStudyId;
+  if (currentStudyId && !("studyId" in queryParams)) {
+    queryParams.studyId = currentStudyId;
   }
+
+  const selectedStudyId = queryParams.studyId ? parseInt(queryParams.studyId) : null;
   const studyForPatientsSelect = studies.results.map((study) => {
-    study.selected = study.id === parseInt(queryParams.studyId);
+    const studyIsSelected = selectedStudyId !== null && study.id === selectedStudyId;
+    study.selected = studyIsSelected;
     return study;
   });
 
@@ -1473,22 +1473,21 @@ async function renderObservations(queryParams) {
   });
   const studies = await studiesResponse.json();
 
-  // If no study is selected, lets check what they were last using in the profile,
-  // otherwise default to the first study in the list
-  if (!queryParams.studyId) {
-    const currentStudyId = (await getUserProfile()).settings?.currentStudyId;
-    if (currentStudyId) {
-      console.log(
-        "Setting currentStudyId from user profile settings: ",
-        currentStudyId,
-      );
-      queryParams.studyId = currentStudyId;
-    } else {
-      queryParams.studyId = studies.results[0]?.id;
-    }
+  // Restore the last-used study from settings when arriving without an explicit studyId
+  // (e.g. navigating here from another route). If studyId is present as a key — even as
+  // null, which "All Studies" passes — skip restoration so the user's choice is honoured.
+  const currentStudyId = (await getUserProfile()).settings?.currentStudyId;
+  if (currentStudyId && !("studyId" in queryParams)) {
+    queryParams.studyId = currentStudyId;
   }
+
+  const selectedStudyId = queryParams.studyId
+    ? parseInt(queryParams.studyId)
+    : null;
   const studyForObservationsSelect = studies.results.map((study) => {
-    study.selected = study.id === parseInt(queryParams.studyId);
+    const studyIsSelected =
+      selectedStudyId !== null && study.id === selectedStudyId;
+    study.selected = studyIsSelected;
     return study;
   });
 
@@ -1883,19 +1882,10 @@ async function deleteJheSetting(id) {
 // call the urlLocationHandler function to handle the initial url
 // locationHandler();
 
-const DEBUG_TOKEN_ENDPOINT = `${window.location.origin}/o/token/`;
-const DEBUG_API_ENDPOINT = `${window.location.origin}${API_PATH}`;
-
 function renderDebug() {
   const content = Handlebars.compile(
     document.getElementById("t-debug").innerHTML,
   );
-  setTimeout(() => {
-    document.getElementById("debugTokenEndpointLabel").textContent = `POST ${DEBUG_TOKEN_ENDPOINT}`;
-    document.getElementById("debugUserProfileEndpointLabel").textContent = `GET ${DEBUG_API_ENDPOINT}users/profile`;
-    document.getElementById("debugPatientConsentsUrl").value =
-      `${DEBUG_API_ENDPOINT}patients/PASTE_PATIENT_ID_HERE/consents`;
-  }, 200);
   return content({});
 }
 
@@ -2028,28 +2018,26 @@ async function debugGetPatientTokenFromCode() {
     // Split on _"
     const { host, token } = parseInvitationCode(invitationCode);
 
-    // Generate PKCE code_challenge (S256)
-    const encoder = new TextEncoder();
-    const data = encoder.encode(code_verifier);
-    const digest = await crypto.subtle.digest("SHA-256", data);
-    const code_challenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "");
+    const invitationResponse = await fetch(`http://${host}${API_PATH}/invitation/${token}`, {
+      method: "POST",
+      headers: {
+        "Cache-Control": "no-cache",
+      },
+    });
 
-    // Final JSON
-    const payload = {
-      code,
-      grant_type: "authorization_code",
-      redirect_uri: OIDCSettings.redirect_uri,
-      client_id,
-      code_verifier,
-    };
+    const grant = await readResponsePayload(invitationResponse);
 
-    document.getElementById("debugOAuthPayload").value = JSON.stringify(payload, null, 2);
+    document.getElementById("debugGrantPayload").value = JSON.stringify(
+      grant,
+      null,
+      2,
+    );
 
-    const formData = new URLSearchParams(payload).toString();
-    const response = await fetch(DEBUG_TOKEN_ENDPOINT, {
+    grant.grant["code_verifier"] = btoa(token).replace(/=/g, '');
+
+    const formData = new URLSearchParams(grant.grant).toString();
+    console.log("Exchanging code for token with form data: ", formData);
+    const response = await fetch(grant.token_endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -2126,7 +2114,7 @@ function setDebugPatientToken(accessToken) {
 async function debugGetUserProfile() {
   showDebugError();
   try {
-    const response = await fetch(`${DEBUG_API_ENDPOINT}users/profile`, {
+    const response = await fetch(`${API_PATH}/users/profile`, {
       headers: {
         "Cache-Control": "no-cache",
         Authorization: `Bearer ${debugPatientToken}`,

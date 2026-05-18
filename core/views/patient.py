@@ -84,6 +84,8 @@ class PatientViewSet(ModelViewSet):
                 practitioner.save_setting("current_organization_id", int(organization_id))
             if study_id := request.query_params.get("study_id"):
                 practitioner.save_setting("current_study_id", int(study_id))
+            else:
+                practitioner.delete_setting("current_study_id")
         return response
 
     def create(self, request, *args, **kwargs):
@@ -185,9 +187,7 @@ class PatientViewSet(ModelViewSet):
     def consolidated_clients(self, request, pk):
         Client = get_application_model()
 
-        patient_clients = list(
-            Client.objects.filter(studies__study__studypatient__patient_id=pk).distinct()
-        )
+        patient_clients = list(Client.objects.filter(studies__study__studypatient__patient_id=pk).distinct())
 
         invitations_by_client = {}
         for inv in PatientInvitation.objects.filter(patient_id=pk).order_by("-last_updated"):
@@ -202,7 +202,6 @@ class PatientViewSet(ModelViewSet):
             data.append(client_data)
 
         return Response(data)
-
 
     @action(detail=True, methods=["GET", "POST", "PATCH", "DELETE"])
     def consents(self, request, pk):
@@ -282,22 +281,24 @@ class PatientViewSet(ModelViewSet):
                             )
                         )
                     elif request.method == "PATCH":
+                        StudyPatientScopeConsent.objects.filter(
+                            study_patient_id=study_patient.id,
+                            scope_code_id=scope_code_id,
+                        ).update(
+                            consented=scope_consent["consented"],
+                            consented_time=consented_time,
+                        )
                         responses.append(
                             StudyPatientScopeConsent.objects.get(
                                 study_patient_id=study_patient.id,
                                 scope_code_id=scope_code_id,
-                            ).update(
-                                consented=scope_consent["consented"],
-                                consented_time=consented_time,
                             )
                         )
                     elif request.method == "DELETE":
-                        responses.append(
-                            StudyPatientScopeConsent.objects.get(
-                                study_patient_id=study_patient.id,
-                                scope_code_id=scope_code_id,
-                            ).delete()
-                        )
+                        StudyPatientScopeConsent.objects.filter(
+                            study_patient_id=study_patient.id,
+                            scope_code_id=scope_code_id,
+                        ).delete()
 
             return Response({"study_scope_consents": StudyPatientScopeConsentSerializer(responses, many=True).data})
 

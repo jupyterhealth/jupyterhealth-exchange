@@ -5,7 +5,13 @@ import boto3
 import requests
 from django.conf import settings
 from django.http import HttpResponseRedirect
-from omh_shim import convert
+
+
+# from omh_shim import convert
+def convert(*args, **kwargs):
+    raise NotImplementedError("omh-shim disabled in 0.0.11")
+
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response

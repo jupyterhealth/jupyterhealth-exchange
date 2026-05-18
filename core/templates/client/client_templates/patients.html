@@ -21,7 +21,7 @@
             <select
               id="studyForPatients"
               class="form-control form-select"
-              onchange="this.value == 'all' ? nav('patients',{ organizationId: {{organizationId}}, page: 1 }) : nav('patients',{studyId: this.value, organizationId: {{organizationId}}, page: 1 })"
+              onchange="this.value == 'all' ? nav('patients',{ organizationId: {{organizationId}}, page: 1, studyId: null }) : nav('patients',{studyId: this.value, organizationId: {{organizationId}}, page: 1 })"
             >
                 <option value="all">All Studies</option>
               {{#studyForPatientsSelect}} {{#if selected}}
@@ -215,6 +215,7 @@
                       class="form-control"
                       id="patientEmailGlobalLookup"
                       value="{{patientEmailGlobalLookup}}"
+                      onkeydown="if(event.key==='Enter'){event.preventDefault();globalLookupPatientByEmail(this.value, {{organizationId}})}"
                     />
                     <button
                       style="display: inline-block"
@@ -277,7 +278,7 @@
                   </div>
                   <div class="mb-3">
                     <label for="patientFamilyName" class="form-label"
-                      >Family Name*</label
+                      >Family Name</label
                     >
                     <input
                       type="text"
@@ -288,7 +289,7 @@
                   </div>
                   <div class="mb-3">
                     <label for="patientGivenName" class="form-label"
-                      >Given Name*</label
+                      >Given Name</label
                     >
                     <input
                       type="text"
@@ -299,7 +300,7 @@
                   </div>
                   <div class="mb-3">
                     <label for="patientBirthDate" class="form-label"
-                      >DOB*</label
+                      >DOB</label
                     >
                     <input
                       type="text"
@@ -348,7 +349,7 @@
                         <ul class="mb-3">
                            {{#each patientInvitations}}
                             <li>
-                              <span class="badge text-bg-light">{{lastUpdated}}</span> &rarr; {{status}} 
+                              <span class="badge text-bg-light">{{lastUpdated}}</span> &rarr; {{status}}
                               {{#if (eq status "Redeemed")}}
                                 <i class="bi bi-check-circle-fill"></i>
                               {{/if}}
