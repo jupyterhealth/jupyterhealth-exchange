@@ -43,16 +43,14 @@ function base64UrlEncode(bytes) {
 }
 
 // Parse invitation link code parameter into its components.
-// Format: host~client_id~code~code_verifier
+// Format: host_token
 function parseInvitationCode(code) {
-  var parts = code.split("~");
-  if (parts.length !== 4) {
+  var parts = code.split("_");
+  if (parts.length !== 2) {
     return null;
   }
   return {
-    host: parts[0],
-    clientId: parts[1],
-    code: parts[2],
-    codeVerifier: parts[3],
+    host: decodeURIComponent(parts[0]),
+    token: parts[1],
   };
 }

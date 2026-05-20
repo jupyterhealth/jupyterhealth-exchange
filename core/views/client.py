@@ -33,7 +33,6 @@ class ClientViewSet(ModelViewSet):
             "clientId"
         )  # djangorestframework_camel_case not working here - may be reserved
         invitation_url = self.request.data.get("invitation_url")
-        code_verifier = self.request.data.get("codeVerifier")
 
         errors = {}
         if not name:
@@ -42,8 +41,6 @@ class ClientViewSet(ModelViewSet):
             errors["clientId"] = ["This field is required."]
         if not invitation_url:
             errors["invitation_url"] = ["This field is required."]
-        if not code_verifier:
-            errors["code_verifier"] = ["This field is required."]
         if errors:
             raise ValidationError(errors)
 
@@ -79,7 +76,7 @@ class ClientViewSet(ModelViewSet):
 
         self.perform_update(serializer)  # calls serializer.save()
 
-        # re-fetch + re-serialize so response includes computed fields like codeVerifier
+        # re-fetch + re-serialize so response includes computed fields like invitationUrl
         instance.refresh_from_db()
         out = self.get_serializer(instance).data
 

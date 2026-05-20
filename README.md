@@ -26,7 +26,7 @@ Features include:
 
 ##### Typical User Flow
 
-Researchers create studies and recruit patients, who consent and submit observations via client applications, and the data is then stored in JupyterHealth Exchange and queried by researchers using Jupyter Notebooks or other systems.
+Researchers create studies and recruit patients, who consent and submit observations via client apps, and the data is then stored in JupyterHealth Exchange and queried by researchers using Jupyter Notebooks or other systems.
 
 <p align="center">
 	<img src="doc/jupyterhealth-exchange-user_flow.jpg" height="400">

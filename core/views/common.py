@@ -1,8 +1,6 @@
 import logging
 import secrets
-import urllib
 
-import jwt
 import requests
 from dictor import dictor  # type: ignore
 from django.conf import settings

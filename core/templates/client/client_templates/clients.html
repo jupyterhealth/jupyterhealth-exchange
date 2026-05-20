@@ -9,7 +9,6 @@
         <th scope="col">Name</th>
         <th scope="col">URL</th>
         <th scope="col">Client ID</th>
-        <th scope="col">Code Verifier</th>
       </tr>
     </thead>
     <tbody>
@@ -42,7 +41,6 @@
           <td>{{name}}</td>
           <td>{{invitationUrl}}</td>
           <td>{{clientId}}</td>
-          <td>{{codeVerifier}}</td>
           <td>
             <ul>
             {{#each supportedScopes}}
@@ -150,22 +148,6 @@
                       type="button"
                       class="mt-1 btn btn-sm btn-success"
                       onclick="document.getElementById('clientClientId').value = generateClientId()"
-                    >{{#if update}} Re-Generate {{/if}} {{#unless update}} Generate {{/unless}}</button>
-                </div>
-                <div class="mb-3">
-                  <label for="clientCodeVerifier" class="form-label"
-                    >Code Verifier</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="clientCodeVerifier"
-                    value="{{clientRecord.codeVerifier}}"
-                  />
-                  <button
-                      type="button"
-                      class="mt-1 btn btn-sm btn-success"
-                      onclick="document.getElementById('clientCodeVerifier').value = generateCodeVerifier()"
                     >{{#if update}} Re-Generate {{/if}} {{#unless update}} Generate {{/unless}}</button>
                 </div>
               </fieldset>

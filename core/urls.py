@@ -16,6 +16,7 @@ api_router.register(r"studies", views.StudyViewSet, basename="Study")
 api_router.register(r"observations", views.ObservationViewSet, basename="Observation")
 api_router.register(r"data_sources", views.DataSourceViewSet, basename="DataSource")
 api_router.register(r"clients", views.ClientViewSet, basename="Client")
+api_router.register(r"invitation", views.PatientInvitationViewSet, basename="PatientInvitation")
 
 fhir_router = DefaultRouter(trailing_slash=False)
 fhir_router.register(r"Observation", views.FHIRObservationViewSet, basename="FHIRObservation")

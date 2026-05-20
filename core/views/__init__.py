@@ -17,3 +17,5 @@ from .data_source import DataSourceViewSet  # noqa
 from .jhe_setting import JheSettingViewSet  # noqa
 
 from .client import ClientViewSet  # noqa
+
+from .patient_invitation import PatientInvitationViewSet  # noqa

@@ -22,6 +22,10 @@ class Practitioner(models.Model):
         self.settings[key] = value
         self.save(update_fields=["settings"])
 
+    def delete_setting(self, key):
+        self.settings.pop(key, None)
+        self.save(update_fields=["settings"])
+
     def get_setting(self, key):
         return self.settings.get(key)
 

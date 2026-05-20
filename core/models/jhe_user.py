@@ -1,9 +1,4 @@
-import base64
-import hashlib
-import json
 import logging
-from datetime import timedelta
-from random import SystemRandom
 
 from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
@@ -17,7 +12,7 @@ from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
-from oauth2_provider.models import AccessToken, Grant, IDToken, RefreshToken, get_application_model, get_grant_model
+from oauth2_provider.models import AccessToken, Grant, IDToken, RefreshToken, get_application_model
 
 from core.jhe_settings.service import get_setting
 from core.tokens import account_activation_token
@@ -258,35 +253,6 @@ class JheUser(AbstractUser):
             return self.patient.organizations.all()
         else:
             return None
-
-    # https://github.com/jazzband/django-oauth-toolkit/blob/102c85141ec44549e17080c676292e79e5eb46cc/oauth2_provider/oauth2_validators.py#L675
-    def create_authorization_code(self, application_id, code_verifier):
-        self.last_login = timezone.now()
-        self.save()
-
-        Grant = get_grant_model()
-
-        Grant.objects.filter(user_id=self.id, application_id=application_id).delete()
-
-        # https://github.com/oauthlib/oauthlib/blob/f9a07c6c07d0ddac255dd322ef5fc54a7a46366d/oauthlib/common.py#L188
-        UNICODE_ASCII_CHARACTER_SET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        authorization_code = "".join(SystemRandom().choice(UNICODE_ASCII_CHARACTER_SET) for _ in range(30))
-
-        return Grant.objects.create(
-            application_id=application_id,
-            user_id=self.id,
-            code=authorization_code,
-            expires=timezone.now() + timedelta(seconds=settings.PATIENT_AUTHORIZATION_CODE_EXPIRE_SECONDS),
-            redirect_uri=get_setting("site.url", settings.SITE_URL) + settings.OAUTH2_CALLBACK_PATH,
-            scope="openid email",
-            # https://github.com/oauthlib/oauthlib/blob/f9a07c6c07d0ddac255dd322ef5fc54a7a46366d/oauthlib/oauth2/rfc6749/grant_types/authorization_code.py#L18
-            code_challenge=base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest())
-            .rstrip(b"=")
-            .decode(),
-            code_challenge_method="S256",
-            nonce="",
-            claims=json.dumps({}),
-        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

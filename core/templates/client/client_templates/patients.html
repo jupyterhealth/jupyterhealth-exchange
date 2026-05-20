@@ -21,7 +21,7 @@
             <select
               id="studyForPatients"
               class="form-control form-select"
-              onchange="this.value == 'all' ? nav('patients',{ organizationId: {{organizationId}}, page: 1 }) : nav('patients',{studyId: this.value, organizationId: {{organizationId}}, page: 1 })"
+              onchange="this.value == 'all' ? nav('patients',{ organizationId: {{organizationId}}, page: 1, studyId: null }) : nav('patients',{studyId: this.value, organizationId: {{organizationId}}, page: 1 })"
             >
                 <option value="all">All Studies</option>
               {{#studyForPatientsSelect}} {{#if selected}}
@@ -36,7 +36,7 @@
       <div class="mt-2">
           {{#if @root.canManagePatientsInOrg}}
                 <button type="button"
-                        class="btn btn-sm btn-success me-2"
+                        class="btn btn-sm btn-outline-success me-2"
                         onclick="nav('patients',{
                             create: true,
                             patientLookup: true,
@@ -46,14 +46,14 @@
                   Add Patient...
                 </button>
                 <button type="button"
-                class="btn btn-sm btn-primary me-2"
+                class="btn btn-sm btn-outline-primary me-2"
                 onclick="selectPatientsForStudy({{@root.organizationId}})">
           Add Patient(s) to Study...
                 </button>
           {{/if}}
         {{#if studyId}}
         <button type="button"
-                class="btn btn-sm btn-warning"
+                class="btn btn-sm btn-outline-warning"
                 onclick="removeSelectedPatientsFromStudy({{@root.studyId}})">
           Remove Patient(s) from Study
         </button>
@@ -215,6 +215,7 @@
                       class="form-control"
                       id="patientEmailGlobalLookup"
                       value="{{patientEmailGlobalLookup}}"
+                      onkeydown="if(event.key==='Enter'){event.preventDefault();globalLookupPatientByEmail(this.value, {{organizationId}})}"
                     />
                     <button
                       style="display: inline-block"
@@ -250,7 +251,7 @@
                   </div>
                   <div class="mb-3">
                     <label for="patientIdentifier" class="form-label"
-                      >External Identifier*</label
+                      >External Identifier</label
                     >
                     <input
                       type="text"
@@ -261,7 +262,7 @@
                   </div>
                   <div class="mb-3">
                     <label for="patientFamilyName" class="form-label"
-                      >Family Name*</label
+                      >Family Name</label
                     >
                     <input
                       type="text"
@@ -272,7 +273,7 @@
                   </div>
                   <div class="mb-3">
                     <label for="patientGivenName" class="form-label"
-                      >Given Name*</label
+                      >Given Name</label
                     >
                     <input
                       type="text"
@@ -283,7 +284,7 @@
                   </div>
                   <div class="mb-3">
                     <label for="patientBirthDate" class="form-label"
-                      >DOB*</label
+                      >DOB</label
                     >
                     <input
                       type="text"
@@ -329,13 +330,23 @@
                     <li>
                       {{name}}
                       {{#if @root.canManagePatientsInOrg}}
+                        <ul class="mb-3">
+                           {{#each patientInvitations}}
+                            <li>
+                              <span class="badge text-bg-light">{{lastUpdated}}</span> &rarr; {{status}}
+                              {{#if (eq status "Redeemed")}}
+                                <i class="bi bi-check-circle-fill"></i>
+                              {{/if}}
+                            </li>
+                          {{/each}}
+                        </ul>
                         <div class="mb-3">
                           <button
                             type="button"
                             onclick="getInvitationLink({{@root.patientRecord.id}},{{id}},document.getElementById('InvitationSendEmail-{{id}}').checked)"
-                            class="btn btn-sm btn-success mb-2"
+                            class="btn btn-sm btn-outline-success mb-2"
                           >
-                            {{#if grantCode}}Re-{{/if}}Generate Invitation Link
+                            Generate Invitation Link
                           </button>
                           <div class="form-check form-check-inline mx-2">
                             <input
@@ -351,14 +362,14 @@
                             style="font-size: 0.8rem;"
                             class="form-control"
                             id="invitationLink-{{id}}"
-                            rows="3"
+                            rows="2"
                             readonly
                           >{{invitationLink}}</textarea>
                           <button
                             type="button"
                             id="copyInvitationLink-{{id}}"
                             onclick="navigator.clipboard.writeText(document.getElementById('invitationLink-{{id}}').value).then(() => this.disabled = true)"
-                            class="btn btn-sm btn-info mt-2"
+                            class="btn btn-sm btn-outline-primary mt-2"
                           >
                             Copy to Clipboard
                           </button>
@@ -395,9 +406,6 @@
                         {{#if consented}}
                           <i class="bi bi-check-circle-fill"></i>
                         {{/if}}
-                        {{#unless consented}}
-                          <i class="bi bi-check-circle-fill"></i>
-                        {{/unless}}
                         </li>
                       {{/scopeConsents}}
                       </ul>

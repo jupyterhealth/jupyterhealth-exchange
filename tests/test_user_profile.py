@@ -51,6 +51,7 @@ PRACTITIONER_USER_EXPECTED_FIELDS = {
     "firstName",
     "lastName",
     "patient",
+    "settings",
     "userType",
     "isSuperuser",
 }

@@ -1,3 +1,8 @@
+#
+# !!! This will not currently work. !!!
+# TBD: Rework for new auth flow
+#
+
 import argparse
 import base64
 import json
@@ -26,7 +31,7 @@ def _get_oidc_client_id_from_db():
 SITE_URL = os.getenv("SITE_URL")
 OIDC_CLIENT_ID = _get_oidc_client_id_from_db() or os.getenv("OIDC_CLIENT_ID")
 OAUTH2_CALLBACK_PATH = f"{SITE_URL}/auth/callback"
-PATIENT_AUTHORIZATION_CODE_EXPIRE_SECONDS = 1209600  # 2 weeks
+
 # TBD Need to bootstap a new client first
 PATIENT_AUTHORIZATION_CODE_CHALLENGE = "..."
 PATIENT_AUTHORIZATION_CODE_VERIFIER = "..."

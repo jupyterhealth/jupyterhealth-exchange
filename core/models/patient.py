@@ -27,9 +27,9 @@ class Patient(models.Model):
         blank=True,
     )
     identifier = models.CharField(null=True)
-    name_family = models.CharField()
-    name_given = models.CharField()
-    birth_date = models.DateField()
+    name_family = models.CharField(null=True)
+    name_given = models.CharField(null=True)
+    birth_date = models.DateField(null=True)
     telecom_phone = models.CharField(null=True)
     last_updated = models.DateTimeField(auto_now=True)
     organizations = models.ManyToManyField("Organization", through="PatientOrganization", related_name="patients")
@@ -91,13 +91,13 @@ class Patient(models.Model):
         return Patient.objects.raw(sql, params)
 
     @staticmethod
-    def construct_invitation_link(invitation_url, client_id, auth_code, code_verifier):
+    def construct_invitation_link(invitation_url, client_id, auth_code):
         site_url = get_setting("site.url", settings.SITE_URL)
         # Use netloc (host:port) instead of hostname (host only) so the
         # consuming app can reach JHE on non-standard ports (e.g. localhost:8000).
         parsed = urlparse(site_url)
         host = parsed.netloc or parsed.hostname
-        invitation_code = f"{host}~{client_id}~{auth_code}~{code_verifier}"
+        invitation_code = f"{host}~{client_id}~{auth_code}"
         return invitation_url.replace("CODE", invitation_code)
 
     @staticmethod
@@ -122,13 +122,16 @@ class Patient(models.Model):
     @staticmethod
     def for_study(jhe_user_id, study_id):
         q = """
-            SELECT core_patient.*
+            SELECT DISTINCT core_patient.*
             FROM core_patient
             JOIN core_studypatient ON core_studypatient.patient_id=core_patient.id
             JOIN core_study ON core_study.id=core_studypatient.study_id
             JOIN core_organization ON core_organization.id=core_study.organization_id
-            JOIN core_patientorganization ON core_patientorganization.organization_id=core_organization.id
-            WHERE core_patientorganization.jhe_user_id=%(jhe_user_id)s AND core_study.id=%(study_id)s
+            JOIN core_practitionerorganization
+              ON core_practitionerorganization.organization_id=core_organization.id
+            JOIN core_practitioner
+              ON core_practitioner.id=core_practitionerorganization.practitioner_id
+            WHERE core_practitioner.jhe_user_id=%(jhe_user_id)s AND core_study.id=%(study_id)s
             """
         return Patient.objects.raw(q, {"jhe_user_id": jhe_user_id, "study_id": study_id})
 
@@ -200,8 +203,12 @@ class Patient(models.Model):
             FROM core_patient
             JOIN core_jheuser AS patient_user ON patient_user.id=core_patient.jhe_user_id
             JOIN core_studypatient ON core_studypatient.patient_id=core_patient.id
+            JOIN core_patientorganization
+              ON core_patientorganization.patient_id=core_patient.id
+            JOIN core_organization
+              ON core_organization.id=core_patientorganization.organization_id
             JOIN core_practitionerorganization
-            ON core_practitionerorganization.organization_id = core_organization.id
+            ON core_practitionerorganization.organization_id=core_organization.id
             WHERE core_practitionerorganization.practitioner_id = %(practitioner_id)s
 
             {study_sql_where}

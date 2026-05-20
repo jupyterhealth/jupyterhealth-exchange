@@ -17,6 +17,7 @@ from core.models import (
     Observation,
     Organization,
     Patient,
+    PatientInvitation,
     PractitionerOrganization,
     Study,
     StudyClient,
@@ -237,14 +238,11 @@ class ClientSerializer(serializers.ModelSerializer):
     invitationUrl = serializers.CharField(
         source="invitation_url", required=False, allow_blank=True, allow_null=True, write_only=True
     )
-    codeVerifier = serializers.CharField(
-        required=False, allow_blank=True, allow_null=True, write_only=True
-    )  # needs special treatment
 
     class Meta:
         model = Application
         # expose camelCase fields to the client
-        fields = ["id", "name", "clientId", "codeVerifier", "invitationUrl"]
+        fields = ["id", "name", "clientId", "invitationUrl"]
 
     def to_representation(self, instance):
         data = {
@@ -253,28 +251,8 @@ class ClientSerializer(serializers.ModelSerializer):
             "clientId": instance.client_id,
         }
 
-        code_verifier_setting = JheSetting.objects.filter(setting_id=instance.id, key="client.code_verifier").first()
-        data["codeVerifier"] = code_verifier_setting.get_value() if code_verifier_setting else None
-
         invitation_url_setting = JheSetting.objects.filter(setting_id=instance.id, key="client.invitation_url").first()
         data["invitationUrl"] = invitation_url_setting.get_value() if invitation_url_setting else None
-
-        grants = getattr(instance, "patient_grants", None)
-        code_verifier = getattr(instance, "code_verifier", None)
-        invitation_url = getattr(instance, "invitation_url", None)
-
-        # prevent None / empty list explosions
-        grant_code = None
-        if grants:
-            # works for list/tuple/queryset
-            first = grants[0] if hasattr(grants, "__getitem__") else grants.first()
-            grant_code = getattr(first, "code", None)
-
-        data["invitationLink"] = (
-            Patient.construct_invitation_link(invitation_url, instance.client_id, grant_code, code_verifier)
-            if grant_code
-            else None
-        )
 
         return data
 
@@ -294,30 +272,24 @@ class ClientSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         print("validated_data keys:", sorted(validated_data.keys()))
-        code_verifier = validated_data.pop("codeVerifier", None)
         invitation_url = validated_data.pop("invitation_url", None)
         if invitation_url is None:
             invitation_url = self.initial_data.get("invitation_url")
 
         app = super().create(validated_data)
 
-        if code_verifier is not None:
-            self._upsert_setting(app.id, "client.code_verifier", code_verifier)
         if invitation_url is not None:
             self._upsert_setting(app.id, "client.invitation_url", invitation_url)
 
         return app
 
     def update(self, instance, validated_data):
-        code_verifier = validated_data.pop("codeVerifier", None)
         invitation_url = validated_data.pop("invitation_url", None)
         if invitation_url is None:
             invitation_url = self.initial_data.get("invitation_url")
 
         app = super().update(instance, validated_data)
 
-        if code_verifier is not None:
-            self._upsert_setting(app.id, "client.code_verifier", code_verifier)
         if invitation_url is not None:
             self._upsert_setting(app.id, "client.invitation_url", invitation_url)
 
@@ -421,6 +393,17 @@ class ObservationWithoutDataSerializer(serializers.ModelSerializer):
 
 # Why resolved_value instead of value?
 # - Because DRF can’t have the same field name be both write-only and read-only cleanly.
+
+
+class PatientInvitationSerializer(serializers.ModelSerializer):
+    token = serializers.SerializerMethodField()
+
+    def get_token(self, obj):
+        return getattr(obj, "token", None)
+
+    class Meta:
+        model = PatientInvitation
+        fields = ["id", "patient_id", "client_id", "token_hash", "token", "status", "last_updated"]
 
 
 class JheSettingSerializer(serializers.ModelSerializer):

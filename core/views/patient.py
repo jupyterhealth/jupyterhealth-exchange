@@ -3,14 +3,11 @@ import logging
 from datetime import datetime
 
 from django.conf import settings
-from django.core.mail import EmailMessage
-from django.db.models import OuterRef, Prefetch, Subquery
-from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
-from oauth2_provider.models import Grant, get_application_model
+from oauth2_provider.models import get_application_model
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -18,11 +15,11 @@ from core.admin_pagination import CustomPageNumberPagination
 from core.fhir_pagination import FHIRBundlePagination
 from core.models import (
     CodeableConcept,
-    JheSetting,
     JheUser,
     Observation,
     Organization,
     Patient,
+    PatientInvitation,
     PatientOrganization,
     Practitioner,
     PractitionerOrganization,
@@ -35,6 +32,7 @@ from core.serializers import (
     ClientSerializer,
     CodeableConceptSerializer,
     FHIRBundledPatientSerializer,
+    PatientInvitationSerializer,
     PatientSerializer,
     StudyConsentsSerializer,
     StudyPatientScopeConsentSerializer,
@@ -87,6 +85,8 @@ class PatientViewSet(ModelViewSet):
                 practitioner.save_setting("current_organization_id", int(organization_id))
             if study_id := request.query_params.get("study_id"):
                 practitioner.save_setting("current_study_id", int(study_id))
+            else:
+                practitioner.delete_setting("current_study_id")
         return response
 
     def create(self, request, *args, **kwargs):
@@ -156,79 +156,23 @@ class PatientViewSet(ModelViewSet):
 
     @action(detail=True, methods=["GET"])
     def consolidated_clients(self, request, pk):
-        patient = self.get_object()  # Patient instance
         Client = get_application_model()
 
-        grants_for_patient_user = Grant.objects.filter(user_id=patient.jhe_user_id)
+        patient_clients = list(Client.objects.filter(studies__study__studypatient__patient_id=pk).distinct())
 
-        code_verifier_subquery = JheSetting.objects.filter(
-            setting_id=OuterRef("id"), key="client.code_verifier"
-        ).values("value_string")[:1]
+        invitations_by_client = {}
+        for inv in PatientInvitation.objects.filter(patient_id=pk).order_by("-last_updated"):
+            invitations_by_client.setdefault(inv.client_id, []).append(inv)
 
-        invitation_url_subquery = JheSetting.objects.filter(
-            setting_id=OuterRef("id"), key="client.invitation_url"
-        ).values("value_string")[:1]
+        data = []
+        for client in patient_clients:
+            client_data = ClientSerializer(client).data
+            client_data["patient_invitations"] = PatientInvitationSerializer(
+                invitations_by_client.get(client.id, []), many=True
+            ).data
+            data.append(client_data)
 
-        patient_clients = (
-            Client.objects.filter(studies__study__studypatient__patient_id=pk)
-            .annotate(code_verifier=Subquery(code_verifier_subquery), invitation_url=Subquery(invitation_url_subquery))
-            .prefetch_related(Prefetch("grant_set", queryset=grants_for_patient_user, to_attr="patient_grants"))
-            .distinct()
-        )
-
-        serializer = ClientSerializer(patient_clients, many=True)
-        return Response(serializer.data)
-
-    @action(detail=True, methods=["GET"])
-    def invitation_link(self, request, pk):
-        client_id = request.query_params.get("application_id")
-        Client = get_application_model()
-        send_email = request.query_params.get("send_email") == "true"
-        patient = self.get_object()
-
-        if not client_id:
-            raise APIException("Missing required query parameter: application_id")
-
-        client_client_id = Client.objects.get(pk=client_id).client_id
-
-        if not patient:
-            raise APIException("Patient not found.")
-
-        code_verifier_setting = JheSetting.objects.filter(setting_id=client_id, key="client.code_verifier").first()
-
-        if not code_verifier_setting:
-            raise APIException("Missing JheSetting: client.code_verifier")
-
-        invitation_url_setting = JheSetting.objects.filter(setting_id=client_id, key="client.invitation_url").first()
-
-        if not invitation_url_setting:
-            raise APIException("Missing JheSetting: client.invitation_url")
-
-        grant = patient.jhe_user.create_authorization_code(
-            client_id,
-            code_verifier_setting.get_value(),
-        )
-
-        if not grant:
-            raise APIException("Failed to create authorization code.")
-
-        invitation_link = Patient.construct_invitation_link(
-            invitation_url_setting.get_value(), client_client_id, grant.code, code_verifier_setting.get_value()
-        )
-
-        if send_email:
-            message = render_to_string(
-                "registration/invitation_email.html",
-                {
-                    "patient_name": patient.name_given,
-                    "invitation_link": invitation_link,
-                },
-            )
-            email = EmailMessage("JHE Invitation", message, to=[patient.jhe_user.email])
-            email.content_subtype = "html"
-            email.send()
-
-        return Response({"invitation_link": invitation_link})
+        return Response(data)
 
     @action(detail=False, methods=["GET"])
     def me(self, request):
@@ -359,12 +303,10 @@ class PatientViewSet(ModelViewSet):
                         spsc.save()
                         responses.append(spsc)
                     elif request.method == "DELETE":
-                        responses.append(
-                            StudyPatientScopeConsent.objects.get(
-                                study_patient_id=study_patient.id,
-                                scope_code_id=scope_code_id,
-                            ).delete()
-                        )
+                        StudyPatientScopeConsent.objects.filter(
+                            study_patient_id=study_patient.id,
+                            scope_code_id=scope_code_id,
+                        ).delete()
 
             # After processing all consent changes, check if any study now has
             # ALL scopes revoked. If so, disconnect the OW vendor connection

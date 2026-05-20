@@ -1,4 +1,4 @@
-ARG PYTHON_VERSION=3.12-slim-trixie
+ARG PYTHON_VERSION=3.11-slim-trixie
 
 FROM python:${PYTHON_VERSION}
 
@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=${XDG_CACHE_DIR} \
     export PIP_CACHE_DIR=$XDG_CACHE_DIR/pip \
  && export PIPENV_CACHE_DIR=$XDG_CACHE_DIR/pipenv \
  && pip install pipenv \
- && pipenv install --deploy --system \
+ && pipenv install --system \
  && pip uninstall -y pipenv
 
 # supercronic for the optional jhe_cron sidecar (runs ow_poll on a schedule).
