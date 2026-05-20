@@ -3,6 +3,13 @@
 Minimal port: just enough surface area for the ``raw`` mode of
 ``manage.py ow_poll``. All settings are read from ``JheSetting`` so an
 operator can repoint the pipeline at runtime without restarting Django.
+
+The S3 endpoint, credentials, and bucket name are deliberately not
+defaulted - those are environment-specific (and in the case of the
+credentials, secret) so operators must set them explicitly via JheSettings
+before enabling raw-mode ingest. ``ow.s3.key_prefix`` is the one knob that
+keeps a default since it is an operational layout convention, not a
+credential or globally-unique resource name.
 """
 
 import json
@@ -19,13 +26,22 @@ class S3ObjectInfo(NamedTuple):
     last_modified: datetime
 
 
+def _required_setting(key: str) -> str:
+    value = get_setting(key)
+    if not value:
+        raise RuntimeError(
+            f"OW raw ingest requires JheSetting '{key}' to be set."
+        )
+    return value
+
+
 def get_client():
     """Build a boto3 S3 client from ``ow.s3.*`` JheSettings."""
     return boto3.client(
         "s3",
-        endpoint_url=get_setting("ow.s3.endpoint_url", "http://localhost:9000"),
-        aws_access_key_id=get_setting("ow.s3.access_key_id", "minioadmin"),
-        aws_secret_access_key=get_setting("ow.s3.secret_access_key", "minioadmin"),
+        endpoint_url=_required_setting("ow.s3.endpoint_url"),
+        aws_access_key_id=_required_setting("ow.s3.access_key_id"),
+        aws_secret_access_key=_required_setting("ow.s3.secret_access_key"),
     )
 
 
@@ -36,7 +52,7 @@ def list_new_objects(ow_user_id: str, since: datetime) -> list[S3ObjectInfo]:
     Open Wearables' default key layout: ``<prefix>/<provider>/<endpoint>/<user_id>/<...>``).
     """
     client = get_client()
-    bucket = get_setting("ow.s3.bucket_name", "raw-payloads")
+    bucket = _required_setting("ow.s3.bucket_name")
     prefix = get_setting("ow.s3.key_prefix", "raw-payloads/oura/api_response")
 
     results: list[S3ObjectInfo] = []
@@ -63,6 +79,6 @@ def list_new_objects(ow_user_id: str, since: datetime) -> list[S3ObjectInfo]:
 def read_object(key: str) -> dict:
     """Download an S3 object and parse its JSON body."""
     client = get_client()
-    bucket = get_setting("ow.s3.bucket_name", "raw-payloads")
+    bucket = _required_setting("ow.s3.bucket_name")
     response = client.get_object(Bucket=bucket, Key=key)
     return json.loads(response["Body"].read())
