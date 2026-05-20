@@ -77,7 +77,7 @@ class Command(BaseCommand):
             ("auth.patient.invitation_redemption_window_hours", "int", 12),
             # Open Wearables polling pipeline (see ow_poll management command).
             ("module.ow", "bool", False),
-            ("ow.sync_in_progress", "bool", False),
+            ("ow.sync_in_progress", "string", ""),
         ]
         for key, value_type, value in jhe_settings:
             setting, _ = JheSetting.objects.update_or_create(

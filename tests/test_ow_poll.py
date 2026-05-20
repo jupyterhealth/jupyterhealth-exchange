@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import pytest
 from django.core.management import call_command
+from django.utils import timezone
 
 from core.jhe_settings.service import get_setting
 from core.models import (
@@ -32,6 +33,19 @@ def _set_jhe_setting(key, value, value_type="bool"):
     from django.core.cache import cache
 
     cache.delete(f"jhe_setting:{key}")
+
+
+def _clear_sync_lock():
+    """Reset ow.sync_in_progress to the unlocked value (empty string)."""
+    _set_jhe_setting("ow.sync_in_progress", "", value_type="string")
+
+
+def _hold_sync_lock(acquired_at=None):
+    """Set ow.sync_in_progress to a recent ISO timestamp (lock held)."""
+    acquired_at = acquired_at or timezone.now()
+    _set_jhe_setting(
+        "ow.sync_in_progress", acquired_at.isoformat(), value_type="string"
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -80,17 +94,17 @@ def test_skipped_when_module_disabled(db, ow_user, hr_concept):
 
 def test_skipped_when_lock_held(db, ow_user, hr_concept):
     _set_jhe_setting("module.ow", True)
-    _set_jhe_setting("ow.sync_in_progress", True)
+    _hold_sync_lock()
     out = StringIO()
     call_command("ow_poll", stdout=out)
     assert "sync_in_progress" in out.getvalue()
     # Lock should remain set (we didn't clear it - we never acquired it)
-    assert get_setting("ow.sync_in_progress") is True
+    assert get_setting("ow.sync_in_progress")
 
 
 def test_creates_observation_for_consented_patient(db, ow_user, patient_with_consent, hr_concept):
     _set_jhe_setting("module.ow", True)
-    _set_jhe_setting("ow.sync_in_progress", False)
+    _clear_sync_lock()
 
     fake_record = {"timestamp": "2024-01-01T00:00:00Z", "value": 72}
 
@@ -111,12 +125,12 @@ def test_creates_observation_for_consented_patient(db, ow_user, patient_with_con
         observation=obs.first(), system=NORMALIZED_SYSTEM, value="abc-123"
     ).exists()
     # Lock cleared after run
-    assert get_setting("ow.sync_in_progress") is False
+    assert not get_setting("ow.sync_in_progress")
 
 
 def test_dedupes_via_observation_identifier(db, ow_user, patient_with_consent, hr_concept):
     _set_jhe_setting("module.ow", True)
-    _set_jhe_setting("ow.sync_in_progress", False)
+    _clear_sync_lock()
 
     with (
         patch("core.management.commands.ow_poll.requests.get") as mock_get,
@@ -138,7 +152,7 @@ def test_dedupes_via_observation_identifier(db, ow_user, patient_with_consent, h
 def test_skips_user_without_ow_identifier(db, patient_with_consent, hr_concept):
     """JheUser whose identifier doesn't start with 'ow:' must not trigger any OW API call."""
     _set_jhe_setting("module.ow", True)
-    _set_jhe_setting("ow.sync_in_progress", False)
+    _clear_sync_lock()
     patient_with_consent.jhe_user.identifier = ""
     patient_with_consent.jhe_user.save(update_fields=["identifier"])
 
@@ -154,7 +168,7 @@ def test_skips_patient_without_hr_consent(db, organization, hr_concept):
     from core.models import JheUser
 
     _set_jhe_setting("module.ow", True)
-    _set_jhe_setting("ow.sync_in_progress", False)
+    _clear_sync_lock()
 
     user = JheUser.objects.create_user(
         email="no-consent@example.org",
@@ -173,33 +187,33 @@ def test_skips_patient_without_hr_consent(db, organization, hr_concept):
 
 def test_lock_released_on_exception(db, ow_user, hr_concept):
     _set_jhe_setting("module.ow", True)
-    _set_jhe_setting("ow.sync_in_progress", False)
+    _clear_sync_lock()
 
     with patch("core.management.commands.ow_poll.requests.get", side_effect=RuntimeError("boom")):
         # Per-user errors are swallowed by the loop (logger.exception). Lock
         # should still be released by the outer try/finally.
         call_command("ow_poll", stdout=StringIO())
 
-    assert get_setting("ow.sync_in_progress") is False
+    assert not get_setting("ow.sync_in_progress")
 
 
 def test_aborts_when_settings_missing(db, ow_user, hr_concept, settings):
     settings.OW_API_URL = ""
     settings.OW_API_KEY = ""
     _set_jhe_setting("module.ow", True)
-    _set_jhe_setting("ow.sync_in_progress", False)
+    _clear_sync_lock()
 
     err = StringIO()
     call_command("ow_poll", stdout=StringIO(), stderr=err)
 
     assert "OW_API_URL" in err.getvalue()
     assert Observation.objects.count() == 0
-    assert get_setting("ow.sync_in_progress") is False
+    assert not get_setting("ow.sync_in_progress")
 
 
 def test_raw_mode_creates_observation_and_dedupes(db, ow_user, patient_with_consent, hr_concept):
     _set_jhe_setting("module.ow", True)
-    _set_jhe_setting("ow.sync_in_progress", False)
+    _clear_sync_lock()
     _set_jhe_setting("ow.ingest_mode", "raw", value_type="string")
 
     from collections import namedtuple
@@ -236,7 +250,7 @@ def test_raw_mode_creates_observation_and_dedupes(db, ow_user, patient_with_cons
 
 def test_raw_mode_skips_non_heartrate_keys(db, ow_user, patient_with_consent, hr_concept):
     _set_jhe_setting("module.ow", True)
-    _set_jhe_setting("ow.sync_in_progress", False)
+    _clear_sync_lock()
     _set_jhe_setting("ow.ingest_mode", "raw", value_type="string")
 
     from collections import namedtuple
@@ -261,7 +275,7 @@ def test_raw_mode_skips_non_heartrate_keys(db, ow_user, patient_with_consent, hr
 
 def test_unknown_mode_aborts(db, ow_user, hr_concept):
     _set_jhe_setting("module.ow", True)
-    _set_jhe_setting("ow.sync_in_progress", False)
+    _clear_sync_lock()
     _set_jhe_setting("ow.ingest_mode", "bogus", value_type="string")
 
     err = StringIO()
@@ -269,3 +283,29 @@ def test_unknown_mode_aborts(db, ow_user, hr_concept):
 
     assert "unknown ow.ingest_mode" in err.getvalue()
     assert Observation.objects.count() == 0
+
+
+def test_stale_lock_is_force_released(db, ow_user, patient_with_consent, hr_concept):
+    """A lock older than LOCK_STALE_AFTER is reclaimed by the next tick."""
+    from datetime import timedelta
+
+    from core.management.commands.ow_poll import LOCK_STALE_AFTER
+
+    _set_jhe_setting("module.ow", True)
+    # Held longer than the stale window -> treat as abandoned (crashed worker).
+    stale_at = timezone.now() - (LOCK_STALE_AFTER + timedelta(minutes=1))
+    _hold_sync_lock(acquired_at=stale_at)
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert") as mock_convert,
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": [{"x": 1}]}
+        mock_convert.return_value = _fake_omh_record(uuid_value="stale-recover")
+
+        call_command("ow_poll", stdout=StringIO())
+
+    # Force-reclaim: poll ran, observation persisted, lock cleared on exit.
+    assert Observation.objects.count() == 1
+    assert not get_setting("ow.sync_in_progress")

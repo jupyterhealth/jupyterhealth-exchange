@@ -55,16 +55,17 @@ Read by `jhe/settings.py` and used by both `core/views/ow.py` (proxy) and
 |-----|------|---------|---------|
 | `module.ow` | bool | `false` | Master switch. `ow_poll` no-ops when false. |
 | `ow.ingest_mode` | string | `normalized` | `normalized` (HTTP) or `raw` (S3). |
-| `ow.sync_in_progress` | bool | `false` | Lock auto-managed by `ow_poll`. |
+| `ow.sync_in_progress` | string | `""` | Lock auto-managed by `ow_poll`. Stores the acquiring tick's ISO timestamp (empty = unlocked). Locks older than 30 minutes are treated as abandoned and force-reclaimed by the next tick. |
 
-Raw-mode S3 settings (only required when `ow.ingest_mode=raw`):
+Raw-mode S3 settings (required when `ow.ingest_mode=raw` - **no defaults**; the
+poller raises a clear error if any of the four below are unset):
 
 | Key | Default |
 |-----|---------|
-| `ow.s3.endpoint_url` | `http://localhost:9000` |
-| `ow.s3.access_key_id` | `minioadmin` |
-| `ow.s3.secret_access_key` | `minioadmin` |
-| `ow.s3.bucket_name` | `raw-payloads` |
+| `ow.s3.endpoint_url` | (required) |
+| `ow.s3.access_key_id` | (required) |
+| `ow.s3.secret_access_key` | (required) |
+| `ow.s3.bucket_name` | (required) |
 | `ow.s3.key_prefix` | `raw-payloads/oura/api_response` |
 
 Toggle from the Django shell:
@@ -136,6 +137,6 @@ python manage.py ow_poll
 | `OW poll skipped: module.ow=false` | Set `module.ow=true` in JheSettings (see above). |
 | `ow_poll aborted: OW_API_URL / OW_API_KEY not configured` | Add both vars to `.env` and restart the server. |
 | `401 Invalid or missing API key` | Stale `OW_API_KEY`; regenerate in OW admin and update `.env`. |
-| `ow_poll skipped: ow.sync_in_progress=true` | A previous tick is still running, or crashed mid-run. Wait or manually flip the setting to `false`. |
+| `ow_poll skipped: ow.sync_in_progress since <iso>` | A previous tick is still running. If the timestamp is older than 30 minutes the next tick will auto-reclaim the lock and proceed; to force an immediate reclaim, set `ow.sync_in_progress` to `""`. |
 | `CodeableConcept 'omh:heart-rate:2.0' not found` | Run `python manage.py seed`. |
 | Patient skipped silently | Either `JheUser.identifier` doesn't start with `ow:`, or patient hasn't consented to `omh:heart-rate:2.0`. |

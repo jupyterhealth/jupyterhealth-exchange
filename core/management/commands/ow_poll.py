@@ -19,7 +19,9 @@ Modes (selected via the ``ow.ingest_mode`` JheSetting):
 The command no-ops in two situations:
 
 1. ``module.ow`` JheSetting is false (operator-controlled master switch).
-2. ``ow.sync_in_progress`` is true (a previous tick is still running).
+2. ``ow.sync_in_progress`` holds a recent ISO timestamp (a previous tick is
+   still running). Locks older than ``LOCK_STALE_AFTER`` are treated as
+   abandoned (e.g. crashed worker) and force-reclaimed.
 
 OW connection config (``OW_API_URL``, ``OW_API_KEY``) is read from
 ``django.conf.settings`` and ultimately from environment variables, matching
@@ -27,7 +29,7 @@ OW connection config (``OW_API_URL``, ``OW_API_KEY``) is read from
 """
 
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import requests
 from django.conf import settings
@@ -57,17 +59,21 @@ NORMALIZED_SYSTEM = "ow:normalized"
 RAW_SYSTEM = "ow:raw"
 RAW_TRACE_ID_HEART_RATE = "/v2/usercollection/heartrate"
 _SYNC_LOCK_KEY = "ow.sync_in_progress"
+# A lock older than this is considered abandoned (worker crashed mid-poll)
+# and is force-reclaimed by the next tick. Sized at ~2x the default cron
+# interval (15 min) so a healthy long-running poll is never preempted.
+LOCK_STALE_AFTER = timedelta(minutes=30)
 
 
-def _set_sync_lock(value: bool) -> None:
-    """Flip the ow.sync_in_progress JheSetting and bust the cache."""
+def _write_sync_lock(value: str) -> None:
+    """Write the ow.sync_in_progress JheSetting and bust the cache."""
     with transaction.atomic():
         setting, _ = JheSetting.objects.select_for_update().update_or_create(
             key=_SYNC_LOCK_KEY,
             setting_id=None,
-            defaults={"value_type": "bool"},
+            defaults={"value_type": "string"},
         )
-        setting.set_value("bool", value)
+        setting.set_value("string", value)
         setting.save()
     cache.delete(f"jhe_setting:{_SYNC_LOCK_KEY}")
 
@@ -85,31 +91,58 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if not bool(get_setting("module.ow", False)):
-            logger.info("ow_poll skipped: module.ow=false")
             self.stdout.write("ow_poll skipped: module.ow=false")
             return
 
-        # Idempotency guard: bail if a previous sync is still running. Read
-        # straight from the DB with select_for_update so two cron ticks racing
-        # through here can't both observe "false". Check + flip in one txn.
-        with transaction.atomic():
-            setting, _ = JheSetting.objects.select_for_update().get_or_create(
-                key=_SYNC_LOCK_KEY,
-                setting_id=None,
-                defaults={"value_type": "bool", "value_bool": False},
-            )
-            if bool(setting.get_value()):
-                logger.info("ow_poll skipped: ow.sync_in_progress=true")
-                self.stdout.write("ow_poll skipped: ow.sync_in_progress=true")
-                return
-            setting.set_value("bool", True)
-            setting.save()
-        cache.delete(f"jhe_setting:{_SYNC_LOCK_KEY}")
+        if not self._acquire_lock():
+            return
 
         try:
             self._run_poll(options)
         finally:
-            _set_sync_lock(False)
+            self._release_lock()
+
+    def _acquire_lock(self) -> bool:
+        """Acquire ow.sync_in_progress (ISO timestamp). Return False if held.
+
+        Atomic check-and-set under ``select_for_update`` so two concurrent
+        cron ticks can't both win. A lock whose timestamp is older than
+        ``LOCK_STALE_AFTER`` is treated as abandoned and reclaimed with a
+        warning so a crashed previous tick auto-heals.
+        """
+        now = timezone.now()
+        with transaction.atomic():
+            setting, _ = JheSetting.objects.select_for_update().get_or_create(
+                key=_SYNC_LOCK_KEY,
+                setting_id=None,
+                defaults={"value_type": "string", "value_string": ""},
+            )
+            current = setting.get_value() or ""
+            if current:
+                acquired_at = self._parse_lock_timestamp(current)
+                if acquired_at is not None and (now - acquired_at) < LOCK_STALE_AFTER:
+                    self.stdout.write(
+                        f"ow_poll skipped: ow.sync_in_progress since {current}"
+                    )
+                    return False
+                logger.warning(
+                    "ow_poll: reclaiming stale ow.sync_in_progress lock (acquired_at=%s)",
+                    current,
+                )
+            setting.set_value("string", now.isoformat())
+            setting.save()
+        cache.delete(f"jhe_setting:{_SYNC_LOCK_KEY}")
+        return True
+
+    def _release_lock(self) -> None:
+        _write_sync_lock("")
+
+    @staticmethod
+    def _parse_lock_timestamp(value: str):
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return None
 
     def _run_poll(self, options):
         mode = str(get_setting("ow.ingest_mode", "normalized") or "normalized").lower()
