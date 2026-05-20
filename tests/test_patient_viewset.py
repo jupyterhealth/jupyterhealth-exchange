@@ -163,13 +163,9 @@ def test_create_with_identifiers(api_client, organization):
 
 def test_identifier_unique_system_value_constraint(organization):
     patient_a, patient_b = add_patients(2, organization=organization)
-    PatientIdentifier.objects.create(
-        patient=patient_a, system="http://hospital-a.org", value="MRN-DUP"
-    )
+    PatientIdentifier.objects.create(patient=patient_a, system="http://hospital-a.org", value="MRN-DUP")
     with pytest.raises(IntegrityError):
-        PatientIdentifier.objects.create(
-            patient=patient_b, system="http://hospital-a.org", value="MRN-DUP"
-        )
+        PatientIdentifier.objects.create(patient=patient_b, system="http://hospital-a.org", value="MRN-DUP")
 
 
 def test_update_replaces_identifiers(api_client, organization):
