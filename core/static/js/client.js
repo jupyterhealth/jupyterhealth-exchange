@@ -1084,14 +1084,18 @@ function collectPatientIdentifiers() {
 function renderPatientAddIdentifierInput() {
   const container = document.getElementById("patientIdentifiersContainer");
   if (!container) return;
-  const row = document.createElement("div");
-  row.className = "patient-identifier-row d-flex gap-2 mb-2";
-  row.innerHTML =
-    '<input type="text" class="form-control patient-identifier-system" placeholder="System" />' +
-    '<input type="text" class="form-control patient-identifier-value" placeholder="Value" />' +
-    '<button type="button" class="btn btn-outline-danger" onclick="renderPatientRemoveIdentifierInput(this)">' +
-    '<i class="bi bi-trash"></i></button>';
-  container.appendChild(row);
+
+  const template = Handlebars.compile(`
+    <div class="patient-identifier-row d-flex gap-2 mb-2">
+      <input type="text" class="form-control patient-identifier-system" placeholder="System" />
+      <input type="text" class="form-control patient-identifier-value" placeholder="Value" />
+      <button type="button" class="btn btn-outline-danger" onclick="renderPatientRemoveIdentifierInput(this)">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+  `);
+
+  container.insertAdjacentHTML("beforeend", template({}));
 }
 
 function renderPatientRemoveIdentifierInput(target) {

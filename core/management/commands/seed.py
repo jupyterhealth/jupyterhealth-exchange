@@ -19,6 +19,7 @@ from core.models import (
     JheUser,
     Observation,
     Organization,
+    PatientIdentifier,
     PractitionerOrganization,
     Study,
     StudyClient,
@@ -263,6 +264,11 @@ class Command(BaseCommand):
 
         ll_patient_pete = self.create_user_with_profile("ll_patient_peter@example.com", user_type="patient")
         ll_patient_pete.organizations.add(lifespan_lab)
+        # Example multi-identifier demo data (see PR #409 / ghi-352).
+        PatientIdentifier.objects.create(
+            patient=ll_patient_pete, system="https://openwearables.io/ns/patient-id", value="abc123"
+        )
+        PatientIdentifier.objects.create(patient=ll_patient_pete, system="urn:oid:1.2.3.4", value="E1234")
         ll_patient_pamela = self.create_user_with_profile("ll_patient_pamela@example.com", user_type="patient")
         ll_patient_pamela.organizations.add(lifespan_lab)
 
