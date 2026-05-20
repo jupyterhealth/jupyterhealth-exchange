@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e03b29ded4f5aa9f132083108a5c1c0ba3b28f9e1f0d6a70c173d3e41fce2621"
+            "sha256": "e8e9203b97e38ca44e59d3e70e32d9de8916ff980d80f95fa7ea2bc5c0ee4c35"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -50,20 +50,20 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:37dac72f2921095378c0200caf07918d5e10a82b7c1f611abb70e44f69d0b962",
-                "sha256:5e967292d361482793471bd80fad1e714515b7401f65a0d5b4aa6ef9d009c030"
+                "sha256:27342e5d5f6170fcc8d1e21cdd939af2448d58ac56b08d494250eaad998e30c7",
+                "sha256:83918184d95967e4c6e9ed1e9a2f58250b291e6ea2cb847ab0825d52596b39e5"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==1.43.9"
+            "version": "==1.43.10"
         },
         "botocore": {
             "hashes": [
-                "sha256:93e91c7160678182860f5902ee4cfe6d643cac0d9ee84d3eb65becc9f4c00228",
-                "sha256:b9bdcd9c87fc552aad30006f00167d9ebb3480e1b06f1902bac5b2c41014fdab"
+                "sha256:2f4af585b41dbccdfc9f49677d7bd72d713a12ef89a1dc9c8538a927649498bf",
+                "sha256:8a0176d8c2f8bebe95d4f923a824a1ace04b02f360e220681c388e097f32c3b6"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==1.43.9"
+            "version": "==1.43.10"
         },
         "certifi": {
             "hashes": [
@@ -596,6 +596,14 @@
             ],
             "markers": "python_version >= '3.6'",
             "version": "==0.8.7"
+        },
+        "pexpect": {
+            "hashes": [
+                "sha256:7236d1e080e4936be2dc3e326cec0af72acf9212a7e1d060210e70a47e253523",
+                "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f"
+            ],
+            "markers": "sys_platform != 'win32' and sys_platform != 'emscripten'",
+            "version": "==4.9.0"
         },
         "prompt-toolkit": {
             "hashes": [
@@ -1197,14 +1205,6 @@
             ],
             "markers": "python_version >= '3.9'",
             "version": "==0.4.2"
-        },
-        "tzdata": {
-            "hashes": [
-                "sha256:9173fde7d80d9018e02a662e168e5a2d04f87c41ea174b139fbef642eda62d10",
-                "sha256:bbe9af844f658da81a5f95019480da3a89415801f6cc966806612cc7169bffe7"
-            ],
-            "markers": "python_version >= '2'",
-            "version": "==2026.2"
         },
         "uritemplate": {
             "hashes": [
