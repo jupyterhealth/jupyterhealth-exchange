@@ -48,6 +48,7 @@
         }
         out.textContent += "\nAccess token received";
         var accessToken = tokens.access_token;
+        storeToken(accessToken);
 
         // 3. Fetch consents and let the patient choose what to share.
         // JHE study consents are the single source of truth for what

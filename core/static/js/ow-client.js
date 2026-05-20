@@ -214,3 +214,49 @@ async function getOuraAuthUrl(accessToken, redirectUri) {
   }
   return await response.json();
 }
+
+// Get patient's wearable connection status from OW.
+// Returns { connections: [...], connected: bool }, or null on failure.
+async function getWearableStatus(accessToken, patientId) {
+  var response = await fetch(API_ENDPOINT + "patients/" + patientId + "/wearable-status", {
+    headers: {
+      Authorization: "Bearer " + accessToken,
+      "Cache-Control": "no-cache",
+    },
+  });
+  if (!response.ok) {
+    return null;
+  }
+  return await response.json();
+}
+
+// Get authenticated patient's own data via /patients/me.
+async function getPatientMe(accessToken) {
+  var response = await fetch(API_ENDPOINT + "patients/me/", {
+    headers: {
+      Authorization: "Bearer " + accessToken,
+      "Cache-Control": "no-cache",
+    },
+  });
+  if (!response.ok) {
+    return null;
+  }
+  return await response.json();
+}
+
+// Token storage helpers (sessionStorage - tab-scoped, cleared on tab close).
+function storeToken(token) {
+  try {
+    sessionStorage.setItem("ow_access_token", token);
+  } catch (e) {
+    // sessionStorage unavailable (e.g. incognito with storage disabled)
+  }
+}
+
+function getStoredToken() {
+  try {
+    return sessionStorage.getItem("ow_access_token");
+  } catch (e) {
+    return null;
+  }
+}

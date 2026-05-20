@@ -6,9 +6,13 @@
   <h1>OW Client</h1>
   <pre id="out" class="text-start ms-5 me-5">
   </pre>
+  <div id="manage_link" class="mt-4" style="display:none;">
+    <a href="/ow/manage" class="btn btn-outline-primary">Manage Consents</a>
+  </div>
 </div>
 <script>
     var out = document.getElementById("out");
+    var manageLink = document.getElementById("manage_link");
     var params = new URLSearchParams(window.location.search);
     var provider = params.get("provider");
     var error = params.get("error");
@@ -16,10 +20,12 @@
     if (error) {
         out.textContent = "Error: " + error;
     } else {
-        out.textContent = "Oura OAuth complete.";
+        out.textContent = "Successfully Connected.";
         if (provider) {
             out.textContent += "\nProvider: " + provider;
         }
+        out.textContent += "\n\nYou can manage your data sharing preferences at any time.";
+        manageLink.style.display = "block";
     }
 </script>
 

@@ -1,0 +1,74 @@
+{% extends "partials/base_ow_client.html" %} {% block title %}Manage Consents{% endblock %}
+
+{% block body_content %}
+
+<div class="w-100 text-center mt-5">
+  <h1>Manage Consents</h1>
+  <div id="status_badge" class="mb-3"></div>
+  <pre id="out" class="text-start ms-5 me-5">
+  </pre>
+  <div id="consent_form" class="text-start ms-5 me-5 mt-4"></div>
+</div>
+
+{% endblock %}
+
+{% block body_footer %}
+<script>
+    var out = document.getElementById("out");
+    var consentForm = document.getElementById("consent_form");
+    var statusBadge = document.getElementById("status_badge");
+
+    async function run() {
+        var accessToken = getStoredToken();
+        if (!accessToken) {
+            out.textContent = "No active session. Please use your invitation link to sign in first.";
+            return;
+        }
+
+        out.textContent = "Loading...";
+
+        // Get patient info
+        var patient = await getPatientMe(accessToken);
+        if (!patient) {
+            out.textContent = "Session expired. Please use your invitation link to sign in again.";
+            sessionStorage.removeItem("ow_access_token");
+            return;
+        }
+        var patientId = patient.id;
+
+        // Get wearable connection status
+        var wearableStatus = await getWearableStatus(accessToken, patientId);
+        if (wearableStatus && wearableStatus.connected) {
+            statusBadge.innerHTML = '<span class="badge bg-success">Oura Connected</span>';
+        } else {
+            statusBadge.innerHTML = '<span class="badge bg-secondary">Not Connected</span>';
+        }
+
+        // Get consents
+        var consentsData = await getConsents(accessToken, patientId);
+        if (!consentsData) {
+            out.textContent = "Error: failed to load consents.";
+            return;
+        }
+
+        out.textContent = "Toggle the data types you consent to share, then click Save.\n" +
+            "Unchecking all scopes for a study will disconnect the wearable.";
+
+        renderConsentForm(consentForm, consentsData, async function (decisions) {
+            consentForm.innerHTML = "";
+            out.textContent = "Saving...";
+            var createdOk = await submitConsents(accessToken, patientId, decisions.created, "POST");
+            var updatedOk = await submitConsents(accessToken, patientId, decisions.updated, "PATCH");
+            if (!createdOk || !updatedOk) {
+                out.textContent = "Error: failed to save consents.";
+                return;
+            }
+            out.textContent = "Consents updated.";
+            // Re-render to show updated state
+            setTimeout(function () { run(); }, 500);
+        });
+    }
+
+    run();
+</script>
+{% endblock %}

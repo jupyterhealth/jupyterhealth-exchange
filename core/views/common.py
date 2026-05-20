@@ -171,6 +171,10 @@ def ow_complete(request):
     return render(request, "ow_client/complete.html")
 
 
+def ow_manage(request):
+    return render(request, "ow_client/manage.html")
+
+
 @csrf_exempt
 @exception_handler
 def acs(request: HttpRequest):
