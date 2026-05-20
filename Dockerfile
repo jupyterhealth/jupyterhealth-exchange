@@ -24,7 +24,11 @@ RUN --mount=type=cache,target=${XDG_CACHE_DIR} \
  && pip uninstall -y pipenv
 
 # supercronic for the optional jhe_cron sidecar (runs ow_poll on a schedule).
-ADD https://github.com/aptible/supercronic/releases/download/v0.2.29/supercronic-linux-amd64 /usr/local/bin/supercronic
+# TARGETARCH is automatically set by Docker BuildKit / buildx to match the
+# image's target platform (amd64, arm64, arm). Supercronic publishes a
+# matching binary for each.
+ARG TARGETARCH
+ADD https://github.com/aptible/supercronic/releases/download/v0.2.29/supercronic-linux-${TARGETARCH} /usr/local/bin/supercronic
 RUN chmod +x /usr/local/bin/supercronic
 
 COPY . /code
