@@ -51,6 +51,7 @@ def IfUserCan(resource_and_action: str):
         def get_role(view, request, resource):
             organization_id = None
             if request.user.is_superuser and resource in [
+                "client",
                 "data_source",
                 "organization",
                 "practitioner",
