@@ -26,10 +26,11 @@ RUN --mount=type=cache,target=${XDG_CACHE_DIR} \
 # supercronic for the optional jhe_cron sidecar (runs ow_poll on a schedule).
 # TARGETARCH is automatically set by Docker BuildKit / buildx to match the
 # image's target platform (amd64, arm64, arm). Supercronic publishes a
-# matching binary for each.
+# matching binary for each. `--chmod=755` sets the executable bit in the
+# same layer as the download, avoiding a duplicate-binary layer that a
+# separate `RUN chmod +x` would otherwise create.
 ARG TARGETARCH
-ADD https://github.com/aptible/supercronic/releases/download/v0.2.29/supercronic-linux-${TARGETARCH} /usr/local/bin/supercronic
-RUN chmod +x /usr/local/bin/supercronic
+ADD --chmod=755 https://github.com/aptible/supercronic/releases/download/v0.2.29/supercronic-linux-${TARGETARCH} /usr/local/bin/supercronic
 
 COPY . /code
 RUN python manage.py collectstatic --no-input
