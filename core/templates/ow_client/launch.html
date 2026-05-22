@@ -17,12 +17,11 @@
 <script>
     var out = document.getElementById("out");
     var consentForm = document.getElementById("consent_form");
-    var redirectUri = window.location.origin + "/auth/callback";
 
     async function run() {
         out.textContent = "Processing link...";
 
-        // 1. Get the components of the invite link ?code=abc...~def...~ghi...~jkl
+        // 1. Get the invite code (format: host_token) and redeem it for an OAuth grant.
         var params = new URLSearchParams(window.location.search);
         var code = params.get("code");
         if (!code) {
@@ -35,13 +34,29 @@
             return;
         }
         out.textContent += "\nHost: " + link.host;
-        out.textContent += "\nClient ID: " + link.clientId;
-        out.textContent += "\nCode: " + link.code;
-        out.textContent += "\nCode Verifier: " + link.codeVerifier;
+        out.textContent += "\nToken: " + link.token;
+
+        out.textContent += "\n\nRedeeming invitation...";
+        var invitationResponse = await fetch("http://" + link.host + "/api/v1/invitation/" + link.token, {
+            method: "POST",
+            headers: { "Cache-Control": "no-cache" },
+        });
+        if (!invitationResponse.ok) {
+            out.textContent += "\nError: failed to redeem invitation (" + invitationResponse.status + ")";
+            return;
+        }
+        var grant = await invitationResponse.json();
+        var clientId = grant.grant.client_id;
+        var authCode = grant.grant.code;
+        var redirectUri = grant.grant.redirect_uri;
+        // PKCE code verifier is derived from the invitation token (see server-side issuance).
+        var codeVerifier = btoa(link.token).replace(/=/g, "");
+        out.textContent += "\nClient ID: " + clientId;
+        out.textContent += "\nRedirect URI: " + redirectUri;
 
         // 2. Swap auth code for access token
         out.textContent += "\n\nSwapping auth code for access token...";
-        var tokens = await exchangeCodeForToken(link.clientId, link.code, link.codeVerifier, redirectUri);
+        var tokens = await exchangeCodeForToken(clientId, authCode, codeVerifier, redirectUri);
         if (!tokens || !tokens.access_token) {
             out.textContent += "\nError: failed to exchange code for token";
             return;

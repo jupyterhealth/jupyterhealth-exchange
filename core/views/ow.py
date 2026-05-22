@@ -37,8 +37,9 @@ def create_ow_user(request):
     if not ow_api_url or not ow_api_key:
         return Response({"error": "OW integration not configured"}, status=500)
 
-    # Check if user already has an OW user_id stored
-    if user.identifier:
+    # Check if user already has an OW user_id stored. The identifier field can also
+    # hold non-OW identifiers (e.g. FHIR refs from seed data), so match the prefix.
+    if user.identifier and user.identifier.startswith("ow:"):
         return Response({"ow_user_id": user.identifier.removeprefix("ow:")})
 
     # Create user in OW
@@ -91,7 +92,7 @@ def get_oura_auth_url(request):
         return Response({"error": "OW integration not configured"}, status=500)
 
     ow_user_id = user.identifier
-    if not ow_user_id:
+    if not ow_user_id or not ow_user_id.startswith("ow:"):
         return Response({"error": "User does not have an OW user_id"}, status=400)
     # JHE stores the identifier with an "ow:" prefix (used by ow_poll filter);
     # OW expects the bare UUID.
