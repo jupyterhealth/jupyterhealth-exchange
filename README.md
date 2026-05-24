@@ -19,7 +19,6 @@ Features include:
 ## Documentation
 
 - https://jupyterhealth.org/software-documentation/
-- [Open Wearables Integration](doc/open-wearables/README.md) - OW PoC setup, polling pipeline, end-to-end test
 
 
 ## What It Does
