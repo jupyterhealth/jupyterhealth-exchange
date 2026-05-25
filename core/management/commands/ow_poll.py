@@ -121,9 +121,7 @@ class Command(BaseCommand):
             if current:
                 acquired_at = self._parse_lock_timestamp(current)
                 if acquired_at is not None and (now - acquired_at) < LOCK_STALE_AFTER:
-                    self.stdout.write(
-                        f"ow_poll skipped: ow.sync_in_progress since {current}"
-                    )
+                    self.stdout.write(f"ow_poll skipped: ow.sync_in_progress since {current}")
                     return False
                 logger.warning(
                     "ow_poll: reclaiming stale ow.sync_in_progress lock (acquired_at=%s)",
@@ -162,9 +160,7 @@ class Command(BaseCommand):
             self.stderr.write(f"CodeableConcept '{HEART_RATE_CODE}' not found. Run seed first.")
             return
 
-        oura_ds, _ = DataSource.objects.get_or_create(
-            name="Oura", defaults={"type": "personal_device"}
-        )
+        oura_ds, _ = DataSource.objects.get_or_create(name="Oura", defaults={"type": "personal_device"})
 
         # Only users linked to an OW account: identifier startswith "ow:".
         users = JheUser.objects.filter(identifier__startswith="ow:")
@@ -183,18 +179,14 @@ class Command(BaseCommand):
 
             try:
                 if mode == "normalized":
-                    created = self._poll_user_normalized(
-                        user, patient, oura_ds, hr_code, ow_api_url, ow_api_key
-                    )
+                    created = self._poll_user_normalized(user, patient, oura_ds, hr_code, ow_api_url, ow_api_key)
                 else:
                     created = self._poll_user_raw(user, patient, oura_ds, hr_code)
                 total_created += created
             except Exception:
                 logger.exception("ow_poll failed for jhe_user_id=%s", user.id)
 
-        self.stdout.write(
-            self.style.SUCCESS(f"OW poll complete (mode={mode}). Created {total_created} observations.")
-        )
+        self.stdout.write(self.style.SUCCESS(f"OW poll complete (mode={mode}). Created {total_created} observations."))
 
     def _poll_user_normalized(self, user, patient, data_source, hr_code, ow_api_url, ow_api_key):
         ow_user_id = user.identifier.removeprefix("ow:")
@@ -258,9 +250,7 @@ class Command(BaseCommand):
                 continue
 
             # Dedup: paired ObservationIdentifier row with (system, value) unique.
-            if ObservationIdentifier.objects.filter(
-                system=NORMALIZED_SYSTEM, value=uuid_value
-            ).exists():
+            if ObservationIdentifier.objects.filter(system=NORMALIZED_SYSTEM, value=uuid_value).exists():
                 continue
 
             try:
@@ -289,9 +279,7 @@ class Command(BaseCommand):
                     exc_info=True,
                 )
 
-        logger.info(
-            "Poll completed for jhe_user=%s patient=%s created=%d", user.id, patient.id, created
-        )
+        logger.info("Poll completed for jhe_user=%s patient=%s created=%d", user.id, patient.id, created)
         return created
 
     def _poll_user_raw(self, user, patient, data_source, hr_code):
@@ -340,18 +328,14 @@ class Command(BaseCommand):
                 try:
                     omh_record = convert(source="oura_raw", data_type="heart_rate", sample=record)
                 except Exception:
-                    logger.warning(
-                        "Skipping unconvertible raw record key=%s", obj.key, exc_info=True
-                    )
+                    logger.warning("Skipping unconvertible raw record key=%s", obj.key, exc_info=True)
                     continue
 
                 uuid_value = omh_record.get("header", {}).get("uuid")
                 if not uuid_value:
                     continue
 
-                if ObservationIdentifier.objects.filter(
-                    system=RAW_SYSTEM, value=uuid_value
-                ).exists():
+                if ObservationIdentifier.objects.filter(system=RAW_SYSTEM, value=uuid_value).exists():
                     continue
 
                 try:

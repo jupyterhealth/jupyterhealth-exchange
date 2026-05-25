@@ -244,7 +244,9 @@ class PatientViewSet(ModelViewSet):
         if ow_response.status_code != 200:
             return Response({"connections": [], "connected": False})
 
-        connections = ow_response.json() if isinstance(ow_response.json(), list) else ow_response.json().get("connections", [])
+        connections = (
+            ow_response.json() if isinstance(ow_response.json(), list) else ow_response.json().get("connections", [])
+        )
         return Response({"connections": connections, "connected": len(connections) > 0})
 
     @action(detail=True, methods=["GET", "POST", "PATCH", "DELETE"])

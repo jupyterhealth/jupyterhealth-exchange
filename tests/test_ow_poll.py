@@ -25,9 +25,7 @@ OW_API_KEY = "test-key"
 
 
 def _set_jhe_setting(key, value, value_type="bool"):
-    setting, _ = JheSetting.objects.update_or_create(
-        key=key, setting_id=None, defaults={"value_type": value_type}
-    )
+    setting, _ = JheSetting.objects.update_or_create(key=key, setting_id=None, defaults={"value_type": value_type})
     setting.set_value(value_type, value)
     setting.save()
     from django.core.cache import cache
@@ -43,9 +41,7 @@ def _clear_sync_lock():
 def _hold_sync_lock(acquired_at=None):
     """Set ow.sync_in_progress to a recent ISO timestamp (lock held)."""
     acquired_at = acquired_at or timezone.now()
-    _set_jhe_setting(
-        "ow.sync_in_progress", acquired_at.isoformat(), value_type="string"
-    )
+    _set_jhe_setting("ow.sync_in_progress", acquired_at.isoformat(), value_type="string")
 
 
 @pytest.fixture(autouse=True)
@@ -143,9 +139,7 @@ def test_dedupes_via_observation_identifier(db, ow_user, patient_with_consent, h
         call_command("ow_poll", stdout=StringIO())
         call_command("ow_poll", stdout=StringIO())
 
-    assert ObservationIdentifier.objects.filter(
-        system=NORMALIZED_SYSTEM, value="same-uuid"
-    ).count() == 1
+    assert ObservationIdentifier.objects.filter(system=NORMALIZED_SYSTEM, value="same-uuid").count() == 1
     assert Observation.objects.count() == 1
 
 
@@ -225,9 +219,7 @@ def test_raw_mode_creates_observation_and_dedupes(db, ow_user, patient_with_cons
     )
 
     with (
-        patch(
-            "core.management.commands.ow_poll.list_new_objects", return_value=[fake_obj]
-        ) as mock_list,
+        patch("core.management.commands.ow_poll.list_new_objects", return_value=[fake_obj]) as mock_list,
         patch(
             "core.management.commands.ow_poll.read_object",
             return_value={"data": [{"x": 1}]},
@@ -242,9 +234,7 @@ def test_raw_mode_creates_observation_and_dedupes(db, ow_user, patient_with_cons
         call_command("ow_poll", stdout=StringIO())
 
     assert mock_list.called
-    assert ObservationIdentifier.objects.filter(
-        system="ow:raw", value="raw-uuid-1"
-    ).count() == 1
+    assert ObservationIdentifier.objects.filter(system="ow:raw", value="raw-uuid-1").count() == 1
     assert Observation.objects.count() == 1
 
 

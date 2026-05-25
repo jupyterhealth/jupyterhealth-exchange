@@ -29,9 +29,7 @@ class S3ObjectInfo(NamedTuple):
 def _required_setting(key: str) -> str:
     value = get_setting(key)
     if not value:
-        raise RuntimeError(
-            f"OW raw ingest requires JheSetting '{key}' to be set."
-        )
+        raise RuntimeError(f"OW raw ingest requires JheSetting '{key}' to be set.")
     return value
 
 
