@@ -20,13 +20,8 @@ jobs:
           script: |
             core.info('failed/completed/total:');
             const runId = parseInt(process.env.RUN_ID);
-            core.info(context.sha);
-            core.info(context.ref);
-            core.info(context.payload.after);
-            core.info(context.payload.pull_request.head.sha);
-            // core.info(JSON.stringify(context.payload));
             while (true) {
-                const ref = context.payload.after || context.sha;
+                const ref = context.payload.pull_request.head.sha;
                 const jobs = await github.paginate(
                     github.rest.checks.listForRef,
                     { ...context.repo, ref, per_page: 100 }
