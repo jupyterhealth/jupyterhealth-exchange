@@ -1,0 +1,51 @@
+name: Required Checks
+on:
+  pull_request:
+
+permissions:
+  actions: read
+
+jobs:
+  required:
+    name: all checks pass
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          RUN_ID: ${{ job.check_run_id }}
+        with:
+          # wait for all other checks to succeed or skip,
+          # no matter what they are.
+          script: |
+            core.info('failed/completed/total:');
+            const runId = parseInt(process.env.RUN_ID);
+            while (true) {
+                const ref = context.payload.after;
+                const jobs = await github.paginate(
+                    github.rest.checks.listForRef,
+                    { ...context.repo, ref, per_page: 100 }
+                );
+                const others = jobs.filter(j => j.id !== runId);
+                const thisRun = jobs.filter(j => j.id === runId);
+                if (thisRun.length !== 1) {
+                    const jobsJSON = JSON.stringify(jobs);
+                    core.info(`No match for ${runId} in ${jobsJSON}`);
+                    core.setFailed(`runId lookup failed`);
+                    break;
+                }
+
+                const completed = others.filter(j => j.status === 'completed');
+                const failed = completed.filter(j => j.conclusion !== 'succeeded' && j.conclusion !== 'skipped');
+                core.info(`${failed.length}/${completed.length}/${others.length}`)
+
+                if (failed.length) {
+                    for(var j of failed) {
+                        core.setFailed(`${j.name} ${j.conclusion}: ${j.html_url}`);
+                    }
+                    break;
+                } else if (completed.length == others.length) {
+                    break;
+                }
+                await new Promise((r) => setTimeout(r, 10 * 1000));
+            }
