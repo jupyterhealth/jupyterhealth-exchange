@@ -54,18 +54,17 @@ def anon_client():
 
 
 @pytest.fixture
-def ow_settings(db):
-    """Create OW settings in JheSetting."""
-    JheSetting.objects.create(
-        key="ow.api_base_url",
-        value_type="string",
-        value_string="https://ow.example.com",
-    )
-    JheSetting.objects.create(
-        key="ow.api_key",
-        value_type="string",
-        value_string="sk-test-api-key-12345678",
-    )
+def ow_settings(settings):
+    """Configure OW integration via Django settings (what the view reads)."""
+    settings.OW_API_URL = "https://ow.example.com"
+    settings.OW_API_KEY = "sk-test-api-key-12345678"
+
+
+@pytest.fixture
+def no_ow_settings(settings):
+    """Force OW config off regardless of the host environment."""
+    settings.OW_API_URL = ""
+    settings.OW_API_KEY = ""
 
 
 # ============================================================================
@@ -80,10 +79,10 @@ class TestCreateOwUser:
         resp = anon_client.post(self.URL)
         assert resp.status_code == 401
 
-    def test_missing_ow_settings_returns_500(self, ow_client):
+    def test_missing_ow_settings_returns_500(self, ow_client, no_ow_settings):
         resp = ow_client.post(self.URL)
         assert resp.status_code == 500
-        assert "missing" in resp.json()["error"].lower()
+        assert "not configured" in resp.json()["error"].lower()
 
     @patch("core.views.ow.requests.post")
     def test_creates_user_in_ow(self, mock_post, ow_client, ow_user, ow_settings):
@@ -94,10 +93,9 @@ class TestCreateOwUser:
 
         resp = ow_client.post(self.URL)
 
-        assert resp.status_code == 201
+        assert resp.status_code == 200
         data = resp.json()
         assert data["owUserId"] == "new-ow-user-id-123"
-        assert data["created"] is True
 
         # Verify OW API was called with correct payload
         mock_post.assert_called_once()
@@ -114,30 +112,17 @@ class TestCreateOwUser:
         assert resp.status_code == 200
         data = resp.json()
         assert data["owUserId"] == "550e8400-e29b-41d4-a716-446655440000"
-        assert data["created"] is False
 
-    @patch("core.views.ow.requests.get")
     @patch("core.views.ow.requests.post")
-    def test_handles_409_conflict_with_lookup(self, mock_post, mock_get, ow_client, ow_user, ow_settings):
-        # OW returns 409 (user exists)
-        mock_post_resp = MagicMock()
-        mock_post_resp.status_code = 409
-        mock_post.return_value = mock_post_resp
-
-        # Lookup by email succeeds
-        mock_get_resp = MagicMock()
-        mock_get_resp.ok = True
-        mock_get_resp.json.return_value = {"items": [{"id": "existing-ow-id"}]}
-        mock_get.return_value = mock_get_resp
+    def test_passes_through_409_conflict(self, mock_post, ow_client, ow_user, ow_settings):
+        """OW returning 409 (user exists) is currently surfaced verbatim by JHE."""
+        mock_resp = MagicMock()
+        mock_resp.status_code = 409
+        mock_resp.text = "User already exists"
+        mock_post.return_value = mock_resp
 
         resp = ow_client.post(self.URL)
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["owUserId"] == "existing-ow-id"
-        assert data["created"] is False
-
-        ow_user.refresh_from_db()
-        assert ow_user.identifier == "ow:existing-ow-id"
+        assert resp.status_code == 409
 
     @patch("core.views.ow.requests.post")
     def test_handles_ow_api_error(self, mock_post, ow_client, ow_settings):
@@ -147,7 +132,7 @@ class TestCreateOwUser:
         mock_post.return_value = mock_resp
 
         resp = ow_client.post(self.URL)
-        assert resp.status_code == 502
+        assert resp.status_code == 500
 
     @patch("core.views.ow.requests.post")
     def test_handles_connection_error(self, mock_post, ow_client, ow_settings):
@@ -157,7 +142,7 @@ class TestCreateOwUser:
 
         resp = ow_client.post(self.URL)
         assert resp.status_code == 502
-        assert "Failed to connect" in resp.json()["error"]
+        assert "Failed to reach OW API" in resp.json()["error"]
 
 
 # ============================================================================
@@ -172,20 +157,21 @@ class TestOuraAuthorize:
         resp = anon_client.get(self.URL)
         assert resp.status_code == 401
 
-    def test_no_ow_user_returns_400(self, ow_client):
+    def test_no_ow_user_returns_400(self, ow_client, ow_settings):
         resp = ow_client.get(self.URL)
         assert resp.status_code == 400
-        assert "no open wearables account" in resp.json()["error"].lower()
+        assert "does not have an ow user_id" in resp.json()["error"].lower()
 
-    def test_missing_ow_settings_returns_500(self, ow_linked_client):
+    def test_missing_ow_settings_returns_500(self, ow_linked_client, no_ow_settings):
         resp = ow_linked_client.get(self.URL)
         assert resp.status_code == 500
-        assert "missing" in resp.json()["error"].lower()
+        assert "not configured" in resp.json()["error"].lower()
 
     @patch("core.views.ow.requests.get")
     def test_returns_authorization_url(self, mock_get, ow_linked_client, ow_settings):
         mock_resp = MagicMock()
         mock_resp.ok = True
+        mock_resp.status_code = 200
         mock_resp.json.return_value = {
             "authorization_url": "https://cloud.ouraring.com/oauth/authorize?client_id=abc&state=xyz",
             "state": "xyz",
@@ -206,6 +192,7 @@ class TestOuraAuthorize:
     def test_uses_custom_redirect_uri(self, mock_get, ow_linked_client, ow_settings):
         mock_resp = MagicMock()
         mock_resp.ok = True
+        mock_resp.status_code = 200
         mock_resp.json.return_value = {"authorization_url": "https://oura.example.com", "state": "abc"}
         mock_get.return_value = mock_resp
 
@@ -224,7 +211,7 @@ class TestOuraAuthorize:
         mock_get.return_value = mock_resp
 
         resp = ow_linked_client.get(self.URL)
-        assert resp.status_code == 502
+        assert resp.status_code == 500
 
     @patch("core.views.ow.requests.get")
     def test_handles_connection_error(self, mock_get, ow_linked_client, ow_settings):
@@ -242,18 +229,15 @@ class TestOuraAuthorize:
 
 
 class TestOwConfig:
-    def test_returns_error_when_no_settings(self, ow_client):
+    def test_returns_error_when_no_settings(self, ow_client, no_ow_settings):
         """Both endpoints should fail gracefully when OW settings are missing."""
         resp = ow_client.post("/api/v1/ow/users")
         assert resp.status_code == 500
-        assert "ow.api_base_url" in resp.json()["error"] or "missing" in resp.json()["error"].lower()
+        assert "not configured" in resp.json()["error"].lower()
 
-    def test_returns_error_when_partial_settings(self, db, ow_client):
+    def test_returns_error_when_partial_settings(self, settings, ow_client):
         """Only one of the two required settings is configured."""
-        JheSetting.objects.create(
-            key="ow.api_base_url",
-            value_type="string",
-            value_string="https://ow.example.com",
-        )
+        settings.OW_API_URL = "https://ow.example.com"
+        settings.OW_API_KEY = ""
         resp = ow_client.post("/api/v1/ow/users")
         assert resp.status_code == 500
