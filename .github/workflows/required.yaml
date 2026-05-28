@@ -47,5 +47,5 @@ jobs:
                 } else if (completed.length == others.length) {
                     break;
                 }
-                await new Promise((r) => setTimeout(r, 10 * 1000));
+                await new Promise((r) => setTimeout(r, 5 * 1000));
             }
