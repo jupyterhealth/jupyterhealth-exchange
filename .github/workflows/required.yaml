@@ -22,7 +22,7 @@ jobs:
             const runId = parseInt(process.env.RUN_ID);
             console.log(JSON.stringify(context));
             while (true) {
-                const ref = context.ref;
+                const ref = context.payload.after || context.payload.sha;
                 const jobs = await github.paginate(
                     github.rest.checks.listForRef,
                     { ...context.repo, ref, per_page: 100 }
