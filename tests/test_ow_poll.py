@@ -50,6 +50,18 @@ def _ow_settings(settings):
     settings.OW_API_KEY = OW_API_KEY
 
 
+@pytest.fixture(autouse=True)
+def _clear_jhe_setting_cache():
+    """JheSetting values are cached process-wide; clear between tests so a
+    leftover key (e.g. ow.ingest_mode='bogus' from test_unknown_mode_aborts)
+    cannot leak into the next test whose DB row was already rolled back."""
+    from django.core.cache import cache
+
+    cache.clear()
+    yield
+    cache.clear()
+
+
 @pytest.fixture
 def hr_concept(db):
     cc, _ = CodeableConcept.objects.update_or_create(

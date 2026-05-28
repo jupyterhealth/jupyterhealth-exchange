@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from rest_framework.test import APIClient
 
-from core.models import JheSetting, JheUser
+from core.models import JheUser
 
 
 @pytest.fixture
