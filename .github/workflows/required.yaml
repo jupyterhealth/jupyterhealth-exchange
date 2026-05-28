@@ -20,6 +20,7 @@ jobs:
           script: |
             core.info('failed/completed/total:');
             const runId = parseInt(process.env.RUN_ID);
+            console.log(JSON.stringify(context));
             while (true) {
                 const ref = context.ref;
                 const jobs = await github.paginate(
