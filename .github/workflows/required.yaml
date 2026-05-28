@@ -21,7 +21,9 @@ jobs:
             core.info('failed/completed/total:');
             const runId = parseInt(process.env.RUN_ID);
             core.info(context.sha);
+            core.info(context.ref);
             core.info(context.payload.after);
+            core.info(context.payload.pull_request.head.sha);
             // core.info(JSON.stringify(context.payload));
             while (true) {
                 const ref = context.payload.after || context.sha;
