@@ -139,6 +139,7 @@ class Command(BaseCommand):
                 "Respiratory rate",
             ),
             ("https://w3id.org/openmhealth", "omh:rr-interval:1.0", "RR Interval"),
+            ("https://w3id.org/openmhealth", "omh:body-weight:3.0", "Body weight"),
         ]
         # bulk create thing
         for system, code, text in codes:
