@@ -294,6 +294,7 @@ def test_stale_lock_is_force_released(db, ow_user, patient_with_consent, hr_conc
     from core.management.commands.ow_poll import LOCK_STALE_AFTER
 
     _set_jhe_setting("module.ow", True)
+    _set_jhe_setting("ow.ingest_mode", "normalized", value_type="string")
     # Held longer than the stale window -> treat as abandoned (crashed worker).
     stale_at = timezone.now() - (LOCK_STALE_AFTER + timedelta(minutes=1))
     _hold_sync_lock(acquired_at=stale_at)
