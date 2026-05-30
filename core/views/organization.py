@@ -8,12 +8,11 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from core.admin_pagination import CustomPageNumberPagination
-from core.models import JheUser, Organization, PatientOrganization, PractitionerOrganization
+from core.models import JheUser, Organization, PractitionerOrganization
 from core.permissions import IfUserCan
 from core.serializers import (
     OrganizationSerializer,
     OrganizationUsersSerializer,
-    PatientOrganizationSerializer,
     PractitionerOrganizationSerializer,
     StudySerializer,
 )
@@ -96,7 +95,8 @@ class OrganizationViewSet(ModelViewSet):
         permission_classes=[IfUserCan("organization.manage_for_practitioners")],
     )
     def user(self, request, pk):
-        user_type = request.data.get("user_type", "practitioner")  # Default to practitioner if not specified
+        # Practitioners only. Patients are added to an organization via the
+        # patients endpoint (POST /api/v1/patients).
         jhe_user_id = request.data.get("jhe_user_id")
         organization_partitioner_role = request.data.get("organization_partitioner_role")
 
@@ -105,19 +105,15 @@ class OrganizationViewSet(ModelViewSet):
 
         jhe_user = get_object_or_404(JheUser, pk=jhe_user_id)
 
-        if user_type.lower() == "patient":
-            relation = PatientOrganization.objects.create(organization_id=pk, patient_id=jhe_user_id)
-            serializer = PatientOrganizationSerializer(relation)
-        else:  # practitioner
-            practitioner = jhe_user.practitioner
-            if not practitioner:
-                return Response({"error": "Practitioner not found"}, status=404)
-            relation, _ = PractitionerOrganization.objects.update_or_create(
-                organization_id=pk,
-                practitioner=practitioner,
-                defaults={"role": organization_partitioner_role},
-            )
-            serializer = PractitionerOrganizationSerializer(relation)
+        practitioner = jhe_user.practitioner
+        if not practitioner:
+            return Response({"error": "Practitioner not found"}, status=404)
+        relation, _ = PractitionerOrganization.objects.update_or_create(
+            organization_id=pk,
+            practitioner=practitioner,
+            defaults={"role": organization_partitioner_role},
+        )
+        serializer = PractitionerOrganizationSerializer(relation)
         return Response(serializer.data)
 
     @action(
@@ -126,21 +122,18 @@ class OrganizationViewSet(ModelViewSet):
         permission_classes=[IfUserCan("organization.manage_for_practitioners")],
     )
     def remove_user(self, request, pk):
-        user_type = request.data.get("user_type", "practitioner")  # Default to practitioner if not specified
+        # Practitioners only. Patients are removed from an organization via the
+        # patients endpoint (DELETE /api/v1/patients/{id}).
         jhe_user_id = request.data.get("jhe_user_id")
         if not jhe_user_id:
             return Response({"error": "jhe_user_id is required"}, status=400)
 
-        if user_type.lower() == "patient":
-            PatientOrganization.objects.filter(organization_id=pk, patient_id=jhe_user_id).delete()
-            return Response(status=204)
-        else:
-            jhe_user = get_object_or_404(JheUser, pk=jhe_user_id)
-            practitioner = jhe_user.practitioner
-            if not practitioner:
-                return Response({"error": "Practitioner not found"}, status=404)
-            PractitionerOrganization.objects.filter(organization_id=pk, practitioner=practitioner).delete()
-            return Response(status=204)
+        jhe_user = get_object_or_404(JheUser, pk=jhe_user_id)
+        practitioner = jhe_user.practitioner
+        if not practitioner:
+            return Response({"error": "Practitioner not found"}, status=404)
+        PractitionerOrganization.objects.filter(organization_id=pk, practitioner=practitioner).delete()
+        return Response(status=204)
 
     @action(detail=True, methods=["GET"])
     def studies(self, request, pk):

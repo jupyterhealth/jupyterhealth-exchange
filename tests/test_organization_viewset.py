@@ -159,25 +159,8 @@ def test_add_remove_organization_users(api_client, user, organization):
     users = r.json()
     assert len(users) == 1
 
-    # add a patient
-    # FIXME: adding patient on this endpoint doesn't work,
-    # but it's partially implemented
-    # should the implementation be removed? It's redundant
-    # patient = add_patients(1)[0]
-    # r = api_client.post(user_url, {
-    #     # FIXME: argument type doesn't match input
-    #     # (it's patient id, not user id)
-    #     "jhe_user_id": patient.id,
-    #     "user_type": "patient",
-    # })
-    # assert r.status_code == 200, r.text
-    # assert r.json() == {}
-
-
-#
-# r = api_client.get(users_url)
-# users = r.json()
-# assert len(users) == 2
+    # Note: this endpoint manages practitioners only. Patients are added to /
+    # removed from an organization via the patients endpoint (see issue #285).
 
 
 def test_add_user_invalid(api_client, organization):
