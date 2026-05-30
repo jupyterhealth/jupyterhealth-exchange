@@ -22,6 +22,7 @@
           read: true
         })"
       }}
+      {{#if @root.canManagePractitionersInOrg}}
       {{> crudButton iconUpdate=true
         onclick="nav('organizations',{
           tloId: document.getElementById('topLevelOrganization').value,
@@ -29,8 +30,6 @@
           update: true
         })"
       }}
-    {{/if}}
-    {{#if tloId}}
       {{> crudButton iconCreate=true
         onclick="nav('organizations',{
           tloId: document.getElementById('topLevelOrganization').value,
@@ -38,6 +37,14 @@
           create: true
         })"
       }}
+      {{> crudButton iconDelete=true
+        onclick="nav('organizations',{
+          tloId: document.getElementById('topLevelOrganization').value,
+          id: document.getElementById('topLevelOrganization').value,
+          delete: true
+        })"
+      }}
+      {{/if}}
     {{/if}}
     {{#unless tloId}}
       {{#if @root.canCreateTopLevelOrganization}}
@@ -48,15 +55,6 @@
       }}
       {{/if}}
     {{/unless}}
-    {{#if tloId}}
-      {{> crudButton iconDelete=true
-        onclick="nav('organizations',{
-          tloId: document.getElementById('topLevelOrganization').value,
-          id: document.getElementById('topLevelOrganization').value,
-          delete: true
-        })"
-      }}
-    {{/if}}
   </form>
   <div id="subOrganizations">
     <ul style="list-style-type: none;" class="m-3">
