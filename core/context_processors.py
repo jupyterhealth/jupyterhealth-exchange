@@ -24,6 +24,7 @@ def _get_oidc_client_id():
         logger.error(
             "Unable to load the OAuth2 client ID for 'JHE Admin UI' from the database. Make sure it is defined in Applications via the django admin interface (/admin/)."
         )
+    return client_id
 
 
 def constants(request):
