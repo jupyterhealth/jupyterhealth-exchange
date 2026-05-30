@@ -129,17 +129,23 @@ def test_add_remove_organization_users(api_client, user, organization):
     )
     assert r.status_code == 403, r.text
 
-    # FIXME: modifying role doesn't work because
-    # it tries to create duplicate record;
-    # have to remove and re-add
-    # r = api_client.post(user_url, {
-    #     "jhe_user_id": user2.id,
-    #     "organization_partitioner_role": "manager",
-    # })
-    # assert r.status_code == 200, r.text
-    # response = r.json()
-    # assert response["role"] == "manager"
-    # assert response["practitioner"]["id"] == user2.id
+    # modifying an existing role should update it, not fail with a duplicate
+    r = api_client.post(
+        user_url,
+        {
+            "jhe_user_id": user2.id,
+            "organization_partitioner_role": "manager",
+        },
+    )
+    assert r.status_code == 200, r.text
+    response = r.json()
+    assert response["role"] == "manager"
+    assert response["practitioner"]["id"] == user2.practitioner.id
+
+    # role updated in place, no duplicate added
+    r = api_client.get(users_url)
+    users = r.json()
+    assert len(users) == 2
 
     r = api_client.delete(
         f"/api/v1/organizations/{organization.id}/remove_user",
