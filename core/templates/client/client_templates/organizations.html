@@ -277,7 +277,7 @@
         })"
       }}
 
-    {{#if @root.canManagePractitionersInOrg}}
+    {{#if canManage}}
 
     {{> crudButton iconUpdate=true recordId=id
       onclick="nav('organizations',{

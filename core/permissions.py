@@ -77,13 +77,19 @@ def IfUserCan(resource_and_action: str):
                     model_obj = view.model_class.objects.filter(id=view.kwargs.get("pk")).first()
                     organization_id = model_obj.organization.id if model_obj else None
                 elif resource == "organization":
-                    # get organization id or the parent organization id if nested
-                    model_obj = view.model_class.objects.filter(id=view.kwargs.get("pk")).first()
-                    organization_id = (
-                        model_obj.part_of.id
-                        if (model_obj.part_of and model_obj.part_of.id != 0)
-                        else view.kwargs.get("pk")
-                    )
+                    if view.action in ["user", "remove_user"]:
+                        # managing practitioners within an organization: authority is
+                        # checked against that organization itself, not its parent.
+                        organization_id = view.kwargs.get("pk")
+                    else:
+                        # update/destroy the organization entity: authority comes from
+                        # the parent organization (or the org itself if it is top-level).
+                        model_obj = view.model_class.objects.filter(id=view.kwargs.get("pk")).first()
+                        organization_id = (
+                            model_obj.part_of.id
+                            if (model_obj.part_of and model_obj.part_of.id != 0)
+                            else view.kwargs.get("pk")
+                        )
 
             link = PractitionerOrganization.objects.filter(
                 practitioner__jhe_user=request.user, organization_id=organization_id

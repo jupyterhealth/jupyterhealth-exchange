@@ -515,6 +515,20 @@ async function renderOrganizations(queryParams) {
       `organizations/${queryParams.tloId}/tree`
     );
     const organizationTree = await organizationTreeResaponse.json();
+    // Each node's manage permission is based on the user's role in that node
+    // itself, not the top-level organization (a manager of a sub-org may have
+    // no role in the root). Annotate every node so the tree can show the right
+    // action icons per node.
+    const annotateCanManage = (organizations) => {
+      (organizations || []).forEach((organization) => {
+        organization.canManage = ifRoleCan(
+          organization.currentUserRole,
+          "organization.manage_for_practitioners"
+        );
+        annotateCanManage(organization.children);
+      });
+    };
+    annotateCanManage(organizationTree.children);
     organizationTreeChildren = organizationTree.children;
   }
 
