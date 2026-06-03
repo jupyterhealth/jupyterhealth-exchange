@@ -149,3 +149,7 @@ Entities are based on the [HL7 FHIR model](https://build.fhir.org/), a widely us
 ## Contributing
 
 See [doc](https://jupyterhealth.org/software-documentation/) for test requirements, coding standards, and PR checklist.
+
+## MCP Server
+
+- **MCP Server:** see [`mcp_server/README.md`](mcp_server/README.md) for the MCP server and its OAuth client registration.

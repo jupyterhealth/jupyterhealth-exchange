@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jhe-mcp"
+version = "0.1.0"
+description = "MCP server for JupyterHealth Exchange"
+requires-python = ">=3.12"
+dependencies = [
+    # Pinned to the patch series: per-request auth relies on the non-public
+    # import mcp.server.lowlevel.server.request_ctx (see fhir/client.py). A
+    # minor bump could relocate it; assert_request_ctx_importable() guards at
+    # boot, and this narrow pin keeps upgrades deliberate.
+    "mcp>=1.27,<1.28",
+    "httpx>=0.28,<1",
+    "pydantic>=2.13,<3",
+    "fastapi>=0.136,<1",
+    "uvicorn[standard]>=0.47,<1",
+    "omh-shim>=1.2.0",
+    "cryptography>=44,<49",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.24",
+    "respx>=0.21",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+jhe-mcp-stdio = "jhe_mcp.server_stdio:main"
+jhe-mcp-http = "jhe_mcp.server_http:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests/unit", "tests/integration"]
+pythonpath = ["src"]

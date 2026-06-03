@@ -149,3 +149,11 @@ GitHub.sublime-settings
 
 # Node.js
 node_modules/
+mcp_server/.venv/
+mcp_server/*.egg-info/
+
+# Claude Code
+.claude/
+
+# local-only dev review notes (may contain dev tokens)
+LOCAL_REVIEW*.md

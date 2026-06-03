@@ -1,3 +1,4 @@
+import os
 import secrets
 import string
 
@@ -59,6 +60,7 @@ class Command(BaseCommand):
             self.seed_example_institute(root_organization)
             self.seed_health_system(root_organization)
             self.seed_oauth_application()
+            self.seed_mcp_broker_application()
 
         self.stdout.write(self.style.SUCCESS("Seeding complete."))
 
@@ -458,6 +460,41 @@ class Command(BaseCommand):
             post_logout_redirect_uris="",
             hash_client_secret=True,
             allowed_origins="",
+        )
+
+    def seed_mcp_broker_application(self):
+        """Seed the JHE MCP Server broker as a confidential OAuth client.
+
+        Credentials come from the environment (mirroring how the broker reads
+        its own JHE_CLIENT_ID / JHE_CLIENT_SECRET), so no secret is committed to
+        the repo. Skipped when they are not set — e.g. local or CI seeds that
+        don't run the broker. The broker is the one client that needs
+        ``skip_authorization=True`` recorded in code so a reseed reproduces the
+        no-consent-prompt behavior.
+        """
+        client_id = os.environ.get("MCP_OAUTH_CLIENT_ID")
+        client_secret = os.environ.get("MCP_OAUTH_CLIENT_SECRET")
+        if not (client_id and client_secret):
+            self.stdout.write("Skipping JHE MCP Server seed (MCP_OAUTH_CLIENT_ID/SECRET not set).")
+            return
+        redirect_uri = os.environ.get("MCP_OAUTH_REDIRECT_URI", "https://jhe-mcp.fly.dev/oauth/callback")
+        # django-oauth-toolkit hashes the plaintext on save (hash_client_secret
+        # defaults to True); the broker authenticates by sending the matching
+        # plaintext from its own env. Set it explicitly to mirror
+        # seed_oauth_application and make the behavior obvious.
+        get_application_model().objects.update_or_create(
+            name="JHE MCP Server",
+            defaults={
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "hash_client_secret": True,
+                "client_type": "confidential",
+                "authorization_grant_type": "authorization-code",
+                "redirect_uris": redirect_uri,
+                "skip_authorization": True,
+                "algorithm": "RS256",
+                "user_id": None,
+            },
         )
 
     def create_user_with_profile(self, email, user_type="practitioner", password="Jhe1234!"):
