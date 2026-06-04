@@ -28,7 +28,10 @@ OMH_BLOOD_GLUCOSE_TEMPLATE = {
         "modality": "sensed",
         "uuid": "aaaa1234-1a2b-3c4d-5e6f-000000000001",
         "schema_id": {"name": "blood-glucose", "version": "4.0", "namespace": "omh"},
-        "external_datasheets": [{"datasheet_type": "manufacturer", "datasheet_reference": "Dexcom"}],
+        "external_datasheets": [
+            {"datasheet_type": "manufacturer", "datasheet_reference": "https://www.dexcom.com"},
+            {"datasheet_type": "device", "datasheet_reference": "https://www.dexcom.com/g6-cgm-system"},
+        ],
         "source_creation_date_time": None,
     },
     "body": {
