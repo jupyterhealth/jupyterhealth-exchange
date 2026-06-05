@@ -3,9 +3,9 @@ Smoke tests for a live JupyterHealth Exchange deployment.
 
 These tests make real HTTP requests to a running JHE instance and verify that
 critical endpoints respond correctly.  They are *not* run during the normal
-``pytest tests/`` invocation — you must supply a URL explicitly::
+``pytest tests/backend/`` invocation — you must supply a URL explicitly::
 
-    pytest tests/test_smoke.py --smoke-url=https://jhe.fly.dev -m smoke -v
+    pytest tests/smoke/test_smoke.py --smoke-url=https://jhe.fly.dev -m smoke -v
 
 See ``doc/TESTING.md`` for full instructions.
 """
@@ -272,37 +272,3 @@ class TestP2ResponseQuality:
         """A nonsense path should return 404, not 500."""
         resp = _get(http, "/this-path-should-not-exist-abc123/", allow_redirects=True)
         assert resp.status_code == 404, f"Unknown path: expected 404, got {resp.status_code}"
-
-
-# ===================================================================
-# Unit test for /health (runs in normal pytest with Django test client)
-# ===================================================================
-
-
-@pytest.mark.django_db
-class TestHealthViewUnit:
-    """Unit tests for the ``/health`` view — runs locally without ``--smoke-url``."""
-
-    def test_health_returns_200_json(self, client):
-        resp = client.get("/health")
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["status"] == "ok"
-        assert "version" in data
-
-    def test_health_version_matches_settings(self, client):
-        from django.conf import settings
-
-        resp = client.get("/health")
-        data = resp.json()
-        assert data["version"] == settings.JHE_VERSION
-
-    def test_health_unauthenticated(self, client):
-        """``/health`` must work without any authentication."""
-        # client fixture is unauthenticated by default
-        resp = client.get("/health")
-        assert resp.status_code == 200
-
-    def test_health_content_type(self, client):
-        resp = client.get("/health")
-        assert resp["Content-Type"] == "application/json"
