@@ -21,9 +21,13 @@ from django.contrib.auth import views as auth_views  # noqa
 from django.urls import include, path, re_path
 from drf_spectacular.views import SpectacularRedocView, SpectacularSwaggerView
 
+from core.views.common import JheTokenView
+
 urlpatterns = [
     path("", include("core.urls")),
     path("admin/", admin.site.urls),
+    # Override DOT's token endpoint to return JSON on errors (#192) before the include.
+    path("o/token/", JheTokenView.as_view(), name="token"),
     path("o/", include("oauth2_provider.urls", namespace="oauth2_provider")),
     path("accounts/", include("django.contrib.auth.urls")),
     path("email_auth/", include("allauth.urls")),

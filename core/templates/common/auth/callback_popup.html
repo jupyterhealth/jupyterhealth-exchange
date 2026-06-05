@@ -1,9 +1,16 @@
 {% extends "common/partials/base_home.html" %} {% block title %}Auth...{% endblock %}
 {% block body_content %}
 <div class="mt-5 w-100 text-center">
-  <h5 class="mb-3">Client logging in... </h5>
-  <div class="spinner-border text-primary" role="status">
-    <span class="sr-only"></span>
+  <div id="authLoading">
+    <h5 class="mb-3">Client logging in... </h5>
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only"></span>
+    </div>
+  </div>
+  <div id="authError" class="alert alert-danger d-inline-block text-start" role="alert" style="display: none;">
+    <h5 class="mb-2">Sign-in failed</h5>
+    <div id="authErrorMessage" class="mb-3"></div>
+    <a href="{% url 'login' %}" class="btn btn-primary btn-sm" onclick="clearAuthError()">Back to Log In</a>
   </div>
 </div>
 {% endblock %}
@@ -12,10 +19,14 @@
   userManager
     .signinPopupCallback()
     .then(function () {
+      clearAuthError();
       console.log("auth popup callback success");
     })
     .catch((error) => {
       console.error(error);
+      const message = describeOidcError(error);
+      setAuthError(message);
+      showAuthError(message);
     });
   userManager
     .getUser()

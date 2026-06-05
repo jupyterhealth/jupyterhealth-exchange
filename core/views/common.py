@@ -35,6 +35,7 @@ from django_saml2_auth.utils import (
 )
 from oauth2_provider.models import get_access_token_model
 from oauth2_provider.oauth2_validators import OAuth2Validator
+from oauth2_provider.views import TokenView
 from oauthlib.common import Request
 
 from core.models import JheUser
@@ -312,6 +313,30 @@ def json_error(msg, status_code=400):
     response = JsonResponse({"error": msg})
     response.status_code = status_code
     return response
+
+
+class JheTokenView(TokenView):
+    """OAuth2 token endpoint that returns JSON on unexpected errors.
+
+    DOT's TokenView lets exceptions (eg. a missing/invalid OIDC_RSA_PRIVATE_KEY,
+    which breaks id_token signing) bubble up to an HTML 500. The front-end OIDC
+    client only parses JSON responses, so the real reason never reached the user
+    (#192). Wrapping post() returns a standard OAuth2 JSON error instead; the
+    detail is included only when DEBUG is on to avoid leaking internals in prod.
+    """
+
+    def post(self, request, *args, **kwargs):
+        try:
+            return super().post(request, *args, **kwargs)
+        except Exception as exc:
+            logger.exception("Token endpoint error")
+            detail = (
+                str(exc) if settings.DEBUG else "The authorization server encountered an error processing the request."
+            )
+            return JsonResponse(
+                {"error": "server_error", "error_description": detail},
+                status=500,
+            )
 
 
 @csrf_exempt

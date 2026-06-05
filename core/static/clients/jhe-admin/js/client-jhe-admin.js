@@ -185,6 +185,13 @@ async function nav(newRoute, queryParams, appendQueryParams) {
 
     // Ensure user is authenticated
     if (!(await userManager.getUser())) {
+      // If a prior sign-in failed (eg. an OAuth error from the server), show it
+      // instead of silently re-redirecting, which would loop indefinitely (#192).
+      const authError = getAuthError();
+      if (authError) {
+        displayError(authError);
+        return;
+      }
       console.log("nav() - no user found, calling signinRedirect()");
       await userManager.signinRedirect();
       return;
@@ -351,6 +358,12 @@ async function apiRequest(method, resourcePath, params) {
     );
     // Unauthorized
     if (parseInt(response.status) == 401) {
+      // Don't re-redirect into a failed OAuth flow (#192) - surface the error.
+      const authError = getAuthError();
+      if (authError) {
+        displayError(authError);
+        return;
+      }
       await userManager.signinRedirect();
       return;
     } else if (parseInt(response.status) == 400) {
