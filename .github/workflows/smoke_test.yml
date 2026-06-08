@@ -1,6 +1,20 @@
-name: Smoke Tests (on-demand)
+name: Smoke Tests
 
 on:
+  # Reusable entry point: called by other workflows (e.g. fly_dev.yml
+  # post-deploy) so there is a single smoke-test definition.
+  workflow_call:
+    inputs:
+      smoke_url:
+        description: "Base URL of the JHE instance to test (e.g. https://jhe.fly.dev)"
+        required: true
+        type: string
+      python_version:
+        description: "Python version to use"
+        required: false
+        default: "3.11"
+        type: string
+  # Manual entry point for ad-hoc URLs.
   workflow_dispatch:
     inputs:
       smoke_url:

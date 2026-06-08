@@ -76,33 +76,10 @@ jobs:
   smoke-test:
     name: Post-deploy smoke tests
     needs: deploy
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      with:
-        persist-credentials: false
-
-    - name: Set up Python
-      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
-      with:
-        python-version: "3.11"
-
-    - name: Install test dependencies
-      run: pip install pytest requests
-
-    - name: Wait for deployment to stabilize
-      run: |
-        echo "Waiting 30s for Fly machines to stabilize after deploy..."
-        sleep 30
-
-    - name: Run smoke tests
-      run: |
-        pytest tests/smoke/test_smoke.py \
-          --smoke-url=https://jhe.fly.dev \
-          -m smoke \
-          -v \
-          --tb=short \
-          --no-header \
-          -p no:cacheprovider \
-          --override-ini="addopts=" \
-          --override-ini="DJANGO_SETTINGS_MODULE="
+    # Reuse the single smoke-test definition (smoke_test.yml) rather than
+    # inlining a duplicate pytest block here.
+    permissions:
+      contents: read
+    uses: ./.github/workflows/smoke_test.yml
+    with:
+      smoke_url: https://jhe.fly.dev
