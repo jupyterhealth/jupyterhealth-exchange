@@ -37,7 +37,7 @@
         out.textContent += "\nToken: " + link.token;
 
         out.textContent += "\n\nRedeeming invitation...";
-        var invitationResponse = await fetch("http://" + link.host + "/api/v1/invitation/" + link.token, {
+        var invitationResponse = await fetch(window.location.protocol + "//" + link.host + "/api/v1/invitation/" + link.token, {
             method: "POST",
             headers: { "Cache-Control": "no-cache" },
         });
