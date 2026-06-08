@@ -101,6 +101,11 @@ class TestP0Liveness:
 class TestP1APIDocs:
     """API schema / documentation endpoints should be publicly accessible."""
 
+    def test_schema_loads(self, http):
+        """``GET /api/schema/`` → 200 (regression guard for the schema route)."""
+        resp = _get(http, "/api/schema/", allow_redirects=True)
+        assert resp.status_code == 200, f"Schema: expected 200, got {resp.status_code}"
+
     def test_swagger_ui_loads(self, http):
         """``GET /api/schema/swagger-ui/`` → 200."""
         resp = _get(http, "/api/schema/swagger-ui/", allow_redirects=True)

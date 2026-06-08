@@ -19,7 +19,11 @@ import django_saml2_auth.views
 from django.contrib import admin
 from django.contrib.auth import views as auth_views  # noqa
 from django.urls import include, path, re_path
-from drf_spectacular.views import SpectacularRedocView, SpectacularSwaggerView
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 
 from core.views.common import JheTokenView
 
@@ -31,6 +35,11 @@ urlpatterns = [
     path("o/", include("oauth2_provider.urls", namespace="oauth2_provider")),
     path("accounts/", include("django.contrib.auth.urls")),
     path("email_auth/", include("allauth.urls")),
+    path(
+        "api/schema/",
+        SpectacularAPIView.as_view(),
+        name="schema",
+    ),
     path(
         "api/schema/swagger-ui/",
         SpectacularSwaggerView.as_view(url_name="schema"),
