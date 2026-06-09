@@ -1030,9 +1030,9 @@ async function globalLookupPatientByEmail(email, organizationId) {
       (org) => org.id === organizationId
     );
     if (matchingOrganization) {
-      return alert(
-        `Patient with E-mail ${email} is already a member of ${matchingOrganization.name}`
-      );
+      return displayModalValidationError([
+        `Patient with E-mail ${email} is already a member of ${matchingOrganization.name}`,
+      ]);
     }
     await navReturnFromCrud();
     await nav("patients", {

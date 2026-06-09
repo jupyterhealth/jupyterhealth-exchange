@@ -180,6 +180,8 @@ class PatientViewSet(ModelViewSet):
         organization = Organization.objects.get(pk=organization_id)
         if not organization:
             raise ValidationError("Organization could not be found")
+        if PatientOrganization.objects.filter(organization_id=organization.id, patient_id=patient.id).exists():
+            raise ValidationError("This patient is already a member of this organization.")
         PatientOrganization.objects.create(organization_id=organization.id, patient_id=patient.id)
         return Response(PatientSerializer(patient, many=False).data, status=200)
 

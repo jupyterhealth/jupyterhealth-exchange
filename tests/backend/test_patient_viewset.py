@@ -213,6 +213,26 @@ def test_identifier_unique_system_value_constraint(organization):
         PatientIdentifier.objects.create(patient=patient_b, system="http://hospital-a.org", value="MRN-DUP")
 
 
+def test_global_add_organization_duplicate(api_client, organization):
+    # Adding a patient who is already a member of the organization must return a
+    # clear 400 (issue #238), not a 500 internal server error.
+    r = api_client.post(
+        "/api/v1/patients",
+        {
+            "organizationId": organization.id,
+            "telecomEmail": "dup-org-member@example.com",
+            "birthDate": "2000-01-01",
+        },
+        format="json",
+    )
+    assert r.status_code == 200, r.text
+    patient_id = r.json()["id"]
+
+    r = api_client.patch(f"/api/v1/patients/{patient_id}/global_add_organization?organization_id={organization.id}")
+    assert r.status_code == 400, r.text
+    assert "already a member" in r.text
+
+
 def test_update_replaces_identifiers(api_client, organization):
     r = api_client.post(
         "/api/v1/patients",
