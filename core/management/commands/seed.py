@@ -145,6 +145,16 @@ class Command(BaseCommand):
             ),
             ("https://w3id.org/openmhealth", "omh:rr-interval:1.0", "RR Interval"),
             ("https://w3id.org/openmhealth", "omh:body-weight:3.0", "Body weight"),
+            (
+                "https://w3id.org/openmhealth",
+                "omh:forced-vital-capacity:1.0",
+                "Forced vital capacity",
+            ),
+            (
+                "https://w3id.org/openmhealth",
+                "omh:forced-expiratory-volume-1-second:1.0",
+                "Forced expiratory volume 1 second",
+            ),
             ("http://hl7.org/fhir/", "QuestionnaireResponse", "FHIR QuestionnaireResponse"),
         ]
         # bulk create thing
