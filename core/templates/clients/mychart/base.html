@@ -1,0 +1,27 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html class="h-100">
+  <head>
+    <title>{% block title %}{% endblock %}</title>
+    <script src="{% static 'common/js/common.js' %}"></script>
+    <script src="{% static 'clients/mychart/js/fhir-client.min.js' %}"></script>
+    <script src="{% static 'clients/mychart/js/client-mychart.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'common/css/bootstrap.min.css' %}" />
+    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}" />
+    {% block head %}{% endblock %}
+  </head>
+  <body class="h-100">
+    <!-- Epic config from JheClient.aux_data, injected by the view. -->
+    <script>
+      var MYCHART_CONFIG = {
+        iss: "{{ mychart_iss|escapejs }}",
+        clientId: "{{ mychart_client_id|escapejs }}",
+        scope: "{{ mychart_scopes|escapejs }}",
+        dataSourceId: "{{ mychart_data_source_id|escapejs }}",
+      };
+    </script>
+    {% block body_content %}{% endblock %}
+    {% block body_footer %}{% endblock %}
+  </body>
+</html>

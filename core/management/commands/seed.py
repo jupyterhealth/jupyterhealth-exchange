@@ -71,7 +71,12 @@ class Command(BaseCommand):
         invite_code = "jhe"
 
         jhe_settings = [
-            ("site.url", "string", "http://localhost:8000"),
+            # Honor the SITE_URL env so the seeded host matches where JHE is actually
+            # served (e.g. http://localhost:8010 for the MyChart client). Defaults to
+            # http://localhost:8000 when SITE_URL is unset, preserving prior behavior.
+            # Invitation links embed this host, so a mismatch sends redemption to the
+            # wrong server.
+            ("site.url", "string", settings.SITE_URL),
             ("site.ui.title", "string", "JupyterHealth Exchange"),
             ("site.time_zone", "string", "America/Los_Angeles"),
             ("site.registration_invite_code", "string", invite_code),
@@ -172,6 +177,9 @@ class Command(BaseCommand):
             ("iHealth", "personal_device", ["omh:body-temperature:4.0", "omh:heart-rate:2.0"]),
             ("Oura", "personal_device", ["omh:heart-rate:2.0"]),
             ("Questionnaire", "patient_app", ["QuestionnaireResponse"]),
+            # Source for clinical records pulled from Epic MyChart (#489). No OMH
+            # supported scopes: its data is stored as auxiliary FHIR resources.
+            ("Epic MyChart", "medical_device", []),
         ]
         for name, type, scope_codes in data_sources:
             ds, _ = DataSource.objects.update_or_create(name=name, type=type)
@@ -198,6 +206,29 @@ class Command(BaseCommand):
                 "invitation_url": "https://commonhealth.tcp.org?invitation=CODE",
                 "data_sources": ["Dexcom", "iHealth"],
             },
+            {
+                # SMART on FHIR patient EHR-records client (issue #489). Port 8010 is
+                # temporary: it matches the Epic redirect already registered for the
+                # Phase 1 POC. Revert to 8001 once Epic's redirect is updated.
+                #
+                # NOTE: this app's redirect_uris is the JHE OAuth callback (the default
+                # /auth/callback, used by the invitation -> /o/token exchange), NOT the
+                # Epic callback. The Epic callback URLs
+                # (http://localhost:8010/clients/mychart/callback and the jhe.fly.dev
+                # equivalent) are registered separately on the Epic app at fhir.epic.com.
+                "name": "MyChart",
+                "invitation_url": "http://localhost:8010/clients/mychart/?code=CODE",
+                "data_sources": [],
+                "aux_data": {
+                    "iss": "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4",
+                    # Non-production client id of the Epic app "JupyterHealth Exchange -
+                    # USCDI v3" (appId 55446), the app that has the localhost:8010 +
+                    # jhe.fly.dev /clients/mychart/callback redirect URIs registered.
+                    # (Same app/client id as the Phase 1 smart-mychart-poc.)
+                    "client_id": "77849e74-8e2a-4c2f-826c-bdbef6da3357",
+                    "scopes": "openid profile launch/patient patient/Patient.read patient/Observation.read",
+                },
+            },
         ]
 
         for client in clients:
@@ -208,13 +239,15 @@ class Command(BaseCommand):
                     "client_type": Application.CLIENT_PUBLIC,
                     "authorization_grant_type": Application.GRANT_AUTHORIZATION_CODE,
                     "skip_authorization": True,
-                    "redirect_uris": settings.SITE_URL + settings.OAUTH2_CALLBACK_PATH,
+                    "redirect_uris": client.get("redirect_uris", settings.SITE_URL + settings.OAUTH2_CALLBACK_PATH),
                     "algorithm": "RS256",
                 },
             )
             if created:
-                # post_save signal created the JheClient; set invitation_url
+                # post_save signal created the JheClient; set invitation_url + aux_data
                 app.jhe_client.invitation_url = client["invitation_url"]
+                if client.get("aux_data") is not None:
+                    app.jhe_client.aux_data = client["aux_data"]
                 app.jhe_client.save()
 
             for ds_name in client["data_sources"]:
@@ -283,6 +316,12 @@ class Command(BaseCommand):
             StudyDataSource.objects.create(study=study, data_source=carex_ds)
             StudyDataSource.objects.create(study=study, data_source=questionnaire_ds)
             StudyClient.objects.create(study=study, client=carex_client)
+
+        # Wire the MyChart (Epic SMART) client to Peter's BP & HR study so it shows up
+        # as an invitable client for him (consolidated_clients gates on StudyClient).
+        # This makes the MyChart end-to-end flow (#489) testable out of the box.
+        mychart_client = get_application_model().objects.get(name="MyChart")
+        StudyClient.objects.create(study=lifespan_study_bp_hr, client=mychart_client)
 
         ll_patient_pete = self.create_user_with_profile("ll_patient_peter@example.com", user_type="patient")
         ll_patient_pete.organizations.add(lifespan_lab)
