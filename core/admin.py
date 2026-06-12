@@ -1,16 +1,30 @@
 from django.contrib import admin
 
 from core.models import (
+    ClientDataSource,
     CodeableConcept,
     DataSource,
+    DataSourceSupportedScope,
+    FhirAuxResource,
+    FhirSource,
     JheClient,
     JheSetting,
     JheUser,
     Observation,
+    ObservationIdentifier,
     Organization,
     Patient,
+    PatientIdentifier,
+    PatientInvitation,
+    PatientOrganization,
     Practitioner,
+    PractitionerOrganization,
     Study,
+    StudyClient,
+    StudyDataSource,
+    StudyPatient,
+    StudyPatientScopeConsent,
+    StudyScopeRequest,
 )
 
 
@@ -105,3 +119,106 @@ class JheSettingAdmin(admin.ModelAdmin):
     list_display = ("key", "value_type", "last_updated")
     search_fields = ("key",)
     list_filter = ("value_type",)
+
+
+# FHIR-native resources (auxiliary store + the patient-registered source records). These are the
+# records we create/inspect remotely instead of asking the operator to run a SQL script.
+@admin.register(FhirSource)
+class FhirSourceAdmin(admin.ModelAdmin):
+    list_display = ("id", "label", "patient", "data_source", "fhir_base_url", "last_updated")
+    search_fields = ("label", "fhir_base_url", "patient__name_family", "patient__name_given")
+    raw_id_fields = ("patient", "data_source")
+
+
+@admin.register(FhirAuxResource)
+class FhirAuxResourceAdmin(admin.ModelAdmin):
+    list_display = ("id", "resource_type", "fhir_resource_id", "patient_fhir_id", "fhir_source", "last_updated")
+    search_fields = ("resource_type", "fhir_resource_id", "patient_fhir_id")
+    list_filter = ("resource_type",)
+    raw_id_fields = ("fhir_source",)
+
+
+@admin.register(PatientIdentifier)
+class PatientIdentifierAdmin(admin.ModelAdmin):
+    list_display = ("id", "patient", "system", "value")
+    search_fields = ("system", "value", "patient__name_family", "patient__name_given")
+    raw_id_fields = ("patient",)
+
+
+@admin.register(PatientOrganization)
+class PatientOrganizationAdmin(admin.ModelAdmin):
+    list_display = ("id", "patient", "organization")
+    search_fields = ("patient__name_family", "patient__name_given", "organization__name")
+    raw_id_fields = ("patient", "organization")
+
+
+@admin.register(PatientInvitation)
+class PatientInvitationAdmin(admin.ModelAdmin):
+    list_display = ("id", "patient", "client", "status", "last_updated")
+    search_fields = ("patient__name_family", "patient__name_given")
+    list_filter = ("status",)
+    raw_id_fields = ("patient", "client")
+
+
+@admin.register(ObservationIdentifier)
+class ObservationIdentifierAdmin(admin.ModelAdmin):
+    list_display = ("id", "observation", "system", "value")
+    search_fields = ("system", "value")
+    raw_id_fields = ("observation",)
+
+
+@admin.register(PractitionerOrganization)
+class PractitionerOrganizationAdmin(admin.ModelAdmin):
+    list_display = ("id", "practitioner", "organization", "role")
+    search_fields = ("practitioner__name_family", "practitioner__name_given", "organization__name")
+    list_filter = ("role",)
+    raw_id_fields = ("practitioner", "organization")
+
+
+@admin.register(StudyPatient)
+class StudyPatientAdmin(admin.ModelAdmin):
+    list_display = ("id", "study", "patient")
+    search_fields = ("study__name", "patient__name_family", "patient__name_given")
+    raw_id_fields = ("study", "patient")
+
+
+@admin.register(StudyPatientScopeConsent)
+class StudyPatientScopeConsentAdmin(admin.ModelAdmin):
+    list_display = ("id", "study_patient", "scope_code", "scope_actions", "consented", "consented_time")
+    list_filter = ("consented",)
+    raw_id_fields = ("study_patient", "scope_code")
+
+
+@admin.register(StudyScopeRequest)
+class StudyScopeRequestAdmin(admin.ModelAdmin):
+    list_display = ("id", "study", "scope_code", "scope_actions")
+    search_fields = ("study__name",)
+    raw_id_fields = ("study", "scope_code")
+
+
+@admin.register(StudyDataSource)
+class StudyDataSourceAdmin(admin.ModelAdmin):
+    list_display = ("id", "study", "data_source")
+    search_fields = ("study__name", "data_source__name")
+    raw_id_fields = ("study", "data_source")
+
+
+@admin.register(StudyClient)
+class StudyClientAdmin(admin.ModelAdmin):
+    list_display = ("id", "study", "client")
+    search_fields = ("study__name",)
+    raw_id_fields = ("study", "client")
+
+
+@admin.register(DataSourceSupportedScope)
+class DataSourceSupportedScopeAdmin(admin.ModelAdmin):
+    list_display = ("id", "data_source", "scope_code")
+    search_fields = ("data_source__name",)
+    raw_id_fields = ("data_source", "scope_code")
+
+
+@admin.register(ClientDataSource)
+class ClientDataSourceAdmin(admin.ModelAdmin):
+    list_display = ("id", "client", "data_source")
+    search_fields = ("data_source__name",)
+    raw_id_fields = ("client", "data_source")
