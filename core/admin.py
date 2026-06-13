@@ -33,6 +33,24 @@ class JheUserAdmin(admin.ModelAdmin):
     list_display = ("email", "first_name", "last_name", "identifier", "is_staff", "is_active")
     search_fields = ("email", "first_name", "last_name", "identifier")
     list_filter = ("is_staff", "is_active", "is_superuser")
+    # The groups / user_permissions M2M tables were dropped (migration 0011), so the default
+    # admin machinery crashes when it touches them. Hide the fields and route every delete path
+    # through the model's safe JheUser.delete() (which never references those tables).
+    exclude = ("groups", "user_permissions")
+
+    def get_deleted_objects(self, objs, request):
+        # Skip Django's collector (it walks the dropped M2M relations and raises
+        # ProgrammingError). The cascade is handled by JheUser.delete().
+        to_delete = [str(obj) for obj in objs]
+        model_count = {JheUser._meta.verbose_name_plural: len(to_delete)}
+        return to_delete, model_count, set(), []
+
+    def delete_model(self, request, obj):
+        obj.delete()
+
+    def delete_queryset(self, request, queryset):
+        for obj in queryset:
+            obj.delete()
 
 
 @admin.register(Organization)
