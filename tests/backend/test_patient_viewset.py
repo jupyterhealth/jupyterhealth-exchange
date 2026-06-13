@@ -105,18 +105,86 @@ def test_create_delete(api_client, organization):
     assert r.json()["success"]
 
 
-@pytest.mark.xfail(reason="invalid inputs to create should be handled")
-def test_create_validation(api_client, organization):
-    # test validation of create inputs
+def test_create_missing_email(api_client, organization):
+    # No email at all must return a clear 400 naming the field, not a 500 (issue #521).
+    r = api_client.post(
+        "/api/v1/patients",
+        {"organizationId": organization.id, "birthDate": "2000-01-01"},
+        format="json",
+    )
+    assert r.status_code == 400, r.text
+    assert "email is required" in r.text.lower()
+
+
+def test_create_empty_email(api_client, organization):
+    r = api_client.post(
+        "/api/v1/patients",
+        {"organizationId": organization.id, "telecomEmail": "", "birthDate": "2000-01-01"},
+        format="json",
+    )
+    assert r.status_code == 400, r.text
+    assert "email is required" in r.text.lower()
+
+
+def test_create_invalid_email(api_client, organization):
+    r = api_client.post(
+        "/api/v1/patients",
+        {"organizationId": organization.id, "telecomEmail": "notanemail", "birthDate": "2000-01-01"},
+        format="json",
+    )
+    assert r.status_code == 400, r.text
+    assert "valid email" in r.text.lower()
+
+
+def test_create_invalid_birth_date(api_client, organization):
     r = api_client.post(
         "/api/v1/patients",
         {
             "organizationId": organization.id,
-            "telecom_email": "testcreate-patient@example.com",
+            "telecomEmail": "bad-birthdate@example.com",
+            "birthDate": "not-a-date",
         },
         format="json",
     )
-    assert r.status_code == 400
+    assert r.status_code == 400, r.text
+    assert "valid birth date" in r.text.lower()
+    # the JheUser must not have been created for an input that fails validation
+    from core.models import JheUser
+
+    assert not JheUser.objects.filter(email="bad-birthdate@example.com").exists()
+
+
+def test_create_duplicate_identifier(api_client, organization):
+    r = api_client.post(
+        "/api/v1/patients",
+        {
+            "organizationId": organization.id,
+            "telecomEmail": "dup-id-a@example.com",
+            "birthDate": "2000-01-01",
+            "identifiers": [{"system": "http://hospital-a.org", "value": "MRN-DUP"}],
+        },
+        format="json",
+    )
+    assert r.status_code == 200, r.text
+
+    r = api_client.post(
+        "/api/v1/patients",
+        {
+            "organizationId": organization.id,
+            "telecomEmail": "dup-id-b@example.com",
+            "birthDate": "2000-01-01",
+            "identifiers": [{"system": "http://hospital-a.org", "value": "MRN-DUP"}],
+        },
+        format="json",
+    )
+    assert r.status_code == 400, r.text
+    assert "identifier" in r.text.lower()
+    # the message names the specific conflicting identifier (system|value), not a generic line
+    assert "MRN-DUP" in r.text
+    # the conflicting create must roll back fully: no orphan patient/user
+    from core.models import JheUser
+
+    assert not JheUser.objects.filter(email="dup-id-b@example.com").exists()
 
 
 def test_fhir_list_patients(api_client, organization, hr_study):

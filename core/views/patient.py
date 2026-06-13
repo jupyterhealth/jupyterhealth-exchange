@@ -3,6 +3,9 @@ import logging
 from datetime import datetime
 
 from django.conf import settings
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import validate_email
+from django.db import IntegrityError, transaction
 from django.utils.crypto import get_random_string
 from oauth2_provider.models import get_application_model
 from rest_framework import status
@@ -89,24 +92,61 @@ class PatientViewSet(ModelViewSet):
         return response
 
     def create(self, request, *args, **kwargs):
-        patient = None
-        jhe_user = None
-        if request.data["telecom_email"]:
-            jhe_users = JheUser.objects.filter(email=request.data["telecom_email"])
-            if jhe_users:
-                jhe_user = jhe_users[0]
-            else:
-                jhe_user = JheUser(email=request.data["telecom_email"])
-                jhe_user.set_password(get_random_string(length=16))
-                jhe_user.save()
-            request.data["jhe_user_id"] = jhe_user.id
-            del request.data["telecom_email"]
-            identifiers = request.data.pop("identifiers", None)
-            patient = Patient.objects.create(**request.data)
-            if identifiers is not None:
-                self._replace_patient_identifiers(patient, identifiers)
-        else:
-            raise ValidationError
+        # Validate input up front so the user gets a clear, field-keyed 400 (rendered in the
+        # modal banner) instead of a KeyError/IntegrityError 500 or a blank error (issue #521).
+        # Messages are passed as a list of plain sentences so the modal banner renders them
+        # cleanly (displayModalValidationError joins a list; a field-keyed dict shows an ugly
+        # "field - " prefix and truncates a non-list value to its first character).
+        email = (request.data.get("telecom_email") or "").strip()
+        if not email:
+            raise ValidationError(["Email is required to create a patient."])
+        try:
+            validate_email(email)
+        except DjangoValidationError:
+            raise ValidationError(["Enter a valid email address."])
+
+        birth_date = request.data.get("birth_date")
+        if birth_date:
+            try:
+                datetime.strptime(birth_date, "%Y-%m-%d")
+            except (ValueError, TypeError):
+                raise ValidationError(["Enter a valid birth date (YYYY-MM-DD)."])
+
+        del request.data["telecom_email"]
+        identifiers = request.data.pop("identifiers", None)
+
+        # Reject an identifier already used by another patient up front, naming the exact
+        # system|value so the admin knows which one conflicts. Doing this here (instead of
+        # only catching the DB IntegrityError) gives a precise, database-agnostic message;
+        # the atomic block below still guards the rare create-time race (issue #521).
+        for item in identifiers or []:
+            system, value = item.get("system"), item.get("value")
+            if system and value and PatientIdentifier.objects.filter(system=system, value=value).exists():
+                raise ValidationError(
+                    [f"The external identifier {system}|{value} is already in use by another patient."]
+                )
+
+        try:
+            # Wrap user + patient + identifier creation in one transaction so a conflict
+            # rolls back the whole create, leaving no orphan JheUser/Patient.
+            with transaction.atomic():
+                jhe_users = JheUser.objects.filter(email=email)
+                if jhe_users:
+                    jhe_user = jhe_users[0]
+                else:
+                    jhe_user = JheUser(email=email)
+                    jhe_user.set_password(get_random_string(length=16))
+                    jhe_user.save()
+                request.data["jhe_user_id"] = jhe_user.id
+                patient = Patient.objects.create(**request.data)
+                if identifiers is not None:
+                    self._replace_patient_identifiers(patient, identifiers)
+        except IntegrityError:
+            # Safety net for a concurrent insert slipping past the pre-check above. Kept
+            # generic so a non-identifier integrity error is not mislabeled.
+            raise ValidationError(
+                ["Could not save the patient because of a data conflict. Please check the values and try again."]
+            )
 
         serializer = PatientSerializer(patient)
         return Response(serializer.data)
