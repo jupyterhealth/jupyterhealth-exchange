@@ -97,7 +97,7 @@ jobs:
       # use hash pinning on actions that get access to secrets.GITHUB_TOKEN
       - name: Log in to the Container registry
         if: env.REGISTRY == 'ghcr.io'
-        uses: docker/login-action@3999a1f4362c53e6a6048cde50f69868af81da5c
+        uses: docker/login-action@3864d6aed8ff134b2ed894ce00c87695c709c870
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -106,7 +106,7 @@ jobs:
       # https://github.com/docker/metadata-action
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@3caf19fbe3db1a1a6a8bdce189e09ac0ed35d513
+        uses: docker/metadata-action@020b7354dd55a28effcab0f3b19639fe24d3f58b
         with:
           tags: |
             type=ref,event=branch
