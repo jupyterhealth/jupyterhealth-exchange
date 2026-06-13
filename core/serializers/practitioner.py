@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.models import Patient
+from core.models import Practitioner
 
 from .organization import OrganizationSerializer
 
@@ -17,7 +17,7 @@ class PractitionerSerializer(serializers.ModelSerializer):
         return OrganizationSerializer(organizations, many=True).data
 
     class Meta:
-        model = Patient
+        model = Practitioner
         fields = [
             "id",
             "jhe_user_id",

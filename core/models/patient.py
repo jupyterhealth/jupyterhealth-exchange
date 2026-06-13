@@ -110,10 +110,14 @@ class Patient(models.Model):
         # live in one filter() call so Django reuses the join, ensuring the enrolled study
         # and the practitioner-authorized study are the SAME study. distinct() collapses the
         # duplicate patient rows produced by spanning these many-to-many relationships.
-        return Patient.objects.filter(
-            studypatient__study_id=study_id,
-            studypatient__study__organization__practitioners__jhe_user_id=jhe_user_id,
-        ).distinct()
+        return (
+            Patient.objects.filter(
+                studypatient__study_id=study_id,
+                studypatient__study__organization__practitioners__jhe_user_id=jhe_user_id,
+            )
+            .distinct()
+            .order_by("id")
+        )
 
     @staticmethod
     def from_jhe_user_id(jhe_user_id):

@@ -1,4 +1,3 @@
-import pytest
 from rest_framework.test import APIClient
 
 from core.models import JheUser, Patient, Practitioner
@@ -82,10 +81,6 @@ def test_list_practitioners_non_superuser(api_client):
     assert r.status_code == 403
 
 
-# fails with:
-# django.db.utils.IntegrityError: null value in column "birth_date" of relation "core_patient" violates not-null constraint
-# but shouldn't create a patient at all
-@pytest.mark.xfail(reason="create practitioner doesn't work")
 def test_create_delete(superuser, organization):
     api_client = APIClient()
     api_client.default_format = "json"
@@ -117,16 +112,16 @@ def test_create_delete(superuser, organization):
     assert r.json()["success"]
 
 
-# def test_create_invalid(superuser, organization):
-#     # TODO: fix - serializer crashes with AttributeError on jhe_user.email when practitioner has no user
-#     api_client = APIClient()
-#     api_client.default_format = "json"
-#     api_client.force_authenticate(superuser)
-#     r = api_client.post(
-#         "/api/v1/practitioners",
-#         {
-#             "organizationId": organization.id,
-#         },
-#         format="json",
-#     )
-#     assert r.status_code == 400
+def test_create_invalid(superuser, organization):
+    # creating a practitioner with no email is rejected up front (no orphan user/practitioner)
+    api_client = APIClient()
+    api_client.default_format = "json"
+    api_client.force_authenticate(superuser)
+    r = api_client.post(
+        "/api/v1/practitioners",
+        {
+            "organizationId": organization.id,
+        },
+        format="json",
+    )
+    assert r.status_code == 400

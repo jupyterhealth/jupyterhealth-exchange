@@ -1,5 +1,3 @@
-import pytest
-
 from core.models import CodeableConcept
 
 from .utils import Code, fetch_paginated
@@ -40,7 +38,6 @@ def test_create_delete_data_source(api_client, superuser):
     assert len(data_sources) == existing
 
 
-@pytest.mark.xfail(reason="fails to validate")
 def test_create_invalid_data_source(api_client, superuser):
     api_client.force_authenticate(superuser)
     r = api_client.post("/api/v1/data_sources", {})

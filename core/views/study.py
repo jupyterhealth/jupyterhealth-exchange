@@ -66,8 +66,10 @@ class StudyViewSet(ModelViewSet):
     @action(detail=True, methods=["GET", "POST", "DELETE"])
     def patients(self, request, pk):
         if request.method == "GET":
-            serializer = PatientSerializer(Patient.for_study(self.request.user.id, pk), many=True)
-            return Response(serializer.data)
+            patients = Patient.for_study(self.request.user.id, pk)
+            page = self.paginate_queryset(patients)
+            serializer = PatientSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         else:
             responses = []
             for patient_id in request.data["patient_ids"]:

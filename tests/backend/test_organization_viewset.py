@@ -54,7 +54,6 @@ def test_patch_org(api_client, organization):
     assert after["id"] == before["id"]
 
 
-# @pytest.mark.xfail(reason="")
 def test_get_organization_types(api_client):
     r = api_client.get("/api/v1/organizations/types")
     assert r.status_code == 200, r.text

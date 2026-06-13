@@ -60,9 +60,6 @@ def test_patch_study(api_client, hr_study):
     assert study["name"] == before["name"]
 
 
-@pytest.mark.xfail(
-    reason="django.db.utils.ProgrammingError: column core_patientorganization.jhe_user_id does not exist"
-)
 def test_get_study_patients(api_client, patient, hr_study):
     patients = fetch_paginated(api_client, f"/api/v1/studies/{hr_study.id}/patients")
     assert patients

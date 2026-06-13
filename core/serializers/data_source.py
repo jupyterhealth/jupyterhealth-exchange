@@ -10,6 +10,8 @@ class CodeableConceptSerializer(serializers.ModelSerializer):
 
 
 class DataSourceSerializer(serializers.ModelSerializer):
+    # name is nullable on the model but required when creating a data source via the API
+    name = serializers.CharField()
     supported_scopes = CodeableConceptSerializer(many=True, read_only=True)
 
     class Meta:
