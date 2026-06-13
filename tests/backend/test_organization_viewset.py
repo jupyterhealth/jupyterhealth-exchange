@@ -1,4 +1,3 @@
-import pytest
 from rest_framework.test import APIClient
 
 from core.models import JheUser, Organization, PractitionerOrganization
@@ -196,12 +195,23 @@ def test_manager_of_sub_org_can_add_user(organization):
 
 
 def test_add_user_invalid(api_client, organization):
-    pytest.skip("TODO")
-    # should exercise:
-    # - missing user id
-    # - nonexistent user id
-    # - missing role
-    # - invalid role
+    url = f"/api/v1/organizations/{organization.id}/user"
+
+    # missing user id -> 400
+    r = api_client.post(url, {"organization_partitioner_role": "viewer"})
+    assert r.status_code == 400, r.text
+
+    # nonexistent user id -> 404
+    r = api_client.post(url, {"jhe_user_id": 9999999, "organization_partitioner_role": "viewer"})
+    assert r.status_code == 404, r.text
+
+    # a non-practitioner user (patient) has no practitioner profile -> 404
+    patient_user = JheUser.objects.create_user(
+        email="add-user-patient@example.org",
+        user_type="patient",
+    )
+    r = api_client.post(url, {"jhe_user_id": patient_user.id, "organization_partitioner_role": "viewer"})
+    assert r.status_code == 404, r.text
 
 
 def test_get_organization_studies(api_client, organization, hr_study):

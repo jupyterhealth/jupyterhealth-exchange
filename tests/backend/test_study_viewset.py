@@ -1,8 +1,16 @@
-import pytest
+from oauth2_provider.models import get_application_model
 
-from core.models import CodeableConcept, StudyPatient, StudyScopeRequest
+from core.models import (
+    CodeableConcept,
+    StudyClient,
+    StudyDataSource,
+    StudyPatient,
+    StudyScopeRequest,
+)
 
 from .utils import Code, add_patients, fetch_paginated
+
+Application = get_application_model()
 
 
 def test_list_studies(api_client, organization, hr_study):
@@ -132,8 +140,28 @@ def test_get_study_clients(api_client, hr_study):
     assert r.json() == []
 
 
-def test_add_remove_study_clients(api_client, hr_study):
-    pytest.skip("TODO")
+def test_add_remove_study_clients(api_client, user, hr_study):
+    client_app = Application.objects.create(
+        name="test client",
+        user=user,
+        client_type=Application.CLIENT_PUBLIC,
+        authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+    )
+    url = f"/api/v1/studies/{hr_study.id}/clients"
+    r = api_client.post(url, {"client_id": client_app.id})
+    assert r.status_code == 200, r.text
+
+    r = api_client.get(url)
+    assert r.status_code == 200, r.text
+    clients = r.json()
+    assert len(clients) == 1
+    assert clients[0]["client"]["id"] == client_app.id
+    assert StudyClient.objects.filter(study=hr_study, client=client_app).count() == 1
+
+    r = api_client.delete(url, {"client_id": client_app.id})
+    assert r.status_code == 200, r.text
+    assert StudyClient.objects.filter(study=hr_study, client=client_app).count() == 0
+    assert api_client.get(url).json() == []
 
 
 def test_get_study_data_sources(api_client, hr_study):
@@ -142,5 +170,19 @@ def test_get_study_data_sources(api_client, hr_study):
     assert r.json() == []
 
 
-def test_add_remove_study_data_sources(api_client, hr_study):
-    pytest.skip("TODO")
+def test_add_remove_study_data_sources(api_client, device, hr_study):
+    url = f"/api/v1/studies/{hr_study.id}/data_sources"
+    r = api_client.post(url, {"data_source_id": device.id})
+    assert r.status_code == 200, r.text
+
+    r = api_client.get(url)
+    assert r.status_code == 200, r.text
+    data_sources = r.json()
+    assert len(data_sources) == 1
+    assert data_sources[0]["dataSource"]["id"] == device.id
+    assert StudyDataSource.objects.filter(study=hr_study, data_source=device).count() == 1
+
+    r = api_client.delete(url, {"data_source_id": device.id})
+    assert r.status_code == 200, r.text
+    assert StudyDataSource.objects.filter(study=hr_study, data_source=device).count() == 0
+    assert api_client.get(url).json() == []

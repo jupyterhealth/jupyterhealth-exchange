@@ -182,7 +182,25 @@ def test_patient_pagination(api_client, organization):
 
 
 def test_fhir_list_patients_by_identifier(api_client, organization):
-    pytest.skip("not implemented")
+    # Two patients with distinct external identifiers; the FHIR search must return only the match.
+    patient_a, patient_b = add_patients(2, organization=organization)
+    PatientIdentifier.objects.create(patient=patient_a, system="http://hospital-a.org", value="MRN-A")
+    PatientIdentifier.objects.create(patient=patient_b, system="http://hospital-b.org", value="MRN-B")
+
+    # identifier param is "system|value"; only the value is used to filter (system is optional).
+    bundle = fetch_paginated(api_client, "/FHIR/R5/Patient", {"identifier": "http://hospital-a.org|MRN-A"})
+    assert len(bundle) == 1
+    assert bundle[0]["resource"]["id"] == str(patient_a.id)
+
+    # only the value (after "|") filters, so a system-less value is written as "|value"
+    bundle = fetch_paginated(api_client, "/FHIR/R5/Patient", {"identifier": "|MRN-B"})
+    assert len(bundle) == 1
+    assert bundle[0]["resource"]["id"] == str(patient_b.id)
+
+    # a non-matching identifier yields an empty bundle, not an error
+    r = api_client.get("/FHIR/R5/Patient", {"identifier": "|MRN-NONE"})
+    assert r.status_code == 200, r.text
+    assert r.json()["total"] == 0
 
 
 def test_create_with_identifiers(api_client, organization):
