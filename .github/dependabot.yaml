@@ -44,3 +44,21 @@ updates:
       interval: monthly
     cooldown:
       default-days: 7
+
+  # MCP server (uv project). Keeps the uv.lock current — notably omh-shim,
+  # which adds OMH schemas frequently; the test_covers_jhe_seeded_codes drift
+  # guard gates each bump in CI.
+  - package-ecosystem: uv
+    directory: /mcp_server
+    groups:
+      # one big pull request for minor/patch bumps
+      minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
