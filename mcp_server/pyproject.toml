@@ -16,7 +16,7 @@ dependencies = [
     "httpx>=0.28,<1",
     "pydantic>=2.13,<3",
     "fastapi>=0.136,<1",
-    "uvicorn[standard]>=0.47,<1",
+    "uvicorn[standard]>=0.49.0,<1",
     # First-party, additive (new OMH schemas land frequently). Floor must cover
     # every OMH code JHE seeds — see tests/unit/test_omh_registry.py drift guard;
     # 1.3.0 adds the spirometry schemas (forced-vital-capacity,
