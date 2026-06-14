@@ -8,17 +8,10 @@ registry so non-compliant values (e.g. the reported ``"unknown"`` meal relations
 failing to resolve the $ref.
 """
 
-import json
-
 import pytest
-from django.conf import settings
 from jsonschema import ValidationError
 
-from core.utils import validate_with_registry
-
-BLOOD_GLUCOSE_BODY_SCHEMA = json.loads(
-    (settings.DATA_DIR_PATH.schemas_data / "schema-omh_blood-glucose_4-0.json").read_text()
-)
+from core.utils import code_to_schema, validate_with_registry
 
 
 def _body(**overrides):
@@ -31,7 +24,7 @@ def _body(**overrides):
 
 
 def _validate(body):
-    validate_with_registry(instance=body, schema=BLOOD_GLUCOSE_BODY_SCHEMA)
+    validate_with_registry(instance=body, schema=code_to_schema("omh:blood-glucose:4.0"))
 
 
 def test_minimal_compliant_body_passes():

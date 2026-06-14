@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/survey-answer.json",
+    "title": "Survey Answer",
+    "description": "This schema represents a survey answer. If the answer is chosen out of a set of categories, use the schema survey-categorical-answer. If the answer is a value with its unit of measure, use the schema survey-unit-value-answer.",
+    "type": "object",
+    "properties": {
+        "value": {
+            "description": "The value of the answer.",
+            "type": [
+                "object",
+                "number",
+                "string",
+                "boolean"
+            ]
+        }
+    },
+    "required": [
+        "value"
+    ]
+}

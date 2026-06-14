@@ -1,0 +1,36 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "deprecation": {
+        "reason": "This schema is now deprecated, in favor of the IEEE 1752.1 schema of the same name.",
+        "supersededBy": "https://w3id.org/ieee/ieee-1752-schema/unit-value-range.json",
+        "date": "2024-01-30"
+    },
+    "description": "This schema represents a range of numerical values with a unit of measure. The lower and upper boundaries are included in the interval.",
+
+    "type": "object",
+
+    "properties": {
+        "low_value": {
+            "description": "The lower boundary of the range.",
+            "type": "number"
+        },
+        "high_value": {
+            "description": "The upper boundary of the range.",
+            "type": "number"
+        },
+        "unit": {
+            "references": [
+                {
+                    "description": "The unit of measure of the element. Allowed values are drawn from the Common synonyms (non-UCUM) column of [subset of] UCUM, SI and English units. ",
+                    "url": "http://download.hl7.de/documents/ucum/ucumdata.html"
+                }
+            ],
+            "type": "string"
+        }
+    },
+    "required": [
+        "low_value",
+        "high_value",
+        "unit"
+    ]
+}

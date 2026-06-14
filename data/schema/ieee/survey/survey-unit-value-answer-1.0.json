@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/survey-unit-value-answer.json",
+    "title": "Survey Answer: Unit + Value",
+    "description": "This schema represents a unit value answer to a survey question.",
+    "type": "object",
+    "definitions": {
+        "answer": {
+            "$ref": "survey-answer-1.0.json"
+        },
+        "unit_value": {
+            "$ref": "unit-value-1.0.json"
+        }
+    },
+    "allOf": [
+        {
+            "$ref": "#/definitions/answer"
+        },
+        {
+            "properties": {
+                "value": {
+                    "$ref": "#/definitions/unit_value",
+                    "description": "A unit value."
+                }
+            }
+        }
+    ]
+}

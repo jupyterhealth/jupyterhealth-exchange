@@ -1,0 +1,64 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Body Weight",
+    "description": "This schema represents a person's body weight and weight components as both absolute values and percentages.",
+    "type": "object",
+
+    "definitions": {
+        "mass_unit_value": {
+            "$ref": "mass-unit-value-0.1.json"
+        },
+        "percent_unit_value": {
+            "$ref": "percent-unit-value-1.0.json"
+        },
+        "time_frame": {
+            "$ref": "time-frame-1.0.json"
+        },
+        "descriptive_statistic": {
+            "$ref": "descriptive-statistic-1.0.json"
+        }
+    },
+
+    "properties": {
+        "body_weight": {
+            "$ref": "#/definitions/mass_unit_value"
+        },
+        "body_fat_percentage": {
+            "$ref": "#/definitions/percent_unit_value"
+        },
+        "body_fat_weight": {
+            "$ref": "#/definitions/mass_unit_value"
+        },
+        "body_skeletal_muscle_mass_percentage": {
+            "$ref": "#/definitions/percent_unit_value"
+        },
+        "body_skeletal_muscle_mass_weight": {
+            "$ref": "#/definitions/mass_unit_value"
+        },
+        "body_water_mass_percentage": {
+            "$ref": "#/definitions/percent_unit_value"
+        },
+        "body_water_mass_weight": {
+            "$ref": "#/definitions/mass_unit_value"
+        },
+        "body_bone_mass_percentage": {
+            "$ref": "#/definitions/percent_unit_value"
+        },
+        "body_bone_mass_weight": {
+            "$ref": "#/definitions/mass_unit_value"
+        },
+        "effective_time_frame": {
+            "description": "The date-time at which, or time interval during which the measurement is asserted as being valid.",
+            "$ref": "#/definitions/time_frame"
+        },
+        "descriptive_statistic": {
+            "description": "The descriptive statistic of a set of measurements (e.g., average, maximum) within the specified time frame.",
+            "$ref": "#/definitions/descriptive_statistic"
+        }
+    },
+
+    "required": [
+        "body_weight",
+        "effective_time_frame"
+    ]
+}

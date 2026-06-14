@@ -2,17 +2,15 @@ import base64
 import json
 import logging
 
-from django.conf import settings
 from django.core.exceptions import BadRequest, PermissionDenied
 from django.db import models
 from django.db.models import F, Q
 from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404
 from fhir.resources.observation import Observation as FHIRObservation
-from jsonschema import ValidationError
 
 from core.fhir.scope import authorize_practitioner_scope, resolve_fhir_user
-from core.utils import validate_with_registry
+from core.utils import code_to_schema, validate_with_registry
 
 from .codeable_concept import CodeableConcept
 from .data_source import DataSource
@@ -282,19 +280,6 @@ class Observation(models.Model):
 
         return codeable_concept, omh_data
 
-    @staticmethod
-    def validate_outer_schema(instance_data):
-        for name in ("data-point-1.0.json", "data-series-1.0.json"):
-            schema = json.loads((settings.DATA_DIR_PATH.schemas_metadata / name).read_text())
-            try:
-                validate_with_registry(instance=instance_data, schema=schema)
-                return True
-            except ValidationError:
-                # Not a match; try the next outer schema
-                continue
-        # Neither matched as a valid outer schema
-        return False
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # FHIR serialization support
@@ -313,15 +298,10 @@ class Observation(models.Model):
         try:
             omh_data = self.omh_data
 
-            header_schema = json.loads((settings.DATA_DIR_PATH.schemas_metadata / "header-1.0.json").read_text())
+            header_schema = code_to_schema("ieee:header:1.0")
             validate_with_registry(instance=omh_data.get("header"), schema=header_schema)
 
-            body_schema = json.loads(
-                (
-                    settings.DATA_DIR_PATH.schemas_data
-                    / f"schema-{self.codeable_concept.coding_code.replace(':', '_').replace('.', '-')}.json"
-                ).read_text()
-            )
+            body_schema = code_to_schema(self.codeable_concept.coding_code)
             validate_with_registry(instance=omh_data.get("body"), schema=body_schema)
         except Exception as error:
             raise error
