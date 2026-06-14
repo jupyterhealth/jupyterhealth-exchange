@@ -365,12 +365,12 @@
         },
         "django-allauth": {
             "hashes": [
-                "sha256:72bea057eaaf2952e4e22cd0195e031ef8e7de2cbac065cf35bd0067ef50a1e7",
-                "sha256:ff041190bc6f9b2854aa5d7215a1f64f1fc8eb0907990690daad19144b7d2757"
+                "sha256:afb82e2c545b9a5539370ad120468faaed84715e095a7b6e76972dacdc6376fe",
+                "sha256:e508640c83b94eaf1a9b4e9ac5332dc310dcdc83fca40d58a3f670e15bad1e84"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==65.17.0"
+            "version": "==65.18.0"
         },
         "django-oauth-toolkit": {
             "hashes": [
