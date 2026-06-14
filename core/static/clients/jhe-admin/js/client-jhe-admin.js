@@ -816,10 +816,8 @@ async function updatePractitioner(id) {
   const errors = validatePractitionerForm();
   if (errors.length) return displayModalValidationError(errors);
   const practitionerRecord = {
-    identifier: document.getElementById("practitionerIdentifier").value || null,
     nameFamily: document.getElementById("practitionerFamilyName").value || null,
     nameGiven: document.getElementById("practitionerGivenName").value || null,
-    birthDate: document.getElementById("practitionerBirthDate").value || null,
   };
   let response = await apiRequest(
     "PATCH",
