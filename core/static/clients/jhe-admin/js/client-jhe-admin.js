@@ -812,6 +812,9 @@ async function selectPractitionerIdsForBatchAction() {
 }
 
 async function updatePractitioner(id) {
+  clearModalValidationErrors();
+  const errors = validatePractitionerForm();
+  if (errors.length) return displayModalValidationError(errors);
   const practitionerRecord = {
     identifier: document.getElementById("practitionerIdentifier").value || null,
     nameFamily: document.getElementById("practitionerFamilyName").value || null,
@@ -850,6 +853,17 @@ async function deletePractitioner(id, batch) {
     )
   }
   await navReturnFromCrud();
+}
+
+function validatePractitionerForm() {
+  const errors = [];
+  const family =
+    document.getElementById("practitionerFamilyName")?.value?.trim() || "";
+  const given =
+    document.getElementById("practitionerGivenName")?.value?.trim() || "";
+  if (!family) errors.push("Family name is required.");
+  if (!given) errors.push("Given name is required.");
+  return errors;
 }
 
 
