@@ -34,7 +34,7 @@ schema_base_uris = {
 
 
 @lru_cache
-def code_to_schema(code: str) -> str:
+def code_to_schema(code: str) -> dict[str, str]:
     """
     Transform a codeable concept string ('omh:heart-rate:1.0')
 
@@ -65,8 +65,8 @@ def build_schema_registry() -> Registry:
     for name in ("omh", "ieee"):
         schema_base = schema_base_uris[name]
         reg = _preload_dir(reg, schema_base, settings.DATA_DIR_PATH.schemas_dir / name)
-    reg.crawl()
-    return reg
+
+    return reg.crawl()
 
 
 def validate_with_registry(*, instance, schema, forbid_unknown_network: bool = True):

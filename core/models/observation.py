@@ -8,7 +8,6 @@ from django.db.models import F, Q
 from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404
 from fhir.resources.observation import Observation as FHIRObservation
-from jsonschema import ValidationError
 
 from core.fhir.scope import authorize_practitioner_scope, resolve_fhir_user
 from core.utils import code_to_schema, validate_with_registry
@@ -280,19 +279,6 @@ class Observation(models.Model):
             raise BadRequest("valueAttachment.data must be Base 64 Encoded Binary JSON.")  # TBD: move to view
 
         return codeable_concept, omh_data
-
-    @staticmethod
-    def validate_outer_schema(instance_data):
-        for code in ("ieee:data-point:1.0", "ieee:data-series:1.0"):
-            schema = code_to_schema("ieee:{name}")
-            try:
-                validate_with_registry(instance=instance_data, schema=schema)
-                return True
-            except ValidationError:
-                # Not a match; try the next outer schema
-                continue
-        # Neither matched as a valid outer schema
-        return False
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
