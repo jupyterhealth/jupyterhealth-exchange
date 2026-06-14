@@ -318,7 +318,10 @@ async function navReturnFromCrud() {
   );
   crudModal.hide(); // This returns immediately but kicks of an async process
   await new Promise((resolve) => setTimeout(resolve, 600)); // wait for modal to hide (300 ms)
-  nav(currentRouteAndParams.route, params);
+  // Must await: a caller that navigates again right after (e.g. patient lookup -> create,
+  // which passes lookedUpEmail) would otherwise race this detached nav and the later one
+  // could be clobbered, dropping the looked-up email from the create form.
+  await nav(currentRouteAndParams.route, params);
 }
 
 function getCurrentRouteAndParams() {
