@@ -72,7 +72,8 @@ class Patient(models.Model):
             qs = qs.filter(id=patient_id)
         if patient_identifier_value:
             qs = qs.filter(identifiers__value=patient_identifier_value)
-        return qs.distinct()
+        # order_by keeps pagination stable (DRF warns on an unordered paginated list).
+        return qs.distinct().order_by("id")
 
     @staticmethod
     def construct_invitation_link(invitation_url, client_id, auth_code):

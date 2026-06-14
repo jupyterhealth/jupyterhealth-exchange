@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 from oauth2_provider.models import get_application_model
 from rest_framework import status
@@ -328,7 +329,7 @@ class PatientViewSet(ModelViewSet):
             # the user is a super admin
 
             responses = []
-            consented_time = datetime.now()
+            consented_time = timezone.now()
             patient_user = request.user.get_patient()
             is_patient_user = bool(patient_user and int(pk) == patient_user.id)
             for study_scope_consent in request.data["study_scope_consents"]:

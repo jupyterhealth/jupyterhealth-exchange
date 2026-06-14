@@ -66,6 +66,45 @@ def test_patient_practitioner_can_update_own_consents(hr_study):
     assert created.count() == 0
 
 
+def test_consent_post_stores_timezone_aware_time(hr_study, recwarn):
+    # POSTing a consent must not emit a naive-datetime warning: consented_time is set with
+    # timezone.now(), not datetime.now() (issue #560).
+    (patient,) = add_patients(1, organization=hr_study.organization)
+    add_patient_to_study(patient, hr_study, consent=False)
+    client = APIClient()
+    client.force_authenticate(patient.jhe_user)
+    payload = {
+        "study_scope_consents": [
+            {
+                "study_id": hr_study.id,
+                "scope_consents": [
+                    {
+                        "coding_system": Code.OpenMHealth.value,
+                        "coding_code": Code.HeartRate.value,
+                        "consented": True,
+                    }
+                ],
+            }
+        ]
+    }
+    response = client.post(f"/api/v1/patients/{patient.id}/consents", data=payload, format="json")
+    assert response.status_code == 200, response.text
+    naive = [w for w in recwarn.list if issubclass(w.category, RuntimeWarning) and "naive datetime" in str(w.message)]
+    assert not naive, [str(w.message) for w in naive]
+
+
+def test_list_patients_pagination_is_ordered(api_client, organization, recwarn):
+    # The practitioner patient list is paginated, so its queryset must have a stable order;
+    # otherwise DRF emits an UnorderedObjectListWarning and pages can skip/repeat rows (issue #560).
+    add_patients(15, organization)
+    r = api_client.get("/api/v1/patients", {"pageSize": 10})
+    assert r.status_code == 200, r.text
+    unordered = [w for w in recwarn.list if w.category.__name__ == "UnorderedObjectListWarning"]
+    assert not unordered, [str(w.message) for w in unordered]
+    ids = [row["id"] for row in r.json()["results"]]
+    assert ids == sorted(ids)
+
+
 def test_list_patients(api_client, organization):
     n = 25
     per_page = 10
