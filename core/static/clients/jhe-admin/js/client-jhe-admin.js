@@ -1017,10 +1017,20 @@ async function renderPatients(queryParams) {
 }
 
 async function globalLookupPatientByEmail(email, organizationId) {
+  clearModalValidationErrors();
+  const lookupEmail = (email || "").trim();
+  if (!lookupEmail) {
+    return displayModalValidationError(["Patient e-mail is required."]);
+  }
+  if (!isValidPatientEmail(lookupEmail)) {
+    return displayModalValidationError([
+      "Patient e-mail is not a valid e-mail address.",
+    ]);
+  }
   const patientRecordResponse = await apiRequest(
     "GET",
     `patients/global_lookup`,
-    { email: email }
+    { email: lookupEmail }
   );
   const patientRecord = await patientRecordResponse.json();
   if (
@@ -1034,7 +1044,7 @@ async function globalLookupPatientByEmail(email, organizationId) {
     );
     if (matchingOrganization) {
       return displayModalValidationError([
-        `Patient with E-mail ${email} is already a member of ${matchingOrganization.name}`,
+        `Patient with E-mail ${lookupEmail} is already a member of ${matchingOrganization.name}`,
       ]);
     }
     await navReturnFromCrud();
@@ -1049,7 +1059,7 @@ async function globalLookupPatientByEmail(email, organizationId) {
     await nav("patients", {
       create: true,
       organizationId: organizationId,
-      lookedUpEmail: email,
+      lookedUpEmail: lookupEmail,
     });
   }
 }
@@ -1112,6 +1122,10 @@ async function deletePatient(id) {
     await navReturnFromCrud();
 }
 
+function isValidPatientEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 function validatePatientForm({ checkEmail }) {
   const errors = [];
   if (checkEmail) {
@@ -1119,7 +1133,7 @@ function validatePatientForm({ checkEmail }) {
       document.getElementById("patientTelecomEmail")?.value?.trim() || "";
     if (!email) {
       errors.push("Patient e-mail is required.");
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    } else if (!isValidPatientEmail(email)) {
       errors.push("Patient e-mail is not a valid e-mail address.");
     }
   }
