@@ -1055,6 +1055,9 @@ async function globalLookupPatientByEmail(email, organizationId) {
 }
 
 async function createPatient(organizationId) {
+  clearModalValidationErrors();
+  const errors = validatePatientForm({ checkEmail: true });
+  if (errors.length) return displayModalValidationError(errors);
   const patientRecord = {
     organizationId: organizationId,
     identifiers: collectPatientIdentifiers(),
@@ -1069,6 +1072,9 @@ async function createPatient(organizationId) {
 }
 
 async function updatePatient(id) {
+  clearModalValidationErrors();
+  const errors = validatePatientForm({ checkEmail: false });
+  if (errors.length) return displayModalValidationError(errors);
   const patientRecord = {
     identifiers: collectPatientIdentifiers(),
     nameFamily: document.getElementById("patientFamilyName").value || null,
@@ -1104,6 +1110,36 @@ async function deletePatient(id) {
     )
   )
     await navReturnFromCrud();
+}
+
+function validatePatientForm({ checkEmail }) {
+  const errors = [];
+  if (checkEmail) {
+    const email =
+      document.getElementById("patientTelecomEmail")?.value?.trim() || "";
+    if (!email) {
+      errors.push("Patient e-mail is required.");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.push("Patient e-mail is not a valid e-mail address.");
+    }
+  }
+  const rows = document.querySelectorAll(
+    "#patientIdentifiersContainer .patient-identifier-row"
+  );
+  let halfFilled = false;
+  rows.forEach((row) => {
+    const system = row
+      .querySelector(".patient-identifier-system")
+      ?.value?.trim();
+    const value = row
+      .querySelector(".patient-identifier-value")
+      ?.value?.trim();
+    if (!!system !== !!value) halfFilled = true;
+  });
+  if (halfFilled) {
+    errors.push("Each external identifier needs both a System and a Value.");
+  }
+  return errors;
 }
 
 function collectPatientIdentifiers() {

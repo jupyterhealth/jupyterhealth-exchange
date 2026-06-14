@@ -245,10 +245,11 @@
                       >
                       <input
                         type="text"
-                        class="form-control"
+                        class="form-control bg-body-secondary"
                         id="patientTelecomEmail"
                         value="{{patientRecord.telecomEmail}}"
-                        disabled="disabled"
+                        readonly
+                        autocomplete="off"
                       />
                   </div>
                   <div class="mb-3">
@@ -305,10 +306,9 @@
                       >DOB</label
                     >
                     <input
-                      type="text"
+                      type="date"
                       class="form-control"
                       id="patientBirthDate"
-                      placeholder="YYYY-MM-DD"
                       value="{{patientRecord.birthDate}}"
                     />
                   </div>
@@ -317,7 +317,7 @@
                       >Cell</label
                     >
                     <input
-                      type="text"
+                      type="tel"
                       class="form-control"
                       id="patientTelecomPhone"
                       value="{{patientRecord.telecomPhone}}"
