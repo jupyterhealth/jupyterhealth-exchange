@@ -1248,6 +1248,14 @@ function collectPatientIdentifiers() {
   return identifiers;
 }
 
+// Expose patient-form validation helpers for Jest (see GH #571), mirroring the
+// window pattern in oidc.js. Browser runtime is unchanged.
+if (typeof window !== "undefined") {
+  window.isValidPatientEmail = isValidPatientEmail;
+  window.validatePatientForm = validatePatientForm;
+  window.collectPatientIdentifiers = collectPatientIdentifiers;
+}
+
 function renderPatientAddIdentifierInput() {
   const container = document.getElementById("patientIdentifiersContainer");
   if (!container) return;
