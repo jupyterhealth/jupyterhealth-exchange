@@ -2121,7 +2121,19 @@ async function renderDataSources(queryParams) {
   return content(renderParams);
 }
 
+function validateDataSourceForm() {
+  const errors = [];
+  const name = document.getElementById("dataSourceName")?.value?.trim() || "";
+  const type = document.getElementById("dataSourceType")?.value?.trim() || "";
+  if (!name) errors.push("Name is required.");
+  if (!type) errors.push("Type is required.");
+  return errors;
+}
+
 async function createDataSource() {
+  clearModalValidationErrors();
+  const errors = validateDataSourceForm();
+  if (errors.length) return displayModalValidationError(errors);
   const dataSourceRecord = {
     name: document.getElementById("dataSourceName").value || null,
     type: document.getElementById("dataSourceType").value,
@@ -2131,6 +2143,9 @@ async function createDataSource() {
 }
 
 async function updateDataSource(id) {
+  clearModalValidationErrors();
+  const errors = validateDataSourceForm();
+  if (errors.length) return displayModalValidationError(errors);
   const dataSourceRecord = {
     name: document.getElementById("dataSourceName").value || null,
     type: document.getElementById("dataSourceType").value || null,

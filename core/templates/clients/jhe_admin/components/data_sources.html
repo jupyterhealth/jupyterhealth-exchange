@@ -88,6 +88,7 @@
           ></button>
         </div>
         <div class="modal-body">
+          <div class="alert alert-warning validationError" style="display: none" role="alert"></div>
           <div class="container-fluid">
             {{#if delete}}
               <div class="alert alert-danger" role="alert">
@@ -113,7 +114,7 @@
                 {{/unless}}
                 <div class="mb-3">
                   <label for="dataSourceName" class="form-label"
-                    >Name</label
+                    >Name*</label
                   >
                   <input
                     type="text"
@@ -124,7 +125,7 @@
                 </div>
                 <div class="mb-3">
                   <label for="dataSourceType" class="form-label"
-                    >Type</label
+                    >Type*</label
                   >
                   <select id="dataSourceType" class="form-select">
                   {{#dataSourceRecord.typeSelect}}
