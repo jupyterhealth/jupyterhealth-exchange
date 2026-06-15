@@ -1205,6 +1205,11 @@ function isValidPatientEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+// Permissive: digits plus + - ( ) . and spaces, at least 7 chars. Not E.164.
+function isValidPatientPhone(phone) {
+  return /^[0-9+\-() .]{7,}$/.test(phone);
+}
+
 function validatePatientForm({ checkEmail }) {
   const errors = [];
   if (checkEmail) {
@@ -1215,6 +1220,11 @@ function validatePatientForm({ checkEmail }) {
     } else if (!isValidPatientEmail(email)) {
       errors.push("Patient e-mail is not a valid e-mail address.");
     }
+  }
+  const phone =
+    document.getElementById("patientTelecomPhone")?.value?.trim() || "";
+  if (phone && !isValidPatientPhone(phone)) {
+    errors.push("Cell must be a valid phone number.");
   }
   const rows = document.querySelectorAll(
     "#patientIdentifiersContainer .patient-identifier-row"
@@ -1252,6 +1262,7 @@ function collectPatientIdentifiers() {
 // window pattern in oidc.js. Browser runtime is unchanged.
 if (typeof window !== "undefined") {
   window.isValidPatientEmail = isValidPatientEmail;
+  window.isValidPatientPhone = isValidPatientPhone;
   window.validatePatientForm = validatePatientForm;
   window.collectPatientIdentifiers = collectPatientIdentifiers;
 }

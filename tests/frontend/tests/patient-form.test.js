@@ -6,8 +6,8 @@ beforeAll(() => {
   require("../../../core/static/clients/jhe-admin/js/client-jhe-admin.js");
 });
 
-// Build the email input and identifier rows the helpers read from the DOM.
-function setupPatientForm({ email, identifiers = [] } = {}) {
+// Build the email input, Cell field, and identifier rows the helpers read.
+function setupPatientForm({ email, phone, identifiers = [] } = {}) {
   const rows = identifiers
     .map(
       (row) => `
@@ -22,6 +22,11 @@ function setupPatientForm({ email, identifiers = [] } = {}) {
       email === undefined
         ? ""
         : `<input id="patientTelecomEmail" value="${email}" />`
+    }
+    ${
+      phone === undefined
+        ? ""
+        : `<input id="patientTelecomPhone" value="${phone}" />`
     }
     <div id="patientIdentifiersContainer">${rows}</div>
   `;
@@ -44,6 +49,26 @@ describe("isValidPatientEmail", () => {
   test("rejects an address with whitespace", () => {
     expect(window.isValidPatientEmail("user @example.com")).toBe(false);
     expect(window.isValidPatientEmail(" user@example.com ")).toBe(false);
+  });
+});
+
+describe("isValidPatientPhone", () => {
+  test("accepts a plain digit string", () => {
+    expect(window.isValidPatientPhone("2107771682")).toBe(true);
+  });
+
+  test("accepts digits with +, -, (), spaces and dots", () => {
+    expect(window.isValidPatientPhone("+1 (210) 777-1682")).toBe(true);
+    expect(window.isValidPatientPhone("210.777.1682")).toBe(true);
+  });
+
+  test("rejects letters or junk", () => {
+    expect(window.isValidPatientPhone("call me")).toBe(false);
+    expect(window.isValidPatientPhone("555-CALL")).toBe(false);
+  });
+
+  test("rejects a too-short string", () => {
+    expect(window.isValidPatientPhone("12345")).toBe(false);
   });
 });
 
@@ -86,6 +111,23 @@ describe("validatePatientForm", () => {
       email: "user@example.com",
       identifiers: [{ system: "mrn", value: "123" }],
     });
+    expect(window.validatePatientForm({ checkEmail: true })).toEqual([]);
+  });
+
+  test("flags a non-empty Cell with letters or junk", () => {
+    setupPatientForm({ email: "user@example.com", phone: "call me" });
+    expect(window.validatePatientForm({ checkEmail: true })).toContain(
+      "Cell must be a valid phone number."
+    );
+  });
+
+  test("passes with a valid Cell", () => {
+    setupPatientForm({ email: "user@example.com", phone: "+1 (210) 777-1682" });
+    expect(window.validatePatientForm({ checkEmail: true })).toEqual([]);
+  });
+
+  test("treats an empty Cell as valid (optional field)", () => {
+    setupPatientForm({ email: "user@example.com", phone: "" });
     expect(window.validatePatientForm({ checkEmail: true })).toEqual([]);
   });
 });
