@@ -382,7 +382,15 @@ async function apiRequest(method, resourcePath, query) {
       displayModalValidationError(await response.json());
       return;
     } else if (parseInt(response.status) > 299) {
-      displayError(response.statusText);
+      const message = await extractApiErrorMessage(response);
+      // Expected 4xx conditions raised from an open modal (e.g. "Practitioner
+      // not found" when adding a user) belong in that modal's banner, not the
+      // alarming page-level "click Refresh" alert. Server faults still use it.
+      if (parseInt(response.status) < 500 && document.querySelector(".modal.show")) {
+        displayModalValidationError([message]);
+      } else {
+        displayError(message);
+      }
       return;
     }
   } catch (error) {
@@ -419,6 +427,35 @@ function clearModalValidationErrors() {
   document.querySelectorAll(".validationError").forEach((e) => {
     e.style.display = "none";
   });
+}
+
+// Page-level (non-modal) notice. Render guards return this markup as content
+// (the body shell re-renders after they run, so a live element would be wiped);
+// list actions that fire after render call displayPageNotice() on #pageNotice.
+function pageNoticeMarkup(message) {
+  return `<div class="alert alert-warning" role="alert"><small>${message}</small></div>`;
+}
+
+function displayPageNotice(message) {
+  const e = document.getElementById("pageNotice");
+  if (!e) return;
+  e.innerHTML = pageNoticeMarkup(message);
+  e.style.display = "block";
+}
+
+function clearPageNotice() {
+  const e = document.getElementById("pageNotice");
+  if (e) e.style.display = "none";
+}
+
+async function extractApiErrorMessage(response) {
+  try {
+    const body = await response.json();
+    if (typeof body === "string") return body;
+    return body.error || body.detail || response.statusText;
+  } catch {
+    return response.statusText;
+  }
 }
 
 async function hasOrganizationPermission(
@@ -659,7 +696,20 @@ async function renderOrganizations(queryParams) {
   return content(renderParams);
 }
 
+function validateOrganizationForm() {
+  const errors = [];
+  const name =
+    document.getElementById("organizationName")?.value?.trim() || "";
+  const type = document.getElementById("organizationType")?.value || "";
+  if (!name) errors.push("Name is required.");
+  if (!type) errors.push("Type is required.");
+  return errors;
+}
+
 async function createOrganization(partOf) {
+  clearModalValidationErrors();
+  const errors = validateOrganizationForm();
+  if (errors.length) return displayModalValidationError(errors);
   const organizationName =
     document.getElementById("organizationName").value || null;
   const organizationType = document.getElementById("organizationType").value;
@@ -677,6 +727,9 @@ async function createOrganization(partOf) {
 }
 
 async function updateOrganization(id) {
+  clearModalValidationErrors();
+  const errors = validateOrganizationForm();
+  if (errors.length) return displayModalValidationError(errors);
   const organizationName =
     document.getElementById("organizationName").value || null;
   const organizationType = document.getElementById("organizationType").value;
@@ -698,14 +751,28 @@ async function deleteOrganization(id) {
 }
 
 async function addUserToOrganization(userEmail, organizationId, role) {
-  if (!userEmail || !organizationId) return;
+  clearModalValidationErrors();
+  const email = (userEmail || "").trim();
+  if (!email) {
+    return displayModalValidationError(["User e-mail is required."]);
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return displayModalValidationError([
+      "User e-mail is not a valid e-mail address.",
+    ]);
+  }
+  if (!organizationId) return;
   const userRecordResponse = await apiRequest("GET", "users/search_by_email", {
-    email: userEmail,
+    email: email,
   });
   const userRecordPaginated = await userRecordResponse.json();
   if (userRecordPaginated.id === undefined) {
-    alert("No User with this E-mail exists.");
-    return;
+    return displayModalValidationError(["No User with this e-mail exists."]);
+  }
+  if (userRecordPaginated.patient) {
+    return displayModalValidationError([
+      `${email} is a patient account. Only practitioner accounts can be added to an organization. The Manager/Member/Viewer choice sets that practitioner's role.`,
+    ]);
   }
   const response = await apiRequest(
     "POST",
@@ -803,9 +870,10 @@ async function renderPractitioners(queryParams) {
 async function selectPractitionerIdsForBatchAction() {
   const selectedRecordIds = getSelectedRecordIds(".practitioner-checkbox");
   if (selectedRecordIds.length == 0) {
-    alert("Please select one or more Practitioners.");
+    displayPageNotice("Please select one or more Practitioners.");
     return;
   }
+  clearPageNotice();
   delete store.practitionerIdsForBatchAction;
   store.practitionerIdsForBatchAction = selectedRecordIds;
   nav("practitioners", { delete: true, batch: true });
@@ -874,8 +942,7 @@ async function renderPatients(queryParams) {
   const organizations = await organizationsResponse.json();
 
   if (organizations.length == 0) {
-    alert("This user does not belong to any Organization.");
-    return;
+    return pageNoticeMarkup("This user does not belong to any Organization.");
   }
 
   // If no org is selected, lets check what they were last using in the profile,
@@ -1237,8 +1304,7 @@ async function renderStudies(queryParams) {
   const organizations = await organizationsResponse.json();
 
   if (organizations.length == 0) {
-    alert("This user does not belong to any Organization.");
-    return;
+    return pageNoticeMarkup("This user does not belong to any Organization.");
   }
 
   // If no org is selected, lets check what they were last using in the profile,
@@ -1424,9 +1490,10 @@ function getSelectedRecordIds(selector) {
 async function selectPatientsForStudy(organizationId) {
   const selectedRecordIds = getSelectedRecordIds(".patient-checkbox");
   if (selectedRecordIds.length == 0) {
-    alert("Please select one or more Patients to add to the Study.");
+    displayPageNotice("Please select one or more Patients to add to the Study.");
     return;
   }
+  clearPageNotice();
   delete store.addPatientIdsToStudy;
   store.addPatientIdsToStudy = selectedRecordIds;
   nav("studies", { organizationId: organizationId, addPatients: true });
@@ -1448,9 +1515,12 @@ async function addPatientsToStudy(studyId, organizationId) {
 async function removeSelectedPatientsFromStudy(studyId) {
   const selectedRecordIds = getSelectedRecordIds(".patient-checkbox");
   if (selectedRecordIds.length == 0) {
-    alert(`Please select one or more Patients to remove from Study ${studyId}`);
+    displayPageNotice(
+      `Please select one or more Patients to remove from Study ${studyId}`
+    );
     return;
   }
+  clearPageNotice();
   removePatientsFromStudy(selectedRecordIds, studyId);
 }
 
@@ -1540,8 +1610,7 @@ async function renderObservations(queryParams) {
   const organizations = await organizationsResponse.json();
 
   if (organizations.length == 0) {
-    alert("This user does not belong to any Organization.");
-    return;
+    return pageNoticeMarkup("This user does not belong to any Organization.");
   }
 
   // If no org is selected, lets check what they were last using in the profile,
@@ -1693,8 +1762,7 @@ async function renderFhir(queryParams) {
   const organizations = await organizationsResponse.json();
 
   if (organizations.length == 0) {
-    alert("This user does not belong to any Organization.");
-    return;
+    return pageNoticeMarkup("This user does not belong to any Organization.");
   }
 
   // If no org is selected, lets check what they were last using in the profile,

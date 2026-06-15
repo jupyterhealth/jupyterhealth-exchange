@@ -88,6 +88,7 @@
           ></button>
         </div>
         <div class="modal-body">
+          <div class="alert alert-warning validationError" style="display: none" role="alert"></div>
           <div class="container-fluid">
             {{#if delete}}
               <div class="alert alert-danger" role="alert">
@@ -112,7 +113,7 @@
               {{/unless}}
               <div class="mb-3">
                 <label for="organizationName" class="form-label"
-                  >Name</label
+                  >Name*</label
                 >
                 <input
                   type="text"
@@ -123,7 +124,7 @@
               </div>
               <div class="mb-3">
                 <label for="organizationType" class="form-label"
-                  >Type</label
+                  >Type*</label
                 >
                 <select id="organizationType" class="form-select">
                 {{#organizationRecord.typeSelect}}
@@ -167,7 +168,8 @@
               <div class="d-flex mb-2">
                 <input
                   id="newUserEmail"
-                  type="text"
+                  type="email"
+                  required
                   class="form-control me-2"
                   placeholder="Existing user E-mail Address"
                   aria-label="Existing user E-mail Address"
