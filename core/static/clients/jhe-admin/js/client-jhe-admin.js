@@ -1454,7 +1454,20 @@ async function createStudyFromOrganization(organizationId, organizationName) {
   });
 }
 
+function validateStudyForm() {
+  const errors = [];
+  const name = document.getElementById("studyName")?.value?.trim() || "";
+  const description =
+    document.getElementById("studyDescription")?.value?.trim() || "";
+  if (!name) errors.push("Name is required.");
+  if (!description) errors.push("Description is required.");
+  return errors;
+}
+
 async function createStudy() {
+  clearModalValidationErrors();
+  const errors = validateStudyForm();
+  if (errors.length) return displayModalValidationError(errors);
   const studyRecord = {
     name: document.getElementById("studyName").value || null,
     description: document.getElementById("studyDescription").value || null,
@@ -1468,6 +1481,9 @@ async function createStudy() {
 }
 
 async function updateStudy(id) {
+  clearModalValidationErrors();
+  const errors = validateStudyForm();
+  if (errors.length) return displayModalValidationError(errors);
   const studyRecord = {
     name: document.getElementById("studyName").value || null,
     description: document.getElementById("studyDescription").value || null,
