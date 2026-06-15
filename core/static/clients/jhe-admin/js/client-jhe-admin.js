@@ -1968,7 +1968,27 @@ async function renderClients(queryParams) {
   return content(renderParams);
 }
 
+function validateClientForm() {
+  const errors = [];
+  const name = document.getElementById("clientName")?.value?.trim() || "";
+  const clientId =
+    document.getElementById("clientClientId")?.value?.trim() || "";
+  const invitationUrl =
+    document.getElementById("clientInvitationUrl")?.value?.trim() || "";
+  if (!name) errors.push("Name is required.");
+  if (!clientId) errors.push("Client ID is required.");
+  if (!invitationUrl) {
+    errors.push("Invitation URL is required.");
+  } else if (!invitationUrl.includes("CODE")) {
+    errors.push("Invitation URL must contain the CODE placeholder.");
+  }
+  return errors;
+}
+
 async function createClient() {
+  clearModalValidationErrors();
+  const errors = validateClientForm();
+  if (errors.length) return displayModalValidationError(errors);
   const clientRecord = {
     name: document.getElementById("clientName").value,
     invitationUrl: document.getElementById("clientInvitationUrl").value,
@@ -1979,6 +1999,9 @@ async function createClient() {
 }
 
 async function updateClient(id) {
+  clearModalValidationErrors();
+  const errors = validateClientForm();
+  if (errors.length) return displayModalValidationError(errors);
   const clientRecord = {
     name: document.getElementById("clientName").value,
     invitationUrl: document.getElementById("clientInvitationUrl").value,
