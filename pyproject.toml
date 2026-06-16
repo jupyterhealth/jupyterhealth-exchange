@@ -4,13 +4,6 @@ addopts = "--cov=core --cov=jhe"
 markers = [
     "smoke: live deployment smoke tests (require --smoke-url)",
 ]
-filterwarnings = [
-    # The naive default in 0001_initial (last_updated, default='2024-09-23') makes Django warn
-    # when it builds the test DB column. It is a migration-only artifact, not app data; permanent
-    # fix tracked as a follow-up (issue #560). Scoped to that exact message so real naive-datetime
-    # warnings still surface.
-    'ignore:DateTimeField Patient\.last_updated received a naive datetime:RuntimeWarning',
-]
 
 [tool.ruff]
 line-length = 120

@@ -260,7 +260,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='patient',
             name='last_updated',
-            field=models.DateTimeField(default='2024-09-23'),
+            field=models.DateTimeField(default=django.utils.timezone.make_aware(datetime.datetime(2024, 9, 23))),
             preserve_default=False,
         ),
         migrations.AlterField(
