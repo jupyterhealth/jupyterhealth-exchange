@@ -1,0 +1,134 @@
+name: OW contract test
+
+# Consumer-driven contract test. JHE polls Open Wearables (OW) for heart-rate
+# data and converts it with omh-shim, so an upstream OW change can silently
+# break JHE ingest. This boots a CANDIDATE OW, seeds one heart-rate sample,
+# calls GET /timeseries, and runs the real omh-shim convert() JHE relies on.
+#
+# Reusable: the OW fork's sync PR calls this via `uses:` and passes the PR head
+# ref, so the result lands as a check on that PR (the manual approval gate).
+on:
+  workflow_call:
+    inputs:
+      ow_repo:
+        description: "Open Wearables repo to test"
+        required: false
+        default: "the-commons-project/open-wearables"
+        type: string
+      ow_ref:
+        description: "OW git ref (branch/sha) to boot and test"
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      ow_repo:
+        description: "Open Wearables repo to test"
+        required: false
+        default: "the-commons-project/open-wearables"
+        type: string
+      ow_ref:
+        description: "OW git ref (branch/sha) to boot and test"
+        required: false
+        default: "main"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: "OW -> JHE heart-rate contract"
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # OW boot config. MASTER_KEY is intentionally unset (OW falls back to a
+      # no-op FakeFernet); the read path never decrypts. SECRET_KEY is required.
+      ENVIRONMENT: local
+      SECRET_KEY: ci-contract-test-secret
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: ow_test
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      API_PORT: 8000
+      OW_URL: http://localhost:8000
+      # Must match the omh-shim pin in JHE's Pipfile.
+      OMH_SHIM_VERSION: "1.0.2"
+    steps:
+      - name: Checkout JHE (contract harness)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Checkout candidate OW
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: ${{ inputs.ow_repo }}
+          ref: ${{ inputs.ow_ref }}
+          path: ow
+          persist-credentials: false
+
+      - name: Set up Python for the contract harness
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: "3.11"
+
+      - name: Install uv (to build/run OW)
+        run: pip install uv
+
+      - name: Install OW dependencies
+        working-directory: ow/backend
+        run: uv sync
+
+      - name: Migrate + seed OW series types
+        working-directory: ow/backend
+        run: |
+          set -euo pipefail
+          uv run alembic upgrade head
+          uv run python scripts/init/seed_series_types.py
+          # Non-critical for the heart-rate read path; best-effort.
+          uv run python scripts/init_provider_settings.py || echo "provider settings init skipped"
+          uv run python scripts/init_device_priorities.py || echo "device priorities init skipped"
+
+      - name: Boot OW backend
+        working-directory: ow/backend
+        run: |
+          set -euo pipefail
+          uv run fastapi run app/main.py --host 0.0.0.0 --port "${API_PORT}" &
+          echo "Waiting for OW root endpoint to respond..."
+          curl -sf --retry 30 --retry-delay 2 --retry-all-errors \
+            "${OW_URL}/" > /dev/null
+          echo "OW is up."
+
+      - name: Seed one heart-rate sample + API key
+        working-directory: ow/backend
+        run: |
+          set -euo pipefail
+          uv run python "${GITHUB_WORKSPACE}/tests/contract/seed_ow.py" | tee /tmp/seed.out
+          grep -E '^OW_(USER_ID|API_KEY)=' /tmp/seed.out >> "${GITHUB_ENV}"
+
+      - name: Install contract harness dependencies
+        run: pip install "omh-shim==${OMH_SHIM_VERSION}" requests pytest
+
+      - name: Run OW->JHE contract test
+        run: |
+          python -m pytest tests/contract/test_ow_contract.py \
+            -v \
+            --tb=short \
+            --no-header \
+            -p no:cacheprovider \
+            --override-ini="addopts=" \
+            --override-ini="DJANGO_SETTINGS_MODULE="
