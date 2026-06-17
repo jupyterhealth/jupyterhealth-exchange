@@ -102,7 +102,7 @@ class DataSourceAdmin(admin.ModelAdmin):
 
 @admin.register(Observation)
 class ObservationAdmin(admin.ModelAdmin):
-    list_display = ("id", "patient_name", "scope", "source_name", "status", "ow_key_short", "last_updated")
+    list_display = ("id", "patient_name", "user_id", "scope", "source_name", "status", "ow_key_short", "last_updated")
     search_fields = ("ow_key", "subject_patient__name_family", "subject_patient__name_given")
     list_filter = ("status", "codeable_concept", "data_source")
     raw_id_fields = ("subject_patient", "codeable_concept", "data_source")
@@ -111,6 +111,11 @@ class ObservationAdmin(admin.ModelAdmin):
     def patient_name(self, obj):
         p = obj.subject_patient
         return f"{p.name_family}, {p.name_given}"
+
+    @admin.display(description="User ID")
+    def user_id(self, obj):
+        # The patient's JHE-generated account id (jheUserId), distinct from the Patient record id.
+        return obj.subject_patient.jhe_user_id
 
     @admin.display(description="Scope")
     def scope(self, obj):

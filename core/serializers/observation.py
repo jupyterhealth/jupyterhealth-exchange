@@ -11,6 +11,7 @@ from core.models import Observation
 class ObservationSerializer(serializers.ModelSerializer):
     patient_name_family = serializers.CharField()
     patient_name_given = serializers.CharField()
+    jhe_user_id = serializers.IntegerField()
     coding_system = serializers.CharField()
     coding_code = serializers.CharField()
     coding_text = serializers.CharField()
@@ -22,6 +23,7 @@ class ObservationSerializer(serializers.ModelSerializer):
             "subject_patient_id",
             "patient_name_family",
             "patient_name_given",
+            "jhe_user_id",
             "codeable_concept_id",
             "coding_system",
             "coding_code",

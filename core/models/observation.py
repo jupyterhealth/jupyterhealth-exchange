@@ -107,6 +107,7 @@ class Observation(models.Model):
                 coding_text=F("codeable_concept__text"),
                 patient_name_family=F("subject_patient__name_family"),
                 patient_name_given=F("subject_patient__name_given"),
+                jhe_user_id=F("subject_patient__jhe_user_id"),
             )
             .distinct()
             .order_by("-last_updated")

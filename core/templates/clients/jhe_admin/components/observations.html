@@ -68,6 +68,7 @@
         <th scope="col">ID</th>
         <th scope="col">Scope</th>
         <th scope="col">Patient</th>
+        <th scope="col">User ID</th>
         <th scope="col">Transaction Time</th>
         <th scope="col">Data</th>
       </tr>
@@ -80,11 +81,17 @@
           <td>{{id}}</td>
           <td>{{codingText}}</td>
           <td>{{patientNameFamily}}, {{patientNameGiven}}</td>
+          <td>{{jheUserId}}</td>
           <td>{{lastUpdated}}</td>
           <td><pre>{{omhData}}</pre></td>
         </tr>
       {{/observations}}
     </tbody>
   </table>
+  <div class="form-text">
+    <strong>ID</strong> is the JHE-generated Patient record id.
+    <strong>User ID</strong> is the JHE-generated account id (jheUserId) for the patient's login.
+    A patient's External ID, set by whoever created the patient, is shown on the Patient record.
+  </div>
 </script>
 {% endverbatim %}
