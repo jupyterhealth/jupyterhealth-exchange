@@ -4,6 +4,7 @@ import logging
 
 from django.conf import settings
 from django.core.exceptions import BadRequest, PermissionDenied
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import models
 from django.db.models import F, Q
 from django.db.utils import IntegrityError
@@ -323,8 +324,11 @@ class Observation(models.Model):
                 ).read_text()
             )
             validate_with_registry(instance=omh_data.get("body"), schema=body_schema)
-        except Exception as error:
-            raise error
+        except ValidationError as error:
+            # Re-raise OMH schema failures as a Django ValidationError keyed to omh_data so the
+            # admin renders an inline field error instead of a 500 (issue #527). The API path
+            # (save -> clean) still raises here; the FHIR view maps it to a 422.
+            raise DjangoValidationError({"omh_data": error.message}) from error
 
     def save(self, *args, **kwargs):
         self.clean()
