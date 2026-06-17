@@ -85,7 +85,12 @@ class StudyViewSet(ModelViewSet):
                 else:
                     responses.append(StudyPatient.objects.filter(study_id=pk, patient_id=patient_id).delete())
 
-            return Response({"study_patients": StudyPatientSerializer(responses, many=True).data})
+            if request.method == "POST":
+                return Response(
+                    {"study_patients": StudyPatientSerializer(responses, many=True).data},
+                    status=status.HTTP_201_CREATED,
+                )
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["GET", "POST", "DELETE"])
     def scope_requests(self, request, pk):
@@ -102,7 +107,9 @@ class StudyViewSet(ModelViewSet):
                     study_id=pk, scope_code_id=request.data["scope_code_id"]
                 ).delete()
 
-            return Response(StudyScopeRequestSerializer(response, many=False).data)
+            if request.method == "POST":
+                return Response(StudyScopeRequestSerializer(response, many=False).data, status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["GET", "POST", "DELETE"])
     def clients(self, request, pk):
@@ -122,7 +129,9 @@ class StudyViewSet(ModelViewSet):
                     study_id=pk, client_id=request.data.get("client_id") or request.data.get("clientId")
                 ).delete()
 
-            return Response(status=status.HTTP_200_OK)
+            if request.method == "POST":
+                return Response(status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["GET", "POST", "DELETE"])
     def data_sources(self, request, pk):
@@ -137,4 +146,6 @@ class StudyViewSet(ModelViewSet):
             else:
                 StudyDataSource.objects.filter(study_id=pk, data_source_id=request.data["data_source_id"]).delete()
 
-            return Response(status=status.HTTP_200_OK)
+            if request.method == "POST":
+                return Response(status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_204_NO_CONTENT)

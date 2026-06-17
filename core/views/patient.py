@@ -150,7 +150,7 @@ class PatientViewSet(ModelViewSet):
             )
 
         serializer = PatientSerializer(patient)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
         return self._update_with_identifiers(request, partial=False, *args, **kwargs)
@@ -199,7 +199,7 @@ class PatientViewSet(ModelViewSet):
                     if not Practitioner.objects.filter(jhe_user_id=user.id).exists():
                         user.delete()
 
-            return Response({"success": True})
+            return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({"detail": "organizationId required"}, status=status.HTTP_400_BAD_REQUEST)
 
     # These global methods (no premission checks) are for adding an existing patient
@@ -388,6 +388,13 @@ class PatientViewSet(ModelViewSet):
             if request.method in ("PATCH", "DELETE"):
                 self._revoke_ow_connection_if_fully_unconsented(patient, request.data["study_scope_consents"])
 
+            if request.method == "POST":
+                return Response(
+                    {"study_scope_consents": StudyPatientScopeConsentSerializer(responses, many=True).data},
+                    status=status.HTTP_201_CREATED,
+                )
+            if request.method == "DELETE":
+                return Response(status=status.HTTP_204_NO_CONTENT)
             return Response({"study_scope_consents": StudyPatientScopeConsentSerializer(responses, many=True).data})
 
     def _revoke_ow_connection_if_fully_unconsented(self, patient, study_scope_consents):

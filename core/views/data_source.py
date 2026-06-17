@@ -1,5 +1,6 @@
 import logging
 
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -63,4 +64,8 @@ class DataSourceViewSet(ModelViewSet):
                     data_source_id=pk, scope_code_id=scope_code_id
                 ).delete()
 
-            return Response(DataSourceSupportedScopeSerializer(response, many=False).data)
+            if request.method == "POST":
+                return Response(
+                    DataSourceSupportedScopeSerializer(response, many=False).data, status=status.HTTP_201_CREATED
+                )
+            return Response(status=status.HTTP_204_NO_CONTENT)

@@ -46,7 +46,7 @@ def test_patient_practitioner_can_update_own_consents(hr_study):
         data=payload,
         format="json",
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     created = StudyPatientScopeConsent.objects.filter(
         study_patient__patient=patient_1,
         scope_code__coding_code=Code.HeartRate.value,
@@ -88,7 +88,7 @@ def test_consent_post_stores_timezone_aware_time(hr_study, recwarn):
         ]
     }
     response = client.post(f"/api/v1/patients/{patient.id}/consents", data=payload, format="json")
-    assert response.status_code == 200, response.text
+    assert response.status_code == 201, response.text
     naive = [w for w in recwarn.list if issubclass(w.category, RuntimeWarning) and "naive datetime" in str(w.message)]
     assert not naive, [str(w.message) for w in naive]
 
@@ -140,7 +140,7 @@ def test_create_delete(api_client, organization):
         },
         format="json",
     )
-    assert r.status_code == 200, r.text
+    assert r.status_code == 201, r.text
     patient_info = r.json()
     assert "id" in patient_info
     assert patient_info["telecomEmail"] == email
@@ -151,8 +151,7 @@ def test_create_delete(api_client, organization):
     assert r.json() == patient_info
 
     r = api_client.delete(f"/api/v1/patients/{patient_info['id']}?organization_id={organization.id}")
-    assert r.status_code == 200, r.text
-    assert r.json()["success"]
+    assert r.status_code == 204, r.text
 
 
 def test_create_missing_email(api_client, organization):
@@ -215,7 +214,7 @@ def test_create_duplicate_identifier(api_client, organization):
         },
         format="json",
     )
-    assert r.status_code == 200, r.text
+    assert r.status_code == 201, r.text
 
     r = api_client.post(
         "/api/v1/patients",
@@ -335,7 +334,7 @@ def test_create_with_identifiers(api_client, organization):
         },
         format="json",
     )
-    assert r.status_code == 200, r.text
+    assert r.status_code == 201, r.text
     data = r.json()
     assert len(data["identifiers"]) == 2
     systems = {i["system"] for i in data["identifiers"]}
@@ -361,7 +360,7 @@ def test_global_add_organization_duplicate(api_client, organization):
         },
         format="json",
     )
-    assert r.status_code == 200, r.text
+    assert r.status_code == 201, r.text
     patient_id = r.json()["id"]
 
     r = api_client.patch(f"/api/v1/patients/{patient_id}/global_add_organization?organization_id={organization.id}")
@@ -382,7 +381,7 @@ def test_update_replaces_identifiers(api_client, organization):
         },
         format="json",
     )
-    assert r.status_code == 200, r.text
+    assert r.status_code == 201, r.text
     patient_id = r.json()["id"]
 
     r = api_client.patch(

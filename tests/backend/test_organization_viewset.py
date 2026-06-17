@@ -108,7 +108,7 @@ def test_add_remove_organization_users(api_client, user, organization):
             "organization_partitioner_role": "viewer",
         },
     )
-    assert r.status_code == 200, r.text
+    assert r.status_code == 201, r.text
     response = r.json()
     assert response["role"] == "viewer"
     assert response["practitioner"]["id"] == user2.practitioner.id
@@ -190,7 +190,7 @@ def test_manager_of_sub_org_can_add_user(organization):
             "organization_partitioner_role": "viewer",
         },
     )
-    assert r.status_code == 200, r.text
+    assert r.status_code == 201, r.text
     assert r.json()["role"] == "viewer"
 
 

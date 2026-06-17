@@ -81,14 +81,14 @@ def test_add_remove_study_patients(api_client, organization, hr_study):
     patients = add_patients(5, organization)
     patients_url = f"/api/v1/studies/{hr_study.id}/patients"
     r = api_client.post(patients_url, {"patient_ids": [patient.id for patient in patients]})
-    assert r.status_code == 200
+    assert r.status_code == 201
     # TODO: check study_patients response
 
     study_patients = StudyPatient.objects.filter(study=hr_study)
     assert study_patients.count() == 5 + seed_count
 
     r = api_client.delete(patients_url, {"patient_ids": [patient.id for patient in patients]})
-    assert r.status_code == 200
+    assert r.status_code == 204
 
     study_patients = StudyPatient.objects.filter(study=hr_study)
     assert study_patients.count() == seed_count
@@ -119,7 +119,7 @@ def test_add_remove_scope_requests(api_client, hr_study):
     )
     url = f"/api/v1/studies/{hr_study.id}/scope_requests"
     r = api_client.post(url, {"scope_code_id": bp.id})
-    assert r.status_code == 200, r.text
+    assert r.status_code == 201, r.text
     r = api_client.get(url)
     assert r.status_code == 200, r.text
     scope_codes = r.json()
@@ -130,7 +130,7 @@ def test_add_remove_scope_requests(api_client, hr_study):
 
     url = f"/api/v1/studies/{hr_study.id}/scope_requests"
     r = api_client.delete(url, {"scope_code_id": bp.id})
-    assert r.status_code == 200, r.text
+    assert r.status_code == 204, r.text
     assert StudyScopeRequest.objects.filter(study=hr_study, scope_code=bp).count() == 0
 
 
@@ -149,7 +149,7 @@ def test_add_remove_study_clients(api_client, user, hr_study):
     )
     url = f"/api/v1/studies/{hr_study.id}/clients"
     r = api_client.post(url, {"client_id": client_app.id})
-    assert r.status_code == 200, r.text
+    assert r.status_code == 201, r.text
 
     r = api_client.get(url)
     assert r.status_code == 200, r.text
@@ -159,7 +159,7 @@ def test_add_remove_study_clients(api_client, user, hr_study):
     assert StudyClient.objects.filter(study=hr_study, client=client_app).count() == 1
 
     r = api_client.delete(url, {"client_id": client_app.id})
-    assert r.status_code == 200, r.text
+    assert r.status_code == 204, r.text
     assert StudyClient.objects.filter(study=hr_study, client=client_app).count() == 0
     assert api_client.get(url).json() == []
 
@@ -173,7 +173,7 @@ def test_get_study_data_sources(api_client, hr_study):
 def test_add_remove_study_data_sources(api_client, device, hr_study):
     url = f"/api/v1/studies/{hr_study.id}/data_sources"
     r = api_client.post(url, {"data_source_id": device.id})
-    assert r.status_code == 200, r.text
+    assert r.status_code == 201, r.text
 
     r = api_client.get(url)
     assert r.status_code == 200, r.text
@@ -183,6 +183,6 @@ def test_add_remove_study_data_sources(api_client, device, hr_study):
     assert StudyDataSource.objects.filter(study=hr_study, data_source=device).count() == 1
 
     r = api_client.delete(url, {"data_source_id": device.id})
-    assert r.status_code == 200, r.text
+    assert r.status_code == 204, r.text
     assert StudyDataSource.objects.filter(study=hr_study, data_source=device).count() == 0
     assert api_client.get(url).json() == []

@@ -29,7 +29,7 @@ def test_delete_practitioner_removes_orphan_user(superuser):
 
     r = api_client.delete(f"/api/v1/practitioners/{practitioner.id}")
 
-    assert r.status_code in (200, 204), r.text
+    assert r.status_code == 204, r.text
     assert not Practitioner.objects.filter(id=practitioner.id).exists()
     assert not JheUser.objects.filter(email="orphan-prac@example.org").exists()
     # email is now reusable
@@ -43,7 +43,7 @@ def test_delete_practitioner_preserves_superuser(superuser):
 
     r = api_client.delete(f"/api/v1/practitioners/{practitioner.id}")
 
-    assert r.status_code in (200, 204), r.text
+    assert r.status_code == 204, r.text
     assert not Practitioner.objects.filter(id=practitioner.id).exists()
     # superuser login is preserved
     assert JheUser.objects.filter(email="admin-prac@example.org").exists()
@@ -56,7 +56,7 @@ def test_delete_practitioner_preserves_user_with_patient_profile(superuser):
 
     r = api_client.delete(f"/api/v1/practitioners/{practitioner.id}")
 
-    assert r.status_code in (200, 204), r.text
+    assert r.status_code == 204, r.text
     assert not Practitioner.objects.filter(id=practitioner.id).exists()
     # user kept because a Patient profile still references it
     assert JheUser.objects.filter(email="dual-role@example.org").exists()
@@ -113,7 +113,7 @@ def test_create_delete(superuser, organization):
         },
         format="json",
     )
-    assert r.status_code == 200, r.text
+    assert r.status_code == 201, r.text
     info = r.json()
     assert "id" in info
     assert info["telecomEmail"] == email
@@ -124,8 +124,7 @@ def test_create_delete(superuser, organization):
     assert r.json() == info
 
     r = api_client.delete(f"/api/v1/practitioners/{info['id']}?organization_id={organization.id}")
-    assert r.status_code == 200, r.text
-    assert r.json()["success"]
+    assert r.status_code == 204, r.text
 
 
 def test_create_invalid(superuser, organization):

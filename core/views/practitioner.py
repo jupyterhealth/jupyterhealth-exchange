@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import validate_email
 from django.db import transaction
 from django.utils.crypto import get_random_string
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -72,7 +73,7 @@ class PractitionerViewSet(ModelViewSet):
                 )
 
         serializer = PractitionerSerializer(practitioner)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, *args, **kwargs):
         practitioner = self.get_object()
@@ -85,4 +86,4 @@ class PractitionerViewSet(ModelViewSet):
         if user and not user.is_superuser and not Patient.objects.filter(jhe_user_id=user.id).exists():
             user.delete()
 
-        return Response({"success": True})
+        return Response(status=status.HTTP_204_NO_CONTENT)

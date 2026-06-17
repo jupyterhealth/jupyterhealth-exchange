@@ -108,13 +108,14 @@ class OrganizationViewSet(ModelViewSet):
         practitioner = jhe_user.practitioner
         if not practitioner:
             return Response({"error": "Practitioner not found"}, status=404)
-        relation, _ = PractitionerOrganization.objects.update_or_create(
+        relation, created = PractitionerOrganization.objects.update_or_create(
             organization_id=pk,
             practitioner=practitioner,
             defaults={"role": organization_partitioner_role},
         )
         serializer = PractitionerOrganizationSerializer(relation)
-        return Response(serializer.data)
+        code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(serializer.data, status=code)
 
     @action(
         detail=True,

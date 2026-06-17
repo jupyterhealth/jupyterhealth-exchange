@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
 from oauth2_provider.models import get_application_model
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import AllowAny
@@ -59,7 +60,7 @@ class PatientInvitationViewSet(ModelViewSet):
 
         data = PatientInvitationSerializer(invitation).data
         data["invitation_link"] = link
-        return Response(data)
+        return Response(data, status=status.HTTP_201_CREATED)
 
     # Token is used both for lookup and as PKCE code verifier
     @action(detail=False, methods=["POST"], url_path=r"(?P<token>[A-Za-z0-9]{32})")

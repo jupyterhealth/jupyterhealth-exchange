@@ -80,14 +80,14 @@ def test_supported_scopes(api_client, superuser, device):
     scopes = r.json()
     assert len(scopes) == 0
     r = api_client.post(scopes_url, {"scope_code_id": bp_code.id})
-    assert r.status_code == 200, r.text
+    assert r.status_code == 201, r.text
     r = api_client.get(scopes_url)
     assert r.status_code == 200, r.text
     scopes = r.json()
     assert len(scopes) == 1
     assert scopes[0]["scopeCode"]["codingCode"] == bp_code.coding_code
     r = api_client.delete(scopes_url, {"scope_code_id": bp_code.id})
-    assert r.status_code == 200, r.text
+    assert r.status_code == 204, r.text
     r = api_client.get(scopes_url)
     assert r.status_code == 200, r.text
     scopes = r.json()

@@ -102,4 +102,6 @@ class ClientViewSet(ModelViewSet):
                     client_id=pk, data_source_id=request.data["data_source_id"]
                 ).delete()
 
-            return Response(ClientDataSourceSerializer(response, many=False).data)
+            if request.method == "POST":
+                return Response(ClientDataSourceSerializer(response, many=False).data, status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_204_NO_CONTENT)
