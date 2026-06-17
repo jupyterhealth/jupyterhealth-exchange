@@ -118,6 +118,17 @@ def test_list_patients(api_client, organization):
     assert len(patients) == n
 
 
+def test_patient_list_ignores_unknown_query_params(api_client, organization):
+    # Unknown query params (e.g. ?email=) must be dropped, not forwarded to
+    # for_practitioner_organization_study where they 500 with an unexpected-keyword
+    # TypeError (issue #226). Supported filters still work.
+    add_patients(3, organization)
+    r = api_client.get("/api/v1/patients", {"email": "nobody@example.org", "bogus": "x"})
+    assert r.status_code == 200, r.text
+    r2 = api_client.get("/api/v1/patients", {"organization_id": organization.id})
+    assert r2.status_code == 200, r2.text
+
+
 def test_create_delete(api_client, organization):
     email = "testcreate-patient@example.com"
     r = api_client.post(
