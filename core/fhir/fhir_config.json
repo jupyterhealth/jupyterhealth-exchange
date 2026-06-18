@@ -153,6 +153,10 @@
       "resourceType": "CarePlan",
       "__interaction": [
         "*"
+      ],
+      "__refPaths": [
+        "subject.reference",
+        "encounter.reference"
       ]
     },
     {
@@ -165,6 +169,10 @@
       "resourceType": "Condition",
       "__interaction": [
         "*"
+      ],
+      "__refPaths": [
+        "subject.reference",
+        "encounter.reference"
       ]
     },
     {
@@ -183,6 +191,10 @@
       "resourceType": "DiagnosticReport",
       "__interaction": [
         "*"
+      ],
+      "__refPaths": [
+        "subject.reference",
+        "encounter.reference"
       ]
     },
     {
@@ -195,6 +207,9 @@
       "resourceType": "Encounter",
       "__interaction": [
         "*"
+      ],
+      "__refPaths": [
+        "subject.reference"
       ]
     },
     {
@@ -219,6 +234,10 @@
       "resourceType": "Immunization",
       "__interaction": [
         "*"
+      ],
+      "__refPaths": [
+        "patient.reference",
+        "encounter.reference"
       ]
     },
     {
@@ -243,12 +262,20 @@
       "resourceType": "MedicationRequest",
       "__interaction": [
         "*"
+      ],
+      "__refPaths": [
+        "subject.reference",
+        "encounter.reference"
       ]
     },
     {
       "resourceType": "Observation",
       "__interaction": [
         "*"
+      ],
+      "__refPaths": [
+        "subject.reference",
+        "encounter.reference"
       ]
     },
     {
@@ -279,6 +306,10 @@
       "resourceType": "Procedure",
       "__interaction": [
         "*"
+      ],
+      "__refPaths": [
+        "subject.reference",
+        "encounter.reference"
       ]
     },
     {

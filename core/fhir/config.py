@@ -96,6 +96,16 @@ def aux_interactions(resource_type):
     return expand_interactions(_AUX_RESOURCES.get(resource_type, {}).get("__interaction"))
 
 
+def ref_paths_for(resource_type):
+    """The reference paths declared for an auxiliary resource type (issue #584).
+
+    Each is a dotted path into the FHIR body ending at a ``reference`` string (e.g.
+    ``"subject.reference"``) that the index-refs pass rewrites from an upstream id to a JHE id.
+    Returns an empty list when none are declared.
+    """
+    return _AUX_RESOURCES.get(resource_type, {}).get("__refPaths", [])
+
+
 def mapped_criteria(resource_type):
     """The ``__criteria`` predicate declared for a mapped resource, or ``None``."""
     return get_mapping_criteria(_MAPPED_RESOURCES.get(resource_type, {}))

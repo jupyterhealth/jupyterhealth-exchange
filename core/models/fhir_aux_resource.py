@@ -61,6 +61,9 @@ class FhirAuxResource(models.Model):
     patient_fhir_id = models.CharField(null=True, blank=True)
     fhir_resource_id = models.CharField(null=True, blank=True)
     fhir_data = models.JSONField(null=True)
+    # False after any write; the index-refs pass (issue #584) rewrites this row's references
+    # from upstream ids to JHE ids and flips it True so it is not re-processed.
+    ref_indexed = models.BooleanField(default=False)
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:

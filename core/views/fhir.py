@@ -356,8 +356,18 @@ def _persist_aux(instance, resource_type, body, fhir_source):
     instance.resource_type = resource_type
     instance.fhir_source = fhir_source
     instance.patient_fhir_id = _derive_patient_fhir_id(resource_type, body)
-    instance.fhir_resource_id = body.get("id")
+    # Preserve the upstream id, then expose the JHE UUID as the body's own id so the stored body
+    # matches its JHE-facing id (issue #584). The pk exists pre-save (UUID default at init).
+    # On update the incoming id is already this row's JHE UUID (written on create, or merged from
+    # the stored body on a PATCH), so only capture it as the upstream id when it differs from the
+    # pk -- otherwise an update would clobber the real upstream id with our own UUID.
+    incoming_id = body.get("id")
+    if incoming_id and incoming_id != str(instance.pk):
+        instance.fhir_resource_id = incoming_id
+    body["id"] = str(instance.pk)
     instance.fhir_data = body
+    # Any write invalidates prior ref indexing; the index-refs pass re-processes this row.
+    instance.ref_indexed = False
     instance.save()
     return instance
 
