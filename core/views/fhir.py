@@ -24,7 +24,10 @@ import uuid
 
 from django.core.exceptions import BadRequest as DjangoBadRequest
 from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.utils import IntegrityError
+from django.utils import timezone
+from django.utils.dateparse import parse_date, parse_datetime
 from rest_framework import status as http_status
 from rest_framework.exceptions import APIException, MethodNotAllowed, NotFound
 from rest_framework.exceptions import PermissionDenied as DRFPermissionDenied
@@ -96,6 +99,53 @@ def _canonical_search_kwargs(request):
         kwargs["coding_system"] = system
         kwargs["coding_code"] = value
     return kwargs
+
+
+# US Core date-comparator prefixes -> Django ORM lookups (issue #585).
+_DATE_COMPARATORS = {"ge": "gte", "le": "lte", "gt": "gt", "lt": "lt"}
+
+
+def _last_updated_values(request):
+    # The camel-case parser may snake-case the query key, so accept both spellings.
+    return request.GET.getlist("_lastUpdated") + request.GET.getlist("_last_updated")
+
+
+def apply_common_search_filters(queryset, request):
+    """Apply the resource-agnostic US Core search params ``_id`` and ``_lastUpdated`` (issue #585).
+
+    Works on any search queryset: every mapped model and FhirAuxResource exposes ``id`` and
+    ``last_updated``. ``_id`` is an exact match (an id of the wrong shape for this store yields no
+    rows, so a UUID id matches only the aux source and an integer id only the mapped source).
+    ``_lastUpdated`` supports the ``ge``/``le``/``gt``/``lt`` comparators, or a bare date meaning
+    that whole calendar day; repeated ``_lastUpdated`` params AND together to express a range.
+    """
+    resource_id = request.GET.get("_id")
+    if resource_id:
+        try:
+            queryset.model._meta.pk.to_python(resource_id)
+        except (ValueError, TypeError, DjangoValidationError):
+            return queryset.none()
+        queryset = queryset.filter(pk=resource_id)
+
+    for raw in _last_updated_values(request):
+        comparator = _DATE_COMPARATORS.get(raw[:2])
+        value = raw[2:] if comparator else raw
+        dt = parse_datetime(value)
+        if dt is not None:
+            # A datetime value: compare against the instant (made aware to avoid naive warnings).
+            if timezone.is_naive(dt):
+                dt = timezone.make_aware(dt)
+            lookup = f"last_updated__{comparator}" if comparator else "last_updated__date"
+            queryset = queryset.filter(**{lookup: (dt if comparator else dt.date())})
+            continue
+        day = parse_date(value)
+        if day is None:
+            raise DRFValidationError(f"Invalid _lastUpdated value: '{raw}'.")
+        # A date-only value: compare the date part (day-granular, matches FHIR date precision
+        # and sidesteps naive-datetime warnings on the DateTimeField).
+        lookup = f"last_updated__date__{comparator}" if comparator else "last_updated__date"
+        queryset = queryset.filter(**{lookup: day})
+    return queryset
 
 
 class MappedResourceHandler:
@@ -459,12 +509,12 @@ class FHIRResourceView(APIView):
         sources = []
         if is_mapped_resource(resource) and "search" in mapped_interactions(resource):
             handler = self._mapped_handler(resource)
-            sources.append((handler.search(), handler.serialize))
+            sources.append((apply_common_search_filters(handler.search(), self.request), handler.serialize))
         if is_aux_resource(resource) and "search" in aux_interactions(resource):
             # Reads don't require the source header: the aux handler scopes to the source's
             # patient when it is present, else to everything the user can access.
             handler = self._aux_handler(resource)
-            sources.append((handler.search(), handler.serialize))
+            sources.append((apply_common_search_filters(handler.search(), self.request), handler.serialize))
 
         paginator = FHIRBundlePagination()
         page = paginator.paginate_queryset(ConcatenatedResults(sources), self.request, view=self)
