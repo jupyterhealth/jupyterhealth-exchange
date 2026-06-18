@@ -2333,6 +2333,22 @@ async function deletePractitionerClient(id) {
   if (await apiRequest("DELETE", `practitioner_clients/${id}`)) await navReturnFromCrud();
 }
 
+// Reveal / copy the current dashboard session access token (the OIDC Bearer used for manual
+// API calls, e.g. JupyterHealth Client). Previously only reachable via the superuser Debug
+// page's "Get User" (issue #245).
+async function showDashboardAccessToken() {
+  const user = await userManager.getUser();
+  document.getElementById("dashboardAccessToken").textContent =
+    user?.access_token || "No active session token - please log in again.";
+}
+
+async function copyDashboardAccessToken(btn) {
+  const user = await userManager.getUser();
+  if (!user?.access_token) return showDashboardAccessToken();
+  await navigator.clipboard.writeText(user.access_token);
+  btn.disabled = true;
+}
+
 // Exchange the API key (base64 of client_id:client_secret, used as-is for HTTP Basic auth)
 // for an access token via the client-credentials grant, and echo the full request/response
 // into #testPractitonerApiKeyOutput so the practitioner can see a working example.

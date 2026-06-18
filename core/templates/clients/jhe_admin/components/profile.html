@@ -27,6 +27,26 @@
     </tbody>
   </table>
 
+  <h5 class="mt-5">Dashboard Access Token</h5>
+  <p class="text-muted small mb-2">
+    A short-lived OAuth access token for this dashboard session. Use it to call the API manually
+    (for example from JupyterHealth Client) when not launched via JupyterHub. It expires when the
+    session ends; for long-lived programmatic access, create an API Key below.
+  </p>
+  <div class="d-flex align-items-center gap-2 mb-2">
+    <code id="dashboardAccessToken" class="p-2 bg-light rounded text-break flex-grow-1">Click Show to reveal your access token</code>
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-secondary"
+      onclick="showDashboardAccessToken()"
+    >Show</button>
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-primary"
+      onclick="copyDashboardAccessToken(this)"
+    ><i class="bi bi-clipboard"></i></button>
+  </div>
+
   <h5 class="mt-5">Admin API Access</h5>
   <table class="table table-striped">
     <thead>
