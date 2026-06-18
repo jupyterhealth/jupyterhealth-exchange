@@ -6,7 +6,9 @@ re-render the admin form with an inline error on the omh_data field, not raise a
 import json
 
 import pytest
+from django.contrib import admin
 from django.contrib.auth import get_user_model
+from django.test import RequestFactory
 from django.urls import reverse
 
 from core.models import CodeableConcept, Observation
@@ -53,3 +55,11 @@ def test_admin_add_invalid_omh_data_renders_field_error_not_500(admin_client, pa
     assert r.status_code == 200
     assert Observation.objects.count() == 0
     assert "omh_data" in r.context["adminform"].form.errors
+
+
+def test_admin_observation_data_source_is_optional(db):
+    # Issue #603: data_source is nullable in the DB and usually left null, so the admin
+    # Add/Change form must not mark it required.
+    request = RequestFactory().get(reverse("admin:core_observation_add"))
+    form_class = admin.site._registry[Observation].get_form(request)
+    assert form_class.base_fields["data_source"].required is False

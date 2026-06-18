@@ -29,7 +29,7 @@ class Observation(models.Model):
     # The Django Observation model holds OMH observations only (code system
     # https://w3id.org/openmhealth). Any other FHIR Observation is stored in FhirAuxResource.
     codeable_concept = models.ForeignKey("CodeableConcept", on_delete=models.PROTECT, null=True)
-    data_source = models.ForeignKey("DataSource", on_delete=models.SET_NULL, null=True)
+    data_source = models.ForeignKey("DataSource", on_delete=models.SET_NULL, null=True, blank=True)
     omh_data = models.JSONField(null=True)
     last_updated = models.DateTimeField(auto_now=True)
     ow_key = models.TextField(null=True, blank=True, db_index=True)
