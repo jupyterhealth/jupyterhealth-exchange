@@ -210,7 +210,12 @@ def test_observation_read_by_id(api_client, patient, hr_study):
     body = r.json()
     assert body["resourceType"] == "Observation"
     assert body["id"] == str(obs.id)
-    assert body["subject"] == {"reference": f"Patient/{patient.id}"}
+    assert body["subject"]["reference"] == f"Patient/{patient.id}"
+    # subject.identifier carries the patient's jheUserId, distinct from the record id (issue #602)
+    assert body["subject"]["identifier"] == {
+        "system": "https://jupyterhealth.org/fhir/identifier/jhe-user-id",
+        "value": str(patient.jhe_user_id),
+    }
 
 
 def test_observation_read_by_id_not_found(api_client, patient, hr_study):

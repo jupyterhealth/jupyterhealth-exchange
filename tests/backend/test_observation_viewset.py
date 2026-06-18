@@ -147,7 +147,8 @@ def test_observation_upload_bundle(api_client, device, hr_study, patient, get_ob
     resource_out = results[0]["resource"]
     resource_in = entries[0]["resource"]
 
-    assert resource_in["subject"] == resource_out["subject"]
+    # subject.reference round-trips; the output also carries subject.identifier (jheUserId, issue #602)
+    assert resource_out["subject"]["reference"] == resource_in["subject"]["reference"]
     value_attachment_in = json.loads(base64.b64decode(resource_in["valueAttachment"]["data"]).decode())
     value_attachment_out = json.loads(base64.b64decode(resource_out["valueAttachment"]["data"]).decode())
     assert value_attachment_out["body"] == value_attachment_in["body"]
@@ -214,7 +215,8 @@ def test_observation_upload(api_client, device, hr_study, patient, get_observati
     resource_out = results[0]["resource"]
     resource_in = resource
 
-    assert resource_in["subject"] == resource_out["subject"]
+    # subject.reference round-trips; the output also carries subject.identifier (jheUserId, issue #602)
+    assert resource_out["subject"]["reference"] == resource_in["subject"]["reference"]
     value_attachment_in = json.loads(base64.b64decode(resource_in["valueAttachment"]["data"]).decode())
     value_attachment_out = json.loads(base64.b64decode(resource_out["valueAttachment"]["data"]).decode())
     assert value_attachment_out["body"] == value_attachment_in["body"]

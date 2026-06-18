@@ -57,6 +57,11 @@ class FHIRObservationSerializer(serializers.Serializer):
         attachment = as_dict.get("valueAttachment")
         if attachment and isinstance(attachment.get("data"), (dict, list)):
             attachment["data"] = base64.b64encode(json.dumps(attachment["data"]).encode("utf-8")).decode("ascii")
+        # subject.identifier carries the patient's jheUserId (issue #602). The mapping yields the
+        # raw integer id; FHIR Identifier.value is a string, so coerce it here.
+        identifier = (as_dict.get("subject") or {}).get("identifier")
+        if identifier and "value" in identifier:
+            identifier["value"] = str(identifier["value"])
         return as_dict
 
 

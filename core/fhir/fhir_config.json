@@ -58,7 +58,11 @@
         "coding": "Observation.codeable_concepts"
       },
       "subject": {
-        "reference": "'Patient/' + Observation.subject_patient"
+        "reference": "'Patient/' + Observation.subject_patient",
+        "identifier": {
+          "system": "'https://jupyterhealth.org/fhir/identifier/jhe-user-id'",
+          "value": "Observation.subject_patient.jhe_user_id"
+        }
       },
       "valueAttachment": {
         "contentType": "'application/json'",
