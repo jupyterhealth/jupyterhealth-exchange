@@ -128,10 +128,13 @@ Entities are based on the [HL7 FHIR model](https://build.fhir.org/), a widely us
 
 ### Clients
 
-- Clients are apps that talk to JupyterHealth Exchange.
-- Each Client has its own OAuth 2.0 Client ID.
-- A Study has one or more associated Clients.
+- Clients are apps that talk to JupyterHealth Exchange. Each Client is an OAuth 2.0 application with its own Client ID.
+- A Study supports **more than one** Client, so several apps can submit and read data for the same Study (multi-client support). Manage a Study's Clients under View Study → Clients.
+- There are two kinds of Client:
+  - **Patient apps** (OAuth authorization-code grant): managed by an admin under the Clients menu. Each has an invitation URL used to onboard Patients and one or more associated Data Sources.
+  - **Practitioner API clients** (OAuth client-credentials grant): created self-service by a Practitioner for direct API access, scoped to that Practitioner.
 - A Client has one or more associated Data Sources. In some cases a single app may be both a Data Source and a Client, in which case a record is created for each and both are added to the Study.
+- A Patient's Clients are consolidated across every Study they are enrolled in, so an app can discover all the Studies and invitations relevant to that Patient.
 
 ## Quick Start Walkthrough
 
