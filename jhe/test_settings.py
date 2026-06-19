@@ -14,3 +14,7 @@ DATABASES = {
 }
 
 TEST_RUNNER = "django.test.runner.DiscoverRunner"
+
+# Fast password hashing for tests: speeds up every test that creates a user and sidesteps a
+# flaky native pbkdf2 access-violation crash seen on Windows. Never use MD5 in production.
+PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
