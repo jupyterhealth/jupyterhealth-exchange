@@ -127,6 +127,47 @@ def test_create_delete(superuser, organization):
     assert r.status_code == 204, r.text
 
 
+def test_update_practitioner_name(superuser):
+    # Issue #586: editing a practitioner's first/last name in jhe-admin (PATCH) must persist.
+    user, practitioner = _make_practitioner("update-prac@example.org")
+    practitioner.name_family = "Old"
+    practitioner.name_given = "Name"
+    practitioner.save()
+    api_client = _superuser_client(superuser)
+
+    r = api_client.patch(
+        f"/api/v1/practitioners/{practitioner.id}",
+        {"nameFamily": "New", "nameGiven": "Person"},
+        format="json",
+    )
+
+    assert r.status_code == 200, r.text
+    practitioner.refresh_from_db()
+    assert practitioner.name_family == "New"
+    assert practitioner.name_given == "Person"
+
+
+def test_update_practitioner_name_exact_frontend_request(superuser):
+    # Reproduce the EXACT jhe-admin request: it appends ?organizationId=undefined
+    # (no org selector on the Practitioners screen, so the JS value is the string "undefined").
+    user, practitioner = _make_practitioner("update-prac2@example.org")
+    practitioner.name_family = "Old"
+    practitioner.name_given = "Name"
+    practitioner.save()
+    api_client = _superuser_client(superuser)
+
+    r = api_client.patch(
+        f"/api/v1/practitioners/{practitioner.id}?organizationId=undefined",
+        {"nameFamily": "New", "nameGiven": "Person"},
+        format="json",
+    )
+
+    assert r.status_code == 200, r.text
+    practitioner.refresh_from_db()
+    assert practitioner.name_family == "New"
+    assert practitioner.name_given == "Person"
+
+
 def test_create_invalid(superuser, organization):
     # creating a practitioner with no email is rejected up front (no orphan user/practitioner)
     api_client = APIClient()
