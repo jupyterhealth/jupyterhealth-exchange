@@ -1,0 +1,75 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/sleep-episode.json",
+    "title": "Sleep Episode",
+    "type": "object",
+    "description": "This schema represents one sleep episode.",
+    "definitions": {
+        "percent_unit_value": {
+            "$ref": "percent-unit-value-1.0.json"
+        },
+        "duration_unit_value": {
+            "$ref": "duration-unit-value-1.0.json"
+        },
+        "time_frame": {
+            "$ref": "time-frame-1.0.json"
+        }
+    },
+    "properties": {
+        "latency_to_sleep_onset": {
+            "description": "Amount of time between when person starts to want to go to sleep and sleep onset.",
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "latency_to_arising": {
+            "description": "Amount of time between final awakening and when person stops wanting to go to sleep.",
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "total_sleep_time": {
+            "description": "The total amount of time spent asleep within the effective time frame.",
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "light_sleep_duration": {
+            "description": "The amount of total sleep time spent in light sleep.",
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "deep_sleep_duration": {
+            "description": "The amount of total sleep time spent in deep sleep.",
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "rem_sleep_duration": {
+            "description": "The amount of total sleep time spent in REM sleep.",
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "wake_after_sleep_onset": {
+            "description": "The total duration of all awakenings between sleep onset and final awakening.",
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "number_of_awakenings": {
+            "type": "integer"
+        },
+        "is_main_sleep": {
+            "description": "Whether the sleep episode is the main sleep event (i.e., a night sleep for most people) or a nap.",
+            "type": "boolean"
+        },
+        "effective_time_frame": {
+            "description": "The time interval during which the measurement is asserted as being valid. As a measure of a duration, total sleep time should not be associated to a date time time frame. Hence, effective time frame is restricted to be a time interval. The initial sleep onset time maps to start_date_time, the final awakening time maps to end_date_time and total sleep episode duration maps to duration.",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/time_frame"
+                },
+                {
+                    "required": [
+                        "time_interval"
+                    ]
+                }
+            ]
+        },
+        "sleep_efficiency_percentage": {
+            "description": "The amount of time spent asleep as a percentage of the sleep episode bounded by the effective time frame.",
+            "$ref": "#/definitions/percent_unit_value"
+        }
+    },
+    "required": [
+        "effective_time_frame"
+    ]
+}

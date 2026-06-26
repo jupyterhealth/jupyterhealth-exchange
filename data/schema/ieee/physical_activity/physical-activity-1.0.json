@@ -1,0 +1,204 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/physical-activity.json",
+    "title": "Physical Activity",
+    "description": "This schema represents episode(s) of physical activity.",
+    "type": "object",
+    "definitions": {
+        "length_unit_value": {
+            "$ref": "length-unit-value-1.0.json"
+        },
+        "unit_value": {
+            "$ref": "unit-value-1.0.json"
+        },
+        "duration_unit_value": {
+            "$ref": "duration-unit-value-1.0.json"
+        },
+        "kcal_unit_value": {
+            "$ref": "kcal-unit-value-1.0.json"
+        },
+        "speed_unit_value": {
+            "$ref": "speed-unit-value-1.0.json"
+        },
+        "time_frame": {
+            "$ref": "time-frame-1.0.json"
+        },
+        "descriptive_statistic": {
+            "$ref": "descriptive-statistic-1.0.json"
+        },
+        "descriptive_statistic_denominator": {
+            "$ref": "descriptive-statistic-denominator-1.0.json"
+        }
+    },
+    "properties": {
+        "activity_name": {
+            "description": "The name of the physical activity in which the person is engaged. This can be sedentary. It is recommended that the activity name be drawn from the latest CDC guidelines to facilitate mapping to standard energy expenditure values (METs) or other peer-reviewed source.",
+            "references": [
+                {
+                    "description": "CDC guidelines on standard energy expenditure values (METs)",
+                    "url": "https://www.cdc.gov/nccdphp/dnpa/physical/pdf/pa_intensity_table_2_1.pdf"
+                },
+                {
+                    "description": "2011 Compendium of Physical Activities",
+                    "url": "https://www.ncbi.nlm.nih.gov/pubmed/21681120"
+                },
+                {
+                    "description": "The Physical Activity Ontology",
+                    "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6658272/"
+                }
+            ],
+            "type": "string"
+        },
+        "base_movement_quantity": {
+            "description": "Number of repetitions of the activity base movement, if applicable (e.g., if activity is walking, base_movement_quantity would be the number of steps). If none of the units listed applies, the string alternative will allow validation of the unlisted unit.",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/unit_value"
+                },
+                {
+                    "properties": {
+                        "unit": {
+                            "anyOf": [
+                                {
+                                    "enum": [
+                                        "steps",
+                                        "laps",
+                                        "skips",
+                                        "movements",
+                                        "strokes"
+                                    ]
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "effective_time_frame": {
+            "description": "The date-time at which, or time interval during which the measurement is asserted as being valid. As a measure of a duration, physical activity should not be associated to a date-time time frame. Hence, effective time frame is restricted to be a time interval.",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/time_frame"
+                },
+                {
+                    "required": [
+                        "time_interval"
+                    ]
+                }
+            ]
+        },
+        "distance": {
+            "description": "The distance covered, if applicable.",
+            "$ref": "#/definitions/length_unit_value"
+        },
+        "cumulative_elevation_gain": {
+            "description": "The total ascent, if applicable.",
+            "$ref": "#/definitions/length_unit_value"
+        },
+        "duration": {
+            "description": "The net duration of the activity.",
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "duration_light_activity": {
+            "description": "The duration of light-intensity physical activity.",
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "duration_moderate_activity": {
+            "description": "The duration of moderate-intensity physical activity.",
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "duration_vigorous_activity": {
+            "description": "The duration of vigorous-intensity physical activity.",
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "average_cadence": {
+            "description": "The average rate at which the activity was performed, if applicable. If none of the units listed applies, the string alternative will allow validation of the unlisted unit.",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/unit_value"
+                },
+                {
+                    "properties": {
+                        "unit": {
+                            "anyOf": [
+                                {
+                                    "enum": [
+                                        "steps/min",
+                                        "strokes/min",
+                                        "skips/min",
+                                        "laps/min",
+                                        "movements/min",
+                                        "strokes/lap"
+                                    ]
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "average_speed": {
+            "description": "The average speed at which the activity was performed, if applicable.",
+            "$ref": "#/definitions/speed_unit_value"
+        },
+        "kcal_burned": {
+            "description": "The calories burned during the activity.",
+            "$ref": "#/definitions/kcal_unit_value"
+        },
+        "reported_activity_intensity": {
+            "description": "Self-reported intensity of the activity performed.",
+            "references": [
+                {
+                    "description": "WHO: What is Moderate-intensity and Vigorous-intensity Physical Activity?",
+                    "url": "https://www.who.int/dietphysicalactivity/physical_activity_intensity/en/"
+                },
+                {
+                    "description": "US Office of Disease Prevention and Health Promotion: Top 10 Things to Know About the Second Edition of the Physical Activity Guidelines for Americans",
+                    "url": "https://health.gov/paguidelines/second-edition/10things/"
+                }
+            ],
+            "type": "string",
+            "enum": [
+                "light",
+                "moderate",
+                "vigorous"
+            ]
+        },
+        "met_value": {
+            "description": "Average Metabolic Equivalent of Task value for the activity. MET is defined as 3.5 mL\u00b7kg^\u22121\u00b7min^\u22121, often characterized as the metabolic cost of resting quietly.",
+            "references": [
+                {
+                    "description": "2011 Compendium of Physical Activities: A Second Update of Codes and MET Values",
+                    "url": "https://journals.lww.com/acsm-msse/fulltext/2011/08000/2011_Compendium_of_Physical_Activities__A_Second.25.aspx"
+                }
+            ],
+            "type": "number"
+        },
+        "descriptive_statistic": {
+            "description": "The descriptive statistic of a set of measurements (e.g., average, maximum) within the specified time frame.",
+            "$ref": "#/definitions/descriptive_statistic"
+        },
+        "descriptive_statistic_denominator": {
+            "description": "The denominator of the descriptive statistic when the measure has an implicit duration (e.g., if activity is 'walking', the descriptive statistic is 'average' and the statistic denominator is 'd' the measure describes the average daily measure of walking during the period delimited by the effective time frame).",
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/descriptive_statistic_denominator"
+                },
+                {
+                    "description": "If none of the units listed applies, the string alternative will allow validation of the unlisted unit. If the value needed is a standard unit of duration, select from the duration-unit-value value set.",
+                    "type": "string"
+                }
+            ]
+        }
+    },
+    "required": [
+        "activity_name",
+        "effective_time_frame"
+    ]
+}

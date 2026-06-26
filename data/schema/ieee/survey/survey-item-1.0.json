@@ -1,0 +1,43 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/survey-item.json",
+    "title": "Survey Item",
+    "description": "This schema represents a survey item, i.e., the combination of a question and the list of its answers.",
+    "type": "object",
+    "definitions": {
+        "question": {
+            "$ref": "survey-question-1.0.json"
+        },
+        "answer": {
+            "$ref": "survey-answer-1.0.json"
+        },
+        "date_time": {
+            "$ref": "date-time-1.0.json"
+        }
+    },
+    "properties": {
+        "question": {
+            "description": "The question being asked.",
+            "$ref": "#/definitions/question"
+        },
+        "answers": {
+            "description": "A list of answers to the question. This list is empty if the question isn't answered, and may have multiple elements if more than one answer is provided.",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/answer"
+            }
+        },
+        "asked_date_time": {
+            "description": "The date time at which this item was presented to the participant.",
+            "$ref": "#/definitions/date_time"
+        },
+        "answered_date_time": {
+            "description": "The date time at which the answer was provided. If multiple answers are provided, the suggestion is to use the last answer's date time.",
+            "$ref": "#/definitions/date_time"
+        }
+    },
+    "required": [
+        "question",
+        "answers"
+    ]
+}

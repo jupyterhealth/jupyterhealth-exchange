@@ -2,6 +2,7 @@
 import json
 import random
 from datetime import timedelta
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -26,27 +27,46 @@ class NoNetwork:
         raise RuntimeError(f"Remote $ref blocked (not preloaded): {uri}")
 
 
+schema_base_uris = {
+    "ieee": "https://w3id.org/ieee/ieee-1752-schema",
+    "omh": "https://w3id.org/openmhealth/schemas/omh",
+}
+
+
+@lru_cache
+def code_to_schema(code: str) -> dict[str, str]:
+    """
+    Transform a codeable concept string ('omh:heart-rate:1.0')
+
+    to a valid json schema {"$ref": "https://w3id.org/openmhealth/schemas/omh/heart-rate-1.0.json"}
+    """
+    ns, name, version = code.split(":")
+    base_uri = schema_base_uris[ns]
+    return {"$ref": f"{base_uri}/{name}-{version}.json"}
+
+
 def _preload_dir(reg: Registry, base_url: str, directory: Path) -> Registry:
-    for p in directory.glob("*.json"):
-        url = base_url + p.name  # e.g. https://w3id.org/ieee/ieee-1752-schema/header-1.0.json
-        reg = reg.with_resource(url, Resource.from_contents(json.loads(p.read_text())))
+    for p in directory.rglob("*.json"):
+        url = f"{base_url}/{p.name}"  # e.g. https://w3id.org/ieee/ieee-1752-schema/header-1.0.json
+        resource = Resource.from_contents(json.loads(p.read_text()))
+        reg = reg.with_resource(url, resource)
+        # if resource has its own id, use that, too
+        res_id = resource.id()
+        if res_id and res_id != url:
+            # load under its self-identified id as well
+            reg = reg.with_resource(res_id, resource)
     return reg
 
 
+@lru_cache
 def build_schema_registry() -> Registry:
-    ieee_base = "https://w3id.org/ieee/ieee-1752-schema/"
-    omh_base = "https://w3id.org/openmhealth/schemas/omh/"
-    omh_utility = "https://opensource.ieee.org/omh/1752/-/raw/main/schemas/utility/"
 
     reg = Registry()
-    reg = _preload_dir(reg, "", settings.DATA_DIR_PATH.schemas_metadata)
-    reg = _preload_dir(reg, "", settings.DATA_DIR_PATH.schemas_utility)
-    reg = _preload_dir(reg, ieee_base, settings.DATA_DIR_PATH.schemas_metadata)
-    reg = _preload_dir(reg, ieee_base, settings.DATA_DIR_PATH.schemas_utility)
-    reg = _preload_dir(reg, omh_base, settings.DATA_DIR_PATH.schemas_utility)
-    reg = _preload_dir(reg, omh_utility, settings.DATA_DIR_PATH.schemas_utility)
+    for name in ("omh", "ieee"):
+        schema_base = schema_base_uris[name]
+        reg = _preload_dir(reg, schema_base, settings.DATA_DIR_PATH.schemas_dir / name)
 
-    return reg
+    return reg.crawl()
 
 
 def validate_with_registry(*, instance, schema, forbid_unknown_network: bool = True):

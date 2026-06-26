@@ -1,0 +1,67 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/wake-after-sleep-onset.json",
+    "title": "Wake After Sleep Onset (WASO)",
+    "type": "object",
+    "description": "This schema represents the summary duration of all awakenings (i.e. minimum 15 secs) after sleep onset in a main sleep episode.",
+    "definitions": {
+        "duration_unit_value": {
+            "$ref": "duration-unit-value-1.0.json"
+        },
+        "time_frame": {
+            "$ref": "time-frame-1.0.json"
+        },
+        "descriptive_statistic": {
+            "$ref": "descriptive-statistic-1.0.json"
+        },
+        "descriptive_statistic_denominator": {
+            "$ref": "descriptive-statistic-denominator-1.0.json"
+        }
+    },
+    "properties": {
+        "wake_after_sleep_onset": {
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "awakening_durations": {
+            "description": "An array of awakening durations contains the duration of each awakening after sleep onset in an entire sleep episode.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "$ref": "#/definitions/duration_unit_value"
+            }
+        },
+        "effective_time_frame": {
+            "description": "The date-time at which, or time interval during which the measurement is asserted as being valid. As a measure of a duration, wake after sleep onset should not be associated to a date-time time frame. Hence, effective time frame is restricted to be a time interval.",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/time_frame"
+                },
+                {
+                    "required": [
+                        "time_interval"
+                    ]
+                }
+            ]
+        },
+        "descriptive_statistic": {
+            "description": "The descriptive statistic of a set of measurements (e.g., average, maximum) within the specified time frame.",
+            "$ref": "#/definitions/descriptive_statistic"
+        },
+        "descriptive_statistic_denominator": {
+            "description": "The denominator of the descriptive statistic when the measure has an implicit duration (e.g., if the descriptive statistic is 'average' and the statistic denominator is 'd' the measure describes the average daily wake after sleep onset during the period delimited by the effective time frame).",
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/descriptive_statistic_denominator"
+                },
+                {
+                    "description": "If the value needed is a standard unit of duration, select from the duration-unit-value value set.",
+                    "type": "string"
+                }
+            ]
+        }
+    },
+    "required": [
+        "wake_after_sleep_onset",
+        "effective_time_frame"
+    ]
+}

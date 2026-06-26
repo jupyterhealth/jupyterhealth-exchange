@@ -1,0 +1,25 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/survey-time-answer.json",
+    "title": "Survey Answer: time",
+    "description": "This schema represents a time value answer to a survey question.",
+    "type": "object",
+    "definitions": {
+        "answer": {
+            "$ref": "survey-answer-1.0.json"
+        }
+    },
+    "allOf": [
+        {
+            "$ref": "#/definitions/answer"
+        },
+        {
+            "properties": {
+                "value": {
+                    "description": "A time of day value (hours and minutes) in 24 hours format.",
+                    "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                }
+            }
+        }
+    ]
+}

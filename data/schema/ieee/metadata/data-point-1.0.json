@@ -1,0 +1,26 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/data-point.json",
+    "title": "Data Point",
+    "type": "object",
+    "description": "This schema represents a data point.",
+    "definitions": {
+        "header": {
+            "$ref": "header-1.0.json"
+        }
+    },
+    "properties": {
+        "header": {
+            "description": "The header of the data point.",
+            "$ref": "#/definitions/header"
+        },
+        "body": {
+            "description": "The body of the data point. This object complies with the schema identified in the header property.",
+            "type": "object"
+        }
+    },
+    "required": [
+        "header",
+        "body"
+    ]
+}
