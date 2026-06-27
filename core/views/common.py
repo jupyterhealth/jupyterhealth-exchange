@@ -2,6 +2,8 @@ import logging
 import secrets
 from urllib.parse import parse_qs, urlencode, urlparse
 
+import jwt
+
 from allauth.account.models import EmailAddress
 from allauth.account.views import RequestLoginCodeView
 from dictor import dictor  # type: ignore
@@ -426,7 +428,6 @@ def token_exchange(request: HttpRequest):
     subject_token_type = request.POST.get("subject_token_type")
     subject_token = request.POST.get("subject_token")
     grant_type = request.POST.get("grant_type")
-    issuer = request.POST.get("iss").rstrip("/")
     scope = request.POST.get("scope", "openid")
 
     if grant_type != "urn:ietf:params:oauth:grant-type:token-exchange":
@@ -444,11 +445,22 @@ def token_exchange(request: HttpRequest):
     expected_audience = getattr(settings, "TRUSTED_TOKEN_AUDIENCE", None)
     if not trusted_issuers or not expected_audience:
         return json_error("Token exchange is not configured.")
-    if issuer not in trusted_issuers:
-        return json_error(f"Issuer not trusted: {issuer}", status_code=403)
+
+    # Take the issuer from the (unverified) token itself, so the exact value
+    # passed to signature verification matches the token's `iss` claim including
+    # any trailing slash (e.g. MedPlum's "https://api.medplum.com/"). The request
+    # `iss` form field is not trusted for this. Allow-list membership is compared
+    # slash-insensitively; the full signature/iss/aud/exp checks run in verify_id_token.
+    try:
+        unverified = jwt.decode(subject_token, options={"verify_signature": False})
+    except jwt.InvalidTokenError:
+        return json_error("subject_token is not a valid JWT", status_code=400)
+    token_issuer = unverified.get("iss")
+    if not token_issuer or token_issuer.rstrip("/") not in trusted_issuers:
+        return json_error("Issuer not trusted", status_code=403)
 
     try:
-        claims = verify_id_token(subject_token, issuer=issuer, audience=expected_audience)
+        claims = verify_id_token(subject_token, issuer=token_issuer, audience=expected_audience)
         fhir_user = claims.get("fhirUser")
         if not fhir_user:
             return json_error("id_token missing fhirUser claim", status_code=400)

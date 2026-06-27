@@ -82,6 +82,17 @@ def test_valid_id_token_issues_jhe_token(client, user, rsa_private_pem):
     assert body["token_type"] == "Bearer"
 
 
+def test_trailing_slash_issuer_accepted(client, user, rsa_private_pem):
+    """A token whose `iss` has a trailing slash (e.g. MedPlum's
+    'https://api.medplum.com/') must still verify when the trusted issuer is
+    configured without the slash. Regression: the expected issuer passed to
+    signature verification must match the token's `iss` exactly, not a stripped form."""
+    priv, _ = rsa_private_pem
+    r = post(client, make_token(priv, iss=ISS + "/"))
+    assert r.status_code == 200, r.content
+    assert r.json()["access_token"]
+
+
 def test_untrusted_issuer_forbidden(client, user, rsa_private_pem):
     priv, _ = rsa_private_pem
     r = client.post(
