@@ -93,3 +93,14 @@ def test_parse_fhir_user_absolute():
 def test_parse_fhir_user_malformed():
     with pytest.raises(IdTokenError):
         parse_fhir_user("nope")
+
+
+def test_alg_none_rejected(rsa_private_pem):
+    import time as _t
+    now = int(_t.time())
+    claims = {"iss": ISS, "aud": AUD, "sub": "prac-1", "fhirUser": "Practitioner/abc",
+              "iat": now, "exp": now + 3600}
+    none_token = jwt.encode(claims, "", algorithm="none")
+    with pytest.raises(IdTokenError) as e:
+        verify_id_token(none_token, issuer=ISS, audience=AUD)
+    assert e.value.status_code == 401

@@ -65,7 +65,8 @@ def verify_id_token(id_token: str, *, issuer: str, audience: str) -> dict:
             options={"require": ["exp", "iat", "iss", "aud"]},
         )
     except jwt.PyJWKClientError as e:
-        raise IdTokenError(f"Could not resolve signing key: {e}", status_code=502) from e
+        logger.warning("Could not resolve signing key: %s", e)
+        raise IdTokenError("Could not resolve signing key", status_code=502) from e
     except jwt.InvalidTokenError as e:
         logger.warning("id_token validation failed: %s", e)
         raise IdTokenError("id_token failed validation", status_code=401) from e
