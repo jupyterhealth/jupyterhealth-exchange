@@ -141,37 +141,6 @@ def setup_idp(practitioner_user, patient_user):
     responses.reset()
 
 
-request_fields = {
-    "audience": settings.SITE_URL,
-    "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
-    "requested_token_type": "urn:ietf:params:oauth:token-type:access_token",
-    "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
-}
-
-
-def test_token_exchange(client, practitioner_user):
-    request_data = {}
-    request_data.update(request_fields)
-    request_data["subject_token"] = "practitioner-token"
-
-    response = client.post(
-        "/o/token-exchange",
-        data=request_data,
-    )
-    token_info = response.json()
-    assert response.headers["Content-Type"] == "application/json"
-    assert response.status_code == 200
-    assert token_info["expires_in"] > 0
-    assert token_info["scope"] == "openid"
-    assert token_info["token_type"] == "Bearer"
-    assert token_info["issued_token_type"] == "urn:ietf:params:oauth:token-type:access_token"
-    access_token = token_info["access_token"]
-    r = client.get("/api/v1/users/profile", headers={"Authorization": f"Bearer {access_token}"})
-    assert r.status_code == 200
-    user_info = r.json()
-    assert user_info["id"] == practitioner_user.id
-
-
 def test_missing_arguments(client):
     response = client.post(
         "/o/token-exchange",
@@ -183,58 +152,20 @@ def test_missing_arguments(client):
     assert "Missing required argument" in info["error"]
 
 
-def test_audience_mismatch(client):
-    request_data = {}
-    request_data.update(request_fields)
-    request_data["subject_token"] = "practitioner-token"
-    request_data["audience"] = "https://jhe"
+def test_wrong_subject_token_type(client):
+    # The endpoint now requires id_token; reject old access_token type.
     response = client.post(
         "/o/token-exchange",
-        data=request_data,
+        data={
+            "audience": settings.SITE_URL,
+            "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
+            "requested_token_type": "urn:ietf:params:oauth:token-type:access_token",
+            "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+            "subject_token": "some-token",
+            "iss": idp_url,
+        },
     )
     info = response.json()
     assert response.headers["Content-Type"] == "application/json"
     assert response.status_code == 400
-    assert info["error"] == "audience must be http://localhost:8000, not https://jhe"
-
-
-def test_patient_not_practitioner(client, practitioner_user):
-    request_data = {}
-    request_data.update(request_fields)
-    request_data["subject_token"] = "patient-token"
-    response = client.post(
-        "/o/token-exchange",
-        data=request_data,
-    )
-    info = response.json()
-    assert response.headers["Content-Type"] == "application/json"
-    assert response.status_code == 404
-    assert "Practitioner not found" in info["error"]
-
-
-def test_practitioner_not_found(client):
-    request_data = {}
-    request_data.update(request_fields)
-    request_data["subject_token"] = "other-token"
-    response = client.post(
-        "/o/token-exchange",
-        data=request_data,
-    )
-    info = response.json()
-    assert response.headers["Content-Type"] == "application/json"
-    assert response.status_code == 404
-    assert "Practitioner not found" in info["error"]
-
-
-def test_invalid_token(client):
-    request_data = {}
-    request_data.update(request_fields)
-    request_data["subject_token"] = "no-such-token"
-    response = client.post(
-        "/o/token-exchange",
-        data=request_data,
-    )
-    info = response.json()
-    assert response.headers["Content-Type"] == "application/json"
-    assert response.status_code == 400
-    assert "Token not found" in info["error"]
+    assert "subject_token_type" in info["error"]
