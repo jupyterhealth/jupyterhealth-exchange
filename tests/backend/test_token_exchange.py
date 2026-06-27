@@ -121,3 +121,21 @@ def test_non_practitioner_fhir_user_forbidden(client, user, rsa_private_pem):
     priv, _ = rsa_private_pem
     r = post(client, make_token(priv, fhir_user="Patient/test-practitioner"))
     assert r.status_code == 403
+
+
+def test_audience_mismatch_bad_request(client, user, rsa_private_pem):
+    """audience != SITE_URL must be rejected with HTTP 400."""
+    priv, _ = rsa_private_pem
+    r = client.post(
+        "/o/token-exchange",
+        data={
+            "subject_token": make_token(priv),
+            "subject_token_type": ID_TOKEN_TYPE,
+            "requested_token_type": ACCESS_TOKEN_TYPE,
+            "audience": "https://wrong.example.org",
+            "grant_type": GRANT,
+            "iss": ISS,
+            "scope": "openid",
+        },
+    )
+    assert r.status_code == 400

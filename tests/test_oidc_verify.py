@@ -2,11 +2,12 @@ import time
 
 import jwt
 import pytest
+import requests
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 from core import oidc_verify
-from core.oidc_verify import IdTokenError, parse_fhir_user, verify_id_token
+from core.oidc_verify import IdTokenError, discover_jwks_uri, parse_fhir_user, verify_id_token
 
 ISS = "https://ehr.example.org/fhir"
 AUD = "smart-client-id"
@@ -104,3 +105,16 @@ def test_alg_none_rejected(rsa_private_pem):
     with pytest.raises(IdTokenError) as e:
         verify_id_token(none_token, issuer=ISS, audience=AUD)
     assert e.value.status_code == 401
+
+
+def test_http_jwks_uri_rejected(monkeypatch):
+    """A jwks_uri that uses http:// (not https://) must be rejected."""
+    class _FakeResponse:
+        ok = True
+        def json(self):
+            return {"jwks_uri": "http://ehr.example.org/jwks"}
+
+    monkeypatch.setattr(requests, "get", lambda url, **kwargs: _FakeResponse())
+    with pytest.raises(IdTokenError) as e:
+        discover_jwks_uri(ISS)
+    assert e.value.status_code == 502

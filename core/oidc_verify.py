@@ -40,7 +40,7 @@ def discover_jwks_uri(issuer: str) -> str:
             continue
         if r.ok:
             jwks_uri = r.json().get("jwks_uri")
-            if jwks_uri:
+            if jwks_uri and jwks_uri.startswith("https://"):
                 return jwks_uri
     raise IdTokenError(f"Could not discover jwks_uri for issuer {issuer!r}", status_code=502)
 
