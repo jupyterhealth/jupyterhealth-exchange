@@ -446,11 +446,8 @@ def token_exchange(request: HttpRequest):
     if not trusted_issuers or not expected_audience:
         return json_error("Token exchange is not configured.", status_code=500)
 
-    # Take the issuer from the (unverified) token itself, so the exact value
-    # passed to signature verification matches the token's `iss` claim including
-    # any trailing slash (e.g. MedPlum's "https://api.medplum.com/"). The request
-    # `iss` form field is not trusted for this. Allow-list membership is compared
-    # slash-insensitively; the full signature/iss/aud/exp checks run in verify_id_token.
+    # Derive the issuer from the token's own `iss` so the exact value -- including
+    # any trailing slash (e.g. MedPlum's) -- is what we verify against.
     try:
         unverified = jwt.decode(subject_token, options={"verify_signature": False})
     except jwt.InvalidTokenError:
@@ -472,9 +469,8 @@ def token_exchange(request: HttpRequest):
     if resource_type != "Practitioner":
         return json_error("fhirUser is not a Practitioner", status_code=403)
 
-    # The bare fhirUser id is the mapping key (not an issuer-scoped composite):
-    # each health system runs its own JHE instance trusting exactly one EHR, so
-    # there is no second issuer that could assert another's Practitioner ids.
+    # Bare fhirUser id (not an issuer-scoped composite): each JHE instance trusts
+    # exactly one EHR, so no other issuer can assert these Practitioner ids.
     try:
         user = JheUser.objects.get(identifier=identifier)
     except JheUser.DoesNotExist:
@@ -485,7 +481,7 @@ def token_exchange(request: HttpRequest):
     if not user.practitioner:
         return json_error("User is not a Practitioner", status_code=403)
 
-    # Issue a JHE access token (django-oauth-toolkit), unchanged from before.
+    # Issue a JHE access token (django-oauth-toolkit).
     access_token = secrets.token_urlsafe(32)
     oauth_request = Request("")
     oauth_request.user = user
