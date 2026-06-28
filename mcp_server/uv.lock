@@ -326,7 +326,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.136.3,<1" },
     { name = "httpx", specifier = ">=0.28,<1" },
     { name = "mcp", specifier = ">=1.27.2,<1.28" },
-    { name = "omh-shim", specifier = ">=1.3.0" },
+    { name = "omh-shim", specifier = ">=1.4.0" },
     { name = "pydantic", specifier = ">=2.13,<3" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.4.0" },
@@ -390,15 +390,15 @@ wheels = [
 
 [[package]]
 name = "omh-shim"
-version = "1.3.0"
+version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jsonschema" },
     { name = "referencing" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/78/56/54dcca25e4a723a961ba1b54ee6b9b26f3ddb3b29d97c14def9113e1e06f/omh_shim-1.3.0.tar.gz", hash = "sha256:2577736c4f7c61299ba2cef8df74e6ecf1868abf1e9f46e2a4b48b19fd8317f0", size = 37366, upload-time = "2026-06-11T23:12:28.424Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/92/ab/438e8cf2f9cd188c25d1c6bf48fbd2bf8ad25badcc3f37fbcfe04a42941f/omh_shim-1.4.0.tar.gz", hash = "sha256:77e857b1d82881605de74bcf0e33ab1c25cd9a7caee63db6a648ff2dd1f5c419", size = 38735, upload-time = "2026-06-21T10:07:37.612Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6e/56/95eeb31688a902183922e82717a0b91da0712802b65ab0466636a3cc69e5/omh_shim-1.3.0-py3-none-any.whl", hash = "sha256:03b83ba1f7231882d9fd89d6d971ec94ac97eb877024f0ff11fe6627e71fb76f", size = 55259, upload-time = "2026-06-11T23:12:27.359Z" },
+    { url = "https://files.pythonhosted.org/packages/5c/97/f2d55355bac927a35c6e8f7d91f35505c4371e96326e74af4665fbdfad2d/omh_shim-1.4.0-py3-none-any.whl", hash = "sha256:45815d5ad840b58adb35e84f067430e0046c92f4718f16661e53d84fd916a75e", size = 58083, upload-time = "2026-06-21T10:07:36.311Z" },
 ]
 
 [[package]]
