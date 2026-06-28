@@ -139,3 +139,16 @@ def test_http_jwks_uri_rejected(monkeypatch):
     with pytest.raises(IdTokenError) as e:
         discover_jwks_uri(ISS)
     assert e.value.status_code == 502
+
+
+def test_non_json_discovery_rejected(monkeypatch):
+    """A 200 discovery response that isn't JSON must not crash -> 502."""
+    class _FakeResponse:
+        ok = True
+        def json(self):
+            raise ValueError("not json")
+
+    monkeypatch.setattr(requests, "get", lambda url, **kwargs: _FakeResponse())
+    with pytest.raises(IdTokenError) as e:
+        discover_jwks_uri(ISS)
+    assert e.value.status_code == 502

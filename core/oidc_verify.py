@@ -42,7 +42,11 @@ def discover_jwks_uri(issuer: str) -> str:
             logger.warning("Discovery request failed for %s: %s", url, e)
             continue
         if r.ok:
-            jwks_uri = r.json().get("jwks_uri")
+            try:
+                jwks_uri = r.json().get("jwks_uri")
+            except ValueError:
+                logger.warning("Discovery doc at %s was not valid JSON", url)
+                continue
             if jwks_uri and jwks_uri.startswith("https://"):
                 return jwks_uri
     raise IdTokenError(f"Could not discover jwks_uri for issuer {issuer!r}", status_code=502)

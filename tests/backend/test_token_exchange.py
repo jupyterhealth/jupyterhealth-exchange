@@ -134,6 +134,16 @@ def test_non_practitioner_fhir_user_forbidden(client, user, rsa_private_pem):
     assert r.status_code == 403
 
 
+def test_duplicate_identifier_not_found(client, user, rsa_private_pem):
+    # identifier is not unique -> a duplicate row must 404, not 500
+    from core.models import JheUser
+
+    JheUser.objects.create_user(email="dupe@example.org", identifier="test-practitioner")
+    priv, _ = rsa_private_pem
+    r = post(client, make_token(priv))
+    assert r.status_code == 404
+
+
 def test_audience_mismatch_bad_request(client, user, rsa_private_pem):
     """audience != SITE_URL must be rejected with HTTP 400."""
     priv, _ = rsa_private_pem

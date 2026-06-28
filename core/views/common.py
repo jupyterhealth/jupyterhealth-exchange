@@ -456,7 +456,7 @@ def token_exchange(request: HttpRequest):
     except jwt.InvalidTokenError:
         return json_error("subject_token is not a valid JWT", status_code=400)
     token_issuer = unverified.get("iss")
-    if not token_issuer or token_issuer.rstrip("/") not in trusted_issuers:
+    if not token_issuer or token_issuer.rstrip("/") not in {i.rstrip("/") for i in trusted_issuers}:
         return json_error("Issuer not trusted", status_code=403)
 
     try:
@@ -477,6 +477,9 @@ def token_exchange(request: HttpRequest):
     try:
         user = JheUser.objects.get(identifier=identifier)
     except JheUser.DoesNotExist:
+        return json_error("Practitioner not found", status_code=404)
+    except JheUser.MultipleObjectsReturned:
+        logger.error("Multiple JheUsers share identifier %r", identifier)
         return json_error("Practitioner not found", status_code=404)
     if not user.practitioner:
         return json_error("User is not a Practitioner", status_code=403)
