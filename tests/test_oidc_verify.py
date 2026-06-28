@@ -68,9 +68,30 @@ def test_wrong_issuer_rejected(rsa_private_pem):
 
 
 def test_expired_token_rejected(rsa_private_pem):
+    # expired well beyond the clock-skew leeway
     priv, _ = rsa_private_pem
     with pytest.raises(IdTokenError) as e:
-        verify_id_token(make_token(priv, exp_delta=-10), issuer=ISS, audience=AUD)
+        verify_id_token(make_token(priv, exp_delta=-3600), issuer=ISS, audience=AUD)
+    assert e.value.status_code == 401
+
+
+def test_within_leeway_expiry_accepted(rsa_private_pem):
+    # expired within the clock-skew leeway -> still accepted (EHR<->JHE drift)
+    priv, _ = rsa_private_pem
+    claims = verify_id_token(make_token(priv, exp_delta=-10), issuer=ISS, audience=AUD)
+    assert claims["fhirUser"] == "Practitioner/abc"
+
+
+def test_wrong_key_rejected(rsa_private_pem):
+    # valid RS256 signature, but signed by a key other than the JWKS key -> reject
+    other = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    other_pem = other.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+    with pytest.raises(IdTokenError) as e:
+        verify_id_token(make_token(other_pem), issuer=ISS, audience=AUD)
     assert e.value.status_code == 401
 
 

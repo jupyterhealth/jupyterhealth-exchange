@@ -111,8 +111,8 @@ def test_untrusted_issuer_forbidden(client, user, rsa_private_pem):
 
 
 def test_expired_token_unauthorized(client, user, rsa_private_pem):
-    priv, _ = rsa_private_pem
-    r = post(client, make_token(priv, exp_delta=-10))
+    priv, _ = rsa_private_pem  # expired beyond the clock-skew leeway
+    r = post(client, make_token(priv, exp_delta=-3600))
     assert r.status_code == 401
 
 

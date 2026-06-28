@@ -471,6 +471,9 @@ def token_exchange(request: HttpRequest):
     if resource_type != "Practitioner":
         return json_error("fhirUser is not a Practitioner", status_code=403)
 
+    # The bare fhirUser id is the mapping key (not an issuer-scoped composite):
+    # each health system runs its own JHE instance trusting exactly one EHR, so
+    # there is no second issuer that could assert another's Practitioner ids.
     try:
         user = JheUser.objects.get(identifier=identifier)
     except JheUser.DoesNotExist:

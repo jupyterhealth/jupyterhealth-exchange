@@ -17,6 +17,9 @@ logger = logging.getLogger(__name__)
 # Asymmetric only. Never 'none'; never HS* (algorithm-confusion).
 ALLOWED_ALGS = ["RS256", "RS384", "ES384"]
 
+# Tolerance for EHR<->JHE clock drift on exp/iat/nbf (seconds).
+LEEWAY_SECONDS = 30
+
 _DISCOVERY_PATHS = (".well-known/smart-configuration", ".well-known/openid-configuration")
 
 
@@ -62,6 +65,7 @@ def verify_id_token(id_token: str, *, issuer: str, audience: str) -> dict:
             algorithms=ALLOWED_ALGS,
             audience=audience,
             issuer=issuer,
+            leeway=LEEWAY_SECONDS,
             options={"require": ["exp", "iat", "iss", "aud"]},
         )
     except jwt.PyJWKClientError as e:
