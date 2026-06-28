@@ -418,12 +418,12 @@ def token_exchange(request: HttpRequest):
     _access_token_type = "urn:ietf:params:oauth:token-type:access_token"
 
     for name in ("audience", "requested_token_type", "subject_token_type",
-                 "subject_token", "grant_type", "iss"):
+                 "subject_token", "grant_type"):
         if not request.POST.get(name):
             return json_error(f"Missing required argument: {name}")
 
     site_url = get_setting("site.url", settings.SITE_URL)
-    audience = request.POST.get("audience")
+    requested_audience = request.POST.get("audience")
     requested_token_type = request.POST.get("requested_token_type")
     subject_token_type = request.POST.get("subject_token_type")
     subject_token = request.POST.get("subject_token")
@@ -436,15 +436,15 @@ def token_exchange(request: HttpRequest):
         return json_error(f"subject_token_type must be {_id_token_type}, not {subject_token_type}")
     if requested_token_type != _access_token_type:
         return json_error(f"requested_token_type must be {_access_token_type}, not {requested_token_type}")
-    if audience != site_url:
-        return json_error(f"audience must be {site_url}, not {audience}")
+    if requested_audience != site_url:
+        return json_error(f"audience must be {site_url}, not {requested_audience}")
     if scope != "openid":
         return json_error(f"Only 'openid' scope is supported, not {scope}")
 
-    trusted_issuers = getattr(settings, "TRUSTED_TOKEN_ISSUERS", [])
-    expected_audience = getattr(settings, "TRUSTED_TOKEN_AUDIENCE", None)
+    trusted_issuers = get_setting("trusted_token.issuers", settings.TRUSTED_TOKEN_ISSUERS)
+    expected_audience = get_setting("trusted_token.audience", settings.TRUSTED_TOKEN_AUDIENCE)
     if not trusted_issuers or not expected_audience:
-        return json_error("Token exchange is not configured.")
+        return json_error("Token exchange is not configured.", status_code=500)
 
     # Take the issuer from the (unverified) token itself, so the exact value
     # passed to signature verification matches the token's `iss` claim including
