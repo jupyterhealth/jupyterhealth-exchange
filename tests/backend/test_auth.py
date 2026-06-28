@@ -1,7 +1,4 @@
-import pytest
 from django.conf import settings
-
-idp_url = "https://example.localhost"
 
 
 def test_missing_arguments(client):
@@ -25,7 +22,6 @@ def test_wrong_subject_token_type(client):
             "requested_token_type": "urn:ietf:params:oauth:token-type:access_token",
             "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
             "subject_token": "some-token",
-            "iss": idp_url,
         },
     )
     info = response.json()

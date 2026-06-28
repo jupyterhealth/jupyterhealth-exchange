@@ -457,6 +457,7 @@ def token_exchange(request: HttpRequest):
         return json_error("subject_token is not a valid JWT", status_code=400)
     token_issuer = unverified.get("iss")
     if not token_issuer or token_issuer.rstrip("/") not in {i.rstrip("/") for i in trusted_issuers}:
+        logger.warning("Token exchange: rejected untrusted issuer %r", token_issuer)
         return json_error("Issuer not trusted", status_code=403)
 
     try:
@@ -493,6 +494,7 @@ def token_exchange(request: HttpRequest):
 
     token_model = AccessToken.objects.get(token=access_token)
     expires_in = int((token_model.expires - timezone.now()).total_seconds())
+    logger.info("Token exchange: issued JHE token for Practitioner %r from issuer %s", identifier, token_issuer)
     return JsonResponse({
         "access_token": access_token,
         "issued_token_type": _access_token_type,
