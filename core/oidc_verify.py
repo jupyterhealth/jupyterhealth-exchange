@@ -4,6 +4,7 @@ Uses PyJWT's PyJWKClient to validate the id_token signature against the EHR's
 JWKS (discovered from .well-known/smart-configuration). Relies only on
 ONC g(10)-mandated capabilities, so the same path works across EHR vendors.
 """
+
 from __future__ import annotations
 
 import logging

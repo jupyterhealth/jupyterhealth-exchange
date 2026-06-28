@@ -39,11 +39,9 @@ def patch_jwks(monkeypatch, rsa_private_pem):
     monkeypatch.setattr(oidc_verify, "_jwk_client", lambda jwks_uri: _FakeClient())
 
 
-def make_token(priv_pem, *, iss=ISS, aud=AUD, fhir_user="Practitioner/abc",
-               exp_delta=3600, alg="RS256", key=None):
+def make_token(priv_pem, *, iss=ISS, aud=AUD, fhir_user="Practitioner/abc", exp_delta=3600, alg="RS256", key=None):
     now = int(time.time())
-    claims = {"iss": iss, "aud": aud, "sub": "prac-1", "fhirUser": fhir_user,
-              "iat": now, "exp": now + exp_delta}
+    claims = {"iss": iss, "aud": aud, "sub": "prac-1", "fhirUser": fhir_user, "iat": now, "exp": now + exp_delta}
     return jwt.encode(claims, key or priv_pem, algorithm=alg)
 
 
@@ -119,9 +117,9 @@ def test_parse_fhir_user_malformed():
 
 def test_alg_none_rejected(rsa_private_pem):
     import time as _t
+
     now = int(_t.time())
-    claims = {"iss": ISS, "aud": AUD, "sub": "prac-1", "fhirUser": "Practitioner/abc",
-              "iat": now, "exp": now + 3600}
+    claims = {"iss": ISS, "aud": AUD, "sub": "prac-1", "fhirUser": "Practitioner/abc", "iat": now, "exp": now + 3600}
     none_token = jwt.encode(claims, "", algorithm="none")
     with pytest.raises(IdTokenError) as e:
         verify_id_token(none_token, issuer=ISS, audience=AUD)
@@ -130,8 +128,10 @@ def test_alg_none_rejected(rsa_private_pem):
 
 def test_http_jwks_uri_rejected(monkeypatch):
     """A jwks_uri that uses http:// (not https://) must be rejected."""
+
     class _FakeResponse:
         ok = True
+
         def json(self):
             return {"jwks_uri": "http://ehr.example.org/jwks"}
 
@@ -143,8 +143,10 @@ def test_http_jwks_uri_rejected(monkeypatch):
 
 def test_non_json_discovery_rejected(monkeypatch):
     """A 200 discovery response that isn't JSON must not crash -> 502."""
+
     class _FakeResponse:
         ok = True
+
         def json(self):
             raise ValueError("not json")
 

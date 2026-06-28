@@ -3,7 +3,6 @@ import secrets
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import jwt
-
 from allauth.account.models import EmailAddress
 from allauth.account.views import RequestLoginCodeView
 from dictor import dictor  # type: ignore
@@ -417,8 +416,7 @@ def token_exchange(request: HttpRequest):
     _id_token_type = "urn:ietf:params:oauth:token-type:id_token"
     _access_token_type = "urn:ietf:params:oauth:token-type:access_token"
 
-    for name in ("audience", "requested_token_type", "subject_token_type",
-                 "subject_token", "grant_type"):
+    for name in ("audience", "requested_token_type", "subject_token_type", "subject_token", "grant_type"):
         if not request.POST.get(name):
             return json_error(f"Missing required argument: {name}")
 
@@ -491,10 +489,12 @@ def token_exchange(request: HttpRequest):
     token_model = AccessToken.objects.get(token=access_token)
     expires_in = int((token_model.expires - timezone.now()).total_seconds())
     logger.info("Token exchange: issued JHE token for Practitioner %r from issuer %s", identifier, token_issuer)
-    return JsonResponse({
-        "access_token": access_token,
-        "issued_token_type": _access_token_type,
-        "token_type": "Bearer",
-        "expires_in": expires_in,
-        "scope": scope,
-    })
+    return JsonResponse(
+        {
+            "access_token": access_token,
+            "issued_token_type": _access_token_type,
+            "token_type": "Bearer",
+            "expires_in": expires_in,
+            "scope": scope,
+        }
+    )

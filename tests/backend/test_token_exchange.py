@@ -28,6 +28,7 @@ def rsa_private_pem():
 @pytest.fixture(autouse=True)
 def trust_settings(settings):
     from django.core.cache import cache
+
     settings.SITE_URL = "http://testserver"
     settings.TRUSTED_TOKEN_ISSUERS = [ISS]
     settings.TRUSTED_TOKEN_AUDIENCE = AUD
@@ -49,11 +50,11 @@ def patch_jwks(monkeypatch, rsa_private_pem):
     monkeypatch.setattr(oidc_verify, "_jwk_client", lambda jwks_uri: _FakeClient())
 
 
-def make_token(priv_pem, *, iss=ISS, aud=AUD, fhir_user="Practitioner/test-practitioner",
-               exp_delta=3600, alg="RS256", key=None):
+def make_token(
+    priv_pem, *, iss=ISS, aud=AUD, fhir_user="Practitioner/test-practitioner", exp_delta=3600, alg="RS256", key=None
+):
     now = int(time.time())
-    claims = {"iss": iss, "aud": aud, "sub": "prac-1", "fhirUser": fhir_user,
-              "iat": now, "exp": now + exp_delta}
+    claims = {"iss": iss, "aud": aud, "sub": "prac-1", "fhirUser": fhir_user, "iat": now, "exp": now + exp_delta}
     return jwt.encode(claims, key or priv_pem, algorithm=alg)
 
 
