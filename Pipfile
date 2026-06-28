@@ -10,7 +10,7 @@ psycopg2-binary = "*"
 django-oauth-toolkit = "*"
 six = "*"
 requests = "*"
-pyjwt = "*"
+pyjwt = {version = "*", extras = ["crypto"]}
 djangorestframework = "*"
 gunicorn = "*"
 whitenoise = "*"

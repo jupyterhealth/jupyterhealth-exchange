@@ -243,6 +243,14 @@ OAUTH2_PROVIDER = {
 OAUTH2_PROVIDER_APPLICATION_MODEL = "oauth2_provider.Application"
 
 TRUSTED_TOKEN_IDP = os.getenv("TRUSTED_TOKEN_IDP")
+# Token exchange: id_token verification (cross-vendor SMART on FHIR).
+# Comma-separated list of trusted EHR OIDC issuers (the id_token `iss`).
+TRUSTED_TOKEN_ISSUERS = [s.strip().rstrip("/") for s in os.getenv("TRUSTED_TOKEN_ISSUERS", "").split(",") if s.strip()]
+# Back-compat: a single TRUSTED_TOKEN_IDP is also trusted.
+if TRUSTED_TOKEN_IDP and TRUSTED_TOKEN_IDP.rstrip("/") not in TRUSTED_TOKEN_ISSUERS:
+    TRUSTED_TOKEN_ISSUERS.append(TRUSTED_TOKEN_IDP.rstrip("/"))
+# Expected id_token `aud` — the SMART app's client_id registered at the EHR.
+TRUSTED_TOKEN_AUDIENCE = os.getenv("TRUSTED_TOKEN_AUDIENCE")
 
 X_FRAME_OPTIONS = os.getenv("X_FRAME_OPTIONS", "SAMEORIGIN")
 

@@ -2,7 +2,7 @@ import logging
 import secrets
 from urllib.parse import parse_qs, urlencode, urlparse
 
-import requests
+import jwt
 from allauth.account.models import EmailAddress
 from allauth.account.views import RequestLoginCodeView
 from dictor import dictor  # type: ignore
@@ -43,6 +43,7 @@ from oauth2_provider.views import TokenView
 from oauthlib.common import Request
 
 from core.models import JheUser
+from core.oidc_verify import IdTokenError, parse_fhir_user, verify_id_token
 from core.services.jhe_settings import get_setting
 from core.utils import get_or_create_user
 
@@ -405,134 +406,89 @@ class JheTokenView(TokenView):
 @csrf_exempt
 @require_POST
 def token_exchange(request: HttpRequest):
-    """
-    RFC 8693: OAuth 2.0 Token Exchange
+    """RFC 8693 token exchange: trade an EHR-issued OIDC id_token for a JHE token.
 
-    Requires setting:
-    - TRUSTED_TOKEN_IDP: OIDC base URL
-
+    The id_token is verified offline against the EHR's JWKS (cross-vendor, relies
+    only on ONC g(10) capabilities). The provider is identified by the fhirUser
+    claim and mapped to a JHE Practitioner.
     Ref: https://datatracker.ietf.org/doc/html/rfc8693
     """
+    _id_token_type = "urn:ietf:params:oauth:token-type:id_token"
+    _access_token_type = "urn:ietf:params:oauth:token-type:access_token"
 
-    for name in (
-        "audience",
-        "requested_token_type",
-        "subject_token_type",
-        "subject_token",
-        "grant_type",
-    ):
+    for name in ("audience", "requested_token_type", "subject_token_type", "subject_token", "grant_type"):
         if not request.POST.get(name):
             return json_error(f"Missing required argument: {name}")
 
     site_url = get_setting("site.url", settings.SITE_URL)
-
-    # standard arguments:
-    audience = request.POST.get("audience")
+    requested_audience = request.POST.get("audience")
     requested_token_type = request.POST.get("requested_token_type")
     subject_token_type = request.POST.get("subject_token_type")
     subject_token = request.POST.get("subject_token")
     grant_type = request.POST.get("grant_type")
     scope = request.POST.get("scope", "openid")
 
-    # argument validation
     if grant_type != "urn:ietf:params:oauth:grant-type:token-exchange":
-        return json_error(f"grant_type must be urn:ietf:params:oauth:grant-type:token-exchange, not {grant_type}")
-    _access_token_type = "urn:ietf:params:oauth:token-type:access_token"
-    if subject_token_type != _access_token_type:
-        return json_error(f"subject_token_type must be {_access_token_type}, not {subject_token_type}")
+        return json_error(f"grant_type must be token-exchange, not {grant_type}")
+    if subject_token_type != _id_token_type:
+        return json_error(f"subject_token_type must be {_id_token_type}, not {subject_token_type}")
     if requested_token_type != _access_token_type:
         return json_error(f"requested_token_type must be {_access_token_type}, not {requested_token_type}")
-    if audience != site_url:
-        return json_error(f"audience must be {site_url}, not {audience}")
+    if requested_audience != site_url:
+        return json_error(f"audience must be {site_url}, not {requested_audience}")
     if scope != "openid":
         return json_error(f"Only 'openid' scope is supported, not {scope}")
 
-    # lookup via userinfo/introspection
-    # sample SMART-on-FHIR doesn't have userinfo
-    # curl -X POST -H "Authorization: Bearer $token" -d "token=$token" $introspection
-    trusted_idp = get_setting("trusted_token_idp", settings.TRUSTED_TOKEN_IDP)
-    if not trusted_idp:
-        return json_error("Token exchange is not configured.")
+    trusted_issuers = get_setting("trusted_token.issuers", settings.TRUSTED_TOKEN_ISSUERS)
+    expected_audience = get_setting("trusted_token.audience", settings.TRUSTED_TOKEN_AUDIENCE)
+    if not trusted_issuers or not expected_audience:
+        return json_error("Token exchange is not configured.", status_code=500)
 
-    r = requests.get(
-        f"{trusted_idp}/.well-known/openid-configuration",
-        headers={"Accept": "application/json"},
-    )
-    if not r.ok:
-        logger.error("Error looking up token oidc config %s: %s", r.url, r.text)
-        return json_error("Error retrieving user info for access token", status_code=500)
-    openid_config = r.json()
+    # Derive the issuer from the token's own `iss` so the exact value -- including
+    # any trailing slash (e.g. MedPlum's) -- is what we verify against.
+    try:
+        unverified = jwt.decode(subject_token, options={"verify_signature": False})
+    except jwt.InvalidTokenError:
+        return json_error("subject_token is not a valid JWT", status_code=400)
+    token_issuer = unverified.get("iss")
+    if not token_issuer or token_issuer.rstrip("/") not in {i.rstrip("/") for i in trusted_issuers}:
+        logger.warning("Token exchange: rejected untrusted issuer %r", token_issuer)
+        return json_error("Issuer not trusted", status_code=403)
 
-    # TODO: do we need config to select external id claim? Currently hardcoded 'sub'
-    external_id_claim = "sub"
+    try:
+        claims = verify_id_token(subject_token, issuer=token_issuer, audience=expected_audience)
+        fhir_user = claims.get("fhirUser")
+        if not fhir_user:
+            return json_error("id_token missing fhirUser claim", status_code=400)
+        resource_type, identifier = parse_fhir_user(fhir_user)
+    except IdTokenError as e:
+        return json_error(str(e), status_code=e.status_code)
 
-    if "userinfo_endpoint" in openid_config:
-        # fetch userinfo
-        url = openid_config["userinfo_endpoint"]
-        logger.info("Looking up token via userinfo %s", url)
-        r = requests.get(url, headers={"Authorization": f"Bearer {subject_token}"})
-        if not r.ok:
-            logger.warning("Failed to lookup subject_token %s: %s", r.status_code, r.text)
-            return json_error(f"Token not found in {trusted_idp}")
-        user_info = r.json()
-        if external_id_claim not in user_info:
-            logger.error("%s not in %s", external_id_claim, user_info)
-            return json_error("Error retrieving user info for access token", status_code=500)
-        identifier = user_info[external_id_claim]
-    elif "introspection_endpoint" in openid_config:
-        url = openid_config["introspection_endpoint"]
-        logger.info("Looking up token via introspection %s", url)
-        r = requests.post(url, data={"token": subject_token}, headers={"Authorization": f"Bearer {subject_token}"})
-        if not r.ok:
-            logger.warning("Failed to lookup subject_token %s: %s", r.status_code, r.text)
-            return json_error(f"Token not found in {trusted_idp}")
-        token_info = r.json()
-        # introspection must always set 'active'
-        if not token_info["active"]:
-            logger.warning("subject_token not active")
-            return json_error(f"Token not found in {trusted_idp}")
+    if resource_type != "Practitioner":
+        return json_error("fhirUser is not a Practitioner", status_code=403)
 
-        if external_id_claim in token_info:
-            identifier = token_info[external_id_claim]
-        else:
-            logger.error("%s not in %s", external_id_claim, token_info)
-            if "fhirUser" in token_info:
-                kind, _, fhir_id = token_info["fhirUser"].partition("/")
-                if kind == "Practitioner":
-                    identifier = fhir_id
-                else:
-                    return json_error("Error introspecting access token", status_code=500)
-            else:
-                return json_error("Error introspecting access token", status_code=500)
-    else:
-        logger.error("No token id method in %s", openid_config)
-        return json_error("Error retrieving user info for access token", status_code=500)
-
+    # Bare fhirUser id (not an issuer-scoped composite): each JHE instance trusts
+    # exactly one EHR, so no other issuer can assert these Practitioner ids.
     try:
         user = JheUser.objects.get(identifier=identifier)
     except JheUser.DoesNotExist:
-        return json_error(f"Practitioner not found for {identifier}", status_code=404)
-
-    # only allowed for Practitioners
+        return json_error("Practitioner not found", status_code=404)
+    except JheUser.MultipleObjectsReturned:
+        logger.error("Multiple JheUsers share identifier %r", identifier)
+        return json_error("Practitioner not found", status_code=404)
     if not user.practitioner:
-        return json_error(f"Practitioner not found for {identifier}", status_code=404)
-    # issue token
+        return json_error("User is not a Practitioner", status_code=403)
+
+    # Issue a JHE access token (django-oauth-toolkit).
     access_token = secrets.token_urlsafe(32)
     oauth_request = Request("")
     oauth_request.user = user
     validator = OAuth2Validator()
-    validator.save_bearer_token(
-        {
-            "access_token": access_token,
-            "scope": "openid",
-        },
-        oauth_request,
-    )
+    validator.save_bearer_token({"access_token": access_token, "scope": "openid"}, oauth_request)
 
-    # get record from db
     token_model = AccessToken.objects.get(token=access_token)
     expires_in = int((token_model.expires - timezone.now()).total_seconds())
-
+    logger.info("Token exchange: issued JHE token for Practitioner %r from issuer %s", identifier, token_issuer)
     return JsonResponse(
         {
             "access_token": access_token,
