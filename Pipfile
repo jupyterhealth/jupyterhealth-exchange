@@ -27,7 +27,7 @@ jsonschema = "*"
 ipython = "*"
 dictor = "*"
 boto3 = "*"
-omh-shim = "==1.3.0"
+omh-shim = "==1.4.0"
 
 [dev-packages]
 coverage = "*"
