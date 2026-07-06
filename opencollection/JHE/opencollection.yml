@@ -1,0 +1,30 @@
+opencollection: 1.0.0
+
+info:
+  name: JHE
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  auth:
+    type: bearer
+    token: "{{ACCESS_TOKEN}}"
+  headers:
+    - name: Authorization
+      value: "Bearer {{ACCESS_TOKEN}}"
+      enabled: true
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

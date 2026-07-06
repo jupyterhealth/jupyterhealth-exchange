@@ -1,0 +1,25 @@
+info:
+  name: Paginate Observations
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{BASE_URL}}/api/v1/observations?organizationId={{ORG_ID}}&page=1&pageSize=3"
+  params:
+  - name: organizationId
+    value: "{{ORG_ID}}"
+    type: query
+  - name: page
+    value: "1"
+    type: query
+  - name: pageSize
+    value: "3"
+    type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

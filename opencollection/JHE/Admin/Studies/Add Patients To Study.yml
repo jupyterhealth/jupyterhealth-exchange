@@ -1,0 +1,24 @@
+info:
+  name: Add Patients To Study
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/api/v1/studies/{{STUDY_ID}}/patients"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "patient_ids": [{{PATIENT_ID}}]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

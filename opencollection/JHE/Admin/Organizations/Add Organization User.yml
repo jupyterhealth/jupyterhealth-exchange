@@ -1,0 +1,25 @@
+info:
+  name: Add Organization User
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/api/v1/organizations/{{ORG_ID}}/user"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "jhe_user_id": {{USER_ID}},
+          "organization_partitioner_role": "member"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

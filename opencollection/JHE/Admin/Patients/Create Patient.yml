@@ -1,0 +1,29 @@
+info:
+  name: Create Patient
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/api/v1/patients"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "identifier": "xyz123",
+          "name_family": "Smith3",
+          "name_given": "Anna3",
+          "birth_date": "1990-01-03",
+          "telecom_cell": "347 222 2222",
+          "telecom_email": "ms.anna5@example.com"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

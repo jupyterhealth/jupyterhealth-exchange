@@ -1,0 +1,25 @@
+info:
+  name: Create Patient Invitation
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/api/v1/invitation"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "patient_id": {{PATIENT_ID}},
+          "client_id": {{CLIENT_APP_ID}}
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
