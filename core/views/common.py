@@ -38,11 +38,11 @@ from django_saml2_auth.utils import (
     run_hook,
 )
 from oauth2_provider.models import get_access_token_model
-from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.views import TokenView
 from oauthlib.common import Request
 
 from core.models import JheUser
+from core.oauth2_validators import JheOAuth2Validator
 from core.oidc_verify import IdTokenError, parse_fhir_user, verify_id_token
 from core.services.jhe_settings import get_setting
 from core.utils import get_or_create_user
@@ -439,8 +439,23 @@ def token_exchange(request: HttpRequest):
     if scope != "openid":
         return json_error(f"Only 'openid' scope is supported, not {scope}")
 
-    trusted_issuers = get_setting("trusted_token.issuers", settings.TRUSTED_TOKEN_ISSUERS)
-    expected_audience = get_setting("trusted_token.audience", settings.TRUSTED_TOKEN_AUDIENCE)
+    # Authenticate the calling client (RFC 6749 client authentication) against the
+    # registered confidential "SoF EHR Launch" Application. Credentials may be sent as
+    # HTTP Basic or as client_id/client_secret form fields. authenticate_client sets
+    # oauth_request.client on success; we reuse that request to link the Application to
+    # the issued access token below.
+    validator = JheOAuth2Validator()
+    oauth_request = Request(
+        uri=request.build_absolute_uri(),
+        http_method="POST",
+        body=request.POST.urlencode(),
+        headers={"Authorization": request.META.get("HTTP_AUTHORIZATION", "")},
+    )
+    if not validator.authenticate_client(oauth_request):
+        return json_error("Client authentication failed", status_code=401)
+
+    trusted_issuers = get_setting("auth.sof.trusted_issuers", []) or []
+    expected_audience = get_setting("auth.sof.trusted_audience", None)
     if not trusted_issuers or not expected_audience:
         return json_error("Token exchange is not configured.", status_code=500)
 
@@ -479,16 +494,20 @@ def token_exchange(request: HttpRequest):
     if not user.practitioner:
         return json_error("User is not a Practitioner", status_code=403)
 
-    # Issue a JHE access token (django-oauth-toolkit).
+    # Issue a JHE access token, linked to the authenticated client (oauth_request.client
+    # was set by authenticate_client above) and bound to the resolved Practitioner.
     access_token = secrets.token_urlsafe(32)
-    oauth_request = Request("")
     oauth_request.user = user
-    validator = OAuth2Validator()
     validator.save_bearer_token({"access_token": access_token, "scope": "openid"}, oauth_request)
 
     token_model = AccessToken.objects.get(token=access_token)
     expires_in = int((token_model.expires - timezone.now()).total_seconds())
-    logger.info("Token exchange: issued JHE token for Practitioner %r from issuer %s", identifier, token_issuer)
+    logger.info(
+        "Token exchange: issued JHE token for Practitioner %r from issuer %s to client %r",
+        identifier,
+        token_issuer,
+        getattr(oauth_request.client, "client_id", None),
+    )
     return JsonResponse(
         {
             "access_token": access_token,

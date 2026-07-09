@@ -10,6 +10,20 @@ from rest_framework.test import APIClient
 from core.models import JheUser
 
 
+@pytest.fixture(autouse=True)
+def _clear_ow_setting_cache():
+    """OW config is read via get_setting() (60s cache); clear the keys around each test
+    so per-test `settings.OW_*` overrides take effect immediately."""
+    from django.core.cache import cache
+
+    keys = ("jhe_setting:ow.api_url", "jhe_setting:ow.api_key")
+    for k in keys:
+        cache.delete(k)
+    yield
+    for k in keys:
+        cache.delete(k)
+
+
 @pytest.fixture
 def ow_user(db):
     """A regular authenticated user for OW tests."""
@@ -53,18 +67,30 @@ def anon_client():
     return APIClient()
 
 
-@pytest.fixture
-def ow_settings(settings):
-    """Configure OW integration via Django settings (what the view reads)."""
-    settings.OW_API_URL = "https://ow.example.com"
-    settings.OW_API_KEY = "sk-test-api-key-12345678"
+def _set_ow_setting(key, value):
+    """Set an OW JheSetting (the runtime config the view reads via get_setting)."""
+    from django.core.cache import cache
+
+    from core.models import JheSetting
+
+    s, _ = JheSetting.objects.update_or_create(key=key, defaults={"value_type": "string"})
+    s.set_value("string", value)
+    s.save()
+    cache.delete(f"jhe_setting:{key}")
 
 
 @pytest.fixture
-def no_ow_settings(settings):
+def ow_settings(db):
+    """Configure OW integration via JheSettings (what the view reads)."""
+    _set_ow_setting("ow.api_url", "https://ow.example.com")
+    _set_ow_setting("ow.api_key", "sk-test-api-key-12345678")
+
+
+@pytest.fixture
+def no_ow_settings(db):
     """Force OW config off regardless of the host environment."""
-    settings.OW_API_URL = ""
-    settings.OW_API_KEY = ""
+    _set_ow_setting("ow.api_url", "")
+    _set_ow_setting("ow.api_key", "")
 
 
 # ============================================================================
@@ -235,9 +261,9 @@ class TestOwConfig:
         assert resp.status_code == 500
         assert "not configured" in resp.json()["error"].lower()
 
-    def test_returns_error_when_partial_settings(self, settings, ow_client):
+    def test_returns_error_when_partial_settings(self, db, ow_client):
         """Only one of the two required settings is configured."""
-        settings.OW_API_URL = "https://ow.example.com"
-        settings.OW_API_KEY = ""
+        _set_ow_setting("ow.api_url", "https://ow.example.com")
+        _set_ow_setting("ow.api_key", "")
         resp = ow_client.post("/api/v1/ow/users")
         assert resp.status_code == 500

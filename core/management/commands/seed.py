@@ -71,6 +71,7 @@ class Command(BaseCommand):
             self.seed_health_system(root_organization)
             self.seed_oauth_application()
             self.seed_mcp_broker_application()
+            self.seed_sof_ehr_launch_application()
 
         if options.get("with_rich_demo"):
             self.stdout.write("Generating rich demo data (CGM + Oura)…")
@@ -100,9 +101,27 @@ class Command(BaseCommand):
             # OAuth client_ids whose auth-code login uses the email one-time-code
             # flow (/accounts/login-otp/) instead of the password form.
             ("auth.patient_access_clients", "json", []),
+            # SMART on FHIR EHR-launch token exchange (/o/token-exchange).
+            # trusted_issuers: EHR OIDC issuers (id_token `iss`) whose id_tokens we
+            # accept; JWKS is discovered from each. trusted_audience: the SMART app's
+            # client_id registered at the EHR (the id_token `aud`). The example values
+            # match the Epic MyChart POC client seeded in seed_clients().
+            # See TOKEN_EXCHANGE_TMP_README.md.
+            (
+                "auth.sof.trusted_issuers",
+                "json",
+                ["https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4"],
+            ),
+            ("auth.sof.trusted_audience", "string", "77849e74-8e2a-4c2f-826c-bdbef6da3357"),
             # Open Wearables polling pipeline (see ow_poll management command).
             ("module.ow", "bool", False),
             ("ow.sync_in_progress", "string", ""),
+            # Open Wearables connection config (moved from env). api_key is a secret —
+            # left blank in the seed for an operator to fill in; api_url defaults to the
+            # local OW dev server. Consumed at runtime via get_setting() in ow.py /
+            # patient.py / ow_poll.
+            ("ow.api_url", "string", "http://localhost:8001"),
+            ("ow.api_key", "string", ""),
         ]
         for key, value_type, value in jhe_settings:
             setting, _ = JheSetting.objects.update_or_create(
@@ -635,6 +654,38 @@ class Command(BaseCommand):
                 "client_type": "confidential",
                 "authorization_grant_type": "authorization-code",
                 "redirect_uris": redirect_uri,
+                "skip_authorization": True,
+                "algorithm": "RS256",
+                "user_id": None,
+            },
+        )
+
+    def seed_sof_ehr_launch_application(self):
+        """Seed the "SoF EHR Launch" confidential OAuth client used by /o/token-exchange.
+
+        An external SMART on FHIR app authenticates to the token-exchange endpoint
+        with this client's id + secret, then exchanges an EHR-issued id_token for a
+        JHE user-bound access token linked to this Application. The grant type is
+        recorded as ``client-credentials`` because the app authenticates directly with
+        id+secret at the token endpoint (no browser redirect); the issued token is
+        nonetheless user-bound (see TOKEN_EXCHANGE_TMP_README.md).
+
+        The seeded credentials are DEV-ONLY placeholders — rotate them for any real
+        deployment (or override via SOF_EHR_LAUNCH_CLIENT_ID / _SECRET). DOT hashes the
+        plaintext secret on save (hash_client_secret=True); the app sends the matching
+        plaintext.
+        """
+        client_id = os.environ.get("SOF_EHR_LAUNCH_CLIENT_ID", "sof-ehr-launch")
+        client_secret = os.environ.get("SOF_EHR_LAUNCH_CLIENT_SECRET", "sof-ehr-launch-dev-secret")
+        get_application_model().objects.update_or_create(
+            name="SoF EHR Launch",
+            defaults={
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "hash_client_secret": True,
+                "client_type": "confidential",
+                "authorization_grant_type": "client-credentials",
+                "redirect_uris": "",
                 "skip_authorization": True,
                 "algorithm": "RS256",
                 "user_id": None,

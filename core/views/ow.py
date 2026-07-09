@@ -17,6 +17,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from core.models import CodeableConcept, DataSource, JheUser, Observation
+from core.services.jhe_settings import get_setting
 
 logger = logging.getLogger(__name__)
 
@@ -31,8 +32,8 @@ def create_ow_user(request):
     then stores the returned OW user_id in the JHE user's identifier field.
     """
     user = request.user
-    ow_api_url = settings.OW_API_URL
-    ow_api_key = settings.OW_API_KEY
+    ow_api_url = get_setting("ow.api_url", "")
+    ow_api_key = get_setting("ow.api_key", "")
 
     if not ow_api_url or not ow_api_key:
         return Response({"error": "OW integration not configured"}, status=500)
@@ -85,8 +86,8 @@ def get_oura_auth_url(request):
     Populates user_id from the bearer token (looked up from identifier field).
     """
     user = request.user
-    ow_api_url = settings.OW_API_URL
-    ow_api_key = settings.OW_API_KEY
+    ow_api_url = get_setting("ow.api_url", "")
+    ow_api_key = get_setting("ow.api_key", "")
 
     if not ow_api_url or not ow_api_key:
         return Response({"error": "OW integration not configured"}, status=500)
@@ -132,8 +133,8 @@ def oura_oauth_callback(request):
     the user authorizes. We forward the request to the OW backend which
     exchanges the code for tokens, then follow its redirect response.
     """
-    ow_api_url = settings.OW_API_URL
-    ow_api_key = settings.OW_API_KEY
+    ow_api_url = get_setting("ow.api_url", "")
+    ow_api_key = get_setting("ow.api_key", "")
 
     if not ow_api_url or not ow_api_key:
         return Response({"error": "OW integration not configured"}, status=500)

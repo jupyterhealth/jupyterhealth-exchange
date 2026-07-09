@@ -2,7 +2,6 @@ import inspect
 import logging
 from datetime import datetime
 
-from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
@@ -41,6 +40,7 @@ from core.serializers import (
     StudyPatientScopeConsentSerializer,
     StudyPendingConsentsSerializer,
 )
+from core.services.jhe_settings import get_setting
 
 
 class PatientViewSet(ModelViewSet):
@@ -265,8 +265,8 @@ class PatientViewSet(ModelViewSet):
             return Response({"connections": [], "connected": False})
 
         ow_user_id = jhe_user.identifier.removeprefix("ow:")
-        ow_api_url = settings.OW_API_URL
-        ow_api_key = settings.OW_API_KEY
+        ow_api_url = get_setting("ow.api_url", "")
+        ow_api_key = get_setting("ow.api_key", "")
         if not ow_api_url or not ow_api_key:
             return Response({"error": "OW integration not configured"}, status=500)
 
@@ -421,8 +421,8 @@ class PatientViewSet(ModelViewSet):
 
             # All scopes revoked for this study - disconnect OW vendor connection
             ow_user_id = jhe_user.identifier.removeprefix("ow:")
-            ow_api_url = settings.OW_API_URL
-            ow_api_key = settings.OW_API_KEY
+            ow_api_url = get_setting("ow.api_url", "")
+            ow_api_key = get_setting("ow.api_key", "")
             if not ow_api_url or not ow_api_key:
                 logger.warning("Cannot revoke OW connection: OW integration not configured")
                 return

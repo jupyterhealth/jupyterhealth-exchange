@@ -45,9 +45,9 @@ def _hold_sync_lock(acquired_at=None):
 
 
 @pytest.fixture(autouse=True)
-def _ow_settings(settings):
-    settings.OW_API_URL = OW_API_URL
-    settings.OW_API_KEY = OW_API_KEY
+def _ow_settings(db):
+    _set_jhe_setting("ow.api_url", OW_API_URL, value_type="string")
+    _set_jhe_setting("ow.api_key", OW_API_KEY, value_type="string")
 
 
 @pytest.fixture(autouse=True)
@@ -203,16 +203,16 @@ def test_lock_released_on_exception(db, ow_user, hr_concept):
     assert not get_setting("ow.sync_in_progress")
 
 
-def test_aborts_when_settings_missing(db, ow_user, hr_concept, settings):
-    settings.OW_API_URL = ""
-    settings.OW_API_KEY = ""
+def test_aborts_when_settings_missing(db, ow_user, hr_concept):
+    _set_jhe_setting("ow.api_url", "", value_type="string")
+    _set_jhe_setting("ow.api_key", "", value_type="string")
     _set_jhe_setting("module.ow", True)
     _clear_sync_lock()
 
     err = StringIO()
     call_command("ow_poll", stdout=StringIO(), stderr=err)
 
-    assert "OW_API_URL" in err.getvalue()
+    assert "ow.api_url" in err.getvalue()
     assert Observation.objects.count() == 0
     assert not get_setting("ow.sync_in_progress")
 

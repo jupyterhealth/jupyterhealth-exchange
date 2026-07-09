@@ -149,26 +149,6 @@ Entities are based on the [HL7 FHIR model](https://build.fhir.org/), a widely us
 9. Upload Observations using the FHIR API and access token.
 10. View the Observations from the Web UI.
 
-## SMART on FHIR Token Exchange
-
-JHE supports cross-vendor provider SSO via `POST /o/token-exchange` (RFC 8693). A SMART
-app sends the EHR-issued OIDC **id_token**; JHE verifies it offline using the EHR's JWKS
-(discovered at `{iss}/.well-known/smart-configuration`), reads the `fhirUser` claim, maps
-it to a JHE `Practitioner` via `JheUser.identifier`, and issues a JHE access token. No
-userinfo or introspection endpoint is required.
-
-### Required environment variables
-
-| Variable | Description | Example |
-| --- | --- | --- |
-| `TRUSTED_TOKEN_ISSUERS` | Comma-separated list of trusted EHR OIDC issuer URLs (the id_token `iss`). Only tokens whose `iss` is in this list are accepted. | `https://ehr-a.example/fhir,https://ehr-b.example/fhir` |
-| `TRUSTED_TOKEN_AUDIENCE` | The SMART app's `client_id` as registered at the EHR. JHE rejects id_tokens whose `aud` does not match. | `my-smart-client-id` |
-
-`TRUSTED_TOKEN_IDP` (the older single-issuer setting) is still supported — its value is
-automatically added to the `TRUSTED_TOKEN_ISSUERS` list for backwards compatibility.
-
-See `.env.example` for a copy-paste starting point.
-
 ## Contributing
 
 See [doc](https://jupyterhealth.github.io/software-documentation/) for test requirements, coding standards, and PR checklist.

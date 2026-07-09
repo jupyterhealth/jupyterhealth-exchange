@@ -23,16 +23,14 @@ The command no-ops in two situations:
    still running). Locks older than ``LOCK_STALE_AFTER`` are treated as
    abandoned (e.g. crashed worker) and force-reclaimed.
 
-OW connection config (``OW_API_URL``, ``OW_API_KEY``) is read from
-``django.conf.settings`` and ultimately from environment variables, matching
-``core/views/ow.py``.
+OW connection config (``ow.api_url``, ``ow.api_key``) is read from JheSettings
+via ``get_setting()``, matching ``core/views/ow.py``.
 """
 
 import logging
 from datetime import datetime, timedelta
 
 import requests
-from django.conf import settings
 from django.core.cache import cache
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError, transaction
@@ -146,10 +144,10 @@ class Command(BaseCommand):
             self.stderr.write(f"ow_poll aborted: unknown ow.ingest_mode '{mode}'")
             return
 
-        ow_api_url = (settings.OW_API_URL or "").rstrip("/")
-        ow_api_key = settings.OW_API_KEY
+        ow_api_url = (get_setting("ow.api_url", "") or "").rstrip("/")
+        ow_api_key = get_setting("ow.api_key", "")
         if mode == "normalized" and (not ow_api_url or not ow_api_key):
-            self.stderr.write("ow_poll aborted: OW_API_URL / OW_API_KEY not configured")
+            self.stderr.write("ow_poll aborted: ow.api_url / ow.api_key not configured")
             return
 
         try:

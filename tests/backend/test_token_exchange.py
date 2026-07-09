@@ -13,6 +13,10 @@ ID_TOKEN_TYPE = "urn:ietf:params:oauth:token-type:id_token"
 ACCESS_TOKEN_TYPE = "urn:ietf:params:oauth:token-type:access_token"
 GRANT = "urn:ietf:params:oauth:grant-type:token-exchange"
 
+# Confidential "SoF EHR Launch" client used to authenticate to the exchange endpoint.
+CLIENT_ID = "test-sof-client"
+CLIENT_SECRET = "test-sof-secret"
+
 
 @pytest.fixture
 def rsa_private_pem():
@@ -26,13 +30,43 @@ def rsa_private_pem():
 
 
 @pytest.fixture(autouse=True)
-def trust_settings(settings):
+def trust_settings(settings, db):
+    """Configure the token exchange via JheSettings (auth.sof.*), matching runtime."""
     from django.core.cache import cache
 
+    from core.models import JheSetting
+
     settings.SITE_URL = "http://testserver"
-    settings.TRUSTED_TOKEN_ISSUERS = [ISS]
-    settings.TRUSTED_TOKEN_AUDIENCE = AUD
+
+    def _set(key, value_type, value):
+        s, _ = JheSetting.objects.update_or_create(key=key, defaults={"value_type": value_type})
+        s.set_value(value_type, value)
+        s.save()
+        cache.delete(f"jhe_setting:{key}")
+
+    _set("auth.sof.trusted_issuers", "json", [ISS])
+    _set("auth.sof.trusted_audience", "string", AUD)
     cache.delete("jhe_setting:site.url")
+
+
+@pytest.fixture(autouse=True)
+def sof_client(db):
+    """The confidential client an external SMART app authenticates as."""
+    from oauth2_provider.models import get_application_model
+
+    app = get_application_model()(
+        name="Test SoF EHR Launch",
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,  # DOT hashes on save (hash_client_secret=True)
+        client_type="confidential",
+        authorization_grant_type="client-credentials",
+        hash_client_secret=True,
+        redirect_uris="",
+        skip_authorization=True,
+        algorithm="RS256",
+    )
+    app.save()
+    return app
 
 
 @pytest.fixture(autouse=True)
@@ -58,19 +92,22 @@ def make_token(
     return jwt.encode(claims, key or priv_pem, algorithm=alg)
 
 
-def post(client, token):
-    return client.post(
-        "/o/token-exchange",
-        data={
-            "subject_token": token,
-            "subject_token_type": ID_TOKEN_TYPE,
-            "requested_token_type": ACCESS_TOKEN_TYPE,
-            "audience": "http://testserver",
-            "grant_type": GRANT,
-            "iss": ISS,
-            "scope": "openid",
-        },
-    )
+def post(client, token, *, client_id=CLIENT_ID, client_secret=CLIENT_SECRET, **overrides):
+    data = {
+        "subject_token": token,
+        "subject_token_type": ID_TOKEN_TYPE,
+        "requested_token_type": ACCESS_TOKEN_TYPE,
+        "audience": "http://testserver",
+        "grant_type": GRANT,
+        "scope": "openid",
+    }
+    # client_secret_post: client credentials in the form body.
+    if client_id is not None:
+        data["client_id"] = client_id
+    if client_secret is not None:
+        data["client_secret"] = client_secret
+    data.update(overrides)
+    return client.post("/o/token-exchange", data=data)
 
 
 # `user` fixture (conftest) is a practitioner with identifier="test-practitioner".
@@ -81,6 +118,31 @@ def test_valid_id_token_issues_jhe_token(client, user, rsa_private_pem):
     body = r.json()
     assert body["access_token"]
     assert body["token_type"] == "Bearer"
+
+
+def test_issued_token_linked_to_client_and_user(client, user, sof_client, rsa_private_pem):
+    """The issued access token must be linked to the authenticated client and the
+    resolved Practitioner (not an orphan token with application=NULL)."""
+    from oauth2_provider.models import get_access_token_model
+
+    priv, _ = rsa_private_pem
+    r = post(client, make_token(priv))
+    assert r.status_code == 200, r.content
+    tok = get_access_token_model().objects.get(token=r.json()["access_token"])
+    assert tok.application_id == sof_client.id
+    assert tok.user_id == user.id
+
+
+def test_missing_client_auth_unauthorized(client, user, rsa_private_pem):
+    priv, _ = rsa_private_pem
+    r = post(client, make_token(priv), client_id=None, client_secret=None)
+    assert r.status_code == 401
+
+
+def test_wrong_client_secret_unauthorized(client, user, rsa_private_pem):
+    priv, _ = rsa_private_pem
+    r = post(client, make_token(priv), client_secret="wrong-secret")
+    assert r.status_code == 401
 
 
 def test_trailing_slash_issuer_accepted(client, user, rsa_private_pem):
@@ -96,18 +158,7 @@ def test_trailing_slash_issuer_accepted(client, user, rsa_private_pem):
 
 def test_untrusted_issuer_forbidden(client, user, rsa_private_pem):
     priv, _ = rsa_private_pem
-    r = client.post(
-        "/o/token-exchange",
-        data={
-            "subject_token": make_token(priv, iss="https://evil.example"),
-            "subject_token_type": ID_TOKEN_TYPE,
-            "requested_token_type": ACCESS_TOKEN_TYPE,
-            "audience": "http://testserver",
-            "grant_type": GRANT,
-            "iss": "https://evil.example",
-            "scope": "openid",
-        },
-    )
+    r = post(client, make_token(priv, iss="https://evil.example"))
     assert r.status_code == 403
 
 
@@ -148,16 +199,5 @@ def test_duplicate_identifier_not_found(client, user, rsa_private_pem):
 def test_audience_mismatch_bad_request(client, user, rsa_private_pem):
     """audience != SITE_URL must be rejected with HTTP 400."""
     priv, _ = rsa_private_pem
-    r = client.post(
-        "/o/token-exchange",
-        data={
-            "subject_token": make_token(priv),
-            "subject_token_type": ID_TOKEN_TYPE,
-            "requested_token_type": ACCESS_TOKEN_TYPE,
-            "audience": "https://wrong.example.org",
-            "grant_type": GRANT,
-            "iss": ISS,
-            "scope": "openid",
-        },
-    )
+    r = post(client, make_token(priv), audience="https://wrong.example.org")
     assert r.status_code == 400
