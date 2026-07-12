@@ -449,7 +449,9 @@ def token_exchange(request: HttpRequest):
         uri=request.build_absolute_uri(),
         http_method="POST",
         body=request.POST.urlencode(),
-        headers={"Authorization": request.META.get("HTTP_AUTHORIZATION", "")},
+        # django-oauth-toolkit's _extract_basic_auth reads the WSGI-style
+        # "HTTP_AUTHORIZATION" key, not "Authorization".
+        headers={"HTTP_AUTHORIZATION": request.META.get("HTTP_AUTHORIZATION", "")},
     )
     if not validator.authenticate_client(oauth_request):
         return json_error("Client authentication failed", status_code=401)

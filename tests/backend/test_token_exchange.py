@@ -92,7 +92,7 @@ def make_token(
     return jwt.encode(claims, key or priv_pem, algorithm=alg)
 
 
-def post(client, token, *, client_id=CLIENT_ID, client_secret=CLIENT_SECRET, **overrides):
+def post(client, token, *, client_id=CLIENT_ID, client_secret=CLIENT_SECRET, http_authorization=None, **overrides):
     data = {
         "subject_token": token,
         "subject_token_type": ID_TOKEN_TYPE,
@@ -107,7 +107,8 @@ def post(client, token, *, client_id=CLIENT_ID, client_secret=CLIENT_SECRET, **o
     if client_secret is not None:
         data["client_secret"] = client_secret
     data.update(overrides)
-    return client.post("/o/token-exchange", data=data)
+    extra = {"HTTP_AUTHORIZATION": http_authorization} if http_authorization else {}
+    return client.post("/o/token-exchange", data=data, **extra)
 
 
 # `user` fixture (conftest) is a practitioner with identifier="test-practitioner".
@@ -142,6 +143,41 @@ def test_missing_client_auth_unauthorized(client, user, rsa_private_pem):
 def test_wrong_client_secret_unauthorized(client, user, rsa_private_pem):
     priv, _ = rsa_private_pem
     r = post(client, make_token(priv), client_secret="wrong-secret")
+    assert r.status_code == 401
+
+
+def test_http_basic_client_auth_accepted(client, user, rsa_private_pem):
+    """Client credentials via HTTP Basic (client_secret_basic) must also work — both
+    placements are documented. Regression: the oauthlib Request was built with an
+    'Authorization' header key, but django-oauth-toolkit's _extract_basic_auth reads
+    'HTTP_AUTHORIZATION', so Basic auth could never succeed."""
+    import base64
+
+    priv, _ = rsa_private_pem
+    creds = base64.b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
+    r = post(
+        client,
+        make_token(priv),
+        client_id=None,
+        client_secret=None,
+        http_authorization=f"Basic {creds}",
+    )
+    assert r.status_code == 200, r.content
+    assert r.json()["access_token"]
+
+
+def test_http_basic_wrong_secret_unauthorized(client, user, rsa_private_pem):
+    import base64
+
+    priv, _ = rsa_private_pem
+    creds = base64.b64encode(f"{CLIENT_ID}:wrong-secret".encode()).decode()
+    r = post(
+        client,
+        make_token(priv),
+        client_id=None,
+        client_secret=None,
+        http_authorization=f"Basic {creds}",
+    )
     assert r.status_code == 401
 
 
