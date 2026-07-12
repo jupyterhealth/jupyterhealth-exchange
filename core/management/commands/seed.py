@@ -104,13 +104,15 @@ class Command(BaseCommand):
             # SMART on FHIR EHR-launch token exchange (/o/token-exchange).
             # trusted_issuers: EHR OIDC issuers (id_token `iss`) whose id_tokens we
             # accept; JWKS is discovered from each. trusted_audience: the SMART app's
-            # client_id registered at the EHR (the id_token `aud`). The example values
-            # match the Epic MyChart POC client seeded in seed_clients().
-            # See TOKEN_EXCHANGE_TMP_README.md.
+            # client_id registered at the EHR (the id_token `aud`).
+            # NB: the issuer is the id_token's literal `iss` — per standard OIDC this
+            # is the EHR's OAuth server, NOT its FHIR base (verified live against the
+            # Epic sandbox 2026-07-12; MedPlum is the outlier whose iss is the FHIR
+            # base URL with a trailing slash). See TOKEN_EXCHANGE_TMP_README.md.
             (
                 "auth.sof.trusted_issuers",
                 "json",
-                ["https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4"],
+                ["https://fhir.epic.com/interconnect-fhir-oauth/oauth2"],
             ),
             ("auth.sof.trusted_audience", "string", "77849e74-8e2a-4c2f-826c-bdbef6da3357"),
             # Open Wearables polling pipeline (see ow_poll management command).

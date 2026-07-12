@@ -61,7 +61,7 @@ Configured at runtime via `JheSetting` rows (not env vars). Both are created by
 
 | Key | Type | Meaning | Seeded example |
 | --- | --- | --- | --- |
-| `auth.sof.trusted_issuers` | `json` (array of strings) | EHR OIDC issuers (`id_token.iss`) whose tokens are accepted; JWKS is discovered from each. | `["https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4"]` |
+| `auth.sof.trusted_issuers` | `json` (array of strings) | EHR OIDC issuers (`id_token.iss`) whose tokens are accepted; JWKS is discovered from each. NB: use the id_token's **literal `iss`** — per standard OIDC this is the EHR's OAuth server, NOT its FHIR base (Epic sandbox: `…/interconnect-fhir-oauth/oauth2`; MedPlum is the outlier, using its FHIR base with a trailing slash). | `["https://fhir.epic.com/interconnect-fhir-oauth/oauth2"]` |
 | `auth.sof.trusted_audience` | `string` | The SMART app's `client_id` at the EHR (`id_token.aud`). | `77849e74-8e2a-4c2f-826c-bdbef6da3357` |
 
 Update them via the JheSettings admin/API - values are cached for ~60s; a change takes effect within that window.
