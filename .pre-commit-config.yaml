@@ -1,7 +1,7 @@
 repos:
   # autoformat and lint Python code
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 77039ccbba72c8aede339c5f8ae29b42aced0a2e  # frozen: v0.15.18
+    rev: 01a675ea018f2fb714478a5ffb83fcea8374bb06  # frozen: v0.15.21
     hooks:
       - id: ruff-check
         types_or:
