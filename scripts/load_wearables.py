@@ -9,10 +9,11 @@ risk-score-correlated sleep, activity, and nightly vitals.
 Run on fly:  python manage.py shell -c "exec(open('/tmp/load_wearables.py').read())"
 Run locally: python manage.py shell < scripts/load_wearables.py
 """
+
 import math
 import random
 import uuid
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import UTC, datetime, time, timedelta
 
 from django.db import connection, transaction
 
@@ -51,7 +52,7 @@ SCOPES = [
 
 def _iso(dt):
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
     return dt.isoformat().replace("+00:00", "Z")
 
 
@@ -60,7 +61,7 @@ def _header(coding_code):
     return {
         "header": {
             "uuid": str(uuid.uuid4()),
-            "source_creation_date_time": _iso(datetime.now(timezone.utc)),
+            "source_creation_date_time": _iso(datetime.now(UTC)),
             "schema_id": {"namespace": namespace, "name": name, "version": version},
             "modality": "sensed",
             "acquisition_provenance": {"source_name": SOURCE_NAME},
@@ -99,7 +100,7 @@ def _generate_day(day, day_index, age, risk, rng):
     bedtime_minute = int((bedtime_hour % 1) * 60)
     sleep_start = datetime.combine(
         day - timedelta(days=1),
-        time(hour=int(bedtime_hour), minute=bedtime_minute, tzinfo=timezone.utc),
+        time(hour=int(bedtime_hour), minute=bedtime_minute, tzinfo=UTC),
     )
 
     latency_sec = int((10 + 25 * risk + weekday_factor * 5 + rng.uniform(-3, 8)) * 60)
@@ -253,7 +254,9 @@ def main():
     # CodeableConcepts (create the 5 new ones; reuse the 3 existing omh vitals).
     cc_by_code = {}
     for code, system, label in SCOPES:
-        cc, _ = CodeableConcept.objects.get_or_create(coding_code=code, defaults={"coding_system": system, "text": label})
+        cc, _ = CodeableConcept.objects.get_or_create(
+            coding_code=code, defaults={"coding_system": system, "text": label}
+        )
         cc_by_code[code] = cc
 
     with transaction.atomic():

@@ -11,6 +11,7 @@ leaving any unrelated blood-glucose / Oura data intact.
 
 Run: python manage.py shell -c "exec(open('/tmp/shift_iglu_dates.py').read())"
 """
+
 from datetime import date, timedelta
 
 from django.db import connection, transaction
@@ -60,7 +61,7 @@ def main():
         cur.execute(_SPAN_SQL, [bg.id, pids])
         gmin, gmax = cur.fetchone()
     delta = (ANCHOR_MAX - gmax).days
-    print(f"before:  {gmin} -> {gmax}   (delta {delta} days, ~{delta/365.25:.1f} yr)")
+    print(f"before:  {gmin} -> {gmax}   (delta {delta} days, ~{delta / 365.25:.1f} yr)")
 
     with transaction.atomic():
         with connection.cursor() as cur:
@@ -75,8 +76,7 @@ def main():
         print(f"blood-glucose consents shifted: {shifted_consents}")
         with connection.cursor() as cur:
             cur.execute(
-                "DELETE FROM core_observation "
-                "WHERE (omh_data #>> '{header,acquisition_provenance,source_name}') = %s",
+                "DELETE FROM core_observation WHERE (omh_data #>> '{header,acquisition_provenance,source_name}') = %s",
                 [WEARABLE_SOURCE],
             )
             print(f"old wearable observations deleted: {cur.rowcount}")
