@@ -108,7 +108,7 @@ class Command(BaseCommand):
             # NB: the issuer is the id_token's literal `iss` — per standard OIDC this
             # is the EHR's OAuth server, NOT its FHIR base (verified live against the
             # Epic sandbox 2026-07-12; MedPlum is the outlier whose iss is the FHIR
-            # base URL with a trailing slash). See TOKEN_EXCHANGE_TMP_README.md.
+            # base URL with a trailing slash). Docs: https://jupyterhealth.github.io/software-documentation/jhe/provider-ehr-launch
             (
                 "auth.sof.trusted_issuers",
                 "json",
@@ -670,7 +670,7 @@ class Command(BaseCommand):
         JHE user-bound access token linked to this Application. The grant type is
         recorded as ``client-credentials`` because the app authenticates directly with
         id+secret at the token endpoint (no browser redirect); the issued token is
-        nonetheless user-bound (see TOKEN_EXCHANGE_TMP_README.md).
+        nonetheless user-bound (docs: https://jupyterhealth.github.io/software-documentation/jhe/provider-ehr-launch).
 
         The seeded credentials are DEV-ONLY placeholders — rotate them for any real
         deployment (or override via SOF_EHR_LAUNCH_CLIENT_ID / _SECRET). DOT hashes the

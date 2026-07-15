@@ -243,7 +243,7 @@ OAUTH2_PROVIDER_APPLICATION_MODEL = "oauth2_provider.Application"
 
 # SMART on FHIR token exchange (/o/token-exchange) is configured at runtime via
 # JheSettings, not env vars — see the `auth.sof.*` keys seeded in
-# core/management/commands/seed.py and TOKEN_EXCHANGE_TMP_README.md:
+# core/management/commands/seed.py and https://jupyterhealth.github.io/software-documentation/jhe/provider-ehr-launch :
 #   auth.sof.trusted_issuers  (json array) — trusted EHR OIDC issuers (id_token `iss`)
 #   auth.sof.trusted_audience (string)     — the SMART app's client_id at the EHR (id_token `aud`)
 
