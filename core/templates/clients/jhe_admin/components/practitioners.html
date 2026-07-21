@@ -5,6 +5,11 @@
       <div class="mt-2">
           {{#if @root.canManagePractitioners}}
               <button type="button"
+                class="btn btn-sm btn-outline-success me-2"
+                onclick="nav('practitioners',{create: true})">
+                  Add Practitioner...
+              </button>
+              <button type="button"
                 class="btn btn-sm btn-danger"
                 onclick="selectPractitionerIdsForBatchAction()">
                   Delete Practitioner(s)...
@@ -151,6 +156,7 @@
             <form>
               <input id="practitionerId" type="hidden" value="{{practitionerRecord.id}}">
               <fieldset {{#if read }} disabled {{/if}} {{#if delete }} disabled {{/if}}>
+                {{#unless create}}
                 <div class="mb-3">
                   <fieldset disabled>
                     <label for="patientId" class="form-label"
@@ -164,16 +170,17 @@
                     />
                   </fieldset>
                 </div>
+                {{/unless}}
                 <div class="mb-3">
                     <label for="practitionerTelecomEmail" class="form-label"
-                      >E-mail</label
+                      >E-mail{{#if create}}*{{/if}}</label
                     >
                     <input
                       type="text"
                       class="form-control"
                       id="practitionerTelecomEmail"
                       value="{{practitionerRecord.telecomEmail}}"
-                      disabled="disabled"
+                      {{#unless create}}disabled="disabled"{{/unless}}
                     />
                 </div>
                 <div class="mb-3">
@@ -212,7 +219,7 @@
             Close
           </button>
           {{#if create}}
-            <button type="button" class="btn btn-primary" onclick="createPractitioner({{organizationId}})">Create</button>
+            <button type="button" class="btn btn-primary" onclick="createPractitioner()">Create</button>
           {{/if}}
           {{#if update}}
             <button type="button" class="btn btn-primary" onclick="updatePractitioner({{practitionerRecord.id}})">Update</button>

@@ -890,7 +890,7 @@ async function selectPractitionerIdsForBatchAction() {
 
 async function updatePractitioner(id) {
   clearModalValidationErrors();
-  const errors = validatePractitionerForm();
+  const errors = validatePractitionerForm({ checkEmail: false });
   if (errors.length) return displayModalValidationError(errors);
   const practitionerRecord = {
     nameFamily: document.getElementById("practitionerFamilyName").value || null,
@@ -930,8 +930,17 @@ async function deletePractitioner(id, batch) {
   await navReturnFromCrud();
 }
 
-function validatePractitionerForm() {
+function validatePractitionerForm({ checkEmail } = {}) {
   const errors = [];
+  if (checkEmail) {
+    const email =
+      document.getElementById("practitionerTelecomEmail")?.value?.trim() || "";
+    if (!email) {
+      errors.push("Practitioner e-mail is required.");
+    } else if (!isValidPatientEmail(email)) {
+      errors.push("Practitioner e-mail is not a valid e-mail address.");
+    }
+  }
   const family =
     document.getElementById("practitionerFamilyName")?.value?.trim() || "";
   const given =
@@ -939,6 +948,19 @@ function validatePractitionerForm() {
   if (!family) errors.push("Family name is required.");
   if (!given) errors.push("Given name is required.");
   return errors;
+}
+
+async function createPractitioner() {
+  clearModalValidationErrors();
+  const errors = validatePractitionerForm({ checkEmail: true });
+  if (errors.length) return displayModalValidationError(errors);
+  const practitionerRecord = {
+    telecomEmail: document.getElementById("practitionerTelecomEmail").value.trim(),
+    nameFamily: document.getElementById("practitionerFamilyName").value || null,
+    nameGiven: document.getElementById("practitionerGivenName").value || null,
+  };
+  const response = await apiRequest("POST", `practitioners`, practitionerRecord);
+  if (response.ok) await navReturnFromCrud();
 }
 
 
@@ -1274,6 +1296,7 @@ if (typeof window !== "undefined") {
   window.isValidPatientPhone = isValidPatientPhone;
   window.validatePatientForm = validatePatientForm;
   window.collectPatientIdentifiers = collectPatientIdentifiers;
+  window.validatePractitionerForm = validatePractitionerForm;
 }
 
 function renderPatientAddIdentifierInput() {
