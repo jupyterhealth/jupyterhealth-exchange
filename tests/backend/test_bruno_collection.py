@@ -53,6 +53,7 @@ ALLOWED_VARIABLES = {
     "USER_ID",
     "DATA_SOURCE_ID",
     "CLIENT_APP_ID",
+    "FHIR_SOURCE_ID",
 }
 
 # IDs that look hardcoded (bare numbers in URLs or bodies)
@@ -1098,6 +1099,40 @@ class TestEdgeCases:
         assert bundle["resourceType"] == "Bundle"
         assert bundle["total"] == 5
         assert bundle["entry"] == []
+
+    def test_register_fhir_source(self, patient, device):
+        """FHIR/Register FHIR Source.yml -- a patient registers a source to write aux resources under."""
+        client = APIClient()
+        client.default_format = "json"
+        client.force_authenticate(patient.jhe_user)
+        r = client.post(
+            "/api/v1/fhir_sources",
+            {"label": "Momentum App", "fhir_base_url": "https://momentum.example/app", "data_source": device.id},
+        )
+        assert r.status_code == 201, r.content
+        assert r.json()["id"]
+
+    def test_create_questionnaire_response(self, patient, device):
+        """FHIR/Create QuestionnaireResponse.yml -- aux write with the X-JHE-FHIR-Source-ID header."""
+        from core.models import FhirSource
+
+        source = FhirSource.objects.create(
+            patient=patient, data_source=device, label="Momentum App", fhir_base_url="https://momentum.example/app"
+        )
+        client = APIClient()
+        client.default_format = "json"
+        client.force_authenticate(patient.jhe_user)
+        body = {
+            "resourceType": "QuestionnaireResponse",
+            "status": "completed",
+            "questionnaire": "Questionnaire/weekly-symptom-severity-vas",
+            "subject": {"reference": f"Patient/{patient.id}"},
+            "authored": "2026-05-28T14:30:00Z",
+            "item": [{"linkId": "cough-severity", "answer": [{"valueInteger": 37}]}],
+        }
+        r = client.post("/FHIR/R5/QuestionnaireResponse", body, HTTP_X_JHE_FHIR_SOURCE_ID=str(source.id))
+        assert r.status_code == 201, r.content
+        assert r.json()["resourceType"] == "QuestionnaireResponse"
 
 
 # ===================================================================
