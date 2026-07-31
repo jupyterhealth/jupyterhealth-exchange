@@ -19,7 +19,7 @@ BRANDS_MAX_LIMIT = 100
 
 
 def _patient_access_aux_data():
-    """Epic config from the seeded Patient Access JheClient.aux_data (iss/client_id/scopes)."""
+    """EHR config from the seeded Patient Access JheClient.aux_data (client_id/scopes)."""
     app = Application.objects.filter(name=PATIENT_ACCESS_CLIENT_NAME).select_related("jhe_client").first()
     if app is None or getattr(app, "jhe_client", None) is None:
         return {}
@@ -32,7 +32,6 @@ def _config_context():
     # expose the seeded "Patient Access API" DataSource so the client can send it.
     data_source = DataSource.objects.filter(name=PATIENT_ACCESS_DATA_SOURCE_NAME).first()
     return {
-        "patient_access_iss": aux.get("iss", ""),
         "patient_access_client_id": aux.get("client_id", ""),
         "patient_access_scopes": aux.get("scopes", ""),
         "patient_access_data_source_id": data_source.id if data_source else "",
@@ -101,7 +100,7 @@ def brands_search(request):
 def save_patient_identifier(request):
     """
     POST /api/v1/patient-access/identifier  {system, value}
-    Additively attach an external identifier (the Epic patient id) to the
+    Additively attach an external identifier (the EHR patient id) to the
     authenticated patient. get_or_create keeps it idempotent and never replaces
     the patient's other identifiers (unlike the practitioner PATCH path).
     """
@@ -114,5 +113,11 @@ def save_patient_identifier(request):
     if not system or not value:
         return Response({"error": "system and value are required"}, status=400)
 
-    PatientIdentifier.objects.get_or_create(system=system, value=value, defaults={"patient": patient})
+    identifier, created = PatientIdentifier.objects.get_or_create(
+        system=system, value=value, defaults={"patient": patient}
+    )
+    # (system, value) is globally unique, so the existing row may belong to someone else.
+    # Reporting 200 there would tell the caller it was attached when it was not.
+    if not created and identifier.patient_id != patient.id:
+        return Response({"error": "Identifier is already assigned to another patient"}, status=409)
     return Response({"system": system, "value": value})

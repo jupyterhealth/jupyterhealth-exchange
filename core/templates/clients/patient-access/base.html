@@ -12,10 +12,11 @@
     {% block head %}{% endblock %}
   </head>
   <body class="h-100">
-    <!-- Epic config from JheClient.aux_data, injected by the view. -->
+    <!-- EHR config from JheClient.aux_data, injected by the view. No iss here: the
+         hospital the patient picks supplies it (connect), as does the authorized
+         server (callback). -->
     <script>
       var PATIENT_ACCESS_CONFIG = {
-        iss: "{{ patient_access_iss|escapejs }}",
         clientId: "{{ patient_access_client_id|escapejs }}",
         scope: "{{ patient_access_scopes|escapejs }}",
         dataSourceId: "{{ patient_access_data_source_id|escapejs }}",

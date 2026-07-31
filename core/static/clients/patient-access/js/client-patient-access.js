@@ -73,7 +73,7 @@ async function paRedeemInvitation(out) {
 
 // Attach the Epic patient id to the JHE patient (additive). Returns true on success.
 async function paSavePatientIdentifier(jheToken, system, value) {
-  var response = await fetch(API_ENDPOINT + "patient_access/identifier", {
+  var response = await fetch(API_ENDPOINT + "patient-access/identifier", {
     method: "POST",
     headers: {
       Authorization: "Bearer " + jheToken,
@@ -176,7 +176,7 @@ async function paPullResourceType(client, jheToken, sourceId, pull, iss) {
 
 // Search hospital brands for the picker. Returns an array of facility rows (or []).
 async function paSearchBrands(jheToken, query) {
-  var url = API_ENDPOINT + "patient_access/brands?q=" + encodeURIComponent(query || "");
+  var url = API_ENDPOINT + "patient-access/brands?q=" + encodeURIComponent(query || "");
   var response = await fetch(url, {
     headers: { Authorization: "Bearer " + jheToken, "Cache-Control": "no-cache" },
   });
@@ -290,14 +290,22 @@ async function finishPatientAccessConnect(out, config) {
   }
   out.textContent += "\nEHR patient id: " + epicPatientId;
 
-  var idOk = await paSavePatientIdentifier(jheToken, config.iss, epicPatientId);
+  // Provenance must be the hospital the patient actually picked and authorized against,
+  // which fhir-client records as state.serverUrl - not any single configured default.
+  var iss = client.state && client.state.serverUrl;
+  if (!iss) {
+    out.textContent += "\nError: no FHIR server URL from Patient Access authorization";
+    return;
+  }
+
+  var idOk = await paSavePatientIdentifier(jheToken, iss, epicPatientId);
   if (!idOk) {
     out.textContent += "\nError: failed to store Patient Access patient id";
     return;
   }
   out.textContent += "\nStored Patient Access patient id in JHE";
 
-  var sourceId = await paCreateFhirSource(jheToken, config.iss, config.dataSourceId);
+  var sourceId = await paCreateFhirSource(jheToken, iss, config.dataSourceId);
   if (!sourceId) {
     out.textContent += "\nError: failed to register data source";
     return;
@@ -309,7 +317,7 @@ async function finishPatientAccessConnect(out, config) {
   for (var p = 0; p < PATIENT_ACCESS_PULLS.length; p++) {
     var pull = PATIENT_ACCESS_PULLS[p];
     out.textContent += "\n\nFetching " + pull.label + " from Patient Access...";
-    var result = await paPullResourceType(client, jheToken, sourceId, pull, config.iss);
+    var result = await paPullResourceType(client, jheToken, sourceId, pull, iss);
     if (result.error) {
       out.textContent += "\n  could not fetch " + pull.label + ": " + result.error;
       summary.push(pull.label + ": fetch failed");
@@ -330,4 +338,6 @@ if (typeof window !== "undefined") {
   window.paSearchBrands = paSearchBrands;
   window.paAuthorizeWithIss = paAuthorizeWithIss;
   window.paRenderBrandResults = paRenderBrandResults;
+  window.paSavePatientIdentifier = paSavePatientIdentifier;
+  window.finishPatientAccessConnect = finishPatientAccessConnect;
 }

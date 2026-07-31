@@ -19,7 +19,9 @@ describe("paSearchBrands", () => {
 
     expect(out).toEqual(rows);
     const [url, opts] = global.fetch.mock.calls[0];
-    expect(url).toContain("patient_access/brands");
+    // Hyphen, matching the route in core/urls.py. An underscore 404s and paSearchBrands
+    // swallows it into [], so the picker just says "no hospitals found".
+    expect(url).toContain("/api/v1/patient-access/brands");
     expect(url).toContain("q=sinai");
     expect(opts.headers.Authorization).toBe("Bearer tok");
   });

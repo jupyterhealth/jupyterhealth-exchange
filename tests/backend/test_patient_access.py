@@ -3,7 +3,7 @@
 import pytest
 from rest_framework.test import APIClient
 
-from core.models import PatientIdentifier
+from core.models import JheUser, PatientIdentifier
 
 
 @pytest.fixture
@@ -36,6 +36,25 @@ def test_save_identifier_does_not_clobber_other_identifiers(patient, patient_cli
     PatientIdentifier.objects.create(patient=patient, system="existing", value="keepme")
     patient_client.post("/api/v1/patient-access/identifier", {"system": "sys", "value": "v1"})
     assert PatientIdentifier.objects.filter(patient=patient, system="existing", value="keepme").exists()
+
+
+def test_save_identifier_conflicts_when_owned_by_another_patient(organization, patient, patient_client):
+    # (system, value) is globally unique. Without the conflict check the caller gets a 200
+    # and believes the id was attached to them, while the row still points at someone else.
+    other = JheUser.objects.create_user(
+        email="other-patient@example.org",
+        password="testpass123",
+        identifier="other-patient",
+        user_type="patient",
+    ).patient
+    other.organizations.add(organization)
+    PatientIdentifier.objects.create(patient=other, system="sys", value="taken")
+
+    resp = patient_client.post("/api/v1/patient-access/identifier", {"system": "sys", "value": "taken"})
+
+    assert resp.status_code == 409
+    assert PatientIdentifier.objects.get(system="sys", value="taken").patient_id == other.id
+    assert not PatientIdentifier.objects.filter(patient=patient, system="sys", value="taken").exists()
 
 
 def test_save_identifier_requires_patient(db, user):

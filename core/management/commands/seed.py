@@ -258,8 +258,8 @@ class Command(BaseCommand):
                 "name": "Patient Access",
                 "invitation_url": "http://localhost:8001/clients/patient-access/?code=CODE",
                 "data_sources": [],
+                # No iss here: the hospital the patient picks supplies it (EhrBrand.fhir_base_url).
                 "aux_data": {
-                    "iss": "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4",
                     # Non-production client id of the Epic app "JupyterHealth Exchange -
                     # USCDI v3" (appId 55446), the app that has the localhost:8001 +
                     # jhe.fly.dev /clients/patient-access/callback redirect URIs registered.
