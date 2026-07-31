@@ -1,0 +1,23 @@
+info:
+  name: List QuestionnaireResponses for Patient
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{BASE_URL}}/FHIR/R5/QuestionnaireResponse?patient={{PATIENT_ID}}"
+  params:
+    - name: patient
+      value: "{{PATIENT_ID}}"
+      type: query
+    - name: patient._has:Group:member:_id
+      value: "{{STUDY_ID}}"
+      type: query
+      disabled: true
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

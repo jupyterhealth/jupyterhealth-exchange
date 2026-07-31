@@ -1,0 +1,37 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Unit of Mass and Value",
+    "description": "This schema represents a mass.",
+    "type": "object",
+    "allOf": [
+        {
+            "$ref": "unit-value-1.0.json"
+        },
+        {
+            "properties": {
+                "unit": {
+                    "references": [
+                        {
+                            "description": "The unit of measure of the element. Basic unit is gram (g) [ http://unitsofmeasure.org/ucum.html#para-28 ]. Allowed values are drawn from the SI Mass Units and English Mass Units Common Synonyms (non-UCUM) columns of the 'Mass Units' section. The valid UCUM code is different for metric ton (t), grain ([gr]), ounce ([oz_av]), pound ([lb_av]) and Ton ([ston_av]).",
+                            "url": "http://download.hl7.de/documents/ucum/ucumdata.html"
+                        }
+                    ],
+                    "enum": [
+                        "fg",
+                        "pg",
+                        "ng",
+                        "ug",
+                        "mg",
+                        "g",
+                        "kg",
+                        "Metric Ton",
+                        "gr",
+                        "oz",
+                        "lb",
+                        "Ton"
+                    ]
+                }
+            }
+        }
+    ]
+}

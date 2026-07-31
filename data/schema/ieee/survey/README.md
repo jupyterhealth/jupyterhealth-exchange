@@ -1,0 +1,3 @@
+Schemas for example surveys showing how to use these generic survey schemas to model question and answer pairs of various types can be found [here](https://opensource.ieee.org/omh/1752/-/tree/main/sample_data/survey) 
+
+A detailed description of the survey schemas and of how to use them can be found in the [Documents](https://opensource.ieee.org/omh/1752/-/tree/main/documents) section of the repository

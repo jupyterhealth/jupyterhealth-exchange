@@ -1,0 +1,26 @@
+info:
+  name: Register FHIR Source
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/api/v1/fhir_sources"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "label": "Momentum App",
+        "fhir_base_url": "https://momentum.example/app",
+        "data_source": {{DATA_SOURCE_ID}}
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

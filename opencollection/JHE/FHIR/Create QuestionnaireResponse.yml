@@ -1,0 +1,34 @@
+info:
+  name: Create QuestionnaireResponse
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/FHIR/R5/QuestionnaireResponse"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: X-JHE-FHIR-Source-ID
+      value: "{{FHIR_SOURCE_ID}}"
+  body:
+    type: json
+    data: |-
+      {
+        "resourceType": "QuestionnaireResponse",
+        "status": "completed",
+        "questionnaire": "Questionnaire/weekly-symptom-severity-vas",
+        "subject": { "reference": "Patient/{{PATIENT_ID}}" },
+        "authored": "2026-05-28T14:30:00Z",
+        "item": [
+          { "linkId": "cough-severity", "answer": [ { "valueInteger": 37 } ] },
+          { "linkId": "dyspnea-severity", "answer": [ { "valueInteger": 62 } ] }
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

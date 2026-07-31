@@ -1,0 +1,72 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/deep-sleep.json",
+    "title": "Deep Sleep",
+    "type": "object",
+    "description": "This schema represents the deep sleep duration in a sleep session (main sleep or nap), i.e., the duration spent in sleep stage N3.",
+    "definitions": {
+        "duration_unit_value": {
+            "$ref": "duration-unit-value-1.0.json"
+        },
+        "percent_unit_value": {
+            "$ref": "percent-unit-value-1.0.json"
+        },
+        "time_frame": {
+            "$ref": "time-frame-1.0.json"
+        },
+        "descriptive_statistic": {
+            "$ref": "descriptive-statistic-1.0.json"
+        },
+        "descriptive_statistic_denominator": {
+            "$ref": "descriptive-statistic-denominator-1.0.json"
+        }
+    },
+    "properties": {
+        "deep_sleep_duration": {
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "total_sleep_time": {
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "deep_sleep_percentage": {
+            "$ref": "#/definitions/percent_unit_value"
+        },
+        "effective_time_frame": {
+            "description": "The date-time at which, or time interval during which the measurement is asserted as being valid. As a measure of a duration, deep sleep duration should not be associated to a date-time time frame. Hence, effective time frame is restricted to be a time interval.",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/time_frame"
+                },
+                {
+                    "required": [
+                        "time_interval"
+                    ]
+                }
+            ]
+        },
+        "is_main_sleep": {
+            "type": "boolean"
+        },
+        "descriptive_statistic": {
+            "$ref": "#/definitions/descriptive_statistic",
+            "description": "The descriptive statistic of a set of measurements (e.g., average, maximum) within the specified time frame."
+        },
+        "descriptive_statistic_denominator": {
+            "description": "The denominator of the descriptive statistic when the measure has an implicit duration (e.g. if the descriptive statistic is 'average' and the statistic denominator is 'd' the measure describes the average daily measure of deep sleep during the period delimited by the effective time frame).",
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/descriptive_statistic_denominator"
+                },
+                {
+                    "description": "If the value needed is a standard unit of duration, select from the duration-unit-value value set.",
+                    "type": "string"
+                }
+            ]
+        }
+    },
+    "required": [
+        "deep_sleep_duration",
+        "total_sleep_time",
+        "effective_time_frame"
+    ]
+}

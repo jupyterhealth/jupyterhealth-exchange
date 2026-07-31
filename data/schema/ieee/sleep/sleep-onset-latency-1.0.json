@@ -1,0 +1,63 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/sleep-onset-latency.json",
+    "title": "Sleep Onset Latency",
+    "type": "object",
+    "description": "This schema represents sleep onset latency, i.e. the amount of time between when a person starts to want to go to sleep and sleep onset.",
+    "definitions": {
+        "duration_unit_value": {
+            "$ref": "duration-unit-value-1.0.json"
+        },
+        "time_frame": {
+            "$ref": "time-frame-1.0.json"
+        },
+        "descriptive_statistic": {
+            "$ref": "descriptive-statistic-1.0.json"
+        },
+        "descriptive_statistic_denominator": {
+            "$ref": "descriptive-statistic-denominator-1.0.json"
+        }
+    },
+    "properties": {
+        "sleep_onset_latency": {
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "effective_time_frame": {
+            "description": "The date-time at which, or time interval during which the measurement is asserted as being valid. As a measure of a duration, sleep onset latency should not be associated to a date-time time frame. Hence, effective time frame is restricted to be a time interval.",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/time_frame"
+                },
+                {
+                    "required": [
+                        "time_interval"
+                    ]
+                }
+            ]
+        },
+        "is_main_sleep": {
+            "description": "Whether the data refers to a main sleep episode",
+            "type": "boolean"
+        },
+        "descriptive_statistic": {
+            "description": "The descriptive statistic of a set of measurements (e.g., average, maximum) within the specified time frame.",
+            "$ref": "#/definitions/descriptive_statistic"
+        },
+        "descriptive_statistic_denominator": {
+            "description": "The denominator of the descriptive statistic when the measure has an implicit duration (e.g., if the descriptive statistic is 'average' and the statistic denominator is 'd' the measure describes the average daily sleep onset latency during the period delimited by the effective time frame).",
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/descriptive_statistic_denominator"
+                },
+                {
+                    "description": "If the value needed is a standard unit of duration, select from the duration-unit-value value set.",
+                    "type": "string"
+                }
+            ]
+        }
+    },
+    "required": [
+        "sleep_onset_latency",
+        "effective_time_frame"
+    ]
+}

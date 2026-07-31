@@ -171,6 +171,26 @@ def test_aux_search_is_scoped_by_resource_type(api_client, patient, fhir_source)
     assert r.json()["total"] == 0
 
 
+def test_questionnaire_response_search_by_patient(api_client, patient, fhir_source):
+    # Matches the Bruno "List QuestionnaireResponses for Patient" example: a write via the
+    # source header, then a read by the `patient` query param alone (no header needed).
+    body = {
+        "resourceType": "QuestionnaireResponse",
+        "status": "completed",
+        "questionnaire": "Questionnaire/weekly-symptom-severity-vas",
+        "subject": {"reference": f"Patient/{patient.id}"},
+        "authored": "2026-05-28T14:30:00Z",
+    }
+    r = api_client.post("/FHIR/R5/QuestionnaireResponse", body, **_src(fhir_source))
+    assert r.status_code == 201, r.text
+
+    r = api_client.get("/FHIR/R5/QuestionnaireResponse", {"patient": patient.id})
+    assert r.status_code == 200, r.text
+    bundle = r.json()
+    assert bundle["total"] == 1
+    assert bundle["entry"][0]["resource"]["resourceType"] == "QuestionnaireResponse"
+
+
 def test_aux_put_replaces_and_patch_merges(api_client, patient, fhir_source):
     created = api_client.post(
         "/FHIR/R5/Condition",
