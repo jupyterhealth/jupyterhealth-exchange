@@ -1889,12 +1889,46 @@ async function renderFhir(queryParams) {
     queryParams.resource = currentFhirResource;
   }
 
-  // The Resource select lists every supported FHIR resource type (from server settings).
+  // Observation spans two stores and a search hits exactly one (see core/views/fhir.py):
+  // JHE-native OMH device data lives in the mapped model (no _source), while EHR-imported
+  // labs/vitals live in the aux store (_source:below selects every imported row). The
+  // picker therefore splits Observation into per-store/category views instead of exposing
+  // a separate source selector.
+  const OBSERVATION_VIEWS = {
+    "Observation - Device Data": { resource: "Observation", query: {} },
+    "Observation - Labs": {
+      resource: "Observation",
+      query: {
+        "_source:below": "https://jupyterhealth.org/fhir/fhir-source/",
+        category: "laboratory",
+      },
+    },
+    "Observation - Vital Signs": {
+      resource: "Observation",
+      query: {
+        "_source:below": "https://jupyterhealth.org/fhir/fhir-source/",
+        category: "vital-signs",
+      },
+    },
+  };
+
+  // The Resource select lists every supported FHIR resource type (from server settings),
+  // with Observation expanded into its store/category views. The server remembers the
+  // plain path ("Observation"), so a restored value maps to the first Observation view.
+  if (queryParams.resource === "Observation") {
+    queryParams.resource = Object.keys(OBSERVATION_VIEWS)[0];
+  }
   const selectedResource = queryParams.resource || CONSTANTS.FHIR_RESOURCES[0];
-  const resourceForFhirSelect = CONSTANTS.FHIR_RESOURCES.map((resource) => ({
+  const resourceForFhirSelect = CONSTANTS.FHIR_RESOURCES.flatMap((resource) =>
+    resource === "Observation" ? Object.keys(OBSERVATION_VIEWS) : [resource],
+  ).map((resource) => ({
     name: resource,
     selected: resource === selectedResource,
   }));
+  const observationView = OBSERVATION_VIEWS[selectedResource];
+  const selectedResourcePath = observationView
+    ? observationView.resource
+    : selectedResource;
 
   const content = Handlebars.compile(
     document.getElementById("t-fhir").innerHTML,
@@ -1915,9 +1949,13 @@ async function renderFhir(queryParams) {
     fhirQuery["patient._has:Group:member:_id"] = queryParams.studyId;
   }
 
+  if (observationView) {
+    Object.assign(fhirQuery, observationView.query);
+  }
+
   const fhirResponse = await apiRequest(
     "GET",
-    `FHIR/R5/${selectedResource}`,
+    `FHIR/R5/${selectedResourcePath}`,
     fhirQuery,
   );
 

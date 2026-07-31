@@ -159,14 +159,36 @@ async function paWriteResource(jheToken, sourceId, resourceType, resource) {
   return { ok: ok, reason: ok ? null : paEntryFailureReason(entry) || status || "unknown error" };
 }
 
-// USCDI resources pulled for the demo phenotype. `single` reads one instance (Patient),
-// the rest are patient-scoped searches. Order is display order.
+// Every patient-compartment clinical type JHE can ingest today: each has an R4->R5
+// StructureMap and an aux_resources entry in fhir_config.json (reference/meta types like
+// Practitioner, Location and Provenance are resolved from the resources that cite them, not
+// pulled). `single` reads one instance (Patient), the rest are patient-scoped searches.
+// Order is display order. Failures are isolated per type and reported with reasons.
 var PATIENT_ACCESS_PULLS = [
   { label: "Demographics", type: "Patient", query: "Patient", single: true },
   { label: "Conditions", type: "Condition", query: "Condition" },
   { label: "Medications", type: "MedicationRequest", query: "MedicationRequest" },
+  { label: "Medication Dispenses", type: "MedicationDispense", query: "MedicationDispense" },
   { label: "Allergies", type: "AllergyIntolerance", query: "AllergyIntolerance" },
+  { label: "Immunizations", type: "Immunization", query: "Immunization" },
+  { label: "Procedures", type: "Procedure", query: "Procedure" },
+  // Epic requires a category (or code) filter on Observation searches, so each pulled
+  // category is its own query. These map to the "Observation - ..." views in the JHE
+  // FHIR Resources browser; OMH device data is JHE-native and is never pulled from the EHR.
   { label: "Labs", type: "Observation", query: "Observation?category=laboratory" },
+  { label: "Vital Signs", type: "Observation", query: "Observation?category=vital-signs" },
+  { label: "Diagnostic Reports", type: "DiagnosticReport", query: "DiagnosticReport" },
+  { label: "Documents", type: "DocumentReference", query: "DocumentReference" },
+  { label: "Encounters", type: "Encounter", query: "Encounter" },
+  { label: "Care Plans", type: "CarePlan", query: "CarePlan" },
+  { label: "Care Teams", type: "CareTeam", query: "CareTeam" },
+  { label: "Goals", type: "Goal", query: "Goal" },
+  { label: "Family History", type: "FamilyMemberHistory", query: "FamilyMemberHistory" },
+  { label: "Service Requests", type: "ServiceRequest", query: "ServiceRequest" },
+  { label: "Specimens", type: "Specimen", query: "Specimen" },
+  { label: "Coverage", type: "Coverage", query: "Coverage" },
+  { label: "Devices", type: "Device", query: "Device" },
+  { label: "Questionnaire Responses", type: "QuestionnaireResponse", query: "QuestionnaireResponse" },
 ];
 
 // Pull one resource type and write each item to JHE. Isolated so one type's failure

@@ -265,7 +265,20 @@ class Command(BaseCommand):
                     # jhe.fly.dev /clients/patient-access/callback redirect URIs registered.
                     # (Same Epic sandbox app/client id used in the Phase 1 POC.)
                     "client_id": "77849e74-8e2a-4c2f-826c-bdbef6da3357",
-                    "scopes": "openid profile launch/patient patient/Patient.read patient/Observation.read patient/Condition.read patient/MedicationRequest.read patient/AllergyIntolerance.read",
+                    # One read scope per PATIENT_ACCESS_PULLS type (client-patient-access.js);
+                    # the Epic app registration already covers all of these APIs.
+                    "scopes": (
+                        "openid profile launch/patient"
+                        " patient/Patient.read patient/Observation.read patient/Condition.read"
+                        " patient/MedicationRequest.read patient/MedicationDispense.read"
+                        " patient/AllergyIntolerance.read patient/Immunization.read"
+                        " patient/Procedure.read patient/DiagnosticReport.read"
+                        " patient/DocumentReference.read patient/Encounter.read"
+                        " patient/CarePlan.read patient/CareTeam.read patient/Goal.read"
+                        " patient/FamilyMemberHistory.read patient/ServiceRequest.read"
+                        " patient/Specimen.read patient/Coverage.read patient/Device.read"
+                        " patient/QuestionnaireResponse.read"
+                    ),
                 },
             },
         ]
