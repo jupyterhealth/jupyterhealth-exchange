@@ -12,7 +12,7 @@ dependencies = [
     # import mcp.server.lowlevel.server.request_ctx (see fhir/client.py). A
     # minor bump could relocate it; assert_request_ctx_importable() guards at
     # boot, and this narrow pin keeps upgrades deliberate.
-    "mcp>=1.28.0,<1.29",
+    "mcp>=1.28.1,<1.29",
     "httpx>=0.28,<1",
     "pydantic>=2.13,<3",
     "fastapi>=0.138.0,<1",
