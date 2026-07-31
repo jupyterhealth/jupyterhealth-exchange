@@ -1,1 +1,397 @@
-{"resourceType":"StructureMap","id":"DataRequirement4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/DataRequirement4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'DataRequirement4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'DataRequirement Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/DataRequirement<span style=\"color: navy\">&quot; </span><b>alias </b>DataRequirementR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/DataRequirement<span style=\"color: navy\">&quot; </span><b>alias </b>DataRequirementR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>DataRequirement<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>DataRequirementR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>DataRequirementR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.type<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.type = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/cross-version/types4to5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.profile<span style=\"color: navy\"><b> -&gt; </b></span>tgt.profile<span style=\"color: navy\">;</span>\r\n  src.subject<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subject<span style=\"color: navy\">;</span>\r\n  src.subject<span style=\"color: navy\"> : </span>Reference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subject<span style=\"color: navy\">;</span>\r\n  src.mustSupport<span style=\"color: navy\"><b> -&gt; </b></span>tgt.mustSupport<span style=\"color: navy\">;</span>\r\n  src.codeFilter<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.codeFilter<b> as </b><span style=\"color: maroon\">t</span><b> then </b>DataRequirementCodeFilter<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.dateFilter<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.dateFilter<b> as </b><span style=\"color: maroon\">t</span><b> then </b>DataRequirementDateFilter<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.limit<span style=\"color: navy\"><b> -&gt; </b></span>tgt.limit<span style=\"color: navy\">;</span>\r\n  src.sort<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.sort<b> as </b><span style=\"color: maroon\">t</span><b> then </b>DataRequirementSort<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>DataRequirementCodeFilter<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>Element<span style=\"color: navy\"> {\r\n</span>  src.path<span style=\"color: navy\"><b> -&gt; </b></span>tgt.path<span style=\"color: navy\">;</span>\r\n  src.searchParam<span style=\"color: navy\"><b> -&gt; </b></span>tgt.searchParam<span style=\"color: navy\">;</span>\r\n  src.valueSet<span style=\"color: navy\"><b> -&gt; </b></span>tgt.valueSet<span style=\"color: navy\">;</span>\r\n  src.code<span style=\"color: navy\"><b> -&gt; </b></span>tgt.code<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>DataRequirementDateFilter<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>Element<span style=\"color: navy\"> {\r\n</span>  src.path<span style=\"color: navy\"><b> -&gt; </b></span>tgt.path<span style=\"color: navy\">;</span>\r\n  src.searchParam<span style=\"color: navy\"><b> -&gt; </b></span>tgt.searchParam<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Duration<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><span style=\"color: navy\">// </span><span style=\"color: green\">not in R4</span>\r\n<span style=\"color: navy\">// </span><span style=\"color: green\">group DataRequirementValueFilter(source src, target tgt) extends Element {</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.path -&gt; tgt.path;</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.searchParam -&gt; tgt.searchParam;</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.comparator -&gt; tgt.comparator;</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.value : dateTime -&gt; tgt.value;</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.value : Period -&gt; tgt.value;</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.value : Duration -&gt; tgt.value;</span>\r\n<span style=\"color: navy\">// </span><span style=\"color: green\">}</span>\r\n<b>group </b>DataRequirementSort<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>Element<span style=\"color: navy\"> {\r\n</span>  src.path<span style=\"color: navy\"><b> -&gt; </b></span>tgt.path<span style=\"color: navy\">;</span>\r\n  src.direction<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.direction = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/DataRequirement.sort.direction-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/DataRequirement4to5","version":"0.1.0","name":"DataRequirement4to5","title":"DataRequirement Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"DataRequirementTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/DataRequirement","mode":"source","alias":"DataRequirementR4"},{"url":"http://hl7.org/fhir/5.0/DataRequirement","mode":"target","alias":"DataRequirementR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"DataRequirement","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"DataRequirementR4","mode":"source"},{"name":"tgt","type":"DataRequirementR5","mode":"target"}],"rule":[{"name":"type","source":[{"context":"src","element":"type","variable":"v"}],"target":[{"context":"tgt","element":"type","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/cross-version/types4to5"},{"valueString":"code"}]}]},{"name":"profile","source":[{"context":"src","element":"profile","variable":"vvv"}],"target":[{"context":"tgt","element":"profile","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"subjectCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"subject","variable":"vvv"}],"target":[{"context":"tgt","element":"subject","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"subjectReference","source":[{"context":"src","type":"Reference","element":"subject","variable":"vvv"}],"target":[{"context":"tgt","element":"subject","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"mustSupport","source":[{"context":"src","element":"mustSupport","variable":"vvv"}],"target":[{"context":"tgt","element":"mustSupport","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"codeFilter","source":[{"context":"src","element":"codeFilter","variable":"s"}],"target":[{"context":"tgt","element":"codeFilter","variable":"t"}],"dependent":[{"name":"DataRequirementCodeFilter","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"dateFilter","source":[{"context":"src","element":"dateFilter","variable":"s"}],"target":[{"context":"tgt","element":"dateFilter","variable":"t"}],"dependent":[{"name":"DataRequirementDateFilter","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"limit","source":[{"context":"src","element":"limit","variable":"vvv"}],"target":[{"context":"tgt","element":"limit","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"sort","source":[{"context":"src","element":"sort","variable":"s"}],"target":[{"context":"tgt","element":"sort","variable":"t"}],"dependent":[{"name":"DataRequirementSort","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"DataRequirementCodeFilter","extends":"Element","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"path","source":[{"context":"src","element":"path","variable":"vvv"}],"target":[{"context":"tgt","element":"path","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"searchParam","source":[{"context":"src","element":"searchParam","variable":"vvv"}],"target":[{"context":"tgt","element":"searchParam","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueSet","source":[{"context":"src","element":"valueSet","variable":"vvv"}],"target":[{"context":"tgt","element":"valueSet","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"code","source":[{"context":"src","element":"code","variable":"vvv"}],"target":[{"context":"tgt","element":"code","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"DataRequirementDateFilter","extends":"Element","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"path","source":[{"context":"src","element":"path","variable":"vvv"}],"target":[{"context":"tgt","element":"path","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"searchParam","source":[{"context":"src","element":"searchParam","variable":"vvv"}],"target":[{"context":"tgt","element":"searchParam","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueDateTime","source":[{"context":"src","type":"dateTime","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valuePeriod","source":[{"context":"src","type":"Period","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueDuration","source":[{"context":"src","type":"Duration","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"DataRequirementSort","extends":"Element","documentation":"not in R4\r\ngroup DataRequirementValueFilter(source src, target tgt) extends Element {\r\nsrc.path -> tgt.path;\r\nsrc.searchParam -> tgt.searchParam;\r\nsrc.comparator -> tgt.comparator;\r\nsrc.value : dateTime -> tgt.value;\r\nsrc.value : Period -> tgt.value;\r\nsrc.value : Duration -> tgt.value;\r\n}","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"path","source":[{"context":"src","element":"path","variable":"vvv"}],"target":[{"context":"tgt","element":"path","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"direction","source":[{"context":"src","element":"direction","variable":"v"}],"target":[{"context":"tgt","element":"direction","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/DataRequirement.sort.direction-R4toR5"},{"valueString":"code"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "DataRequirement4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/DataRequirement4to5",
+  "name" : "DataRequirement4to5",
+  "title" : "DataRequirement Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "DataRequirement Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/DataRequirement",
+    "mode" : "source",
+    "alias" : "DataRequirementR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/DataRequirement",
+    "mode" : "target",
+    "alias" : "DataRequirementR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "DataRequirement",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "DataRequirementR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "DataRequirementR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/types-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "profile",
+      "source" : [{
+        "context" : "src",
+        "element" : "profile",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "profile",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "subjectCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "subject",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subject",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "subjectReference",
+      "source" : [{
+        "context" : "src",
+        "type" : "Reference",
+        "element" : "subject",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subject",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "mustSupport",
+      "source" : [{
+        "context" : "src",
+        "element" : "mustSupport",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "mustSupport",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "codeFilter",
+      "source" : [{
+        "context" : "src",
+        "element" : "codeFilter",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "codeFilter",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "DataRequirementCodeFilter",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "dateFilter",
+      "source" : [{
+        "context" : "src",
+        "element" : "dateFilter",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "dateFilter",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "DataRequirementDateFilter",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "limit",
+      "source" : [{
+        "context" : "src",
+        "element" : "limit",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "limit",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "sort",
+      "source" : [{
+        "context" : "src",
+        "element" : "sort",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "sort",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "DataRequirementSort",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "DataRequirementCodeFilter",
+    "extends" : "Element",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "path",
+      "source" : [{
+        "context" : "src",
+        "element" : "path",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "path",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "searchParam",
+      "source" : [{
+        "context" : "src",
+        "element" : "searchParam",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "searchParam",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueSet",
+      "source" : [{
+        "context" : "src",
+        "element" : "valueSet",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "valueSet",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "code",
+      "source" : [{
+        "context" : "src",
+        "element" : "code",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "code",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "DataRequirementDateFilter",
+    "extends" : "Element",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "path",
+      "source" : [{
+        "context" : "src",
+        "element" : "path",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "path",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "searchParam",
+      "source" : [{
+        "context" : "src",
+        "element" : "searchParam",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "searchParam",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valuePeriod",
+      "source" : [{
+        "context" : "src",
+        "type" : "Period",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueDuration",
+      "source" : [{
+        "context" : "src",
+        "type" : "Duration",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "DataRequirementSort",
+    "extends" : "Element",
+    "documentation" : "not in R4\r\ngroup DataRequirementValueFilter(source src, target tgt) extends Element {\r\nsrc.path -> tgt.path;\r\nsrc.searchParam -> tgt.searchParam;\r\nsrc.comparator -> tgt.comparator;\r\nsrc.value : dateTime -> tgt.value;\r\nsrc.value : Period -> tgt.value;\r\nsrc.value : Duration -> tgt.value;\r\n}",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "path",
+      "source" : [{
+        "context" : "src",
+        "element" : "path",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "path",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "direction",
+      "source" : [{
+        "context" : "src",
+        "element" : "direction",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "direction",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/drq.so.direction-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    }]
+  }]
+}

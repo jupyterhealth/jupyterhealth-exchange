@@ -1,0 +1,140 @@
+{
+  "resourceType": "Bundle",
+  "type": "collection",
+  "meta": {
+    "tag": [
+      {
+        "system": "https://jupyterhealth.org/ehr-brands",
+        "code": "sample",
+        "display": "Curated sample for Patient Access hospital picker dev/demo. Replace with a full download from https://open.epic.com/MyApps/Endpoints for production."
+      }
+    ]
+  },
+  "entry": [
+    {
+      "fullUrl": "urn:endpoint:epic-sandbox",
+      "resource": {
+        "resourceType": "Endpoint",
+        "id": "epic-sandbox",
+        "name": "Epic Sandbox R4",
+        "connectionType": { "code": "hl7-fhir-rest" },
+        "address": "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4/"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "brand-epic-sandbox",
+        "name": "Epic Health System (Sandbox)",
+        "identifier": [{ "system": "http://hl7.org/fhir/sid/us-npi", "value": "0000000001" }],
+        "endpoint": [{ "reference": "Endpoint/epic-sandbox" }]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "loc-epic-sandbox-madison",
+        "name": "Epic Sandbox - Madison Campus",
+        "partOf": { "reference": "Organization/brand-epic-sandbox" },
+        "address": [
+          {
+            "text": "1979 Milky Way, Verona, WI 53593",
+            "city": "Verona",
+            "state": "WI",
+            "postalCode": "53593",
+            "country": "US"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:endpoint:ochin-aaci",
+      "resource": {
+        "resourceType": "Endpoint",
+        "id": "ochin-aaci",
+        "name": "AACI",
+        "connectionType": { "code": "hl7-fhir-rest" },
+        "address": "https://webprd.ochin.org/prd-fhir/MyChartAACI/api/FHIR/R4"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "brand-aaci",
+        "name": "Asian Americans for Community Involvement (AACI)",
+        "identifier": [{ "system": "http://hl7.org/fhir/sid/us-npi", "value": "0000000002" }],
+        "endpoint": [{ "reference": "Endpoint/ochin-aaci" }]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "loc-aaci-sanjose",
+        "name": "AACI - San Jose",
+        "partOf": { "reference": "Organization/brand-aaci" },
+        "address": [
+          {
+            "text": "2400 Moorpark Ave, San Jose, CA 95128",
+            "city": "San Jose",
+            "state": "CA",
+            "postalCode": "95128",
+            "country": "US"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:endpoint:mtsinai",
+      "resource": {
+        "resourceType": "Endpoint",
+        "id": "mtsinai",
+        "name": "Mount Sinai",
+        "connectionType": { "code": "hl7-fhir-rest" },
+        "address": "https://fhirpoc.mountsinai.org/fhirproxy/r4/"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "brand-mtsinai",
+        "name": "Mount Sinai Health System",
+        "identifier": [{ "system": "http://hl7.org/fhir/sid/us-npi", "value": "0000000003" }],
+        "endpoint": [{ "reference": "Endpoint/mtsinai" }]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "loc-mtsinai-hospital",
+        "name": "The Mount Sinai Hospital",
+        "partOf": { "reference": "Organization/brand-mtsinai" },
+        "address": [
+          {
+            "text": "1 Gustave L. Levy Pl, New York, NY 10029",
+            "city": "New York",
+            "state": "NY",
+            "postalCode": "10029",
+            "country": "US"
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Organization",
+        "id": "loc-mtsinai-west",
+        "name": "Mount Sinai West",
+        "partOf": { "reference": "Organization/brand-mtsinai" },
+        "address": [
+          {
+            "text": "1000 10th Ave, New York, NY 10019",
+            "city": "New York",
+            "state": "NY",
+            "postalCode": "10019",
+            "country": "US"
+          }
+        ]
+      }
+    }
+  ]
+}

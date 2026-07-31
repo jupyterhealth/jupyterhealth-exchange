@@ -1,1 +1,293 @@
-{"resourceType":"StructureMap","id":"Medication4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Medication4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Medication4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Medication Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Medication<span style=\"color: navy\">&quot; </span><b>alias </b>MedicationR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Medication<span style=\"color: navy\">&quot; </span><b>alias </b>MedicationR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Medication<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>MedicationR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>MedicationR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.code<span style=\"color: navy\"><b> -&gt; </b></span>tgt.code<span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Medication.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.manufacturer<span style=\"color: navy\"><b> -&gt; </b></span>tgt.marketingAuthorizationHolder<span style=\"color: navy\">;</span>\r\n  src.form<span style=\"color: navy\"><b> -&gt; </b></span>tgt.doseForm<span style=\"color: navy\">;</span>\r\n  src.amount<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span><span style=\"color: maroon\">tgt</span><b> then</b><span style=\"color: navy\"> {\r\n</span>    s.numerator<span style=\"color: navy\"><b> -&gt; </b></span>tgt.totalVolume<span style=\"color: navy\">;</span>\r\n  <span style=\"color: navy\">}</span><span style=\"color: navy\">;</span>\r\n  src.ingredient<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.ingredient<b> as </b><span style=\"color: maroon\">t</span><b> then </b>MedicationIngredient<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.batch<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.batch<b> as </b><span style=\"color: maroon\">t</span><b> then </b>MedicationBatch<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>MedicationIngredient<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.item<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.item<span style=\"color: navy\">;</span>\r\n  src.item<span style=\"color: navy\"> : </span>Reference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.item<span style=\"color: navy\">;</span>\r\n  src.isActive<span style=\"color: navy\"><b> -&gt; </b></span>tgt.isActive<span style=\"color: navy\">;</span>\r\n  src.strength<span style=\"color: navy\"> : </span>Ratio<span style=\"color: navy\"><b> -&gt; </b></span>tgt.strength<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>MedicationBatch<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.lotNumber<span style=\"color: navy\"><b> -&gt; </b></span>tgt.lotNumber<span style=\"color: navy\">;</span>\r\n  src.expirationDate<span style=\"color: navy\"><b> -&gt; </b></span>tgt.expirationDate<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Medication4to5","version":"0.1.0","name":"Medication4to5","title":"Medication Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"MedicationTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Medication","mode":"source","alias":"MedicationR4"},{"url":"http://hl7.org/fhir/5.0/Medication","mode":"target","alias":"MedicationR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Medication","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"MedicationR4","mode":"source"},{"name":"tgt","type":"MedicationR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"code","source":[{"context":"src","element":"code","variable":"vvv"}],"target":[{"context":"tgt","element":"code","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Medication.status-R4toR5"},{"valueString":"code"}]}]},{"name":"manufacturer","source":[{"context":"src","element":"manufacturer","variable":"vvv"}],"target":[{"context":"tgt","element":"marketingAuthorizationHolder","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"form","source":[{"context":"src","element":"form","variable":"vvv"}],"target":[{"context":"tgt","element":"doseForm","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"amount","source":[{"context":"src","element":"amount","variable":"s"}],"target":[{"transform":"copy","parameter":[{"valueId":"tgt"}]}],"rule":[{"name":"numerator","source":[{"context":"s","element":"numerator","variable":"vvv"}],"target":[{"context":"tgt","element":"totalVolume","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"ingredient","source":[{"context":"src","element":"ingredient","variable":"s"}],"target":[{"context":"tgt","element":"ingredient","variable":"t"}],"dependent":[{"name":"MedicationIngredient","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"batch","source":[{"context":"src","element":"batch","variable":"s"}],"target":[{"context":"tgt","element":"batch","variable":"t"}],"dependent":[{"name":"MedicationBatch","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"MedicationIngredient","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"itemCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"item","variable":"vvv"}],"target":[{"context":"tgt","element":"item","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"itemReference","source":[{"context":"src","type":"Reference","element":"item","variable":"vvv"}],"target":[{"context":"tgt","element":"item","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"isActive","source":[{"context":"src","element":"isActive","variable":"vvv"}],"target":[{"context":"tgt","element":"isActive","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"strengthRatio","source":[{"context":"src","type":"Ratio","element":"strength","variable":"vvv"}],"target":[{"context":"tgt","element":"strength","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"MedicationBatch","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"lotNumber","source":[{"context":"src","element":"lotNumber","variable":"vvv"}],"target":[{"context":"tgt","element":"lotNumber","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"expirationDate","source":[{"context":"src","element":"expirationDate","variable":"vvv"}],"target":[{"context":"tgt","element":"expirationDate","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Medication4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Medication4to5",
+  "name" : "Medication4to5",
+  "title" : "Medication Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Medication Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Medication",
+    "mode" : "source",
+    "alias" : "MedicationR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Medication",
+    "mode" : "target",
+    "alias" : "MedicationR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Medication",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "MedicationR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "MedicationR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "code",
+      "source" : [{
+        "context" : "src",
+        "element" : "code",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "code",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/med.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "manufacturer",
+      "source" : [{
+        "context" : "src",
+        "element" : "manufacturer",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "marketingAuthorizationHolder",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "form",
+      "source" : [{
+        "context" : "src",
+        "element" : "form",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "doseForm",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "amount",
+      "source" : [{
+        "context" : "src",
+        "element" : "amount",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt"
+      }],
+      "rule" : [{
+        "name" : "numerator",
+        "source" : [{
+          "context" : "s",
+          "element" : "numerator",
+          "variable" : "vvv"
+        }],
+        "target" : [{
+          "context" : "tgt",
+          "element" : "totalVolume",
+          "variable" : "vvv",
+          "transform" : "create"
+        }]
+      }]
+    },
+    {
+      "name" : "ingredient",
+      "source" : [{
+        "context" : "src",
+        "element" : "ingredient",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "ingredient",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "MedicationIngredient",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "batch",
+      "source" : [{
+        "context" : "src",
+        "element" : "batch",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "batch",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "MedicationBatch",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "MedicationIngredient",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "itemCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "item",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "item",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "itemReference",
+      "source" : [{
+        "context" : "src",
+        "type" : "Reference",
+        "element" : "item",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "item",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "isActive",
+      "source" : [{
+        "context" : "src",
+        "element" : "isActive",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "isActive",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "strengthRatio",
+      "source" : [{
+        "context" : "src",
+        "type" : "Ratio",
+        "element" : "strength",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "strength",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "MedicationBatch",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "lotNumber",
+      "source" : [{
+        "context" : "src",
+        "element" : "lotNumber",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "lotNumber",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "expirationDate",
+      "source" : [{
+        "context" : "src",
+        "element" : "expirationDate",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "expirationDate",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

@@ -1,1 +1,611 @@
-{"resourceType":"StructureMap","id":"Immunization4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Immunization4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Immunization4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Immunization Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Immunization<span style=\"color: navy\">&quot; </span><b>alias </b>ImmunizationR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Immunization<span style=\"color: navy\">&quot; </span><b>alias </b>ImmunizationR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Immunization<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>ImmunizationR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>ImmunizationR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.status<span style=\"color: navy\"><b> -&gt; </b></span>tgt.status<span style=\"color: navy\">;</span>\r\n  src.statusReason<span style=\"color: navy\"><b> -&gt; </b></span>tgt.statusReason<span style=\"color: navy\">;</span>\r\n  src.vaccineCode<span style=\"color: navy\"><b> -&gt; </b></span>tgt.vaccineCode<span style=\"color: navy\">;</span>\r\n  src.manufacturer<span style=\"color: navy\"><b> -&gt; </b></span>tgt.manufacturer<span style=\"color: navy\">;</span>\r\n  src.lotNumber<span style=\"color: navy\"><b> -&gt; </b></span>tgt.lotNumber<span style=\"color: navy\">;</span>\r\n  src.expirationDate<span style=\"color: navy\"><b> -&gt; </b></span>tgt.expirationDate<span style=\"color: navy\">;</span>\r\n  src.patient<span style=\"color: navy\"><b> -&gt; </b></span>tgt.patient<span style=\"color: navy\">;</span>\r\n  src.encounter<span style=\"color: navy\"><b> -&gt; </b></span>tgt.encounter<span style=\"color: navy\">;</span>\r\n  src.occurrence<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.occurrence<span style=\"color: navy\">;</span>\r\n  src.occurrence<span style=\"color: navy\"> : </span>string<span style=\"color: navy\"><b> -&gt; </b></span>tgt.occurrence<span style=\"color: navy\">;</span>\r\n  src.primarySource<span style=\"color: navy\"><b> -&gt; </b></span>tgt.primarySource<span style=\"color: navy\">;</span>\r\n  src.location<span style=\"color: navy\"><b> -&gt; </b></span>tgt.location<span style=\"color: navy\">;</span>\r\n  src.site<span style=\"color: navy\"><b> -&gt; </b></span>tgt.site<span style=\"color: navy\">;</span>\r\n  src.route<span style=\"color: navy\"><b> -&gt; </b></span>tgt.route<span style=\"color: navy\">;</span>\r\n  src.doseQuantity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.doseQuantity<span style=\"color: navy\">;</span>\r\n  src.performer<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.performer<b> as </b><span style=\"color: maroon\">t</span><b> then </b>ImmunizationPerformer<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.note<span style=\"color: navy\"><b> -&gt; </b></span>tgt.note<span style=\"color: navy\">;</span>\r\n  src.reasonCode<span style=\"color: navy\"><b> -&gt; </b></span>tgt.reason<span style=\"color: navy\">;</span>\r\n  src.reasonReference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.reason<span style=\"color: navy\">;</span>\r\n  src.isSubpotent<span style=\"color: navy\"><b> -&gt; </b></span>tgt.isSubpotent<span style=\"color: navy\">;</span>\r\n  src.subpotentReason<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subpotentReason<span style=\"color: navy\">;</span>\r\n  src.programEligibility<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.programEligibility<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.program = <span style=\"color: maroon\">s</span><span style=\"color: navy\">;</span>\r\n  src.fundingSource<span style=\"color: navy\"><b> -&gt; </b></span>tgt.fundingSource<span style=\"color: navy\">;</span>\r\n  src.reaction<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.reaction<b> as </b><span style=\"color: maroon\">t</span><b> then </b>ImmunizationReaction<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.protocolApplied<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.protocolApplied<b> as </b><span style=\"color: maroon\">t</span><b> then </b>ImmunizationProtocolApplied<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>ImmunizationPerformer<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.function<span style=\"color: navy\"><b> -&gt; </b></span>tgt.function<span style=\"color: navy\">;</span>\r\n  src.actor<span style=\"color: navy\"><b> -&gt; </b></span>tgt.actor<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><span style=\"color: navy\">// </span><span style=\"color: green\">group ImmunizationProgramEligibility(source src, target tgt) extends BackboneElement {</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.program -&gt; tgt.program;</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.programStatus -&gt; tgt.programStatus;</span>\r\n<span style=\"color: navy\">// </span><span style=\"color: green\">}</span>\r\n<b>group </b>ImmunizationReaction<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.date<span style=\"color: navy\"><b> -&gt; </b></span>tgt.date<span style=\"color: navy\">;</span>\r\n  src.detail<span style=\"color: navy\"><b> -&gt; </b></span>tgt.manifestation<span style=\"color: navy\">;</span>\r\n  src.reported<span style=\"color: navy\"><b> -&gt; </b></span>tgt.reported<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>ImmunizationProtocolApplied<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.series<span style=\"color: navy\"><b> -&gt; </b></span>tgt.series<span style=\"color: navy\">;</span>\r\n  src.authority<span style=\"color: navy\"><b> -&gt; </b></span>tgt.authority<span style=\"color: navy\">;</span>\r\n  src.targetDisease<span style=\"color: navy\"><b> -&gt; </b></span>tgt.targetDisease<span style=\"color: navy\">;</span>\r\n  src.doseNumber<span style=\"color: navy\"> : </span>string<span style=\"color: navy\"><b> -&gt; </b></span>tgt.doseNumber<span style=\"color: navy\">;</span>\r\n  src.seriesDoses<span style=\"color: navy\"> : </span>string<span style=\"color: navy\"><b> -&gt; </b></span>tgt.seriesDoses<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Immunization4to5","version":"0.1.0","name":"Immunization4to5","title":"Immunization Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"ImmunizationTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Immunization","mode":"source","alias":"ImmunizationR4"},{"url":"http://hl7.org/fhir/5.0/Immunization","mode":"target","alias":"ImmunizationR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Immunization","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"ImmunizationR4","mode":"source"},{"name":"tgt","type":"ImmunizationR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"vvv"}],"target":[{"context":"tgt","element":"status","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"statusReason","source":[{"context":"src","element":"statusReason","variable":"vvv"}],"target":[{"context":"tgt","element":"statusReason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"vaccineCode","source":[{"context":"src","element":"vaccineCode","variable":"vvv"}],"target":[{"context":"tgt","element":"vaccineCode","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"manufacturer","source":[{"context":"src","element":"manufacturer","variable":"vvv"}],"target":[{"context":"tgt","element":"manufacturer","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"lotNumber","source":[{"context":"src","element":"lotNumber","variable":"vvv"}],"target":[{"context":"tgt","element":"lotNumber","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"expirationDate","source":[{"context":"src","element":"expirationDate","variable":"vvv"}],"target":[{"context":"tgt","element":"expirationDate","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"patient","source":[{"context":"src","element":"patient","variable":"vvv"}],"target":[{"context":"tgt","element":"patient","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"encounter","source":[{"context":"src","element":"encounter","variable":"vvv"}],"target":[{"context":"tgt","element":"encounter","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"occurrenceDateTime","source":[{"context":"src","type":"dateTime","element":"occurrence","variable":"vvv"}],"target":[{"context":"tgt","element":"occurrence","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"occurrenceString","source":[{"context":"src","type":"string","element":"occurrence","variable":"vvv"}],"target":[{"context":"tgt","element":"occurrence","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"primarySource","source":[{"context":"src","element":"primarySource","variable":"vvv"}],"target":[{"context":"tgt","element":"primarySource","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"location","source":[{"context":"src","element":"location","variable":"vvv"}],"target":[{"context":"tgt","element":"location","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"site","source":[{"context":"src","element":"site","variable":"vvv"}],"target":[{"context":"tgt","element":"site","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"route","source":[{"context":"src","element":"route","variable":"vvv"}],"target":[{"context":"tgt","element":"route","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"doseQuantity","source":[{"context":"src","element":"doseQuantity","variable":"vvv"}],"target":[{"context":"tgt","element":"doseQuantity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"performer","source":[{"context":"src","element":"performer","variable":"s"}],"target":[{"context":"tgt","element":"performer","variable":"t"}],"dependent":[{"name":"ImmunizationPerformer","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"note","source":[{"context":"src","element":"note","variable":"vvv"}],"target":[{"context":"tgt","element":"note","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"reasonCode","source":[{"context":"src","element":"reasonCode","variable":"vvv"}],"target":[{"context":"tgt","element":"reason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"reasonReference","source":[{"context":"src","element":"reasonReference","variable":"vvv"}],"target":[{"context":"tgt","element":"reason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"isSubpotent","source":[{"context":"src","element":"isSubpotent","variable":"vvv"}],"target":[{"context":"tgt","element":"isSubpotent","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"subpotentReason","source":[{"context":"src","element":"subpotentReason","variable":"vvv"}],"target":[{"context":"tgt","element":"subpotentReason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"programEligibility","source":[{"context":"src","element":"programEligibility","variable":"s"}],"target":[{"context":"tgt","element":"programEligibility","variable":"t"},{"context":"t","element":"program","transform":"copy","parameter":[{"valueId":"s"}]}]},{"name":"fundingSource","source":[{"context":"src","element":"fundingSource","variable":"vvv"}],"target":[{"context":"tgt","element":"fundingSource","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"reaction","source":[{"context":"src","element":"reaction","variable":"s"}],"target":[{"context":"tgt","element":"reaction","variable":"t"}],"dependent":[{"name":"ImmunizationReaction","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"protocolApplied","source":[{"context":"src","element":"protocolApplied","variable":"s"}],"target":[{"context":"tgt","element":"protocolApplied","variable":"t"}],"dependent":[{"name":"ImmunizationProtocolApplied","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"ImmunizationPerformer","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"function","source":[{"context":"src","element":"function","variable":"vvv"}],"target":[{"context":"tgt","element":"function","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"actor","source":[{"context":"src","element":"actor","variable":"vvv"}],"target":[{"context":"tgt","element":"actor","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"ImmunizationReaction","extends":"BackboneElement","documentation":"group ImmunizationProgramEligibility(source src, target tgt) extends BackboneElement {\r\nsrc.program -> tgt.program;\r\nsrc.programStatus -> tgt.programStatus;\r\n}","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"date","source":[{"context":"src","element":"date","variable":"vvv"}],"target":[{"context":"tgt","element":"date","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"detail","source":[{"context":"src","element":"detail","variable":"vvv"}],"target":[{"context":"tgt","element":"manifestation","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"reported","source":[{"context":"src","element":"reported","variable":"vvv"}],"target":[{"context":"tgt","element":"reported","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"ImmunizationProtocolApplied","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"series","source":[{"context":"src","element":"series","variable":"vvv"}],"target":[{"context":"tgt","element":"series","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"authority","source":[{"context":"src","element":"authority","variable":"vvv"}],"target":[{"context":"tgt","element":"authority","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"targetDisease","source":[{"context":"src","element":"targetDisease","variable":"vvv"}],"target":[{"context":"tgt","element":"targetDisease","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"doseNumberString","source":[{"context":"src","type":"string","element":"doseNumber","variable":"vvv"}],"target":[{"context":"tgt","element":"doseNumber","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"seriesDosesString","source":[{"context":"src","type":"string","element":"seriesDoses","variable":"vvv"}],"target":[{"context":"tgt","element":"seriesDoses","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Immunization4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Immunization4to5",
+  "name" : "Immunization4to5",
+  "title" : "Immunization Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Immunization Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Immunization",
+    "mode" : "source",
+    "alias" : "ImmunizationR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Immunization",
+    "mode" : "target",
+    "alias" : "ImmunizationR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Immunization",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "ImmunizationR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "ImmunizationR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "statusReason",
+      "source" : [{
+        "context" : "src",
+        "element" : "statusReason",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "statusReason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "vaccineCode",
+      "source" : [{
+        "context" : "src",
+        "element" : "vaccineCode",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "vaccineCode",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "manufacturer",
+      "source" : [{
+        "context" : "src",
+        "element" : "manufacturer",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "manufacturer",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "lotNumber",
+      "source" : [{
+        "context" : "src",
+        "element" : "lotNumber",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "lotNumber",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "expirationDate",
+      "source" : [{
+        "context" : "src",
+        "element" : "expirationDate",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "expirationDate",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "patient",
+      "source" : [{
+        "context" : "src",
+        "element" : "patient",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "patient",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "encounter",
+      "source" : [{
+        "context" : "src",
+        "element" : "encounter",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "encounter",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "occurrenceDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "occurrence",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "occurrence",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "occurrenceString",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "occurrence",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "occurrence",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "primarySource",
+      "source" : [{
+        "context" : "src",
+        "element" : "primarySource",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "primarySource",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "location",
+      "source" : [{
+        "context" : "src",
+        "element" : "location",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "location",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "site",
+      "source" : [{
+        "context" : "src",
+        "element" : "site",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "site",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "route",
+      "source" : [{
+        "context" : "src",
+        "element" : "route",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "route",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "doseQuantity",
+      "source" : [{
+        "context" : "src",
+        "element" : "doseQuantity",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "doseQuantity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "performer",
+      "source" : [{
+        "context" : "src",
+        "element" : "performer",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "performer",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "ImmunizationPerformer",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "note",
+      "source" : [{
+        "context" : "src",
+        "element" : "note",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "note",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "reasonCode",
+      "source" : [{
+        "context" : "src",
+        "element" : "reasonCode",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "reasonReference",
+      "source" : [{
+        "context" : "src",
+        "element" : "reasonReference",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "isSubpotent",
+      "source" : [{
+        "context" : "src",
+        "element" : "isSubpotent",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "isSubpotent",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "subpotentReason",
+      "source" : [{
+        "context" : "src",
+        "element" : "subpotentReason",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subpotentReason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "programEligibility",
+      "source" : [{
+        "context" : "src",
+        "element" : "programEligibility",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "programEligibility",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "program",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "s"
+        }]
+      }]
+    },
+    {
+      "name" : "fundingSource",
+      "source" : [{
+        "context" : "src",
+        "element" : "fundingSource",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "fundingSource",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "reaction",
+      "source" : [{
+        "context" : "src",
+        "element" : "reaction",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reaction",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "ImmunizationReaction",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "protocolApplied",
+      "source" : [{
+        "context" : "src",
+        "element" : "protocolApplied",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "protocolApplied",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "ImmunizationProtocolApplied",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "ImmunizationPerformer",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "function",
+      "source" : [{
+        "context" : "src",
+        "element" : "function",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "function",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "actor",
+      "source" : [{
+        "context" : "src",
+        "element" : "actor",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "actor",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "ImmunizationReaction",
+    "extends" : "BackboneElement",
+    "documentation" : "group ImmunizationProgramEligibility(source src, target tgt) extends BackboneElement {\r\nsrc.program -> tgt.program;\r\nsrc.programStatus -> tgt.programStatus;\r\n}",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "date",
+      "source" : [{
+        "context" : "src",
+        "element" : "date",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "date",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "detail",
+      "source" : [{
+        "context" : "src",
+        "element" : "detail",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "manifestation",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "reported",
+      "source" : [{
+        "context" : "src",
+        "element" : "reported",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reported",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "ImmunizationProtocolApplied",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "series",
+      "source" : [{
+        "context" : "src",
+        "element" : "series",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "series",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "authority",
+      "source" : [{
+        "context" : "src",
+        "element" : "authority",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "authority",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "targetDisease",
+      "source" : [{
+        "context" : "src",
+        "element" : "targetDisease",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "targetDisease",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "doseNumberString",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "doseNumber",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "doseNumber",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "seriesDosesString",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "seriesDoses",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "seriesDoses",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

@@ -1,0 +1,28 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html class="h-100">
+  <head>
+    <title>{% block title %}{% endblock %}</title>
+    <script src="{% static 'common/js/common.js' %}"></script>
+    <script src="{% static 'clients/patient-access/js/fhir-client.min.js' %}"></script>
+    <script src="{% static 'clients/patient-access/js/client-patient-access.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'common/css/bootstrap.min.css' %}" />
+    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}" />
+    {% block head %}{% endblock %}
+  </head>
+  <body class="h-100">
+    <!-- EHR config from JheClient.aux_data, injected by the view. No iss here: the
+         hospital the patient picks supplies it (connect), as does the authorized
+         server (callback). -->
+    <script>
+      var PATIENT_ACCESS_CONFIG = {
+        clientId: "{{ patient_access_client_id|escapejs }}",
+        scope: "{{ patient_access_scopes|escapejs }}",
+        dataSourceId: "{{ patient_access_data_source_id|escapejs }}",
+      };
+    </script>
+    {% block body_content %}{% endblock %}
+    {% block body_footer %}{% endblock %}
+  </body>
+</html>

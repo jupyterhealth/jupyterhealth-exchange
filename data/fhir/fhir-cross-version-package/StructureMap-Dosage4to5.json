@@ -1,1 +1,356 @@
-{"resourceType":"StructureMap","id":"Dosage4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Dosage4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Dosage4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Dosage Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Dosage<span style=\"color: navy\">&quot; </span><b>alias </b>DosageR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Dosage<span style=\"color: navy\">&quot; </span><b>alias </b>DosageR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Dosage<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>DosageR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>DosageR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.modifierExtension<span style=\"color: navy\"><b> -&gt; </b></span>tgt.modifierExtension<span style=\"color: navy\">;</span>\r\n  src.sequence<span style=\"color: navy\"><b> -&gt; </b></span>tgt.sequence<span style=\"color: navy\">;</span>\r\n  src.text<span style=\"color: navy\"><b> -&gt; </b></span>tgt.text<span style=\"color: navy\">;</span>\r\n  src.additionalInstruction<span style=\"color: navy\"><b> -&gt; </b></span>tgt.additionalInstruction<span style=\"color: navy\">;</span>\r\n  src.patientInstruction<span style=\"color: navy\"><b> -&gt; </b></span>tgt.patientInstruction<span style=\"color: navy\">;</span>\r\n  src.timing<span style=\"color: navy\"><b> -&gt; </b></span>tgt.timing<span style=\"color: navy\">;</span>\r\n  src.asNeeded<span style=\"color: navy\"> : </span>boolean<span style=\"color: navy\"><b> -&gt; </b></span>tgt.asNeeded<span style=\"color: navy\">;</span>\r\n  src.asNeeded<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.asNeededFor<span style=\"color: navy\">;</span>\r\n  src.site<span style=\"color: navy\"><b> -&gt; </b></span>tgt.site<span style=\"color: navy\">;</span>\r\n  src.route<span style=\"color: navy\"><b> -&gt; </b></span>tgt.route<span style=\"color: navy\">;</span>\r\n  src.method<span style=\"color: navy\"><b> -&gt; </b></span>tgt.method<span style=\"color: navy\">;</span>\r\n  src.doseAndRate<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.doseAndRate<b> as </b><span style=\"color: maroon\">t</span><b> then </b>DosageDoseAndRate<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.maxDosePerPeriod<span style=\"color: navy\"><b> -&gt; </b></span>tgt.maxDosePerPeriod<span style=\"color: navy\">;</span>\r\n  src.maxDosePerAdministration<span style=\"color: navy\"><b> -&gt; </b></span>tgt.maxDosePerAdministration<span style=\"color: navy\">;</span>\r\n  src.maxDosePerLifetime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.maxDosePerLifetime<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>DosageDoseAndRate<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>Element<span style=\"color: navy\"> {\r\n</span>  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.dose<span style=\"color: navy\"> : </span>Range<span style=\"color: navy\"><b> -&gt; </b></span>tgt.dose<span style=\"color: navy\">;</span>\r\n  src.dose<span style=\"color: navy\"> : </span>Quantity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.dose<span style=\"color: navy\">;</span>\r\n  src.rate<span style=\"color: navy\"> : </span>Ratio<span style=\"color: navy\"><b> -&gt; </b></span>tgt.rate<span style=\"color: navy\">;</span>\r\n  src.rate<span style=\"color: navy\"> : </span>Range<span style=\"color: navy\"><b> -&gt; </b></span>tgt.rate<span style=\"color: navy\">;</span>\r\n  src.rate<span style=\"color: navy\"> : </span>Quantity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.rate<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Dosage4to5","version":"0.1.0","name":"Dosage4to5","title":"Dosage Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"DosageTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Dosage","mode":"source","alias":"DosageR4"},{"url":"http://hl7.org/fhir/5.0/Dosage","mode":"target","alias":"DosageR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Dosage","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"DosageR4","mode":"source"},{"name":"tgt","type":"DosageR5","mode":"target"}],"rule":[{"name":"modifierExtension","source":[{"context":"src","element":"modifierExtension","variable":"vvv"}],"target":[{"context":"tgt","element":"modifierExtension","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"sequence","source":[{"context":"src","element":"sequence","variable":"vvv"}],"target":[{"context":"tgt","element":"sequence","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"text","source":[{"context":"src","element":"text","variable":"vvv"}],"target":[{"context":"tgt","element":"text","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"additionalInstruction","source":[{"context":"src","element":"additionalInstruction","variable":"vvv"}],"target":[{"context":"tgt","element":"additionalInstruction","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"patientInstruction","source":[{"context":"src","element":"patientInstruction","variable":"vvv"}],"target":[{"context":"tgt","element":"patientInstruction","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"timing","source":[{"context":"src","element":"timing","variable":"vvv"}],"target":[{"context":"tgt","element":"timing","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"asNeededBoolean","source":[{"context":"src","type":"boolean","element":"asNeeded","variable":"vvv"}],"target":[{"context":"tgt","element":"asNeeded","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"asNeededCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"asNeeded","variable":"vvv"}],"target":[{"context":"tgt","element":"asNeededFor","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"site","source":[{"context":"src","element":"site","variable":"vvv"}],"target":[{"context":"tgt","element":"site","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"route","source":[{"context":"src","element":"route","variable":"vvv"}],"target":[{"context":"tgt","element":"route","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"method","source":[{"context":"src","element":"method","variable":"vvv"}],"target":[{"context":"tgt","element":"method","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"doseAndRate","source":[{"context":"src","element":"doseAndRate","variable":"s"}],"target":[{"context":"tgt","element":"doseAndRate","variable":"t"}],"dependent":[{"name":"DosageDoseAndRate","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"maxDosePerPeriod","source":[{"context":"src","element":"maxDosePerPeriod","variable":"vvv"}],"target":[{"context":"tgt","element":"maxDosePerPeriod","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"maxDosePerAdministration","source":[{"context":"src","element":"maxDosePerAdministration","variable":"vvv"}],"target":[{"context":"tgt","element":"maxDosePerAdministration","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"maxDosePerLifetime","source":[{"context":"src","element":"maxDosePerLifetime","variable":"vvv"}],"target":[{"context":"tgt","element":"maxDosePerLifetime","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"DosageDoseAndRate","extends":"Element","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"doseRange","source":[{"context":"src","type":"Range","element":"dose","variable":"vvv"}],"target":[{"context":"tgt","element":"dose","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"doseQuantity","source":[{"context":"src","type":"Quantity","element":"dose","variable":"vvv"}],"target":[{"context":"tgt","element":"dose","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"rateRatio","source":[{"context":"src","type":"Ratio","element":"rate","variable":"vvv"}],"target":[{"context":"tgt","element":"rate","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"rateRange","source":[{"context":"src","type":"Range","element":"rate","variable":"vvv"}],"target":[{"context":"tgt","element":"rate","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"rateQuantity","source":[{"context":"src","type":"Quantity","element":"rate","variable":"vvv"}],"target":[{"context":"tgt","element":"rate","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Dosage4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Dosage4to5",
+  "name" : "Dosage4to5",
+  "title" : "Dosage Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Dosage Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Dosage",
+    "mode" : "source",
+    "alias" : "DosageR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Dosage",
+    "mode" : "target",
+    "alias" : "DosageR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Dosage",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "DosageR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "DosageR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "modifierExtension",
+      "source" : [{
+        "context" : "src",
+        "element" : "modifierExtension",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "modifierExtension",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "sequence",
+      "source" : [{
+        "context" : "src",
+        "element" : "sequence",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "sequence",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "text",
+      "source" : [{
+        "context" : "src",
+        "element" : "text",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "text",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "additionalInstruction",
+      "source" : [{
+        "context" : "src",
+        "element" : "additionalInstruction",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "additionalInstruction",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "patientInstruction",
+      "source" : [{
+        "context" : "src",
+        "element" : "patientInstruction",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "patientInstruction",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "timing",
+      "source" : [{
+        "context" : "src",
+        "element" : "timing",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "timing",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "asNeededBoolean",
+      "source" : [{
+        "context" : "src",
+        "type" : "boolean",
+        "element" : "asNeeded",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "asNeeded",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "asNeededCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "asNeeded",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "asNeededFor",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "site",
+      "source" : [{
+        "context" : "src",
+        "element" : "site",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "site",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "route",
+      "source" : [{
+        "context" : "src",
+        "element" : "route",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "route",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "method",
+      "source" : [{
+        "context" : "src",
+        "element" : "method",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "method",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "doseAndRate",
+      "source" : [{
+        "context" : "src",
+        "element" : "doseAndRate",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "doseAndRate",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "DosageDoseAndRate",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "maxDosePerPeriod",
+      "source" : [{
+        "context" : "src",
+        "element" : "maxDosePerPeriod",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "maxDosePerPeriod",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "maxDosePerAdministration",
+      "source" : [{
+        "context" : "src",
+        "element" : "maxDosePerAdministration",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "maxDosePerAdministration",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "maxDosePerLifetime",
+      "source" : [{
+        "context" : "src",
+        "element" : "maxDosePerLifetime",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "maxDosePerLifetime",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "DosageDoseAndRate",
+    "extends" : "Element",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "doseRange",
+      "source" : [{
+        "context" : "src",
+        "type" : "Range",
+        "element" : "dose",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "dose",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "doseQuantity",
+      "source" : [{
+        "context" : "src",
+        "type" : "Quantity",
+        "element" : "dose",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "dose",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "rateRatio",
+      "source" : [{
+        "context" : "src",
+        "type" : "Ratio",
+        "element" : "rate",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "rate",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "rateRange",
+      "source" : [{
+        "context" : "src",
+        "type" : "Range",
+        "element" : "rate",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "rate",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "rateQuantity",
+      "source" : [{
+        "context" : "src",
+        "type" : "Quantity",
+        "element" : "rate",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "rate",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

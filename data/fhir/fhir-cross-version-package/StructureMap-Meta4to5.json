@@ -1,1 +1,119 @@
-{"resourceType":"StructureMap","id":"Meta4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Meta4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Meta4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Meta Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Meta<span style=\"color: navy\">&quot; </span><b>alias </b>MetaR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Meta<span style=\"color: navy\">&quot; </span><b>alias </b>MetaR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Meta<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>MetaR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>MetaR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.versionId<span style=\"color: navy\"><b> -&gt; </b></span>tgt.versionId<span style=\"color: navy\">;</span>\r\n  src.lastUpdated<span style=\"color: navy\"><b> -&gt; </b></span>tgt.lastUpdated<span style=\"color: navy\">;</span>\r\n  src.source<span style=\"color: navy\"><b> -&gt; </b></span>tgt.source<span style=\"color: navy\">;</span>\r\n  src.profile<span style=\"color: navy\"><b> -&gt; </b></span>tgt.profile<span style=\"color: navy\">;</span>\r\n  src.security<span style=\"color: navy\"><b> -&gt; </b></span>tgt.security<span style=\"color: navy\">;</span>\r\n  src.tag<span style=\"color: navy\"><b> -&gt; </b></span>tgt.tag<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Meta4to5","version":"0.1.0","name":"Meta4to5","title":"Meta Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"MetaTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Meta","mode":"source","alias":"MetaR4"},{"url":"http://hl7.org/fhir/5.0/Meta","mode":"target","alias":"MetaR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Meta","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"MetaR4","mode":"source"},{"name":"tgt","type":"MetaR5","mode":"target"}],"rule":[{"name":"versionId","source":[{"context":"src","element":"versionId","variable":"vvv"}],"target":[{"context":"tgt","element":"versionId","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"lastUpdated","source":[{"context":"src","element":"lastUpdated","variable":"vvv"}],"target":[{"context":"tgt","element":"lastUpdated","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"source","source":[{"context":"src","element":"source","variable":"vvv"}],"target":[{"context":"tgt","element":"source","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"profile","source":[{"context":"src","element":"profile","variable":"vvv"}],"target":[{"context":"tgt","element":"profile","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"security","source":[{"context":"src","element":"security","variable":"vvv"}],"target":[{"context":"tgt","element":"security","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"tag","source":[{"context":"src","element":"tag","variable":"vvv"}],"target":[{"context":"tgt","element":"tag","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Meta4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Meta4to5",
+  "name" : "Meta4to5",
+  "title" : "Meta Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Meta Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Meta",
+    "mode" : "source",
+    "alias" : "MetaR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Meta",
+    "mode" : "target",
+    "alias" : "MetaR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Meta",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "MetaR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "MetaR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "versionId",
+      "source" : [{
+        "context" : "src",
+        "element" : "versionId",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "versionId",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "lastUpdated",
+      "source" : [{
+        "context" : "src",
+        "element" : "lastUpdated",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "lastUpdated",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "source",
+      "source" : [{
+        "context" : "src",
+        "element" : "source",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "source",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "profile",
+      "source" : [{
+        "context" : "src",
+        "element" : "profile",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "profile",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "security",
+      "source" : [{
+        "context" : "src",
+        "element" : "security",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "security",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "tag",
+      "source" : [{
+        "context" : "src",
+        "element" : "tag",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "tag",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

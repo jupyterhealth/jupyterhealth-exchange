@@ -1,1 +1,331 @@
-{"resourceType":"StructureMap","id":"Provenance4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Provenance4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Provenance4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Provenance Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Provenance<span style=\"color: navy\">&quot; </span><b>alias </b>ProvenanceR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Provenance<span style=\"color: navy\">&quot; </span><b>alias </b>ProvenanceR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Provenance<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>ProvenanceR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>ProvenanceR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.target<span style=\"color: navy\"><b> -&gt; </b></span>tgt.target<span style=\"color: navy\">;</span>\r\n  src.occurred<span style=\"color: navy\"> : </span>Period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.occurred<span style=\"color: navy\">;</span>\r\n  src.occurred<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.occurred<span style=\"color: navy\">;</span>\r\n  src.recorded<span style=\"color: navy\"><b> -&gt; </b></span>tgt.recorded<span style=\"color: navy\">;</span>\r\n  src.policy<span style=\"color: navy\"><b> -&gt; </b></span>tgt.policy<span style=\"color: navy\">;</span>\r\n  src.location<span style=\"color: navy\"><b> -&gt; </b></span>tgt.location<span style=\"color: navy\">;</span>\r\n  src.activity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.activity<span style=\"color: navy\">;</span>\r\n  src.agent<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.agent<b> as </b><span style=\"color: maroon\">t</span><b> then </b>ProvenanceAgent<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.entity<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.entity<b> as </b><span style=\"color: maroon\">t</span><b> then </b>ProvenanceEntity<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.signature<span style=\"color: navy\"><b> -&gt; </b></span>tgt.signature<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>ProvenanceAgent<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.role<span style=\"color: navy\"><b> -&gt; </b></span>tgt.role<span style=\"color: navy\">;</span>\r\n  src.who<span style=\"color: navy\"><b> -&gt; </b></span>tgt.who<span style=\"color: navy\">;</span>\r\n  src.onBehalfOf<span style=\"color: navy\"><b> -&gt; </b></span>tgt.onBehalfOf<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>ProvenanceEntity<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.role<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.role = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Provenance.entity.role-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.what<span style=\"color: navy\"><b> -&gt; </b></span>tgt.what<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Provenance4to5","version":"0.1.0","name":"Provenance4to5","title":"Provenance Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"ProvenanceTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Provenance","mode":"source","alias":"ProvenanceR4"},{"url":"http://hl7.org/fhir/5.0/Provenance","mode":"target","alias":"ProvenanceR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Provenance","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"ProvenanceR4","mode":"source"},{"name":"tgt","type":"ProvenanceR5","mode":"target"}],"rule":[{"name":"target","source":[{"context":"src","element":"target","variable":"vvv"}],"target":[{"context":"tgt","element":"target","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"occurredPeriod","source":[{"context":"src","type":"Period","element":"occurred","variable":"vvv"}],"target":[{"context":"tgt","element":"occurred","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"occurredDateTime","source":[{"context":"src","type":"dateTime","element":"occurred","variable":"vvv"}],"target":[{"context":"tgt","element":"occurred","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"recorded","source":[{"context":"src","element":"recorded","variable":"vvv"}],"target":[{"context":"tgt","element":"recorded","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"policy","source":[{"context":"src","element":"policy","variable":"vvv"}],"target":[{"context":"tgt","element":"policy","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"location","source":[{"context":"src","element":"location","variable":"vvv"}],"target":[{"context":"tgt","element":"location","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"activity","source":[{"context":"src","element":"activity","variable":"vvv"}],"target":[{"context":"tgt","element":"activity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"agent","source":[{"context":"src","element":"agent","variable":"s"}],"target":[{"context":"tgt","element":"agent","variable":"t"}],"dependent":[{"name":"ProvenanceAgent","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"entity","source":[{"context":"src","element":"entity","variable":"s"}],"target":[{"context":"tgt","element":"entity","variable":"t"}],"dependent":[{"name":"ProvenanceEntity","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"signature","source":[{"context":"src","element":"signature","variable":"vvv"}],"target":[{"context":"tgt","element":"signature","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"ProvenanceAgent","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"role","source":[{"context":"src","element":"role","variable":"vvv"}],"target":[{"context":"tgt","element":"role","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"who","source":[{"context":"src","element":"who","variable":"vvv"}],"target":[{"context":"tgt","element":"who","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"onBehalfOf","source":[{"context":"src","element":"onBehalfOf","variable":"vvv"}],"target":[{"context":"tgt","element":"onBehalfOf","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"ProvenanceEntity","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"role","source":[{"context":"src","element":"role","variable":"v"}],"target":[{"context":"tgt","element":"role","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Provenance.entity.role-R4toR5"},{"valueString":"code"}]}]},{"name":"what","source":[{"context":"src","element":"what","variable":"vvv"}],"target":[{"context":"tgt","element":"what","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Provenance4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Provenance4to5",
+  "name" : "Provenance4to5",
+  "title" : "Provenance Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Provenance Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Provenance",
+    "mode" : "source",
+    "alias" : "ProvenanceR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Provenance",
+    "mode" : "target",
+    "alias" : "ProvenanceR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Provenance",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "ProvenanceR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "ProvenanceR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "target",
+      "source" : [{
+        "context" : "src",
+        "element" : "target",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "target",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "occurredPeriod",
+      "source" : [{
+        "context" : "src",
+        "type" : "Period",
+        "element" : "occurred",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "occurred",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "occurredDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "occurred",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "occurred",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "recorded",
+      "source" : [{
+        "context" : "src",
+        "element" : "recorded",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "recorded",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "policy",
+      "source" : [{
+        "context" : "src",
+        "element" : "policy",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "policy",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "location",
+      "source" : [{
+        "context" : "src",
+        "element" : "location",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "location",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "activity",
+      "source" : [{
+        "context" : "src",
+        "element" : "activity",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "activity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "agent",
+      "source" : [{
+        "context" : "src",
+        "element" : "agent",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "agent",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "ProvenanceAgent",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "entity",
+      "source" : [{
+        "context" : "src",
+        "element" : "entity",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "entity",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "ProvenanceEntity",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "signature",
+      "source" : [{
+        "context" : "src",
+        "element" : "signature",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "signature",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "ProvenanceAgent",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "role",
+      "source" : [{
+        "context" : "src",
+        "element" : "role",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "role",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "who",
+      "source" : [{
+        "context" : "src",
+        "element" : "who",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "who",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "onBehalfOf",
+      "source" : [{
+        "context" : "src",
+        "element" : "onBehalfOf",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "onBehalfOf",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "ProvenanceEntity",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "role",
+      "source" : [{
+        "context" : "src",
+        "element" : "role",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "role",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/prv.en.role-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "what",
+      "source" : [{
+        "context" : "src",
+        "element" : "what",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "what",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "agent",
+      "source" : [{
+        "context" : "src",
+        "element" : "agent",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "agent",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "ProvenanceAgent",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  }]
+}

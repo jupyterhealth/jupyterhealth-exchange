@@ -1,1 +1,560 @@
-{"resourceType":"StructureMap","id":"Bundle4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Bundle4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Bundle4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Bundle Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Bundle<span style=\"color: navy\">&quot; </span><b>alias </b>BundleR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Bundle<span style=\"color: navy\">&quot; </span><b>alias </b>BundleR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Bundle<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>BundleR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>BundleR5<span style=\"color: navy\">)</span><b> extends </b>Resource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.type<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.type = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Bundle.type-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.timestamp<span style=\"color: navy\"><b> -&gt; </b></span>tgt.timestamp<span style=\"color: navy\">;</span>\r\n  src.total<span style=\"color: navy\"><b> -&gt; </b></span>tgt.total<span style=\"color: navy\">;</span>\r\n  src.link<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.link<b> as </b><span style=\"color: maroon\">t</span><b> then </b>BundleLink<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.entry<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.entry<b> as </b><span style=\"color: maroon\">t</span><b> then </b>BundleEntry<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.signature<span style=\"color: navy\"><b> -&gt; </b></span>tgt.signature<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>BundleLink<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.relation<span style=\"color: navy\"><b> -&gt; </b></span>tgt.relation<span style=\"color: navy\">;</span>\r\n  src.url<span style=\"color: navy\"><b> -&gt; </b></span>tgt.url<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>BundleEntry<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.fullUrl<span style=\"color: navy\"><b> -&gt; </b></span>tgt.fullUrl<span style=\"color: navy\">;</span>\r\n  src.resource<span style=\"color: navy\"> : </span>Resource<span style=\"color: navy\"><b> -&gt; </b></span>tgt.resource<span style=\"color: navy\">;</span>\r\n  src.search<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.search<b> as </b><span style=\"color: maroon\">t</span><b> then </b>BundleEntrySearch<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.request<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.request<b> as </b><span style=\"color: maroon\">t</span><b> then </b>BundleEntryRequest<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.response<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.response<b> as </b><span style=\"color: maroon\">t</span><b> then </b>BundleEntryResponse<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>BundleEntrySearch<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.mode<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.mode = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Bundle.entry.search.mode-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.score<span style=\"color: navy\"><b> -&gt; </b></span>tgt.score<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>BundleEntryRequest<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.method<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.method = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Bundle.entry.request.method-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.url<span style=\"color: navy\"><b> -&gt; </b></span>tgt.url<span style=\"color: navy\">;</span>\r\n  src.ifNoneMatch<span style=\"color: navy\"><b> -&gt; </b></span>tgt.ifNoneMatch<span style=\"color: navy\">;</span>\r\n  src.ifModifiedSince<span style=\"color: navy\"><b> -&gt; </b></span>tgt.ifModifiedSince<span style=\"color: navy\">;</span>\r\n  src.ifMatch<span style=\"color: navy\"><b> -&gt; </b></span>tgt.ifMatch<span style=\"color: navy\">;</span>\r\n  src.ifNoneExist<span style=\"color: navy\"><b> -&gt; </b></span>tgt.ifNoneExist<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>BundleEntryResponse<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.status<span style=\"color: navy\"><b> -&gt; </b></span>tgt.status<span style=\"color: navy\">;</span>\r\n  src.location<span style=\"color: navy\"><b> -&gt; </b></span>tgt.location<span style=\"color: navy\">;</span>\r\n  src.etag<span style=\"color: navy\"><b> -&gt; </b></span>tgt.etag<span style=\"color: navy\">;</span>\r\n  src.lastModified<span style=\"color: navy\"><b> -&gt; </b></span>tgt.lastModified<span style=\"color: navy\">;</span>\r\n  src.outcome<span style=\"color: navy\"> : </span>Resource<span style=\"color: navy\"><b> -&gt; </b></span>tgt.outcome<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Bundle4to5","version":"0.1.0","name":"Bundle4to5","title":"Bundle Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"BundleTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Bundle","mode":"source","alias":"BundleR4"},{"url":"http://hl7.org/fhir/5.0/Bundle","mode":"target","alias":"BundleR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Bundle","extends":"Resource","typeMode":"type-and-types","input":[{"name":"src","type":"BundleR4","mode":"source"},{"name":"tgt","type":"BundleR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"v"}],"target":[{"context":"tgt","element":"type","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Bundle.type-R4toR5"},{"valueString":"code"}]}]},{"name":"timestamp","source":[{"context":"src","element":"timestamp","variable":"vvv"}],"target":[{"context":"tgt","element":"timestamp","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"total","source":[{"context":"src","element":"total","variable":"vvv"}],"target":[{"context":"tgt","element":"total","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"link","source":[{"context":"src","element":"link","variable":"s"}],"target":[{"context":"tgt","element":"link","variable":"t"}],"dependent":[{"name":"BundleLink","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"entry","source":[{"context":"src","element":"entry","variable":"s"}],"target":[{"context":"tgt","element":"entry","variable":"t"}],"dependent":[{"name":"BundleEntry","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"signature","source":[{"context":"src","element":"signature","variable":"vvv"}],"target":[{"context":"tgt","element":"signature","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"BundleLink","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"relation","source":[{"context":"src","element":"relation","variable":"vvv"}],"target":[{"context":"tgt","element":"relation","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"url","source":[{"context":"src","element":"url","variable":"vvv"}],"target":[{"context":"tgt","element":"url","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"BundleEntry","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"fullUrl","source":[{"context":"src","element":"fullUrl","variable":"vvv"}],"target":[{"context":"tgt","element":"fullUrl","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"resourceResource","source":[{"context":"src","type":"Resource","element":"resource","variable":"vvv"}],"target":[{"context":"tgt","element":"resource","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"search","source":[{"context":"src","element":"search","variable":"s"}],"target":[{"context":"tgt","element":"search","variable":"t"}],"dependent":[{"name":"BundleEntrySearch","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"request","source":[{"context":"src","element":"request","variable":"s"}],"target":[{"context":"tgt","element":"request","variable":"t"}],"dependent":[{"name":"BundleEntryRequest","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"response","source":[{"context":"src","element":"response","variable":"s"}],"target":[{"context":"tgt","element":"response","variable":"t"}],"dependent":[{"name":"BundleEntryResponse","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"BundleEntrySearch","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"mode","source":[{"context":"src","element":"mode","variable":"v"}],"target":[{"context":"tgt","element":"mode","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Bundle.entry.search.mode-R4toR5"},{"valueString":"code"}]}]},{"name":"score","source":[{"context":"src","element":"score","variable":"vvv"}],"target":[{"context":"tgt","element":"score","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"BundleEntryRequest","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"method","source":[{"context":"src","element":"method","variable":"v"}],"target":[{"context":"tgt","element":"method","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Bundle.entry.request.method-R4toR5"},{"valueString":"code"}]}]},{"name":"url","source":[{"context":"src","element":"url","variable":"vvv"}],"target":[{"context":"tgt","element":"url","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"ifNoneMatch","source":[{"context":"src","element":"ifNoneMatch","variable":"vvv"}],"target":[{"context":"tgt","element":"ifNoneMatch","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"ifModifiedSince","source":[{"context":"src","element":"ifModifiedSince","variable":"vvv"}],"target":[{"context":"tgt","element":"ifModifiedSince","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"ifMatch","source":[{"context":"src","element":"ifMatch","variable":"vvv"}],"target":[{"context":"tgt","element":"ifMatch","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"ifNoneExist","source":[{"context":"src","element":"ifNoneExist","variable":"vvv"}],"target":[{"context":"tgt","element":"ifNoneExist","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"BundleEntryResponse","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"status","source":[{"context":"src","element":"status","variable":"vvv"}],"target":[{"context":"tgt","element":"status","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"location","source":[{"context":"src","element":"location","variable":"vvv"}],"target":[{"context":"tgt","element":"location","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"etag","source":[{"context":"src","element":"etag","variable":"vvv"}],"target":[{"context":"tgt","element":"etag","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"lastModified","source":[{"context":"src","element":"lastModified","variable":"vvv"}],"target":[{"context":"tgt","element":"lastModified","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"outcomeResource","source":[{"context":"src","type":"Resource","element":"outcome","variable":"vvv"}],"target":[{"context":"tgt","element":"outcome","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Bundle4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Bundle4to5",
+  "name" : "Bundle4to5",
+  "title" : "Bundle Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Bundle Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Bundle",
+    "mode" : "source",
+    "alias" : "BundleR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Bundle",
+    "mode" : "target",
+    "alias" : "BundleR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Bundle",
+    "extends" : "Resource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "BundleR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "BundleR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/bdl.type-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "timestamp",
+      "source" : [{
+        "context" : "src",
+        "element" : "timestamp",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "timestamp",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "total",
+      "source" : [{
+        "context" : "src",
+        "element" : "total",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "total",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "link",
+      "source" : [{
+        "context" : "src",
+        "element" : "link",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "link",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "BundleLink",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "entry",
+      "source" : [{
+        "context" : "src",
+        "element" : "entry",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "entry",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "BundleEntry",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "signature",
+      "source" : [{
+        "context" : "src",
+        "element" : "signature",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "signature",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "BundleLink",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "relation",
+      "source" : [{
+        "context" : "src",
+        "element" : "relation",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "relation",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "url",
+      "source" : [{
+        "context" : "src",
+        "element" : "url",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "url",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "BundleEntry",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "link",
+      "source" : [{
+        "context" : "src",
+        "element" : "link",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "link",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "BundleLink",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "fullUrl",
+      "source" : [{
+        "context" : "src",
+        "element" : "fullUrl",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "fullUrl",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "resourceResource",
+      "source" : [{
+        "context" : "src",
+        "element" : "resource",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "resource",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "search",
+      "source" : [{
+        "context" : "src",
+        "element" : "search",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "search",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "BundleEntrySearch",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "request",
+      "source" : [{
+        "context" : "src",
+        "element" : "request",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "request",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "BundleEntryRequest",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "response",
+      "source" : [{
+        "context" : "src",
+        "element" : "response",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "response",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "BundleEntryResponse",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "BundleEntrySearch",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "mode",
+      "source" : [{
+        "context" : "src",
+        "element" : "mode",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "mode",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/bdl.en.se.mode-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "score",
+      "source" : [{
+        "context" : "src",
+        "element" : "score",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "score",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "BundleEntryRequest",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "method",
+      "source" : [{
+        "context" : "src",
+        "element" : "method",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "method",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/bdl.en.re.method-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "url",
+      "source" : [{
+        "context" : "src",
+        "element" : "url",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "url",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "ifNoneMatch",
+      "source" : [{
+        "context" : "src",
+        "element" : "ifNoneMatch",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "ifNoneMatch",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "ifModifiedSince",
+      "source" : [{
+        "context" : "src",
+        "element" : "ifModifiedSince",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "ifModifiedSince",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "ifMatch",
+      "source" : [{
+        "context" : "src",
+        "element" : "ifMatch",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "ifMatch",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "ifNoneExist",
+      "source" : [{
+        "context" : "src",
+        "element" : "ifNoneExist",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "ifNoneExist",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "BundleEntryResponse",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "location",
+      "source" : [{
+        "context" : "src",
+        "element" : "location",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "location",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "etag",
+      "source" : [{
+        "context" : "src",
+        "element" : "etag",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "etag",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "lastModified",
+      "source" : [{
+        "context" : "src",
+        "element" : "lastModified",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "lastModified",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "outcomeResource",
+      "source" : [{
+        "context" : "src",
+        "type" : "OperationOutcome",
+        "element" : "outcome",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "outcome",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

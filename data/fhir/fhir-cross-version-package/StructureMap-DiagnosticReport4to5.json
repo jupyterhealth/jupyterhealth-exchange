@@ -1,1 +1,346 @@
-{"resourceType":"StructureMap","id":"DiagnosticReport4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/DiagnosticReport4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'DiagnosticReport4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'DiagnosticReport Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/DiagnosticReport<span style=\"color: navy\">&quot; </span><b>alias </b>DiagnosticReportR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/DiagnosticReport<span style=\"color: navy\">&quot; </span><b>alias </b>DiagnosticReportR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>DiagnosticReport<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>DiagnosticReportR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>DiagnosticReportR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.basedOn<span style=\"color: navy\"><b> -&gt; </b></span>tgt.basedOn<span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/DiagnosticReport.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.category<span style=\"color: navy\"><b> -&gt; </b></span>tgt.category<span style=\"color: navy\">;</span>\r\n  src.code<span style=\"color: navy\"><b> -&gt; </b></span>tgt.code<span style=\"color: navy\">;</span>\r\n  src.subject<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subject<span style=\"color: navy\">;</span>\r\n  src.encounter<span style=\"color: navy\"><b> -&gt; </b></span>tgt.encounter<span style=\"color: navy\">;</span>\r\n  src.effective<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.effective<span style=\"color: navy\">;</span>\r\n  src.effective<span style=\"color: navy\"> : </span>Period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.effective<span style=\"color: navy\">;</span>\r\n  src.issued<span style=\"color: navy\"><b> -&gt; </b></span>tgt.issued<span style=\"color: navy\">;</span>\r\n  src.performer<span style=\"color: navy\"><b> -&gt; </b></span>tgt.performer<span style=\"color: navy\">;</span>\r\n  src.resultsInterpreter<span style=\"color: navy\"><b> -&gt; </b></span>tgt.resultsInterpreter<span style=\"color: navy\">;</span>\r\n  src.specimen<span style=\"color: navy\"><b> -&gt; </b></span>tgt.specimen<span style=\"color: navy\">;</span>\r\n  src.result<span style=\"color: navy\"><b> -&gt; </b></span>tgt.result<span style=\"color: navy\">;</span>\r\n  src.media<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.media<b> as </b><span style=\"color: maroon\">t</span><b> then </b>DiagnosticReportMedia<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.conclusion<span style=\"color: navy\"><b> -&gt; </b></span>tgt.conclusion<span style=\"color: navy\">;</span>\r\n  src.conclusionCode<span style=\"color: navy\"><b> -&gt; </b></span>tgt.conclusionCode<span style=\"color: navy\">;</span>\r\n  src.presentedForm<span style=\"color: navy\"><b> -&gt; </b></span>tgt.presentedForm<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><span style=\"color: navy\">// </span><span style=\"color: green\">group DiagnosticReportSupportingInfo(source src, target tgt) extends BackboneElement {</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.type -&gt; tgt.type;</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.reference -&gt; tgt.reference;</span>\r\n<span style=\"color: navy\">// </span><span style=\"color: green\">}</span>\r\n<b>group </b>DiagnosticReportMedia<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.comment<span style=\"color: navy\"><b> -&gt; </b></span>tgt.comment<span style=\"color: navy\">;</span>\r\n  src.link<span style=\"color: navy\"><b> -&gt; </b></span>tgt.link<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/DiagnosticReport4to5","version":"0.1.0","name":"DiagnosticReport4to5","title":"DiagnosticReport Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"DiagnosticReportTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/DiagnosticReport","mode":"source","alias":"DiagnosticReportR4"},{"url":"http://hl7.org/fhir/5.0/DiagnosticReport","mode":"target","alias":"DiagnosticReportR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"DiagnosticReport","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"DiagnosticReportR4","mode":"source"},{"name":"tgt","type":"DiagnosticReportR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"basedOn","source":[{"context":"src","element":"basedOn","variable":"vvv"}],"target":[{"context":"tgt","element":"basedOn","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/DiagnosticReport.status-R4toR5"},{"valueString":"code"}]}]},{"name":"category","source":[{"context":"src","element":"category","variable":"vvv"}],"target":[{"context":"tgt","element":"category","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"code","source":[{"context":"src","element":"code","variable":"vvv"}],"target":[{"context":"tgt","element":"code","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"subject","source":[{"context":"src","element":"subject","variable":"vvv"}],"target":[{"context":"tgt","element":"subject","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"encounter","source":[{"context":"src","element":"encounter","variable":"vvv"}],"target":[{"context":"tgt","element":"encounter","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"effectiveDateTime","source":[{"context":"src","type":"dateTime","element":"effective","variable":"vvv"}],"target":[{"context":"tgt","element":"effective","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"effectivePeriod","source":[{"context":"src","type":"Period","element":"effective","variable":"vvv"}],"target":[{"context":"tgt","element":"effective","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"issued","source":[{"context":"src","element":"issued","variable":"vvv"}],"target":[{"context":"tgt","element":"issued","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"performer","source":[{"context":"src","element":"performer","variable":"vvv"}],"target":[{"context":"tgt","element":"performer","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"resultsInterpreter","source":[{"context":"src","element":"resultsInterpreter","variable":"vvv"}],"target":[{"context":"tgt","element":"resultsInterpreter","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"specimen","source":[{"context":"src","element":"specimen","variable":"vvv"}],"target":[{"context":"tgt","element":"specimen","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"result","source":[{"context":"src","element":"result","variable":"vvv"}],"target":[{"context":"tgt","element":"result","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"media","source":[{"context":"src","element":"media","variable":"s"}],"target":[{"context":"tgt","element":"media","variable":"t"}],"dependent":[{"name":"DiagnosticReportMedia","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"conclusion","source":[{"context":"src","element":"conclusion","variable":"vvv"}],"target":[{"context":"tgt","element":"conclusion","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"conclusionCode","source":[{"context":"src","element":"conclusionCode","variable":"vvv"}],"target":[{"context":"tgt","element":"conclusionCode","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"presentedForm","source":[{"context":"src","element":"presentedForm","variable":"vvv"}],"target":[{"context":"tgt","element":"presentedForm","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"DiagnosticReportMedia","extends":"BackboneElement","documentation":"group DiagnosticReportSupportingInfo(source src, target tgt) extends BackboneElement {\r\nsrc.type -> tgt.type;\r\nsrc.reference -> tgt.reference;\r\n}","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"comment","source":[{"context":"src","element":"comment","variable":"vvv"}],"target":[{"context":"tgt","element":"comment","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"link","source":[{"context":"src","element":"link","variable":"vvv"}],"target":[{"context":"tgt","element":"link","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "DiagnosticReport4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/DiagnosticReport4to5",
+  "name" : "DiagnosticReport4to5",
+  "title" : "DiagnosticReport Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "DiagnosticReport Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/DiagnosticReport",
+    "mode" : "source",
+    "alias" : "DiagnosticReportR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/DiagnosticReport",
+    "mode" : "target",
+    "alias" : "DiagnosticReportR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "DiagnosticReport",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "DiagnosticReportR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "DiagnosticReportR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "basedOn",
+      "source" : [{
+        "context" : "src",
+        "element" : "basedOn",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "basedOn",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/dir.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "category",
+      "source" : [{
+        "context" : "src",
+        "element" : "category",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "category",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "code",
+      "source" : [{
+        "context" : "src",
+        "element" : "code",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "code",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "subject",
+      "source" : [{
+        "context" : "src",
+        "element" : "subject",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subject",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "encounter",
+      "source" : [{
+        "context" : "src",
+        "element" : "encounter",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "encounter",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "effectiveDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "effective",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "effective",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "effectivePeriod",
+      "source" : [{
+        "context" : "src",
+        "type" : "Period",
+        "element" : "effective",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "effective",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "issued",
+      "source" : [{
+        "context" : "src",
+        "element" : "issued",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "issued",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "performer",
+      "source" : [{
+        "context" : "src",
+        "element" : "performer",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "performer",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "resultsInterpreter",
+      "source" : [{
+        "context" : "src",
+        "element" : "resultsInterpreter",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "resultsInterpreter",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "specimen",
+      "source" : [{
+        "context" : "src",
+        "element" : "specimen",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "specimen",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "result",
+      "source" : [{
+        "context" : "src",
+        "element" : "result",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "result",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "media",
+      "source" : [{
+        "context" : "src",
+        "element" : "media",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "media",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "DiagnosticReportMedia",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "conclusion",
+      "source" : [{
+        "context" : "src",
+        "element" : "conclusion",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "conclusion",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "conclusionCode",
+      "source" : [{
+        "context" : "src",
+        "element" : "conclusionCode",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "conclusionCode",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "presentedForm",
+      "source" : [{
+        "context" : "src",
+        "element" : "presentedForm",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "presentedForm",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "DiagnosticReportMedia",
+    "extends" : "BackboneElement",
+    "documentation" : "group DiagnosticReportSupportingInfo(source src, target tgt) extends BackboneElement {\r\nsrc.type -> tgt.type;\r\nsrc.reference -> tgt.reference;\r\n}",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "comment",
+      "source" : [{
+        "context" : "src",
+        "element" : "comment",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "comment",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "link",
+      "source" : [{
+        "context" : "src",
+        "element" : "link",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "link",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

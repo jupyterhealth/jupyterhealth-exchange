@@ -5,6 +5,8 @@ from core.models import (
     CodeableConcept,
     DataSource,
     DataSourceSupportedScope,
+    EhrBrand,
+    EhrBrandLocation,
     FhirAuxResource,
     FhirSource,
     JheClient,
@@ -253,3 +255,18 @@ class ClientDataSourceAdmin(admin.ModelAdmin):
     list_display = ("id", "client", "data_source")
     search_fields = ("data_source__name",)
     raw_id_fields = ("client", "data_source")
+
+
+@admin.register(EhrBrand)
+class EhrBrandAdmin(admin.ModelAdmin):
+    list_display = ("name", "vendor", "fhir_base_url", "npi", "id")
+    search_fields = ("name", "fhir_base_url", "npi")
+    list_filter = ("vendor",)
+
+
+@admin.register(EhrBrandLocation)
+class EhrBrandLocationAdmin(admin.ModelAdmin):
+    list_display = ("name", "brand", "city", "state", "postal_code", "id")
+    search_fields = ("name", "city", "state", "postal_code", "brand__name")
+    list_filter = ("state",)
+    raw_id_fields = ("brand",)

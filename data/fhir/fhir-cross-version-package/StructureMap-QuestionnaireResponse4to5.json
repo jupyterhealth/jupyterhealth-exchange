@@ -1,1 +1,517 @@
-{"resourceType":"StructureMap","id":"QuestionnaireResponse4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/QuestionnaireResponse4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'QuestionnaireResponse4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'QuestionnaireResponse Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/QuestionnaireResponse<span style=\"color: navy\">&quot; </span><b>alias </b>QuestionnaireResponseR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/QuestionnaireResponse<span style=\"color: navy\">&quot; </span><b>alias </b>QuestionnaireResponseR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>QuestionnaireResponse<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>QuestionnaireResponseR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>QuestionnaireResponseR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.basedOn<span style=\"color: navy\"><b> -&gt; </b></span>tgt.basedOn<span style=\"color: navy\">;</span>\r\n  src.partOf<span style=\"color: navy\"><b> -&gt; </b></span>tgt.partOf<span style=\"color: navy\">;</span>\r\n  src.questionnaire<span style=\"color: navy\"><b> -&gt; </b></span>tgt.questionnaire<span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/QuestionnaireResponse.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.subject<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subject<span style=\"color: navy\">;</span>\r\n  src.encounter<span style=\"color: navy\"><b> -&gt; </b></span>tgt.encounter<span style=\"color: navy\">;</span>\r\n  src.authored<span style=\"color: navy\"><b> -&gt; </b></span>tgt.authored<span style=\"color: navy\">;</span>\r\n  src.author<span style=\"color: navy\"><b> -&gt; </b></span>tgt.author<span style=\"color: navy\">;</span>\r\n  src.source<span style=\"color: navy\"><b> -&gt; </b></span>tgt.source<span style=\"color: navy\">;</span>\r\n  src.item<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.item<b> as </b><span style=\"color: maroon\">t</span><b> then </b>QuestionnaireResponseItem<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>QuestionnaireResponseItem<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.linkId<span style=\"color: navy\"><b> -&gt; </b></span>tgt.linkId<span style=\"color: navy\">;</span>\r\n  src.definition<span style=\"color: navy\"><b> -&gt; </b></span>tgt.definition<span style=\"color: navy\">;</span>\r\n  src.text<span style=\"color: navy\"><b> -&gt; </b></span>tgt.text<span style=\"color: navy\">;</span>\r\n  src.answer<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.answer<b> as </b><span style=\"color: maroon\">t</span><b> then </b>QuestionnaireResponseItemAnswer<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>QuestionnaireResponseItemAnswer<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.value<span style=\"color: navy\"> : </span>boolean<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>decimal<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>integer<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>date<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>time<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>string<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>uri<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Attachment<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Coding<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Quantity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Reference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/QuestionnaireResponse4to5","version":"0.1.0","name":"QuestionnaireResponse4to5","title":"QuestionnaireResponse Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"QuestionnaireResponseTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/QuestionnaireResponse","mode":"source","alias":"QuestionnaireResponseR4"},{"url":"http://hl7.org/fhir/5.0/QuestionnaireResponse","mode":"target","alias":"QuestionnaireResponseR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"QuestionnaireResponse","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"QuestionnaireResponseR4","mode":"source"},{"name":"tgt","type":"QuestionnaireResponseR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"basedOn","source":[{"context":"src","element":"basedOn","variable":"vvv"}],"target":[{"context":"tgt","element":"basedOn","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"partOf","source":[{"context":"src","element":"partOf","variable":"vvv"}],"target":[{"context":"tgt","element":"partOf","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"questionnaire","source":[{"context":"src","element":"questionnaire","variable":"vvv"}],"target":[{"context":"tgt","element":"questionnaire","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/QuestionnaireResponse.status-R4toR5"},{"valueString":"code"}]}]},{"name":"subject","source":[{"context":"src","element":"subject","variable":"vvv"}],"target":[{"context":"tgt","element":"subject","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"encounter","source":[{"context":"src","element":"encounter","variable":"vvv"}],"target":[{"context":"tgt","element":"encounter","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"authored","source":[{"context":"src","element":"authored","variable":"vvv"}],"target":[{"context":"tgt","element":"authored","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"author","source":[{"context":"src","element":"author","variable":"vvv"}],"target":[{"context":"tgt","element":"author","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"source","source":[{"context":"src","element":"source","variable":"vvv"}],"target":[{"context":"tgt","element":"source","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"item","source":[{"context":"src","element":"item","variable":"s"}],"target":[{"context":"tgt","element":"item","variable":"t"}],"dependent":[{"name":"QuestionnaireResponseItem","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"QuestionnaireResponseItem","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"linkId","source":[{"context":"src","element":"linkId","variable":"vvv"}],"target":[{"context":"tgt","element":"linkId","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"definition","source":[{"context":"src","element":"definition","variable":"vvv"}],"target":[{"context":"tgt","element":"definition","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"text","source":[{"context":"src","element":"text","variable":"vvv"}],"target":[{"context":"tgt","element":"text","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"answer","source":[{"context":"src","element":"answer","variable":"s"}],"target":[{"context":"tgt","element":"answer","variable":"t"}],"dependent":[{"name":"QuestionnaireResponseItemAnswer","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"QuestionnaireResponseItemAnswer","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"valueBoolean","source":[{"context":"src","type":"boolean","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueDecimal","source":[{"context":"src","type":"decimal","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueInteger","source":[{"context":"src","type":"integer","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueDate","source":[{"context":"src","type":"date","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueDateTime","source":[{"context":"src","type":"dateTime","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueTime","source":[{"context":"src","type":"time","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueString","source":[{"context":"src","type":"string","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueUri","source":[{"context":"src","type":"uri","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueAttachment","source":[{"context":"src","type":"Attachment","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueCoding","source":[{"context":"src","type":"Coding","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueQuantity","source":[{"context":"src","type":"Quantity","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueReference","source":[{"context":"src","type":"Reference","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "QuestionnaireResponse4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/QuestionnaireResponse4to5",
+  "name" : "QuestionnaireResponse4to5",
+  "title" : "QuestionnaireResponse Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "QuestionnaireResponse Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/QuestionnaireResponse",
+    "mode" : "source",
+    "alias" : "QuestionnaireResponseR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/QuestionnaireResponse",
+    "mode" : "target",
+    "alias" : "QuestionnaireResponseR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "QuestionnaireResponse",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "QuestionnaireResponseR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "QuestionnaireResponseR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "basedOn",
+      "source" : [{
+        "context" : "src",
+        "element" : "basedOn",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "basedOn",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "partOf",
+      "source" : [{
+        "context" : "src",
+        "element" : "partOf",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "partOf",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "questionnaire",
+      "source" : [{
+        "context" : "src",
+        "element" : "questionnaire",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "questionnaire",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/qrs.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "subject",
+      "source" : [{
+        "context" : "src",
+        "element" : "subject",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subject",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "encounter",
+      "source" : [{
+        "context" : "src",
+        "element" : "encounter",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "encounter",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "authored",
+      "source" : [{
+        "context" : "src",
+        "element" : "authored",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "authored",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "author",
+      "source" : [{
+        "context" : "src",
+        "element" : "author",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "author",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "source",
+      "source" : [{
+        "context" : "src",
+        "element" : "source",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "source",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "item",
+      "source" : [{
+        "context" : "src",
+        "element" : "item",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "item",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "QuestionnaireResponseItem",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "QuestionnaireResponseItem",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "linkId",
+      "source" : [{
+        "context" : "src",
+        "element" : "linkId",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "linkId",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "definition",
+      "source" : [{
+        "context" : "src",
+        "element" : "definition",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "definition",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "text",
+      "source" : [{
+        "context" : "src",
+        "element" : "text",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "text",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "answer",
+      "source" : [{
+        "context" : "src",
+        "element" : "answer",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "answer",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "QuestionnaireResponseItemAnswer",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "item",
+      "source" : [{
+        "context" : "src",
+        "element" : "item",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "item",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "QuestionnaireResponseItem",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "QuestionnaireResponseItemAnswer",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "valueBoolean",
+      "source" : [{
+        "context" : "src",
+        "type" : "boolean",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueDecimal",
+      "source" : [{
+        "context" : "src",
+        "type" : "decimal",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueInteger",
+      "source" : [{
+        "context" : "src",
+        "type" : "integer",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueDate",
+      "source" : [{
+        "context" : "src",
+        "type" : "date",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "time",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueString",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueUri",
+      "source" : [{
+        "context" : "src",
+        "type" : "uri",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueAttachment",
+      "source" : [{
+        "context" : "src",
+        "type" : "Attachment",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueCoding",
+      "source" : [{
+        "context" : "src",
+        "type" : "Coding",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueQuantity",
+      "source" : [{
+        "context" : "src",
+        "type" : "Quantity",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueReference",
+      "source" : [{
+        "context" : "src",
+        "type" : "Reference",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "item",
+      "source" : [{
+        "context" : "src",
+        "element" : "item",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "item",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "QuestionnaireResponseItem",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  }]
+}

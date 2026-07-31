@@ -1,1 +1,1424 @@
-{"resourceType":"StructureMap","id":"Primitives4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Primitives4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Primitives4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Primitive Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'draft'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/base64Binary<span style=\"color: navy\">&quot; </span><b>alias </b>base64BinaryR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/base64Binary<span style=\"color: navy\">&quot; </span><b>alias </b>base64BinaryR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/boolean<span style=\"color: navy\">&quot; </span><b>alias </b>booleanR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/boolean<span style=\"color: navy\">&quot; </span><b>alias </b>booleanR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/canonical<span style=\"color: navy\">&quot; </span><b>alias </b>canonicalR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/canonical<span style=\"color: navy\">&quot; </span><b>alias </b>canonicalR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/code<span style=\"color: navy\">&quot; </span><b>alias </b>codeR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/code<span style=\"color: navy\">&quot; </span><b>alias </b>codeR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/date<span style=\"color: navy\">&quot; </span><b>alias </b>dateR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/date<span style=\"color: navy\">&quot; </span><b>alias </b>dateR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/dateTime<span style=\"color: navy\">&quot; </span><b>alias </b>dateTimeR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/dateTime<span style=\"color: navy\">&quot; </span><b>alias </b>dateTimeR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/decimal<span style=\"color: navy\">&quot; </span><b>alias </b>decimalR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/decimal<span style=\"color: navy\">&quot; </span><b>alias </b>decimalR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/id<span style=\"color: navy\">&quot; </span><b>alias </b>idR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/id<span style=\"color: navy\">&quot; </span><b>alias </b>idR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/instant<span style=\"color: navy\">&quot; </span><b>alias </b>instantR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/instant<span style=\"color: navy\">&quot; </span><b>alias </b>instantR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/integer<span style=\"color: navy\">&quot; </span><b>alias </b>integerR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/integer<span style=\"color: navy\">&quot; </span><b>alias </b>integerR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/integer64<span style=\"color: navy\">&quot; </span><b>alias </b>integer64R5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/markdown<span style=\"color: navy\">&quot; </span><b>alias </b>markdownR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/markdown<span style=\"color: navy\">&quot; </span><b>alias </b>markdownR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/oid<span style=\"color: navy\">&quot; </span><b>alias </b>oidR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/oid<span style=\"color: navy\">&quot; </span><b>alias </b>oidR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/positiveInt<span style=\"color: navy\">&quot; </span><b>alias </b>positiveIntR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/positiveInt<span style=\"color: navy\">&quot; </span><b>alias </b>positiveIntR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/string<span style=\"color: navy\">&quot; </span><b>alias </b>stringR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/string<span style=\"color: navy\">&quot; </span><b>alias </b>stringR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/time<span style=\"color: navy\">&quot; </span><b>alias </b>timeR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/time<span style=\"color: navy\">&quot; </span><b>alias </b>timeR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/unsignedInt<span style=\"color: navy\">&quot; </span><b>alias </b>unsignedIntR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/unsignedInt<span style=\"color: navy\">&quot; </span><b>alias </b>unsignedIntR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/uri<span style=\"color: navy\">&quot; </span><b>alias </b>uriR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/uri<span style=\"color: navy\">&quot; </span><b>alias </b>uriR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/url<span style=\"color: navy\">&quot; </span><b>alias </b>urlR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/url<span style=\"color: navy\">&quot; </span><b>alias </b>urlR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/uuid<span style=\"color: navy\">&quot; </span><b>alias </b>uuidR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/uuid<span style=\"color: navy\">&quot; </span><b>alias </b>uuidR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/xhtml<span style=\"color: navy\">&quot; </span><b>alias </b>xhtmlR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/xhtml<span style=\"color: navy\">&quot; </span><b>alias </b>xhtmlR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span><a href=\"http://hl7.org/fhir/extensions/1.0.0/StructureMap-Element4to5.html\" title=\"FML Conversion for Element: R4 to R5\">http://hl7.org/fhir/StructureMap/Element4to5</a><span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>base64Binary<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>base64BinaryR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>base64BinaryR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;base64BinaryValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>boolean<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>booleanR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>booleanR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;booleanValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>canonical<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>canonicalR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>canonicalR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;canonicalValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>canonical2uri<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>canonicalR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>uriR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;canonical2uriValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>code<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>codeR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>codeR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;codeValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>code2id<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>codeR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>idR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;code2idValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>code2string<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>codeR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>stringR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;code2stringValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>code2uri<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>codeR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>uriR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;code2uriValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>date<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>dateR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>dateR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;dateValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>date2dateTime<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>dateR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>dateTimeR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;date2dateTimeValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>dateTime<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>dateTimeR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>dateTimeR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;dateTimeValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>dateTime2date<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>dateTimeR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>dateR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;dateTime2dateValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>decimal<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>decimalR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>decimalR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;decimalValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>id<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>idR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>idR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;idValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>id2code<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>idR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>codeR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;id2codeValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>id2string<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>idR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>stringR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;id2stringValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>instant<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>instantR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>instantR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;instantValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>integer<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>integerR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>integerR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;integerValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>integer2integer64<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>integerR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>integer64R5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;integer2integer64Value&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>markdown<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>markdownR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>markdownR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;markdownValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>markdown2string<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>markdownR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>stringR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;markdown2stringValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>oid<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>oidR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>oidR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;oidValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>positiveInt<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>positiveIntR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>positiveIntR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;positiveIntValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>string<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>stringR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>stringR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;stringValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>string2markdown<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>stringR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>markdownR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;string2markdownValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>string2id<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>stringR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>idR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;string2idValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>string2code<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>stringR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>codeR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;string2codeValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>string2integer64<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>stringR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>integer64R5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;string2integer64Value&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>time<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>timeR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>timeR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;timeValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>unsignedInt<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>unsignedIntR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>unsignedIntR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;unsignedIntValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>unsignedInt2integer64<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>unsignedIntR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>integer64R5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;unsignedInt2integer64Value&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>uri<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>uriR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>uriR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;uriValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>uri2canonical<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>uriR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>canonicalR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;uri2canonicalValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>uri2code<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>uriR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>codeR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;uri2codeValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>url<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>urlR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>urlR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;urlValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>uuid<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>uuidR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>uuidR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;uuidValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>xhtml<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>xhtmlR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>xhtmlR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;xhtmlValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Primitives4to5","version":"0.1.0","name":"Primitives4to5","title":"Primitive Transforms: R4 to R5","status":"draft","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"PrimitiveTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/base64Binary","mode":"source","alias":"base64BinaryR4"},{"url":"http://hl7.org/fhir/5.0/base64Binary","mode":"target","alias":"base64BinaryR5"},{"url":"http://hl7.org/fhir/4.0/boolean","mode":"source","alias":"booleanR4"},{"url":"http://hl7.org/fhir/5.0/boolean","mode":"target","alias":"booleanR5"},{"url":"http://hl7.org/fhir/4.0/canonical","mode":"source","alias":"canonicalR4"},{"url":"http://hl7.org/fhir/5.0/canonical","mode":"target","alias":"canonicalR5"},{"url":"http://hl7.org/fhir/4.0/code","mode":"source","alias":"codeR4"},{"url":"http://hl7.org/fhir/5.0/code","mode":"target","alias":"codeR5"},{"url":"http://hl7.org/fhir/4.0/date","mode":"source","alias":"dateR4"},{"url":"http://hl7.org/fhir/5.0/date","mode":"target","alias":"dateR5"},{"url":"http://hl7.org/fhir/4.0/dateTime","mode":"source","alias":"dateTimeR4"},{"url":"http://hl7.org/fhir/5.0/dateTime","mode":"target","alias":"dateTimeR5"},{"url":"http://hl7.org/fhir/4.0/decimal","mode":"source","alias":"decimalR4"},{"url":"http://hl7.org/fhir/5.0/decimal","mode":"target","alias":"decimalR5"},{"url":"http://hl7.org/fhir/4.0/id","mode":"source","alias":"idR4"},{"url":"http://hl7.org/fhir/5.0/id","mode":"target","alias":"idR5"},{"url":"http://hl7.org/fhir/4.0/instant","mode":"source","alias":"instantR4"},{"url":"http://hl7.org/fhir/5.0/instant","mode":"target","alias":"instantR5"},{"url":"http://hl7.org/fhir/4.0/integer","mode":"source","alias":"integerR4"},{"url":"http://hl7.org/fhir/5.0/integer","mode":"target","alias":"integerR5"},{"url":"http://hl7.org/fhir/5.0/integer64","mode":"target","alias":"integer64R5"},{"url":"http://hl7.org/fhir/4.0/markdown","mode":"source","alias":"markdownR4"},{"url":"http://hl7.org/fhir/5.0/markdown","mode":"target","alias":"markdownR5"},{"url":"http://hl7.org/fhir/4.0/oid","mode":"source","alias":"oidR4"},{"url":"http://hl7.org/fhir/5.0/oid","mode":"target","alias":"oidR5"},{"url":"http://hl7.org/fhir/4.0/positiveInt","mode":"source","alias":"positiveIntR4"},{"url":"http://hl7.org/fhir/5.0/positiveInt","mode":"target","alias":"positiveIntR5"},{"url":"http://hl7.org/fhir/4.0/string","mode":"source","alias":"stringR4"},{"url":"http://hl7.org/fhir/5.0/string","mode":"target","alias":"stringR5"},{"url":"http://hl7.org/fhir/4.0/time","mode":"source","alias":"timeR4"},{"url":"http://hl7.org/fhir/5.0/time","mode":"target","alias":"timeR5"},{"url":"http://hl7.org/fhir/4.0/unsignedInt","mode":"source","alias":"unsignedIntR4"},{"url":"http://hl7.org/fhir/5.0/unsignedInt","mode":"target","alias":"unsignedIntR5"},{"url":"http://hl7.org/fhir/4.0/uri","mode":"source","alias":"uriR4"},{"url":"http://hl7.org/fhir/5.0/uri","mode":"target","alias":"uriR5"},{"url":"http://hl7.org/fhir/4.0/url","mode":"source","alias":"urlR4"},{"url":"http://hl7.org/fhir/5.0/url","mode":"target","alias":"urlR5"},{"url":"http://hl7.org/fhir/4.0/uuid","mode":"source","alias":"uuidR4"},{"url":"http://hl7.org/fhir/5.0/uuid","mode":"target","alias":"uuidR5"},{"url":"http://hl7.org/fhir/4.0/xhtml","mode":"source","alias":"xhtmlR4"},{"url":"http://hl7.org/fhir/5.0/xhtml","mode":"target","alias":"xhtmlR5"}],"import":["http://hl7.org/fhir/StructureMap/Element4to5"],"group":[{"name":"base64Binary","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"base64BinaryR4","mode":"source"},{"name":"tgt","type":"base64BinaryR5","mode":"target"}],"rule":[{"name":"base64BinaryValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"boolean","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"booleanR4","mode":"source"},{"name":"tgt","type":"booleanR5","mode":"target"}],"rule":[{"name":"booleanValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"canonical","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"canonicalR4","mode":"source"},{"name":"tgt","type":"canonicalR5","mode":"target"}],"rule":[{"name":"canonicalValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"canonical2uri","extends":"Element","typeMode":"types","input":[{"name":"src","type":"canonicalR4","mode":"source"},{"name":"tgt","type":"uriR5","mode":"target"}],"rule":[{"name":"canonical2uriValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"code","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"codeR4","mode":"source"},{"name":"tgt","type":"codeR5","mode":"target"}],"rule":[{"name":"codeValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"code2id","extends":"Element","typeMode":"types","input":[{"name":"src","type":"codeR4","mode":"source"},{"name":"tgt","type":"idR5","mode":"target"}],"rule":[{"name":"code2idValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"code2string","extends":"Element","typeMode":"types","input":[{"name":"src","type":"codeR4","mode":"source"},{"name":"tgt","type":"stringR5","mode":"target"}],"rule":[{"name":"code2stringValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"code2uri","extends":"Element","typeMode":"types","input":[{"name":"src","type":"codeR4","mode":"source"},{"name":"tgt","type":"uriR5","mode":"target"}],"rule":[{"name":"code2uriValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"date","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"dateR4","mode":"source"},{"name":"tgt","type":"dateR5","mode":"target"}],"rule":[{"name":"dateValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"date2dateTime","extends":"Element","typeMode":"types","input":[{"name":"src","type":"dateR4","mode":"source"},{"name":"tgt","type":"dateTimeR5","mode":"target"}],"rule":[{"name":"date2dateTimeValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"dateTime","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"dateTimeR4","mode":"source"},{"name":"tgt","type":"dateTimeR5","mode":"target"}],"rule":[{"name":"dateTimeValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"dateTime2date","extends":"Element","typeMode":"types","input":[{"name":"src","type":"dateTimeR4","mode":"source"},{"name":"tgt","type":"dateR5","mode":"target"}],"rule":[{"name":"dateTime2dateValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"decimal","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"decimalR4","mode":"source"},{"name":"tgt","type":"decimalR5","mode":"target"}],"rule":[{"name":"decimalValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"id","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"idR4","mode":"source"},{"name":"tgt","type":"idR5","mode":"target"}],"rule":[{"name":"idValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"id2code","extends":"Element","typeMode":"types","input":[{"name":"src","type":"idR4","mode":"source"},{"name":"tgt","type":"codeR5","mode":"target"}],"rule":[{"name":"id2codeValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"id2string","extends":"Element","typeMode":"types","input":[{"name":"src","type":"idR4","mode":"source"},{"name":"tgt","type":"stringR5","mode":"target"}],"rule":[{"name":"id2stringValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"instant","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"instantR4","mode":"source"},{"name":"tgt","type":"instantR5","mode":"target"}],"rule":[{"name":"instantValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"integer","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"integerR4","mode":"source"},{"name":"tgt","type":"integerR5","mode":"target"}],"rule":[{"name":"integerValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"integer2integer64","extends":"Element","typeMode":"types","input":[{"name":"src","type":"integerR4","mode":"source"},{"name":"tgt","type":"integer64R5","mode":"target"}],"rule":[{"name":"integer2integer64Value","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"markdown","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"markdownR4","mode":"source"},{"name":"tgt","type":"markdownR5","mode":"target"}],"rule":[{"name":"markdownValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"markdown2string","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"markdownR4","mode":"source"},{"name":"tgt","type":"stringR5","mode":"target"}],"rule":[{"name":"markdown2stringValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"oid","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"oidR4","mode":"source"},{"name":"tgt","type":"oidR5","mode":"target"}],"rule":[{"name":"oidValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"positiveInt","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"positiveIntR4","mode":"source"},{"name":"tgt","type":"positiveIntR5","mode":"target"}],"rule":[{"name":"positiveIntValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"string","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"stringR4","mode":"source"},{"name":"tgt","type":"stringR5","mode":"target"}],"rule":[{"name":"stringValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"string2markdown","extends":"Element","typeMode":"types","input":[{"name":"src","type":"stringR4","mode":"source"},{"name":"tgt","type":"markdownR5","mode":"target"}],"rule":[{"name":"string2markdownValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"string2id","extends":"Element","typeMode":"types","input":[{"name":"src","type":"stringR4","mode":"source"},{"name":"tgt","type":"idR5","mode":"target"}],"rule":[{"name":"string2idValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"string2code","extends":"Element","typeMode":"types","input":[{"name":"src","type":"stringR4","mode":"source"},{"name":"tgt","type":"codeR5","mode":"target"}],"rule":[{"name":"string2codeValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"string2integer64","extends":"Element","typeMode":"types","input":[{"name":"src","type":"stringR4","mode":"source"},{"name":"tgt","type":"integer64R5","mode":"target"}],"rule":[{"name":"string2integer64Value","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"time","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"timeR4","mode":"source"},{"name":"tgt","type":"timeR5","mode":"target"}],"rule":[{"name":"timeValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"unsignedInt","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"unsignedIntR4","mode":"source"},{"name":"tgt","type":"unsignedIntR5","mode":"target"}],"rule":[{"name":"unsignedIntValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"unsignedInt2integer64","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"unsignedIntR4","mode":"source"},{"name":"tgt","type":"integer64R5","mode":"target"}],"rule":[{"name":"unsignedInt2integer64Value","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"uri","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"uriR4","mode":"source"},{"name":"tgt","type":"uriR5","mode":"target"}],"rule":[{"name":"uriValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"uri2canonical","extends":"Element","typeMode":"types","input":[{"name":"src","type":"uriR4","mode":"source"},{"name":"tgt","type":"canonicalR5","mode":"target"}],"rule":[{"name":"uri2canonicalValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"uri2code","extends":"Element","typeMode":"types","input":[{"name":"src","type":"uriR4","mode":"source"},{"name":"tgt","type":"codeR5","mode":"target"}],"rule":[{"name":"uri2codeValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"url","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"urlR4","mode":"source"},{"name":"tgt","type":"urlR5","mode":"target"}],"rule":[{"name":"urlValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"uuid","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"uuidR4","mode":"source"},{"name":"tgt","type":"uuidR5","mode":"target"}],"rule":[{"name":"uuidValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"xhtml","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"xhtmlR4","mode":"source"},{"name":"tgt","type":"xhtmlR5","mode":"target"}],"rule":[{"name":"xhtmlValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Primitives4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Primitives4to5",
+  "name" : "Primitives4to5",
+  "title" : "Primitive Transforms: R4 to R5",
+  "status" : "draft",
+  "description" : "Primitive Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/base64Binary",
+    "mode" : "source",
+    "alias" : "base64BinaryR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/base64Binary",
+    "mode" : "target",
+    "alias" : "base64BinaryR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/boolean",
+    "mode" : "source",
+    "alias" : "booleanR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/boolean",
+    "mode" : "target",
+    "alias" : "booleanR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/canonical",
+    "mode" : "source",
+    "alias" : "canonicalR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/canonical",
+    "mode" : "target",
+    "alias" : "canonicalR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/code",
+    "mode" : "source",
+    "alias" : "codeR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/code",
+    "mode" : "target",
+    "alias" : "codeR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/date",
+    "mode" : "source",
+    "alias" : "dateR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/date",
+    "mode" : "target",
+    "alias" : "dateR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/dateTime",
+    "mode" : "source",
+    "alias" : "dateTimeR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/dateTime",
+    "mode" : "target",
+    "alias" : "dateTimeR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/decimal",
+    "mode" : "source",
+    "alias" : "decimalR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/decimal",
+    "mode" : "target",
+    "alias" : "decimalR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/id",
+    "mode" : "source",
+    "alias" : "idR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/id",
+    "mode" : "target",
+    "alias" : "idR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/instant",
+    "mode" : "source",
+    "alias" : "instantR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/instant",
+    "mode" : "target",
+    "alias" : "instantR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/integer",
+    "mode" : "source",
+    "alias" : "integerR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/integer",
+    "mode" : "target",
+    "alias" : "integerR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/integer64",
+    "mode" : "target",
+    "alias" : "integer64R5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/markdown",
+    "mode" : "source",
+    "alias" : "markdownR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/markdown",
+    "mode" : "target",
+    "alias" : "markdownR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/oid",
+    "mode" : "source",
+    "alias" : "oidR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/oid",
+    "mode" : "target",
+    "alias" : "oidR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/positiveInt",
+    "mode" : "source",
+    "alias" : "positiveIntR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/positiveInt",
+    "mode" : "target",
+    "alias" : "positiveIntR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/string",
+    "mode" : "source",
+    "alias" : "stringR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/string",
+    "mode" : "target",
+    "alias" : "stringR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/time",
+    "mode" : "source",
+    "alias" : "timeR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/time",
+    "mode" : "target",
+    "alias" : "timeR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/unsignedInt",
+    "mode" : "source",
+    "alias" : "unsignedIntR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/unsignedInt",
+    "mode" : "target",
+    "alias" : "unsignedIntR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/uri",
+    "mode" : "source",
+    "alias" : "uriR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/uri",
+    "mode" : "target",
+    "alias" : "uriR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/url",
+    "mode" : "source",
+    "alias" : "urlR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/url",
+    "mode" : "target",
+    "alias" : "urlR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/uuid",
+    "mode" : "source",
+    "alias" : "uuidR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/uuid",
+    "mode" : "target",
+    "alias" : "uuidR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/xhtml",
+    "mode" : "source",
+    "alias" : "xhtmlR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/xhtml",
+    "mode" : "target",
+    "alias" : "xhtmlR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/Element4to5"],
+  "group" : [{
+    "name" : "base64Binary",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "base64BinaryR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "base64BinaryR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "base64BinaryValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "boolean",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "booleanR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "booleanR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "booleanValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "canonical",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "canonicalR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "canonicalR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "canonicalValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "canonical2uri",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "canonicalR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "uriR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "canonical2uriValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "code",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "codeR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "codeR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "codeValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "code2id",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "codeR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "idR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "code2idValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "code2string",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "codeR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "stringR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "code2stringValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "code2uri",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "codeR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "uriR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "code2uriValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "date",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "dateR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "dateR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "dateValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "date2dateTime",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "dateR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "dateTimeR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "date2dateTimeValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "dateTime",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "dateTimeR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "dateTimeR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "dateTimeValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "dateTime2date",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "dateTimeR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "dateR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "dateTime2dateValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "decimal",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "decimalR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "decimalR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "decimalValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "id",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "idR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "idR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "idValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "id2code",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "idR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "codeR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "id2codeValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "id2string",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "idR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "stringR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "id2stringValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "instant",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "instantR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "instantR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "instantValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "integer",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "integerR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "integerR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "integerValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "integer2integer64",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "integerR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "integer64R5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "integer2integer64Value",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "markdown",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "markdownR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "markdownR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "markdownValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "markdown2string",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "markdownR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "stringR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "markdown2stringValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "oid",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "oidR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "oidR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "oidValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "positiveInt",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "positiveIntR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "positiveIntR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "positiveIntValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "string",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "stringR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "stringR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "stringValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "string2markdown",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "stringR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "markdownR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "string2markdownValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "string2id",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "stringR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "idR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "string2idValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "string2code",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "stringR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "codeR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "string2codeValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "string2uri",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "stringR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "uriR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "string2urivalue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "string2integer64",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "stringR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "integer64R5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "string2integer64Value",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "time",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "timeR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "timeR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "timeValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "unsignedInt",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "unsignedIntR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "unsignedIntR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "unsignedIntValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "unsignedInt2integer64",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "unsignedIntR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "integer64R5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "unsignedInt2integer64Value",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "uri",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "uriR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "uriR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "uriValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "uri2canonical",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "uriR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "canonicalR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "uri2canonicalValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "uri2code",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "uriR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "codeR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "uri2codeValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "uri2url",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "uriR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "urlR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "uri2urlValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "url",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "urlR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "urlR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "urlValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "uuid",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "uuidR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "uuidR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "uuidValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "xhtml",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "xhtmlR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "xhtmlR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "xhtmlValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  }]
+}

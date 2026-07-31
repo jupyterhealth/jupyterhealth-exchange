@@ -1,1 +1,368 @@
-{"resourceType":"StructureMap","id":"Group4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Group4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Group4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Group Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Group<span style=\"color: navy\">&quot; </span><b>alias </b>GroupR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Group<span style=\"color: navy\">&quot; </span><b>alias </b>GroupR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Group<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>GroupR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>GroupR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.active<span style=\"color: navy\"><b> -&gt; </b></span>tgt.active<span style=\"color: navy\">;</span>\r\n  src.type<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.type = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Group.type-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.code<span style=\"color: navy\"><b> -&gt; </b></span>tgt.code<span style=\"color: navy\">;</span>\r\n  src.name<span style=\"color: navy\"><b> -&gt; </b></span>tgt.name<span style=\"color: navy\">;</span>\r\n  src.quantity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.quantity<span style=\"color: navy\">;</span>\r\n  src.managingEntity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.managingEntity<span style=\"color: navy\">;</span>\r\n  src.characteristic<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.characteristic<b> as </b><span style=\"color: maroon\">t</span><b> then </b>GroupCharacteristic<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.member<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.member<b> as </b><span style=\"color: maroon\">t</span><b> then </b>GroupMember<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>GroupCharacteristic<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.code<span style=\"color: navy\"><b> -&gt; </b></span>tgt.code<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>boolean<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Quantity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Range<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Reference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.exclude<span style=\"color: navy\"><b> -&gt; </b></span>tgt.exclude<span style=\"color: navy\">;</span>\r\n  src.period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.period<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>GroupMember<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.entity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.entity<span style=\"color: navy\">;</span>\r\n  src.period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.period<span style=\"color: navy\">;</span>\r\n  src.inactive<span style=\"color: navy\"><b> -&gt; </b></span>tgt.inactive<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Group4to5","version":"0.1.0","name":"Group4to5","title":"Group Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"GroupTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Group","mode":"source","alias":"GroupR4"},{"url":"http://hl7.org/fhir/5.0/Group","mode":"target","alias":"GroupR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Group","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"GroupR4","mode":"source"},{"name":"tgt","type":"GroupR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"active","source":[{"context":"src","element":"active","variable":"vvv"}],"target":[{"context":"tgt","element":"active","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"v"}],"target":[{"context":"tgt","element":"type","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Group.type-R4toR5"},{"valueString":"code"}]}]},{"name":"code","source":[{"context":"src","element":"code","variable":"vvv"}],"target":[{"context":"tgt","element":"code","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"name","source":[{"context":"src","element":"name","variable":"vvv"}],"target":[{"context":"tgt","element":"name","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"quantity","source":[{"context":"src","element":"quantity","variable":"vvv"}],"target":[{"context":"tgt","element":"quantity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"managingEntity","source":[{"context":"src","element":"managingEntity","variable":"vvv"}],"target":[{"context":"tgt","element":"managingEntity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"characteristic","source":[{"context":"src","element":"characteristic","variable":"s"}],"target":[{"context":"tgt","element":"characteristic","variable":"t"}],"dependent":[{"name":"GroupCharacteristic","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"member","source":[{"context":"src","element":"member","variable":"s"}],"target":[{"context":"tgt","element":"member","variable":"t"}],"dependent":[{"name":"GroupMember","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"GroupCharacteristic","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"code","source":[{"context":"src","element":"code","variable":"vvv"}],"target":[{"context":"tgt","element":"code","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueBoolean","source":[{"context":"src","type":"boolean","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueQuantity","source":[{"context":"src","type":"Quantity","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueRange","source":[{"context":"src","type":"Range","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueReference","source":[{"context":"src","type":"Reference","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"exclude","source":[{"context":"src","element":"exclude","variable":"vvv"}],"target":[{"context":"tgt","element":"exclude","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"period","source":[{"context":"src","element":"period","variable":"vvv"}],"target":[{"context":"tgt","element":"period","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"GroupMember","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"entity","source":[{"context":"src","element":"entity","variable":"vvv"}],"target":[{"context":"tgt","element":"entity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"period","source":[{"context":"src","element":"period","variable":"vvv"}],"target":[{"context":"tgt","element":"period","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"inactive","source":[{"context":"src","element":"inactive","variable":"vvv"}],"target":[{"context":"tgt","element":"inactive","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Group4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Group4to5",
+  "name" : "Group4to5",
+  "title" : "Group Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Group Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Group",
+    "mode" : "source",
+    "alias" : "GroupR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Group",
+    "mode" : "target",
+    "alias" : "GroupR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Group",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "GroupR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "GroupR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "active",
+      "source" : [{
+        "context" : "src",
+        "element" : "active",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "active",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/grp.type-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "code",
+      "source" : [{
+        "context" : "src",
+        "element" : "code",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "code",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "name",
+      "source" : [{
+        "context" : "src",
+        "element" : "name",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "name",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "quantity",
+      "source" : [{
+        "context" : "src",
+        "element" : "quantity",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "quantity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "managingEntity",
+      "source" : [{
+        "context" : "src",
+        "element" : "managingEntity",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "managingEntity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "characteristic",
+      "source" : [{
+        "context" : "src",
+        "element" : "characteristic",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "characteristic",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "GroupCharacteristic",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "member",
+      "source" : [{
+        "context" : "src",
+        "element" : "member",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "member",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "GroupMember",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "GroupCharacteristic",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "code",
+      "source" : [{
+        "context" : "src",
+        "element" : "code",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "code",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueBoolean",
+      "source" : [{
+        "context" : "src",
+        "type" : "boolean",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueQuantity",
+      "source" : [{
+        "context" : "src",
+        "type" : "Quantity",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueRange",
+      "source" : [{
+        "context" : "src",
+        "type" : "Range",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueReference",
+      "source" : [{
+        "context" : "src",
+        "type" : "Reference",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "exclude",
+      "source" : [{
+        "context" : "src",
+        "element" : "exclude",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "exclude",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "period",
+      "source" : [{
+        "context" : "src",
+        "element" : "period",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "period",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "GroupMember",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "entity",
+      "source" : [{
+        "context" : "src",
+        "element" : "entity",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "entity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "period",
+      "source" : [{
+        "context" : "src",
+        "element" : "period",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "period",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "inactive",
+      "source" : [{
+        "context" : "src",
+        "element" : "inactive",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "inactive",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

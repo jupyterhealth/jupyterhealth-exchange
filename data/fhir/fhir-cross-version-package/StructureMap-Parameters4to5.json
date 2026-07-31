@@ -1,1 +1,854 @@
-{"resourceType":"StructureMap","id":"Parameters4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Parameters4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Parameters4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Parameters Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Parameters<span style=\"color: navy\">&quot; </span><b>alias </b>ParametersR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Parameters<span style=\"color: navy\">&quot; </span><b>alias </b>ParametersR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Parameters<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>ParametersR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>ParametersR5<span style=\"color: navy\">)</span><b> extends </b>Resource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.parameter<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.parameter<b> as </b><span style=\"color: maroon\">t</span><b> then </b>ParametersParameter<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>ParametersParameter<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.name<span style=\"color: navy\"><b> -&gt; </b></span>tgt.name<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>base64Binary<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>boolean<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>canonical<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>code<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>date<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>decimal<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>id<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>instant<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>integer<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>markdown<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>oid<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>positiveInt<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>string<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>time<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>unsignedInt<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>uri<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>url<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>uuid<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Address<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Age<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Annotation<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Attachment<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Coding<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>ContactPoint<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Count<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Distance<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Duration<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>HumanName<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Money<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Quantity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Range<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Ratio<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Reference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>SampledData<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Signature<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Timing<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>ContactDetail<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>DataRequirement<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Expression<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>ParameterDefinition<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>RelatedArtifact<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>TriggerDefinition<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>UsageContext<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Dosage<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"> : </span>Meta<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.resource<span style=\"color: navy\"> : </span>Resource<span style=\"color: navy\"><b> -&gt; </b></span>tgt.resource<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Parameters4to5","version":"0.1.0","name":"Parameters4to5","title":"Parameters Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"ParametersTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Parameters","mode":"source","alias":"ParametersR4"},{"url":"http://hl7.org/fhir/5.0/Parameters","mode":"target","alias":"ParametersR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Parameters","extends":"Resource","typeMode":"type-and-types","input":[{"name":"src","type":"ParametersR4","mode":"source"},{"name":"tgt","type":"ParametersR5","mode":"target"}],"rule":[{"name":"parameter","source":[{"context":"src","element":"parameter","variable":"s"}],"target":[{"context":"tgt","element":"parameter","variable":"t"}],"dependent":[{"name":"ParametersParameter","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"ParametersParameter","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"name","source":[{"context":"src","element":"name","variable":"vvv"}],"target":[{"context":"tgt","element":"name","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueBase64Binary","source":[{"context":"src","type":"base64Binary","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueBoolean","source":[{"context":"src","type":"boolean","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueCanonical","source":[{"context":"src","type":"canonical","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueCode","source":[{"context":"src","type":"code","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueDate","source":[{"context":"src","type":"date","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueDateTime","source":[{"context":"src","type":"dateTime","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueDecimal","source":[{"context":"src","type":"decimal","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueId","source":[{"context":"src","type":"id","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueInstant","source":[{"context":"src","type":"instant","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueInteger","source":[{"context":"src","type":"integer","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueMarkdown","source":[{"context":"src","type":"markdown","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueOid","source":[{"context":"src","type":"oid","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valuePositiveInt","source":[{"context":"src","type":"positiveInt","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueString","source":[{"context":"src","type":"string","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueTime","source":[{"context":"src","type":"time","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueUnsignedInt","source":[{"context":"src","type":"unsignedInt","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueUri","source":[{"context":"src","type":"uri","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueUrl","source":[{"context":"src","type":"url","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueUuid","source":[{"context":"src","type":"uuid","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueAddress","source":[{"context":"src","type":"Address","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueAge","source":[{"context":"src","type":"Age","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueAnnotation","source":[{"context":"src","type":"Annotation","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueAttachment","source":[{"context":"src","type":"Attachment","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueCoding","source":[{"context":"src","type":"Coding","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueContactPoint","source":[{"context":"src","type":"ContactPoint","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueCount","source":[{"context":"src","type":"Count","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueDistance","source":[{"context":"src","type":"Distance","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueDuration","source":[{"context":"src","type":"Duration","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueHumanName","source":[{"context":"src","type":"HumanName","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueIdentifier","source":[{"context":"src","type":"Identifier","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueMoney","source":[{"context":"src","type":"Money","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valuePeriod","source":[{"context":"src","type":"Period","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueQuantity","source":[{"context":"src","type":"Quantity","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueRange","source":[{"context":"src","type":"Range","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueRatio","source":[{"context":"src","type":"Ratio","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueReference","source":[{"context":"src","type":"Reference","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueSampledData","source":[{"context":"src","type":"SampledData","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueSignature","source":[{"context":"src","type":"Signature","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueTiming","source":[{"context":"src","type":"Timing","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueContactDetail","source":[{"context":"src","type":"ContactDetail","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueDataRequirement","source":[{"context":"src","type":"DataRequirement","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueExpression","source":[{"context":"src","type":"Expression","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueParameterDefinition","source":[{"context":"src","type":"ParameterDefinition","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueRelatedArtifact","source":[{"context":"src","type":"RelatedArtifact","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueTriggerDefinition","source":[{"context":"src","type":"TriggerDefinition","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueUsageContext","source":[{"context":"src","type":"UsageContext","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueDosage","source":[{"context":"src","type":"Dosage","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueMeta","source":[{"context":"src","type":"Meta","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"resourceResource","source":[{"context":"src","type":"Resource","element":"resource","variable":"vvv"}],"target":[{"context":"tgt","element":"resource","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Parameters4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Parameters4to5",
+  "name" : "Parameters4to5",
+  "title" : "Parameters Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Parameters Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Parameters",
+    "mode" : "source",
+    "alias" : "ParametersR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Parameters",
+    "mode" : "target",
+    "alias" : "ParametersR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Parameters",
+    "extends" : "Resource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "ParametersR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "ParametersR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "parameter",
+      "source" : [{
+        "context" : "src",
+        "element" : "parameter",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "parameter",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "ParametersParameter",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "ParametersParameter",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "name",
+      "source" : [{
+        "context" : "src",
+        "element" : "name",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "name",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueBase64Binary",
+      "source" : [{
+        "context" : "src",
+        "type" : "base64Binary",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueBoolean",
+      "source" : [{
+        "context" : "src",
+        "type" : "boolean",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueCanonical",
+      "source" : [{
+        "context" : "src",
+        "type" : "canonical",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueCode",
+      "source" : [{
+        "context" : "src",
+        "type" : "code",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueDate",
+      "source" : [{
+        "context" : "src",
+        "type" : "date",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueDecimal",
+      "source" : [{
+        "context" : "src",
+        "type" : "decimal",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueId",
+      "source" : [{
+        "context" : "src",
+        "type" : "id",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueInstant",
+      "source" : [{
+        "context" : "src",
+        "type" : "instant",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueInteger",
+      "source" : [{
+        "context" : "src",
+        "type" : "integer",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueMarkdown",
+      "source" : [{
+        "context" : "src",
+        "type" : "markdown",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueOid",
+      "source" : [{
+        "context" : "src",
+        "type" : "oid",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valuePositiveInt",
+      "source" : [{
+        "context" : "src",
+        "type" : "positiveInt",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueString",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "time",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueUnsignedInt",
+      "source" : [{
+        "context" : "src",
+        "type" : "unsignedInt",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueUri",
+      "source" : [{
+        "context" : "src",
+        "type" : "uri",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueUrl",
+      "source" : [{
+        "context" : "src",
+        "type" : "url",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueUuid",
+      "source" : [{
+        "context" : "src",
+        "type" : "uuid",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueAddress",
+      "source" : [{
+        "context" : "src",
+        "type" : "Address",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueAge",
+      "source" : [{
+        "context" : "src",
+        "type" : "Age",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueAnnotation",
+      "source" : [{
+        "context" : "src",
+        "type" : "Annotation",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueAttachment",
+      "source" : [{
+        "context" : "src",
+        "type" : "Attachment",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueCoding",
+      "source" : [{
+        "context" : "src",
+        "type" : "Coding",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueContactPoint",
+      "source" : [{
+        "context" : "src",
+        "type" : "ContactPoint",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueCount",
+      "source" : [{
+        "context" : "src",
+        "type" : "Count",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueDistance",
+      "source" : [{
+        "context" : "src",
+        "type" : "Distance",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueDuration",
+      "source" : [{
+        "context" : "src",
+        "type" : "Duration",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueHumanName",
+      "source" : [{
+        "context" : "src",
+        "type" : "HumanName",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueIdentifier",
+      "source" : [{
+        "context" : "src",
+        "type" : "Identifier",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueMoney",
+      "source" : [{
+        "context" : "src",
+        "type" : "Money",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valuePeriod",
+      "source" : [{
+        "context" : "src",
+        "type" : "Period",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueQuantity",
+      "source" : [{
+        "context" : "src",
+        "type" : "Quantity",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueRange",
+      "source" : [{
+        "context" : "src",
+        "type" : "Range",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueRatio",
+      "source" : [{
+        "context" : "src",
+        "type" : "Ratio",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueReference",
+      "source" : [{
+        "context" : "src",
+        "type" : "Reference",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueSampledData",
+      "source" : [{
+        "context" : "src",
+        "type" : "SampledData",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueSignature",
+      "source" : [{
+        "context" : "src",
+        "type" : "Signature",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueTiming",
+      "source" : [{
+        "context" : "src",
+        "type" : "Timing",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueContactDetail",
+      "source" : [{
+        "context" : "src",
+        "type" : "ContactDetail",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueDataRequirement",
+      "source" : [{
+        "context" : "src",
+        "type" : "DataRequirement",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueExpression",
+      "source" : [{
+        "context" : "src",
+        "type" : "Expression",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueParameterDefinition",
+      "source" : [{
+        "context" : "src",
+        "type" : "ParameterDefinition",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueRelatedArtifact",
+      "source" : [{
+        "context" : "src",
+        "type" : "RelatedArtifact",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueTriggerDefinition",
+      "source" : [{
+        "context" : "src",
+        "type" : "TriggerDefinition",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueUsageContext",
+      "source" : [{
+        "context" : "src",
+        "type" : "UsageContext",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueDosage",
+      "source" : [{
+        "context" : "src",
+        "type" : "Dosage",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueMeta",
+      "source" : [{
+        "context" : "src",
+        "type" : "Meta",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "resourceResource",
+      "source" : [{
+        "context" : "src",
+        "element" : "resource",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "resource",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "part",
+      "source" : [{
+        "context" : "src",
+        "element" : "part",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "part",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "ParametersParameter",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  }]
+}

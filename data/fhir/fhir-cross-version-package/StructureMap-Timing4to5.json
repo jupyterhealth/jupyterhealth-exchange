@@ -1,1 +1,360 @@
-{"resourceType":"StructureMap","id":"Timing4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Timing4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Timing4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Timing Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Timing<span style=\"color: navy\">&quot; </span><b>alias </b>TimingR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Timing<span style=\"color: navy\">&quot; </span><b>alias </b>TimingR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Timing<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>TimingR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>TimingR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.modifierExtension<span style=\"color: navy\"><b> -&gt; </b></span>tgt.modifierExtension<span style=\"color: navy\">;</span>\r\n  src.event<span style=\"color: navy\"><b> -&gt; </b></span>tgt.event<span style=\"color: navy\">;</span>\r\n  src.repeat<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.repeat<b> as </b><span style=\"color: maroon\">t</span><b> then </b>TimingRepeat<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.code<span style=\"color: navy\"><b> -&gt; </b></span>tgt.code<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>TimingRepeat<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>Element<span style=\"color: navy\"> {\r\n</span>  src.bounds<span style=\"color: navy\"> : </span>Duration<span style=\"color: navy\"><b> -&gt; </b></span>tgt.bounds<span style=\"color: navy\">;</span>\r\n  src.bounds<span style=\"color: navy\"> : </span>Range<span style=\"color: navy\"><b> -&gt; </b></span>tgt.bounds<span style=\"color: navy\">;</span>\r\n  src.bounds<span style=\"color: navy\"> : </span>Period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.bounds<span style=\"color: navy\">;</span>\r\n  src.count<span style=\"color: navy\"><b> -&gt; </b></span>tgt.count<span style=\"color: navy\">;</span>\r\n  src.countMax<span style=\"color: navy\"><b> -&gt; </b></span>tgt.countMax<span style=\"color: navy\">;</span>\r\n  src.duration<span style=\"color: navy\"><b> -&gt; </b></span>tgt.duration<span style=\"color: navy\">;</span>\r\n  src.durationMax<span style=\"color: navy\"><b> -&gt; </b></span>tgt.durationMax<span style=\"color: navy\">;</span>\r\n  src.durationUnit<span style=\"color: navy\"><b> -&gt; </b></span>tgt.durationUnit<span style=\"color: navy\">;</span>\r\n  src.frequency<span style=\"color: navy\"><b> -&gt; </b></span>tgt.frequency<span style=\"color: navy\">;</span>\r\n  src.frequencyMax<span style=\"color: navy\"><b> -&gt; </b></span>tgt.frequencyMax<span style=\"color: navy\">;</span>\r\n  src.period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.period<span style=\"color: navy\">;</span>\r\n  src.periodMax<span style=\"color: navy\"><b> -&gt; </b></span>tgt.periodMax<span style=\"color: navy\">;</span>\r\n  src.periodUnit<span style=\"color: navy\"><b> -&gt; </b></span>tgt.periodUnit<span style=\"color: navy\">;</span>\r\n  src.dayOfWeek<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.dayOfWeek = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Timing.repeat.dayOfWeek-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.timeOfDay<span style=\"color: navy\"><b> -&gt; </b></span>tgt.timeOfDay<span style=\"color: navy\">;</span>\r\n  src.when<span style=\"color: navy\"><b> -&gt; </b></span>tgt.when<span style=\"color: navy\">;</span>\r\n  src.offset<span style=\"color: navy\"><b> -&gt; </b></span>tgt.offset<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Timing4to5","version":"0.1.0","name":"Timing4to5","title":"Timing Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"TimingTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Timing","mode":"source","alias":"TimingR4"},{"url":"http://hl7.org/fhir/5.0/Timing","mode":"target","alias":"TimingR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Timing","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"TimingR4","mode":"source"},{"name":"tgt","type":"TimingR5","mode":"target"}],"rule":[{"name":"modifierExtension","source":[{"context":"src","element":"modifierExtension","variable":"vvv"}],"target":[{"context":"tgt","element":"modifierExtension","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"event","source":[{"context":"src","element":"event","variable":"vvv"}],"target":[{"context":"tgt","element":"event","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"repeat","source":[{"context":"src","element":"repeat","variable":"s"}],"target":[{"context":"tgt","element":"repeat","variable":"t"}],"dependent":[{"name":"TimingRepeat","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"code","source":[{"context":"src","element":"code","variable":"vvv"}],"target":[{"context":"tgt","element":"code","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"TimingRepeat","extends":"Element","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"boundsDuration","source":[{"context":"src","type":"Duration","element":"bounds","variable":"vvv"}],"target":[{"context":"tgt","element":"bounds","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"boundsRange","source":[{"context":"src","type":"Range","element":"bounds","variable":"vvv"}],"target":[{"context":"tgt","element":"bounds","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"boundsPeriod","source":[{"context":"src","type":"Period","element":"bounds","variable":"vvv"}],"target":[{"context":"tgt","element":"bounds","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"count","source":[{"context":"src","element":"count","variable":"vvv"}],"target":[{"context":"tgt","element":"count","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"countMax","source":[{"context":"src","element":"countMax","variable":"vvv"}],"target":[{"context":"tgt","element":"countMax","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"duration","source":[{"context":"src","element":"duration","variable":"vvv"}],"target":[{"context":"tgt","element":"duration","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"durationMax","source":[{"context":"src","element":"durationMax","variable":"vvv"}],"target":[{"context":"tgt","element":"durationMax","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"durationUnit","source":[{"context":"src","element":"durationUnit","variable":"vvv"}],"target":[{"context":"tgt","element":"durationUnit","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"frequency","source":[{"context":"src","element":"frequency","variable":"vvv"}],"target":[{"context":"tgt","element":"frequency","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"frequencyMax","source":[{"context":"src","element":"frequencyMax","variable":"vvv"}],"target":[{"context":"tgt","element":"frequencyMax","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"period","source":[{"context":"src","element":"period","variable":"vvv"}],"target":[{"context":"tgt","element":"period","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"periodMax","source":[{"context":"src","element":"periodMax","variable":"vvv"}],"target":[{"context":"tgt","element":"periodMax","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"periodUnit","source":[{"context":"src","element":"periodUnit","variable":"vvv"}],"target":[{"context":"tgt","element":"periodUnit","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"dayOfWeek","source":[{"context":"src","element":"dayOfWeek","variable":"v"}],"target":[{"context":"tgt","element":"dayOfWeek","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Timing.repeat.dayOfWeek-R4toR5"},{"valueString":"code"}]}]},{"name":"timeOfDay","source":[{"context":"src","element":"timeOfDay","variable":"vvv"}],"target":[{"context":"tgt","element":"timeOfDay","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"when","source":[{"context":"src","element":"when","variable":"vvv"}],"target":[{"context":"tgt","element":"when","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"offset","source":[{"context":"src","element":"offset","variable":"vvv"}],"target":[{"context":"tgt","element":"offset","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Timing4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Timing4to5",
+  "name" : "Timing4to5",
+  "title" : "Timing Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Timing Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Timing",
+    "mode" : "source",
+    "alias" : "TimingR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Timing",
+    "mode" : "target",
+    "alias" : "TimingR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Timing",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "TimingR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "TimingR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "modifierExtension",
+      "source" : [{
+        "context" : "src",
+        "element" : "modifierExtension",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "modifierExtension",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "event",
+      "source" : [{
+        "context" : "src",
+        "element" : "event",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "event",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "repeat",
+      "source" : [{
+        "context" : "src",
+        "element" : "repeat",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "repeat",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "TimingRepeat",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "code",
+      "source" : [{
+        "context" : "src",
+        "element" : "code",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "code",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "TimingRepeat",
+    "extends" : "Element",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "boundsDuration",
+      "source" : [{
+        "context" : "src",
+        "type" : "Duration",
+        "element" : "bounds",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "bounds",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "boundsRange",
+      "source" : [{
+        "context" : "src",
+        "type" : "Range",
+        "element" : "bounds",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "bounds",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "boundsPeriod",
+      "source" : [{
+        "context" : "src",
+        "type" : "Period",
+        "element" : "bounds",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "bounds",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "count",
+      "source" : [{
+        "context" : "src",
+        "element" : "count",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "count",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "countMax",
+      "source" : [{
+        "context" : "src",
+        "element" : "countMax",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "countMax",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "duration",
+      "source" : [{
+        "context" : "src",
+        "element" : "duration",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "duration",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "durationMax",
+      "source" : [{
+        "context" : "src",
+        "element" : "durationMax",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "durationMax",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "durationUnit",
+      "source" : [{
+        "context" : "src",
+        "element" : "durationUnit",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "durationUnit",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "frequency",
+      "source" : [{
+        "context" : "src",
+        "element" : "frequency",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "frequency",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "frequencyMax",
+      "source" : [{
+        "context" : "src",
+        "element" : "frequencyMax",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "frequencyMax",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "period",
+      "source" : [{
+        "context" : "src",
+        "element" : "period",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "period",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "periodMax",
+      "source" : [{
+        "context" : "src",
+        "element" : "periodMax",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "periodMax",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "periodUnit",
+      "source" : [{
+        "context" : "src",
+        "element" : "periodUnit",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "periodUnit",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "dayOfWeek",
+      "source" : [{
+        "context" : "src",
+        "element" : "dayOfWeek",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "dayOfWeek",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/tim.re.dayOfWeek-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "timeOfDay",
+      "source" : [{
+        "context" : "src",
+        "element" : "timeOfDay",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "timeOfDay",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "when",
+      "source" : [{
+        "context" : "src",
+        "element" : "when",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "when",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "offset",
+      "source" : [{
+        "context" : "src",
+        "element" : "offset",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "offset",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

@@ -1,1 +1,625 @@
-{"resourceType":"StructureMap","id":"Encounter4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Encounter4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Encounter4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Encounter Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Encounter<span style=\"color: navy\">&quot; </span><b>alias </b>EncounterR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Encounter<span style=\"color: navy\">&quot; </span><b>alias </b>EncounterR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Encounter<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>EncounterR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>EncounterR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Encounter.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.class<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.class = <b>create</b><span style=\"color: navy\">(</span><span style=\"color: blue\">'CodeableConcept'</span><span style=\"color: navy\">)</span><b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.coding<b> as </b><span style=\"color: maroon\">tc</span><b> then </b>Coding<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">tc</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.priority<span style=\"color: navy\"><b> -&gt; </b></span>tgt.priority<span style=\"color: navy\">;</span>\r\n  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.serviceType<span style=\"color: navy\"><b> -&gt; </b></span>tgt.serviceType<span style=\"color: navy\">;</span>\r\n  src.subject<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subject<span style=\"color: navy\">;</span>\r\n  src.episodeOfCare<span style=\"color: navy\"><b> -&gt; </b></span>tgt.episodeOfCare<span style=\"color: navy\">;</span>\r\n  src.basedOn<span style=\"color: navy\"><b> -&gt; </b></span>tgt.basedOn<span style=\"color: navy\">;</span>\r\n  src.partOf<span style=\"color: navy\"><b> -&gt; </b></span>tgt.partOf<span style=\"color: navy\">;</span>\r\n  src.serviceProvider<span style=\"color: navy\"><b> -&gt; </b></span>tgt.serviceProvider<span style=\"color: navy\">;</span>\r\n  src.participant<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.participant<b> as </b><span style=\"color: maroon\">t</span><b> then </b>EncounterParticipant<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.appointment<span style=\"color: navy\"><b> -&gt; </b></span>tgt.appointment<span style=\"color: navy\">;</span>\r\n  src.period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.actualPeriod<span style=\"color: navy\">;</span>\r\n  src.length<span style=\"color: navy\"><b> -&gt; </b></span>tgt.length<span style=\"color: navy\">;</span>\r\n  src.diagnosis<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.diagnosis<b> as </b><span style=\"color: maroon\">t</span><b> then </b>EncounterDiagnosis<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.account<span style=\"color: navy\"><b> -&gt; </b></span>tgt.account<span style=\"color: navy\">;</span>\r\n  src.hospitalization<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.admission<b> as </b><span style=\"color: maroon\">t</span><b> then </b>EncounterAdmission<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.location<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.location<b> as </b><span style=\"color: maroon\">t</span><b> then </b>EncounterLocation<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>EncounterParticipant<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.period<span style=\"color: navy\">;</span>\r\n  src.individual<span style=\"color: navy\"><b> -&gt; </b></span>tgt.actor<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><span style=\"color: navy\">// </span><span style=\"color: green\">group EncounterReason(source src, target tgt) extends BackboneElement {</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.use -&gt; tgt.use;</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.value -&gt; tgt.value;</span>\r\n<span style=\"color: navy\">// </span><span style=\"color: green\">}</span>\r\n<b>group </b>EncounterDiagnosis<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.condition<span style=\"color: navy\"><b> -&gt; </b></span>tgt.condition<span style=\"color: navy\">;</span>\r\n  src.use<span style=\"color: navy\"><b> -&gt; </b></span>tgt.use<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>EncounterAdmission<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.preAdmissionIdentifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.preAdmissionIdentifier<span style=\"color: navy\">;</span>\r\n  src.origin<span style=\"color: navy\"><b> -&gt; </b></span>tgt.origin<span style=\"color: navy\">;</span>\r\n  src.admitSource<span style=\"color: navy\"><b> -&gt; </b></span>tgt.admitSource<span style=\"color: navy\">;</span>\r\n  src.reAdmission<span style=\"color: navy\"><b> -&gt; </b></span>tgt.reAdmission<span style=\"color: navy\">;</span>\r\n  src.destination<span style=\"color: navy\"><b> -&gt; </b></span>tgt.destination<span style=\"color: navy\">;</span>\r\n  src.dischargeDisposition<span style=\"color: navy\"><b> -&gt; </b></span>tgt.dischargeDisposition<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>EncounterLocation<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.location<span style=\"color: navy\"><b> -&gt; </b></span>tgt.location<span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Encounter.location.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.physicalType<span style=\"color: navy\"><b> -&gt; </b></span>tgt.form<span style=\"color: navy\">;</span>\r\n  src.period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.period<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Encounter4to5","version":"0.1.0","name":"Encounter4to5","title":"Encounter Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"EncounterTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Encounter","mode":"source","alias":"EncounterR4"},{"url":"http://hl7.org/fhir/5.0/Encounter","mode":"target","alias":"EncounterR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Encounter","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"EncounterR4","mode":"source"},{"name":"tgt","type":"EncounterR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Encounter.status-R4toR5"},{"valueString":"code"}]}]},{"name":"class","source":[{"context":"src","element":"class","variable":"s"}],"target":[{"context":"tgt","element":"class","variable":"t","transform":"create","parameter":[{"valueString":"CodeableConcept"}]},{"context":"t","element":"coding","variable":"tc"}],"dependent":[{"name":"Coding","parameter":[{"valueId":"s"},{"valueId":"tc"}]}]},{"name":"priority","source":[{"context":"src","element":"priority","variable":"vvv"}],"target":[{"context":"tgt","element":"priority","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"serviceType","source":[{"context":"src","element":"serviceType","variable":"vvv"}],"target":[{"context":"tgt","element":"serviceType","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"subject","source":[{"context":"src","element":"subject","variable":"vvv"}],"target":[{"context":"tgt","element":"subject","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"episodeOfCare","source":[{"context":"src","element":"episodeOfCare","variable":"vvv"}],"target":[{"context":"tgt","element":"episodeOfCare","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"basedOn","source":[{"context":"src","element":"basedOn","variable":"vvv"}],"target":[{"context":"tgt","element":"basedOn","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"partOf","source":[{"context":"src","element":"partOf","variable":"vvv"}],"target":[{"context":"tgt","element":"partOf","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"serviceProvider","source":[{"context":"src","element":"serviceProvider","variable":"vvv"}],"target":[{"context":"tgt","element":"serviceProvider","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"participant","source":[{"context":"src","element":"participant","variable":"s"}],"target":[{"context":"tgt","element":"participant","variable":"t"}],"dependent":[{"name":"EncounterParticipant","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"appointment","source":[{"context":"src","element":"appointment","variable":"vvv"}],"target":[{"context":"tgt","element":"appointment","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"period","source":[{"context":"src","element":"period","variable":"vvv"}],"target":[{"context":"tgt","element":"actualPeriod","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"length","source":[{"context":"src","element":"length","variable":"vvv"}],"target":[{"context":"tgt","element":"length","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"diagnosis","source":[{"context":"src","element":"diagnosis","variable":"s"}],"target":[{"context":"tgt","element":"diagnosis","variable":"t"}],"dependent":[{"name":"EncounterDiagnosis","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"account","source":[{"context":"src","element":"account","variable":"vvv"}],"target":[{"context":"tgt","element":"account","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"hospitalization","source":[{"context":"src","element":"hospitalization","variable":"s"}],"target":[{"context":"tgt","element":"admission","variable":"t"}],"dependent":[{"name":"EncounterAdmission","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"location","source":[{"context":"src","element":"location","variable":"s"}],"target":[{"context":"tgt","element":"location","variable":"t"}],"dependent":[{"name":"EncounterLocation","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"EncounterParticipant","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"period","source":[{"context":"src","element":"period","variable":"vvv"}],"target":[{"context":"tgt","element":"period","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"individual","source":[{"context":"src","element":"individual","variable":"vvv"}],"target":[{"context":"tgt","element":"actor","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"EncounterDiagnosis","extends":"BackboneElement","documentation":"group EncounterReason(source src, target tgt) extends BackboneElement {\r\nsrc.use -> tgt.use;\r\nsrc.value -> tgt.value;\r\n}","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"condition","source":[{"context":"src","element":"condition","variable":"vvv"}],"target":[{"context":"tgt","element":"condition","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"use","source":[{"context":"src","element":"use","variable":"vvv"}],"target":[{"context":"tgt","element":"use","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"EncounterAdmission","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"preAdmissionIdentifier","source":[{"context":"src","element":"preAdmissionIdentifier","variable":"vvv"}],"target":[{"context":"tgt","element":"preAdmissionIdentifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"origin","source":[{"context":"src","element":"origin","variable":"vvv"}],"target":[{"context":"tgt","element":"origin","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"admitSource","source":[{"context":"src","element":"admitSource","variable":"vvv"}],"target":[{"context":"tgt","element":"admitSource","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"reAdmission","source":[{"context":"src","element":"reAdmission","variable":"vvv"}],"target":[{"context":"tgt","element":"reAdmission","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"destination","source":[{"context":"src","element":"destination","variable":"vvv"}],"target":[{"context":"tgt","element":"destination","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"dischargeDisposition","source":[{"context":"src","element":"dischargeDisposition","variable":"vvv"}],"target":[{"context":"tgt","element":"dischargeDisposition","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"EncounterLocation","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"location","source":[{"context":"src","element":"location","variable":"vvv"}],"target":[{"context":"tgt","element":"location","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Encounter.location.status-R4toR5"},{"valueString":"code"}]}]},{"name":"physicalType","source":[{"context":"src","element":"physicalType","variable":"vvv"}],"target":[{"context":"tgt","element":"form","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"period","source":[{"context":"src","element":"period","variable":"vvv"}],"target":[{"context":"tgt","element":"period","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Encounter4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Encounter4to5",
+  "name" : "Encounter4to5",
+  "title" : "Encounter Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Encounter Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Encounter",
+    "mode" : "source",
+    "alias" : "EncounterR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Encounter",
+    "mode" : "target",
+    "alias" : "EncounterR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Encounter",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "EncounterR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "EncounterR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/enc.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "class",
+      "source" : [{
+        "context" : "src",
+        "element" : "class",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "class",
+        "variable" : "t",
+        "transform" : "create",
+        "parameter" : [{
+          "valueString" : "CodeableConcept"
+        }]
+      },
+      {
+        "context" : "t",
+        "element" : "coding",
+        "variable" : "tc"
+      }],
+      "dependent" : [{
+        "name" : "Coding",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "tc"
+        }]
+      }]
+    },
+    {
+      "name" : "priority",
+      "source" : [{
+        "context" : "src",
+        "element" : "priority",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "priority",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "serviceType",
+      "source" : [{
+        "context" : "src",
+        "element" : "serviceType",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "serviceType",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "subject",
+      "source" : [{
+        "context" : "src",
+        "element" : "subject",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subject",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "episodeOfCare",
+      "source" : [{
+        "context" : "src",
+        "element" : "episodeOfCare",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "episodeOfCare",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "basedOn",
+      "source" : [{
+        "context" : "src",
+        "element" : "basedOn",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "basedOn",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "partOf",
+      "source" : [{
+        "context" : "src",
+        "element" : "partOf",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "partOf",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "serviceProvider",
+      "source" : [{
+        "context" : "src",
+        "element" : "serviceProvider",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "serviceProvider",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "participant",
+      "source" : [{
+        "context" : "src",
+        "element" : "participant",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "participant",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "EncounterParticipant",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "appointment",
+      "source" : [{
+        "context" : "src",
+        "element" : "appointment",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "appointment",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "period",
+      "source" : [{
+        "context" : "src",
+        "element" : "period",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "actualPeriod",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "length",
+      "source" : [{
+        "context" : "src",
+        "element" : "length",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "length",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "diagnosis",
+      "source" : [{
+        "context" : "src",
+        "element" : "diagnosis",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "diagnosis",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "EncounterDiagnosis",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "account",
+      "source" : [{
+        "context" : "src",
+        "element" : "account",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "account",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "hospitalization",
+      "source" : [{
+        "context" : "src",
+        "element" : "hospitalization",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "admission",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "EncounterAdmission",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "location",
+      "source" : [{
+        "context" : "src",
+        "element" : "location",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "location",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "EncounterLocation",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "EncounterParticipant",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "period",
+      "source" : [{
+        "context" : "src",
+        "element" : "period",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "period",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "individual",
+      "source" : [{
+        "context" : "src",
+        "element" : "individual",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "actor",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "EncounterDiagnosis",
+    "extends" : "BackboneElement",
+    "documentation" : "group EncounterReason(source src, target tgt) extends BackboneElement {\r\nsrc.use -> tgt.use;\r\nsrc.value -> tgt.value;\r\n}",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "condition",
+      "source" : [{
+        "context" : "src",
+        "element" : "condition",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "condition",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "use",
+      "source" : [{
+        "context" : "src",
+        "element" : "use",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "use",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "EncounterAdmission",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "preAdmissionIdentifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "preAdmissionIdentifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "preAdmissionIdentifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "origin",
+      "source" : [{
+        "context" : "src",
+        "element" : "origin",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "origin",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "admitSource",
+      "source" : [{
+        "context" : "src",
+        "element" : "admitSource",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "admitSource",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "reAdmission",
+      "source" : [{
+        "context" : "src",
+        "element" : "reAdmission",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reAdmission",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "destination",
+      "source" : [{
+        "context" : "src",
+        "element" : "destination",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "destination",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "dischargeDisposition",
+      "source" : [{
+        "context" : "src",
+        "element" : "dischargeDisposition",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "dischargeDisposition",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "EncounterLocation",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "location",
+      "source" : [{
+        "context" : "src",
+        "element" : "location",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "location",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/enc.lo.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "physicalType",
+      "source" : [{
+        "context" : "src",
+        "element" : "physicalType",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "form",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "period",
+      "source" : [{
+        "context" : "src",
+        "element" : "period",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "period",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

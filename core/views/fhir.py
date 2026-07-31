@@ -394,6 +394,10 @@ def _persist_aux(instance, resource_type, body, fhir_source):
     # Any write invalidates prior ref indexing; the index-refs pass re-processes this row.
     instance.ref_indexed = False
     instance.save()
+    # Audit trail of ingested clinical resources (REQ-SYNC-07).
+    logger.info(
+        "aux ingest: %s/%s patient=%s source=%s", resource_type, instance.pk, fhir_source.patient_id, fhir_source.pk
+    )
     return instance
 
 

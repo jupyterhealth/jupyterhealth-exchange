@@ -1,1 +1,159 @@
-{"resourceType":"StructureMap","id":"TriggerDefinition4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/TriggerDefinition4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'TriggerDefinition4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'TriggerDefinition Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/TriggerDefinition<span style=\"color: navy\">&quot; </span><b>alias </b>TriggerDefinitionR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/TriggerDefinition<span style=\"color: navy\">&quot; </span><b>alias </b>TriggerDefinitionR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>TriggerDefinition<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>TriggerDefinitionR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>TriggerDefinitionR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.type<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.type = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/TriggerDefinition.type-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.name<span style=\"color: navy\"><b> -&gt; </b></span>tgt.name<span style=\"color: navy\">;</span>\r\n  src.timing<span style=\"color: navy\"> : </span>Timing<span style=\"color: navy\"><b> -&gt; </b></span>tgt.timing<span style=\"color: navy\">;</span>\r\n  src.timing<span style=\"color: navy\"> : </span>Reference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.timing<span style=\"color: navy\">;</span>\r\n  src.timing<span style=\"color: navy\"> : </span>date<span style=\"color: navy\"><b> -&gt; </b></span>tgt.timing<span style=\"color: navy\">;</span>\r\n  src.timing<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.timing<span style=\"color: navy\">;</span>\r\n  src.data<span style=\"color: navy\"><b> -&gt; </b></span>tgt.data<span style=\"color: navy\">;</span>\r\n  src.condition<span style=\"color: navy\"><b> -&gt; </b></span>tgt.condition<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/TriggerDefinition4to5","version":"0.1.0","name":"TriggerDefinition4to5","title":"TriggerDefinition Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"TriggerDefinitionTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/TriggerDefinition","mode":"source","alias":"TriggerDefinitionR4"},{"url":"http://hl7.org/fhir/5.0/TriggerDefinition","mode":"target","alias":"TriggerDefinitionR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"TriggerDefinition","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"TriggerDefinitionR4","mode":"source"},{"name":"tgt","type":"TriggerDefinitionR5","mode":"target"}],"rule":[{"name":"type","source":[{"context":"src","element":"type","variable":"v"}],"target":[{"context":"tgt","element":"type","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/TriggerDefinition.type-R4toR5"},{"valueString":"code"}]}]},{"name":"name","source":[{"context":"src","element":"name","variable":"vvv"}],"target":[{"context":"tgt","element":"name","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"timingTiming","source":[{"context":"src","type":"Timing","element":"timing","variable":"vvv"}],"target":[{"context":"tgt","element":"timing","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"timingReference","source":[{"context":"src","type":"Reference","element":"timing","variable":"vvv"}],"target":[{"context":"tgt","element":"timing","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"timingDate","source":[{"context":"src","type":"date","element":"timing","variable":"vvv"}],"target":[{"context":"tgt","element":"timing","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"timingDateTime","source":[{"context":"src","type":"dateTime","element":"timing","variable":"vvv"}],"target":[{"context":"tgt","element":"timing","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"data","source":[{"context":"src","element":"data","variable":"vvv"}],"target":[{"context":"tgt","element":"data","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"condition","source":[{"context":"src","element":"condition","variable":"vvv"}],"target":[{"context":"tgt","element":"condition","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "TriggerDefinition4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/TriggerDefinition4to5",
+  "name" : "TriggerDefinition4to5",
+  "title" : "TriggerDefinition Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "TriggerDefinition Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/TriggerDefinition",
+    "mode" : "source",
+    "alias" : "TriggerDefinitionR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/TriggerDefinition",
+    "mode" : "target",
+    "alias" : "TriggerDefinitionR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "TriggerDefinition",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "TriggerDefinitionR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "TriggerDefinitionR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/trd.type-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "name",
+      "source" : [{
+        "context" : "src",
+        "element" : "name",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "name",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "timingTiming",
+      "source" : [{
+        "context" : "src",
+        "type" : "Timing",
+        "element" : "timing",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "timing",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "timingReference",
+      "source" : [{
+        "context" : "src",
+        "type" : "Reference",
+        "element" : "timing",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "timing",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "timingDate",
+      "source" : [{
+        "context" : "src",
+        "type" : "date",
+        "element" : "timing",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "timing",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "timingDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "timing",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "timing",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "data",
+      "source" : [{
+        "context" : "src",
+        "element" : "data",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "data",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "condition",
+      "source" : [{
+        "context" : "src",
+        "element" : "condition",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "condition",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

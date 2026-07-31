@@ -1,1 +1,140 @@
-{"resourceType":"StructureMap","id":"SampledData4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/SampledData4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'SampledData4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'SampledData Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/SampledData<span style=\"color: navy\">&quot; </span><b>alias </b>SampledDataR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/SampledData<span style=\"color: navy\">&quot; </span><b>alias </b>SampledDataR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>SampledData<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>SampledDataR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>SampledDataR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.origin<span style=\"color: navy\"><b> -&gt; </b></span>tgt.origin<span style=\"color: navy\">;</span>\r\n  src.period<b> as </b><span style=\"color: maroon\">vs</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.interval<b> as </b><span style=\"color: maroon\">vt</span><span style=\"color: navy\">, </span> tgt.intervalUnit = <span style=\"color: blue\">'ms'</span><span style=\"color: navy\">;</span>\r\n  src.factor<span style=\"color: navy\"><b> -&gt; </b></span>tgt.factor<span style=\"color: navy\">;</span>\r\n  src.lowerLimit<span style=\"color: navy\"><b> -&gt; </b></span>tgt.lowerLimit<span style=\"color: navy\">;</span>\r\n  src.upperLimit<span style=\"color: navy\"><b> -&gt; </b></span>tgt.upperLimit<span style=\"color: navy\">;</span>\r\n  src.dimensions<span style=\"color: navy\"><b> -&gt; </b></span>tgt.dimensions<span style=\"color: navy\">;</span>\r\n  src.data<span style=\"color: navy\"><b> -&gt; </b></span>tgt.data<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/SampledData4to5","version":"0.1.0","name":"SampledData4to5","title":"SampledData Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"SampledDataTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/SampledData","mode":"source","alias":"SampledDataR4"},{"url":"http://hl7.org/fhir/5.0/SampledData","mode":"target","alias":"SampledDataR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"SampledData","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"SampledDataR4","mode":"source"},{"name":"tgt","type":"SampledDataR5","mode":"target"}],"rule":[{"name":"origin","source":[{"context":"src","element":"origin","variable":"vvv"}],"target":[{"context":"tgt","element":"origin","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"period","source":[{"context":"src","element":"period","variable":"vs"}],"target":[{"context":"tgt","element":"interval","variable":"vt"},{"context":"tgt","element":"intervalUnit","transform":"copy","parameter":[{"valueString":"ms"}]}]},{"name":"factor","source":[{"context":"src","element":"factor","variable":"vvv"}],"target":[{"context":"tgt","element":"factor","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"lowerLimit","source":[{"context":"src","element":"lowerLimit","variable":"vvv"}],"target":[{"context":"tgt","element":"lowerLimit","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"upperLimit","source":[{"context":"src","element":"upperLimit","variable":"vvv"}],"target":[{"context":"tgt","element":"upperLimit","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"dimensions","source":[{"context":"src","element":"dimensions","variable":"vvv"}],"target":[{"context":"tgt","element":"dimensions","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"data","source":[{"context":"src","element":"data","variable":"vvv"}],"target":[{"context":"tgt","element":"data","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "SampledData4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/SampledData4to5",
+  "name" : "SampledData4to5",
+  "title" : "SampledData Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "SampledData Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/SampledData",
+    "mode" : "source",
+    "alias" : "SampledDataR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/SampledData",
+    "mode" : "target",
+    "alias" : "SampledDataR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "SampledData",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "SampledDataR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "SampledDataR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "origin",
+      "source" : [{
+        "context" : "src",
+        "element" : "origin",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "origin",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "period",
+      "source" : [{
+        "context" : "src",
+        "element" : "period",
+        "variable" : "vs"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "interval",
+        "variable" : "vt"
+      },
+      {
+        "context" : "tgt",
+        "element" : "intervalUnit",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueString" : "ms"
+        }]
+      }]
+    },
+    {
+      "name" : "factor",
+      "source" : [{
+        "context" : "src",
+        "element" : "factor",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "factor",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "lowerLimit",
+      "source" : [{
+        "context" : "src",
+        "element" : "lowerLimit",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "lowerLimit",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "upperLimit",
+      "source" : [{
+        "context" : "src",
+        "element" : "upperLimit",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "upperLimit",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "dimensions",
+      "source" : [{
+        "context" : "src",
+        "element" : "dimensions",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "dimensions",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "data",
+      "source" : [{
+        "context" : "src",
+        "element" : "data",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "data",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

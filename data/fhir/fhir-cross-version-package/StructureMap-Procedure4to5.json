@@ -1,1 +1,578 @@
-{"resourceType":"StructureMap","id":"Procedure4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Procedure4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Procedure4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Procedure Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Procedure<span style=\"color: navy\">&quot; </span><b>alias </b>ProcedureR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Procedure<span style=\"color: navy\">&quot; </span><b>alias </b>ProcedureR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Procedure<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>ProcedureR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>ProcedureR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.instantiatesCanonical<span style=\"color: navy\"><b> -&gt; </b></span>tgt.instantiatesCanonical<span style=\"color: navy\">;</span>\r\n  src.instantiatesUri<span style=\"color: navy\"><b> -&gt; </b></span>tgt.instantiatesUri<span style=\"color: navy\">;</span>\r\n  src.basedOn<span style=\"color: navy\"><b> -&gt; </b></span>tgt.basedOn<span style=\"color: navy\">;</span>\r\n  src.partOf<span style=\"color: navy\"><b> -&gt; </b></span>tgt.partOf<span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Procedure.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.statusReason<span style=\"color: navy\"><b> -&gt; </b></span>tgt.statusReason<span style=\"color: navy\">;</span>\r\n  src.category<span style=\"color: navy\"><b> -&gt; </b></span>tgt.category<span style=\"color: navy\">;</span>\r\n  src.code<span style=\"color: navy\"><b> -&gt; </b></span>tgt.code<span style=\"color: navy\">;</span>\r\n  src.subject<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subject<span style=\"color: navy\">;</span>\r\n  src.encounter<span style=\"color: navy\"><b> -&gt; </b></span>tgt.encounter<span style=\"color: navy\">;</span>\r\n  src.performed<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.occurrence<span style=\"color: navy\">;</span>\r\n  src.performed<span style=\"color: navy\"> : </span>Period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.occurrence<span style=\"color: navy\">;</span>\r\n  src.performed<span style=\"color: navy\"> : </span>string<span style=\"color: navy\"><b> -&gt; </b></span>tgt.occurrence<span style=\"color: navy\">;</span>\r\n  src.performed<span style=\"color: navy\"> : </span>Age<span style=\"color: navy\"><b> -&gt; </b></span>tgt.occurrence<span style=\"color: navy\">;</span>\r\n  src.performed<span style=\"color: navy\"> : </span>Range<span style=\"color: navy\"><b> -&gt; </b></span>tgt.occurrence<span style=\"color: navy\">;</span>\r\n  src.recorder<span style=\"color: navy\"><b> -&gt; </b></span>tgt.recorder<span style=\"color: navy\">;</span>\r\n  src.performer<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.performer<b> as </b><span style=\"color: maroon\">t</span><b> then </b>ProcedurePerformer<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.location<span style=\"color: navy\"><b> -&gt; </b></span>tgt.location<span style=\"color: navy\">;</span>\r\n  src.reasonCode<span style=\"color: navy\"><b> -&gt; </b></span>tgt.reason<span style=\"color: navy\">;</span>\r\n  src.reasonReference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.reason<span style=\"color: navy\">;</span>\r\n  src.bodySite<span style=\"color: navy\"><b> -&gt; </b></span>tgt.bodySite<span style=\"color: navy\">;</span>\r\n  src.outcome<span style=\"color: navy\"><b> -&gt; </b></span>tgt.outcome<span style=\"color: navy\">;</span>\r\n  src.report<span style=\"color: navy\"><b> -&gt; </b></span>tgt.report<span style=\"color: navy\">;</span>\r\n  src.complication<span style=\"color: navy\"><b> -&gt; </b></span>tgt.complication<span style=\"color: navy\">;</span>\r\n  src.followUp<span style=\"color: navy\"><b> -&gt; </b></span>tgt.followUp<span style=\"color: navy\">;</span>\r\n  src.note<span style=\"color: navy\"><b> -&gt; </b></span>tgt.note<span style=\"color: navy\">;</span>\r\n  src.focalDevice<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.focalDevice<b> as </b><span style=\"color: maroon\">t</span><b> then </b>ProcedureFocalDevice<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.usedCode<span style=\"color: navy\"><b> -&gt; </b></span>tgt.used<span style=\"color: navy\">;</span>\r\n  src.usedReference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.used<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>ProcedurePerformer<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.function<span style=\"color: navy\"><b> -&gt; </b></span>tgt.function<span style=\"color: navy\">;</span>\r\n  src.actor<span style=\"color: navy\"><b> -&gt; </b></span>tgt.actor<span style=\"color: navy\">;</span>\r\n  src.onBehalfOf<span style=\"color: navy\"><b> -&gt; </b></span>tgt.onBehalfOf<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>ProcedureFocalDevice<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.action<span style=\"color: navy\"><b> -&gt; </b></span>tgt.action<span style=\"color: navy\">;</span>\r\n  src.manipulated<span style=\"color: navy\"><b> -&gt; </b></span>tgt.manipulated<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Procedure4to5","version":"0.1.0","name":"Procedure4to5","title":"Procedure Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"ProcedureTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Procedure","mode":"source","alias":"ProcedureR4"},{"url":"http://hl7.org/fhir/5.0/Procedure","mode":"target","alias":"ProcedureR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Procedure","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"ProcedureR4","mode":"source"},{"name":"tgt","type":"ProcedureR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"instantiatesCanonical","source":[{"context":"src","element":"instantiatesCanonical","variable":"vvv"}],"target":[{"context":"tgt","element":"instantiatesCanonical","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"instantiatesUri","source":[{"context":"src","element":"instantiatesUri","variable":"vvv"}],"target":[{"context":"tgt","element":"instantiatesUri","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"basedOn","source":[{"context":"src","element":"basedOn","variable":"vvv"}],"target":[{"context":"tgt","element":"basedOn","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"partOf","source":[{"context":"src","element":"partOf","variable":"vvv"}],"target":[{"context":"tgt","element":"partOf","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Procedure.status-R4toR5"},{"valueString":"code"}]}]},{"name":"statusReason","source":[{"context":"src","element":"statusReason","variable":"vvv"}],"target":[{"context":"tgt","element":"statusReason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"category","source":[{"context":"src","element":"category","variable":"vvv"}],"target":[{"context":"tgt","element":"category","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"code","source":[{"context":"src","element":"code","variable":"vvv"}],"target":[{"context":"tgt","element":"code","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"subject","source":[{"context":"src","element":"subject","variable":"vvv"}],"target":[{"context":"tgt","element":"subject","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"encounter","source":[{"context":"src","element":"encounter","variable":"vvv"}],"target":[{"context":"tgt","element":"encounter","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"performedDateTime","source":[{"context":"src","type":"dateTime","element":"performed","variable":"vvv"}],"target":[{"context":"tgt","element":"occurrence","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"performedPeriod","source":[{"context":"src","type":"Period","element":"performed","variable":"vvv"}],"target":[{"context":"tgt","element":"occurrence","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"performedString","source":[{"context":"src","type":"string","element":"performed","variable":"vvv"}],"target":[{"context":"tgt","element":"occurrence","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"performedAge","source":[{"context":"src","type":"Age","element":"performed","variable":"vvv"}],"target":[{"context":"tgt","element":"occurrence","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"performedRange","source":[{"context":"src","type":"Range","element":"performed","variable":"vvv"}],"target":[{"context":"tgt","element":"occurrence","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"recorder","source":[{"context":"src","element":"recorder","variable":"vvv"}],"target":[{"context":"tgt","element":"recorder","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"performer","source":[{"context":"src","element":"performer","variable":"s"}],"target":[{"context":"tgt","element":"performer","variable":"t"}],"dependent":[{"name":"ProcedurePerformer","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"location","source":[{"context":"src","element":"location","variable":"vvv"}],"target":[{"context":"tgt","element":"location","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"reasonCode","source":[{"context":"src","element":"reasonCode","variable":"vvv"}],"target":[{"context":"tgt","element":"reason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"reasonReference","source":[{"context":"src","element":"reasonReference","variable":"vvv"}],"target":[{"context":"tgt","element":"reason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"bodySite","source":[{"context":"src","element":"bodySite","variable":"vvv"}],"target":[{"context":"tgt","element":"bodySite","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"outcome","source":[{"context":"src","element":"outcome","variable":"vvv"}],"target":[{"context":"tgt","element":"outcome","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"report","source":[{"context":"src","element":"report","variable":"vvv"}],"target":[{"context":"tgt","element":"report","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"complication","source":[{"context":"src","element":"complication","variable":"vvv"}],"target":[{"context":"tgt","element":"complication","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"followUp","source":[{"context":"src","element":"followUp","variable":"vvv"}],"target":[{"context":"tgt","element":"followUp","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"note","source":[{"context":"src","element":"note","variable":"vvv"}],"target":[{"context":"tgt","element":"note","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"focalDevice","source":[{"context":"src","element":"focalDevice","variable":"s"}],"target":[{"context":"tgt","element":"focalDevice","variable":"t"}],"dependent":[{"name":"ProcedureFocalDevice","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"usedCode","source":[{"context":"src","element":"usedCode","variable":"vvv"}],"target":[{"context":"tgt","element":"used","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"usedReference","source":[{"context":"src","element":"usedReference","variable":"vvv"}],"target":[{"context":"tgt","element":"used","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"ProcedurePerformer","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"function","source":[{"context":"src","element":"function","variable":"vvv"}],"target":[{"context":"tgt","element":"function","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"actor","source":[{"context":"src","element":"actor","variable":"vvv"}],"target":[{"context":"tgt","element":"actor","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"onBehalfOf","source":[{"context":"src","element":"onBehalfOf","variable":"vvv"}],"target":[{"context":"tgt","element":"onBehalfOf","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"ProcedureFocalDevice","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"action","source":[{"context":"src","element":"action","variable":"vvv"}],"target":[{"context":"tgt","element":"action","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"manipulated","source":[{"context":"src","element":"manipulated","variable":"vvv"}],"target":[{"context":"tgt","element":"manipulated","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Procedure4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Procedure4to5",
+  "name" : "Procedure4to5",
+  "title" : "Procedure Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Procedure Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Procedure",
+    "mode" : "source",
+    "alias" : "ProcedureR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Procedure",
+    "mode" : "target",
+    "alias" : "ProcedureR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Procedure",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "ProcedureR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "ProcedureR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "instantiatesCanonical",
+      "source" : [{
+        "context" : "src",
+        "element" : "instantiatesCanonical",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "instantiatesCanonical",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "instantiatesUri",
+      "source" : [{
+        "context" : "src",
+        "element" : "instantiatesUri",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "instantiatesUri",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "basedOn",
+      "source" : [{
+        "context" : "src",
+        "element" : "basedOn",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "basedOn",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "partOf",
+      "source" : [{
+        "context" : "src",
+        "element" : "partOf",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "partOf",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/pro.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "statusReason",
+      "source" : [{
+        "context" : "src",
+        "element" : "statusReason",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "statusReason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "category",
+      "source" : [{
+        "context" : "src",
+        "element" : "category",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "category",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "code",
+      "source" : [{
+        "context" : "src",
+        "element" : "code",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "code",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "subject",
+      "source" : [{
+        "context" : "src",
+        "element" : "subject",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subject",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "encounter",
+      "source" : [{
+        "context" : "src",
+        "element" : "encounter",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "encounter",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "performedDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "performed",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "occurrence",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "performedPeriod",
+      "source" : [{
+        "context" : "src",
+        "type" : "Period",
+        "element" : "performed",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "occurrence",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "performedString",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "performed",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "occurrence",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "performedAge",
+      "source" : [{
+        "context" : "src",
+        "type" : "Age",
+        "element" : "performed",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "occurrence",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "performedRange",
+      "source" : [{
+        "context" : "src",
+        "type" : "Range",
+        "element" : "performed",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "occurrence",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "recorder",
+      "source" : [{
+        "context" : "src",
+        "element" : "recorder",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "recorder",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "performer",
+      "source" : [{
+        "context" : "src",
+        "element" : "performer",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "performer",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "ProcedurePerformer",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "location",
+      "source" : [{
+        "context" : "src",
+        "element" : "location",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "location",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "reasonCode",
+      "source" : [{
+        "context" : "src",
+        "element" : "reasonCode",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "reasonReference",
+      "source" : [{
+        "context" : "src",
+        "element" : "reasonReference",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "bodySite",
+      "source" : [{
+        "context" : "src",
+        "element" : "bodySite",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "bodySite",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "outcome",
+      "source" : [{
+        "context" : "src",
+        "element" : "outcome",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "outcome",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "report",
+      "source" : [{
+        "context" : "src",
+        "element" : "report",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "report",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "complication",
+      "source" : [{
+        "context" : "src",
+        "element" : "complication",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "complication",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "followUp",
+      "source" : [{
+        "context" : "src",
+        "element" : "followUp",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "followUp",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "note",
+      "source" : [{
+        "context" : "src",
+        "element" : "note",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "note",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "focalDevice",
+      "source" : [{
+        "context" : "src",
+        "element" : "focalDevice",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "focalDevice",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "ProcedureFocalDevice",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "usedCode",
+      "source" : [{
+        "context" : "src",
+        "element" : "usedCode",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "used",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "usedReference",
+      "source" : [{
+        "context" : "src",
+        "element" : "usedReference",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "used",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "ProcedurePerformer",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "function",
+      "source" : [{
+        "context" : "src",
+        "element" : "function",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "function",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "actor",
+      "source" : [{
+        "context" : "src",
+        "element" : "actor",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "actor",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "onBehalfOf",
+      "source" : [{
+        "context" : "src",
+        "element" : "onBehalfOf",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "onBehalfOf",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "ProcedureFocalDevice",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "action",
+      "source" : [{
+        "context" : "src",
+        "element" : "action",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "action",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "manipulated",
+      "source" : [{
+        "context" : "src",
+        "element" : "manipulated",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "manipulated",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

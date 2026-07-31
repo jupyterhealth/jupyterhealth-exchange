@@ -1,4 +1,4 @@
-{% extends "clients/mychart/base.html" %} {% block title %}Importing records{% endblock %}
+{% extends "clients/patient-access/base.html" %} {% block title %}Importing records{% endblock %}
 
 {% block body_content %}
 <div class="w-100 text-center mt-5">
@@ -10,7 +10,7 @@
 {% block body_footer %}
 <script>
   var out = document.getElementById("out");
-  // Complete the Epic handshake, store the patient id, pull Labs, write to JHE.
-  finishMyChartConnect(out, MYCHART_CONFIG);
+  // Complete the Epic handshake, store the patient id, pull USCDI records, write to JHE.
+  finishPatientAccessConnect(out, PATIENT_ACCESS_CONFIG);
 </script>
 {% endblock %}

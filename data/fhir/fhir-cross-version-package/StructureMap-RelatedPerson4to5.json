@@ -1,1 +1,259 @@
-{"resourceType":"StructureMap","id":"RelatedPerson4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/RelatedPerson4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'RelatedPerson4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'RelatedPerson Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/RelatedPerson<span style=\"color: navy\">&quot; </span><b>alias </b>RelatedPersonR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/RelatedPerson<span style=\"color: navy\">&quot; </span><b>alias </b>RelatedPersonR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>RelatedPerson<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>RelatedPersonR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>RelatedPersonR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.active<span style=\"color: navy\"><b> -&gt; </b></span>tgt.active<span style=\"color: navy\">;</span>\r\n  src.patient<span style=\"color: navy\"><b> -&gt; </b></span>tgt.patient<span style=\"color: navy\">;</span>\r\n  src.relationship<span style=\"color: navy\"><b> -&gt; </b></span>tgt.relationship<span style=\"color: navy\">;</span>\r\n  src.name<span style=\"color: navy\"><b> -&gt; </b></span>tgt.name<span style=\"color: navy\">;</span>\r\n  src.telecom<span style=\"color: navy\"><b> -&gt; </b></span>tgt.telecom<span style=\"color: navy\">;</span>\r\n  src.gender<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.gender = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/RelatedPerson.gender-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.birthDate<span style=\"color: navy\"><b> -&gt; </b></span>tgt.birthDate<span style=\"color: navy\">;</span>\r\n  src.address<span style=\"color: navy\"><b> -&gt; </b></span>tgt.address<span style=\"color: navy\">;</span>\r\n  src.photo<span style=\"color: navy\"><b> -&gt; </b></span>tgt.photo<span style=\"color: navy\">;</span>\r\n  src.period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.period<span style=\"color: navy\">;</span>\r\n  src.communication<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.communication<b> as </b><span style=\"color: maroon\">t</span><b> then </b>RelatedPersonCommunication<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>RelatedPersonCommunication<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.language<span style=\"color: navy\"><b> -&gt; </b></span>tgt.language<span style=\"color: navy\">;</span>\r\n  src.preferred<span style=\"color: navy\"><b> -&gt; </b></span>tgt.preferred<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/RelatedPerson4to5","version":"0.1.0","name":"RelatedPerson4to5","title":"RelatedPerson Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"RelatedPersonTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/RelatedPerson","mode":"source","alias":"RelatedPersonR4"},{"url":"http://hl7.org/fhir/5.0/RelatedPerson","mode":"target","alias":"RelatedPersonR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"RelatedPerson","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"RelatedPersonR4","mode":"source"},{"name":"tgt","type":"RelatedPersonR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"active","source":[{"context":"src","element":"active","variable":"vvv"}],"target":[{"context":"tgt","element":"active","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"patient","source":[{"context":"src","element":"patient","variable":"vvv"}],"target":[{"context":"tgt","element":"patient","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"relationship","source":[{"context":"src","element":"relationship","variable":"vvv"}],"target":[{"context":"tgt","element":"relationship","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"name","source":[{"context":"src","element":"name","variable":"vvv"}],"target":[{"context":"tgt","element":"name","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"telecom","source":[{"context":"src","element":"telecom","variable":"vvv"}],"target":[{"context":"tgt","element":"telecom","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"gender","source":[{"context":"src","element":"gender","variable":"v"}],"target":[{"context":"tgt","element":"gender","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/RelatedPerson.gender-R4toR5"},{"valueString":"code"}]}]},{"name":"birthDate","source":[{"context":"src","element":"birthDate","variable":"vvv"}],"target":[{"context":"tgt","element":"birthDate","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"address","source":[{"context":"src","element":"address","variable":"vvv"}],"target":[{"context":"tgt","element":"address","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"photo","source":[{"context":"src","element":"photo","variable":"vvv"}],"target":[{"context":"tgt","element":"photo","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"period","source":[{"context":"src","element":"period","variable":"vvv"}],"target":[{"context":"tgt","element":"period","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"communication","source":[{"context":"src","element":"communication","variable":"s"}],"target":[{"context":"tgt","element":"communication","variable":"t"}],"dependent":[{"name":"RelatedPersonCommunication","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"RelatedPersonCommunication","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"language","source":[{"context":"src","element":"language","variable":"vvv"}],"target":[{"context":"tgt","element":"language","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"preferred","source":[{"context":"src","element":"preferred","variable":"vvv"}],"target":[{"context":"tgt","element":"preferred","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "RelatedPerson4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/RelatedPerson4to5",
+  "name" : "RelatedPerson4to5",
+  "title" : "RelatedPerson Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "RelatedPerson Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/RelatedPerson",
+    "mode" : "source",
+    "alias" : "RelatedPersonR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/RelatedPerson",
+    "mode" : "target",
+    "alias" : "RelatedPersonR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "RelatedPerson",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "RelatedPersonR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "RelatedPersonR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "active",
+      "source" : [{
+        "context" : "src",
+        "element" : "active",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "active",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "patient",
+      "source" : [{
+        "context" : "src",
+        "element" : "patient",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "patient",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "relationship",
+      "source" : [{
+        "context" : "src",
+        "element" : "relationship",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "relationship",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "name",
+      "source" : [{
+        "context" : "src",
+        "element" : "name",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "name",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "telecom",
+      "source" : [{
+        "context" : "src",
+        "element" : "telecom",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "telecom",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "gender",
+      "source" : [{
+        "context" : "src",
+        "element" : "gender",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "gender",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/rpp.gender-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "birthDate",
+      "source" : [{
+        "context" : "src",
+        "element" : "birthDate",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "birthDate",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "address",
+      "source" : [{
+        "context" : "src",
+        "element" : "address",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "address",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "photo",
+      "source" : [{
+        "context" : "src",
+        "element" : "photo",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "photo",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "period",
+      "source" : [{
+        "context" : "src",
+        "element" : "period",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "period",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "communication",
+      "source" : [{
+        "context" : "src",
+        "element" : "communication",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "communication",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "RelatedPersonCommunication",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "RelatedPersonCommunication",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "language",
+      "source" : [{
+        "context" : "src",
+        "element" : "language",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "language",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "preferred",
+      "source" : [{
+        "context" : "src",
+        "element" : "preferred",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "preferred",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

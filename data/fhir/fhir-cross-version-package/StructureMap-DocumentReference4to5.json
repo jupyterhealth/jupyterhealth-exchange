@@ -1,1 +1,505 @@
-{"resourceType":"StructureMap","id":"DocumentReference4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/DocumentReference4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'DocumentReference4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'DocumentReference Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/DocumentReference<span style=\"color: navy\">&quot; </span><b>alias </b>DocumentReferenceR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/DocumentReference<span style=\"color: navy\">&quot; </span><b>alias </b>DocumentReferenceR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>DocumentReference<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>DocumentReferenceR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>DocumentReferenceR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.masterIdentifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/DocumentReference.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.docStatus<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.docStatus = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/DocumentReference.docStatus-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.category<span style=\"color: navy\"><b> -&gt; </b></span>tgt.category<span style=\"color: navy\">;</span>\r\n  src.subject<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subject<span style=\"color: navy\">;</span>\r\n  src.context<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span><span style=\"color: maroon\">tgt</span><b> then</b><span style=\"color: navy\"> {\r\n</span>    s.encounter<span style=\"color: navy\"> : </span>Reference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.context<span style=\"color: navy\">;</span>\r\n    s.event<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.event<span style=\"color: navy\">;</span>\r\n    s.period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.period<span style=\"color: navy\">;</span>\r\n    s.facilityType<span style=\"color: navy\"><b> -&gt; </b></span>tgt.facilityType<span style=\"color: navy\">;</span>\r\n    s.practiceSetting<span style=\"color: navy\"><b> -&gt; </b></span>tgt.practiceSetting<span style=\"color: navy\">;</span>\r\n  <span style=\"color: navy\">}</span><span style=\"color: navy\">;</span>\r\n  src.date<span style=\"color: navy\"><b> -&gt; </b></span>tgt.date<span style=\"color: navy\">;</span>\r\n  src.author<span style=\"color: navy\"><b> -&gt; </b></span>tgt.author<span style=\"color: navy\">;</span>\r\n  src.authenticator<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.attester<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.mode = <span style=\"color: blue\">'professional'</span><span style=\"color: navy\">;</span>\r\n  src.authenticator<span style=\"color: navy\"> : </span>Reference<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.attester<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.party = <span style=\"color: maroon\">s</span><span style=\"color: navy\">;</span>\r\n  src.custodian<span style=\"color: navy\"><b> -&gt; </b></span>tgt.custodian<span style=\"color: navy\">;</span>\r\n  src.relatesTo<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.relatesTo<b> as </b><span style=\"color: maroon\">t</span><b> then </b>DocumentReferenceRelatesTo<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.description<span style=\"color: navy\"><b> -&gt; </b></span>tgt.description<span style=\"color: navy\">;</span>\r\n  src.securityLabel<span style=\"color: navy\"><b> -&gt; </b></span>tgt.securityLabel<span style=\"color: navy\">;</span>\r\n  src.content<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.content<b> as </b><span style=\"color: maroon\">t</span><b> then </b>DocumentReferenceContent<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>DocumentReferenceRelatesTo<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.code<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.code = <b>create</b><span style=\"color: navy\">(</span><span style=\"color: blue\">'CodeableConcept'</span><span style=\"color: navy\">)</span><b> as </b><span style=\"color: maroon\">tc</span><span style=\"color: navy\">, </span> tc.coding = <b>create</b><span style=\"color: navy\">(</span><span style=\"color: blue\">'Coding'</span><span style=\"color: navy\">)</span><b> as </b><span style=\"color: maroon\">tcc</span><span style=\"color: navy\">, </span> tcc.system = <span style=\"color: blue\">'http://hl7.org/fhir/document-relationship-type'</span><span style=\"color: navy\">, </span> tcc.code = <span style=\"color: maroon\">s</span><span style=\"color: navy\">;</span>\r\n  src.target<span style=\"color: navy\"><b> -&gt; </b></span>tgt.target<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>DocumentReferenceContent<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.attachment<span style=\"color: navy\"><b> -&gt; </b></span>tgt.attachment<span style=\"color: navy\">;</span>\r\n  src.format<span style=\"color: navy\"> : </span>Coding<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.profile<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.value = <span style=\"color: maroon\">s</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/DocumentReference4to5","version":"0.1.0","name":"DocumentReference4to5","title":"DocumentReference Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"DocumentReferenceTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/DocumentReference","mode":"source","alias":"DocumentReferenceR4"},{"url":"http://hl7.org/fhir/5.0/DocumentReference","mode":"target","alias":"DocumentReferenceR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"DocumentReference","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"DocumentReferenceR4","mode":"source"},{"name":"tgt","type":"DocumentReferenceR5","mode":"target"}],"rule":[{"name":"masterIdentifier","source":[{"context":"src","element":"masterIdentifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/DocumentReference.status-R4toR5"},{"valueString":"code"}]}]},{"name":"docStatus","source":[{"context":"src","element":"docStatus","variable":"v"}],"target":[{"context":"tgt","element":"docStatus","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/DocumentReference.docStatus-R4toR5"},{"valueString":"code"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"category","source":[{"context":"src","element":"category","variable":"vvv"}],"target":[{"context":"tgt","element":"category","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"subject","source":[{"context":"src","element":"subject","variable":"vvv"}],"target":[{"context":"tgt","element":"subject","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"context","source":[{"context":"src","element":"context","variable":"s"}],"target":[{"transform":"copy","parameter":[{"valueId":"tgt"}]}],"rule":[{"name":"encounterReference","source":[{"context":"s","type":"Reference","element":"encounter","variable":"vvv"}],"target":[{"context":"tgt","element":"context","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"eventCodeableConcept","source":[{"context":"s","type":"CodeableConcept","element":"event","variable":"vvv"}],"target":[{"context":"tgt","element":"event","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"period","source":[{"context":"s","element":"period","variable":"vvv"}],"target":[{"context":"tgt","element":"period","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"facilityType","source":[{"context":"s","element":"facilityType","variable":"vvv"}],"target":[{"context":"tgt","element":"facilityType","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"practiceSetting","source":[{"context":"s","element":"practiceSetting","variable":"vvv"}],"target":[{"context":"tgt","element":"practiceSetting","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"date","source":[{"context":"src","element":"date","variable":"vvv"}],"target":[{"context":"tgt","element":"date","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"author","source":[{"context":"src","element":"author","variable":"vvv"}],"target":[{"context":"tgt","element":"author","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"authenticator","source":[{"context":"src","element":"authenticator","variable":"s"}],"target":[{"context":"tgt","element":"attester","variable":"t"},{"context":"t","element":"mode","transform":"copy","parameter":[{"valueString":"professional"}]}]},{"name":"authenticatorReference","source":[{"context":"src","type":"Reference","element":"authenticator","variable":"s"}],"target":[{"context":"tgt","element":"attester","variable":"t"},{"context":"t","element":"party","transform":"copy","parameter":[{"valueId":"s"}]}]},{"name":"custodian","source":[{"context":"src","element":"custodian","variable":"vvv"}],"target":[{"context":"tgt","element":"custodian","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"relatesTo","source":[{"context":"src","element":"relatesTo","variable":"s"}],"target":[{"context":"tgt","element":"relatesTo","variable":"t"}],"dependent":[{"name":"DocumentReferenceRelatesTo","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"description","source":[{"context":"src","element":"description","variable":"vvv"}],"target":[{"context":"tgt","element":"description","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"securityLabel","source":[{"context":"src","element":"securityLabel","variable":"vvv"}],"target":[{"context":"tgt","element":"securityLabel","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"content","source":[{"context":"src","element":"content","variable":"s"}],"target":[{"context":"tgt","element":"content","variable":"t"}],"dependent":[{"name":"DocumentReferenceContent","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"DocumentReferenceRelatesTo","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"code","source":[{"context":"src","element":"code","variable":"s"}],"target":[{"context":"tgt","element":"code","variable":"tc","transform":"create","parameter":[{"valueString":"CodeableConcept"}]},{"context":"tc","element":"coding","variable":"tcc","transform":"create","parameter":[{"valueString":"Coding"}]},{"context":"tcc","element":"system","transform":"copy","parameter":[{"valueString":"http://hl7.org/fhir/document-relationship-type"}]},{"context":"tcc","element":"code","transform":"copy","parameter":[{"valueId":"s"}]}]},{"name":"target","source":[{"context":"src","element":"target","variable":"vvv"}],"target":[{"context":"tgt","element":"target","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"DocumentReferenceContent","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"attachment","source":[{"context":"src","element":"attachment","variable":"vvv"}],"target":[{"context":"tgt","element":"attachment","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"formatCoding","source":[{"context":"src","type":"Coding","element":"format","variable":"s"}],"target":[{"context":"tgt","element":"profile","variable":"t"},{"context":"t","element":"value","transform":"copy","parameter":[{"valueId":"s"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "DocumentReference4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/DocumentReference4to5",
+  "name" : "DocumentReference4to5",
+  "title" : "DocumentReference Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "DocumentReference Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/DocumentReference",
+    "mode" : "source",
+    "alias" : "DocumentReferenceR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/DocumentReference",
+    "mode" : "target",
+    "alias" : "DocumentReferenceR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "DocumentReference",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "DocumentReferenceR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "DocumentReferenceR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "masterIdentifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "masterIdentifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/dcr.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "docStatus",
+      "source" : [{
+        "context" : "src",
+        "element" : "docStatus",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "docStatus",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/dcr.docStatus-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "category",
+      "source" : [{
+        "context" : "src",
+        "element" : "category",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "category",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "subject",
+      "source" : [{
+        "context" : "src",
+        "element" : "subject",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subject",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "context",
+      "source" : [{
+        "context" : "src",
+        "element" : "context",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt"
+      }],
+      "rule" : [{
+        "name" : "encounterReference",
+        "source" : [{
+          "context" : "s",
+          "type" : "Reference",
+          "element" : "encounter",
+          "variable" : "vvv"
+        }],
+        "target" : [{
+          "context" : "tgt",
+          "element" : "context",
+          "variable" : "vvv",
+          "transform" : "create"
+        }]
+      },
+      {
+        "name" : "eventCodeableConcept",
+        "source" : [{
+          "context" : "s",
+          "type" : "CodeableConcept",
+          "element" : "event",
+          "variable" : "vvv"
+        }],
+        "target" : [{
+          "context" : "tgt",
+          "element" : "event",
+          "variable" : "vvv",
+          "transform" : "create"
+        }]
+      },
+      {
+        "name" : "period",
+        "source" : [{
+          "context" : "s",
+          "element" : "period",
+          "variable" : "vvv"
+        }],
+        "target" : [{
+          "context" : "tgt",
+          "element" : "period",
+          "variable" : "vvv",
+          "transform" : "create"
+        }]
+      },
+      {
+        "name" : "facilityType",
+        "source" : [{
+          "context" : "s",
+          "element" : "facilityType",
+          "variable" : "vvv"
+        }],
+        "target" : [{
+          "context" : "tgt",
+          "element" : "facilityType",
+          "variable" : "vvv",
+          "transform" : "create"
+        }]
+      },
+      {
+        "name" : "practiceSetting",
+        "source" : [{
+          "context" : "s",
+          "element" : "practiceSetting",
+          "variable" : "vvv"
+        }],
+        "target" : [{
+          "context" : "tgt",
+          "element" : "practiceSetting",
+          "variable" : "vvv",
+          "transform" : "create"
+        }]
+      }]
+    },
+    {
+      "name" : "date",
+      "source" : [{
+        "context" : "src",
+        "element" : "date",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "date",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "author",
+      "source" : [{
+        "context" : "src",
+        "element" : "author",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "author",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "authenticator",
+      "source" : [{
+        "context" : "src",
+        "element" : "authenticator",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "attester",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "mode",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueString" : "professional"
+        }]
+      }]
+    },
+    {
+      "name" : "authenticatorReference",
+      "source" : [{
+        "context" : "src",
+        "type" : "Reference",
+        "element" : "authenticator",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "attester",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "party",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "s"
+        }]
+      }]
+    },
+    {
+      "name" : "custodian",
+      "source" : [{
+        "context" : "src",
+        "element" : "custodian",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "custodian",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "relatesTo",
+      "source" : [{
+        "context" : "src",
+        "element" : "relatesTo",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "relatesTo",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "DocumentReferenceRelatesTo",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "description",
+      "source" : [{
+        "context" : "src",
+        "element" : "description",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "description",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "securityLabel",
+      "source" : [{
+        "context" : "src",
+        "element" : "securityLabel",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "securityLabel",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "content",
+      "source" : [{
+        "context" : "src",
+        "element" : "content",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "content",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "DocumentReferenceContent",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "DocumentReferenceRelatesTo",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "code",
+      "source" : [{
+        "context" : "src",
+        "element" : "code",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "code",
+        "variable" : "tc",
+        "transform" : "create",
+        "parameter" : [{
+          "valueString" : "CodeableConcept"
+        }]
+      },
+      {
+        "context" : "tc",
+        "element" : "coding",
+        "variable" : "tcc",
+        "transform" : "create",
+        "parameter" : [{
+          "valueString" : "Coding"
+        }]
+      },
+      {
+        "context" : "tcc",
+        "element" : "system",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueString" : "http://hl7.org/fhir/document-relationship-type"
+        }]
+      },
+      {
+        "context" : "tcc",
+        "element" : "code",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "s"
+        }]
+      }]
+    },
+    {
+      "name" : "target",
+      "source" : [{
+        "context" : "src",
+        "element" : "target",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "target",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "DocumentReferenceContent",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "attachment",
+      "source" : [{
+        "context" : "src",
+        "element" : "attachment",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "attachment",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "formatCoding",
+      "source" : [{
+        "context" : "src",
+        "type" : "Coding",
+        "element" : "format",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "profile",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "s"
+        }]
+      }]
+    }]
+  }]
+}

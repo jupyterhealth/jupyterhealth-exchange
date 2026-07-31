@@ -1,1 +1,646 @@
-{"resourceType":"StructureMap","id":"Device4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Device4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Device4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Device Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Device<span style=\"color: navy\">&quot; </span><b>alias </b>DeviceR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Device<span style=\"color: navy\">&quot; </span><b>alias </b>DeviceR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Device<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>DeviceR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>DeviceR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.definition<span style=\"color: navy\"><b> -&gt; </b></span>tgt.definition<span style=\"color: navy\">;</span>\r\n  src.udiCarrier<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.udiCarrier<b> as </b><span style=\"color: maroon\">t</span><b> then </b>DeviceUdiCarrier<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Device.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.manufacturer<span style=\"color: navy\"><b> -&gt; </b></span>tgt.manufacturer<span style=\"color: navy\">;</span>\r\n  src.manufactureDate<span style=\"color: navy\"><b> -&gt; </b></span>tgt.manufactureDate<span style=\"color: navy\">;</span>\r\n  src.expirationDate<span style=\"color: navy\"><b> -&gt; </b></span>tgt.expirationDate<span style=\"color: navy\">;</span>\r\n  src.lotNumber<span style=\"color: navy\"><b> -&gt; </b></span>tgt.lotNumber<span style=\"color: navy\">;</span>\r\n  src.serialNumber<span style=\"color: navy\"><b> -&gt; </b></span>tgt.serialNumber<span style=\"color: navy\">;</span>\r\n  src.deviceName<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.name<b> as </b><span style=\"color: maroon\">t</span><b> then </b>DeviceName<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.modelNumber<span style=\"color: navy\"><b> -&gt; </b></span>tgt.modelNumber<span style=\"color: navy\">;</span>\r\n  src.partNumber<span style=\"color: navy\"><b> -&gt; </b></span>tgt.partNumber<span style=\"color: navy\">;</span>\r\n  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.version<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.version<b> as </b><span style=\"color: maroon\">t</span><b> then </b>DeviceVersion<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.property<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.property<b> as </b><span style=\"color: maroon\">t</span><b> then </b>DeviceProperty<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.owner<span style=\"color: navy\"><b> -&gt; </b></span>tgt.owner<span style=\"color: navy\">;</span>\r\n  src.contact<span style=\"color: navy\"><b> -&gt; </b></span>tgt.contact<span style=\"color: navy\">;</span>\r\n  src.location<span style=\"color: navy\"><b> -&gt; </b></span>tgt.location<span style=\"color: navy\">;</span>\r\n  src.url<span style=\"color: navy\"><b> -&gt; </b></span>tgt.url<span style=\"color: navy\">;</span>\r\n  src.note<span style=\"color: navy\"><b> -&gt; </b></span>tgt.note<span style=\"color: navy\">;</span>\r\n  src.safety<span style=\"color: navy\"><b> -&gt; </b></span>tgt.safety<span style=\"color: navy\">;</span>\r\n  src.parent<span style=\"color: navy\"><b> -&gt; </b></span>tgt.parent<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>DeviceUdiCarrier<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.deviceIdentifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.deviceIdentifier<span style=\"color: navy\">;</span>\r\n  src.issuer<span style=\"color: navy\"><b> -&gt; </b></span>tgt.issuer<span style=\"color: navy\">;</span>\r\n  src.jurisdiction<span style=\"color: navy\"><b> -&gt; </b></span>tgt.jurisdiction<span style=\"color: navy\">;</span>\r\n  src.carrierAIDC<span style=\"color: navy\"><b> -&gt; </b></span>tgt.carrierAIDC<span style=\"color: navy\">;</span>\r\n  src.carrierHRF<span style=\"color: navy\"><b> -&gt; </b></span>tgt.carrierHRF<span style=\"color: navy\">;</span>\r\n  src.entryType<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.entryType = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Device.udiCarrier.entryType-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>DeviceName<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.name<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.type<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.type = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Device.deviceName.type-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>DeviceVersion<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.component<span style=\"color: navy\"><b> -&gt; </b></span>tgt.component<span style=\"color: navy\">;</span>\r\n  src.value<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><span style=\"color: navy\">// </span><span style=\"color: green\">group DeviceConformsTo(source src, target tgt) extends BackboneElement {</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.category -&gt; tgt.category;</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.specification -&gt; tgt.specification;</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.version -&gt; tgt.version;</span>\r\n<span style=\"color: navy\">// </span><span style=\"color: green\">}</span>\r\n<b>group </b>DeviceProperty<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.valueQuantity<span style=\"color: navy\"> : </span>Quantity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  src.valueCode<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Device4to5","version":"0.1.0","name":"Device4to5","title":"Device Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"DeviceTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Device","mode":"source","alias":"DeviceR4"},{"url":"http://hl7.org/fhir/5.0/Device","mode":"target","alias":"DeviceR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Device","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"DeviceR4","mode":"source"},{"name":"tgt","type":"DeviceR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"definition","source":[{"context":"src","element":"definition","variable":"vvv"}],"target":[{"context":"tgt","element":"definition","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"udiCarrier","source":[{"context":"src","element":"udiCarrier","variable":"s"}],"target":[{"context":"tgt","element":"udiCarrier","variable":"t"}],"dependent":[{"name":"DeviceUdiCarrier","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Device.status-R4toR5"},{"valueString":"code"}]}]},{"name":"manufacturer","source":[{"context":"src","element":"manufacturer","variable":"vvv"}],"target":[{"context":"tgt","element":"manufacturer","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"manufactureDate","source":[{"context":"src","element":"manufactureDate","variable":"vvv"}],"target":[{"context":"tgt","element":"manufactureDate","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"expirationDate","source":[{"context":"src","element":"expirationDate","variable":"vvv"}],"target":[{"context":"tgt","element":"expirationDate","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"lotNumber","source":[{"context":"src","element":"lotNumber","variable":"vvv"}],"target":[{"context":"tgt","element":"lotNumber","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"serialNumber","source":[{"context":"src","element":"serialNumber","variable":"vvv"}],"target":[{"context":"tgt","element":"serialNumber","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"deviceName","source":[{"context":"src","element":"deviceName","variable":"s"}],"target":[{"context":"tgt","element":"name","variable":"t"}],"dependent":[{"name":"DeviceName","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"modelNumber","source":[{"context":"src","element":"modelNumber","variable":"vvv"}],"target":[{"context":"tgt","element":"modelNumber","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"partNumber","source":[{"context":"src","element":"partNumber","variable":"vvv"}],"target":[{"context":"tgt","element":"partNumber","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"version","source":[{"context":"src","element":"version","variable":"s"}],"target":[{"context":"tgt","element":"version","variable":"t"}],"dependent":[{"name":"DeviceVersion","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"property","source":[{"context":"src","element":"property","variable":"s"}],"target":[{"context":"tgt","element":"property","variable":"t"}],"dependent":[{"name":"DeviceProperty","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"owner","source":[{"context":"src","element":"owner","variable":"vvv"}],"target":[{"context":"tgt","element":"owner","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"contact","source":[{"context":"src","element":"contact","variable":"vvv"}],"target":[{"context":"tgt","element":"contact","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"location","source":[{"context":"src","element":"location","variable":"vvv"}],"target":[{"context":"tgt","element":"location","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"url","source":[{"context":"src","element":"url","variable":"vvv"}],"target":[{"context":"tgt","element":"url","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"note","source":[{"context":"src","element":"note","variable":"vvv"}],"target":[{"context":"tgt","element":"note","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"safety","source":[{"context":"src","element":"safety","variable":"vvv"}],"target":[{"context":"tgt","element":"safety","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"parent","source":[{"context":"src","element":"parent","variable":"vvv"}],"target":[{"context":"tgt","element":"parent","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"DeviceUdiCarrier","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"deviceIdentifier","source":[{"context":"src","element":"deviceIdentifier","variable":"vvv"}],"target":[{"context":"tgt","element":"deviceIdentifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"issuer","source":[{"context":"src","element":"issuer","variable":"vvv"}],"target":[{"context":"tgt","element":"issuer","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"jurisdiction","source":[{"context":"src","element":"jurisdiction","variable":"vvv"}],"target":[{"context":"tgt","element":"jurisdiction","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"carrierAIDC","source":[{"context":"src","element":"carrierAIDC","variable":"vvv"}],"target":[{"context":"tgt","element":"carrierAIDC","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"carrierHRF","source":[{"context":"src","element":"carrierHRF","variable":"vvv"}],"target":[{"context":"tgt","element":"carrierHRF","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"entryType","source":[{"context":"src","element":"entryType","variable":"v"}],"target":[{"context":"tgt","element":"entryType","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Device.udiCarrier.entryType-R4toR5"},{"valueString":"code"}]}]}]},{"name":"DeviceName","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"name","source":[{"context":"src","element":"name","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"v"}],"target":[{"context":"tgt","element":"type","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Device.deviceName.type-R4toR5"},{"valueString":"code"}]}]}]},{"name":"DeviceVersion","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"component","source":[{"context":"src","element":"component","variable":"vvv"}],"target":[{"context":"tgt","element":"component","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"value","source":[{"context":"src","element":"value","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"DeviceProperty","extends":"BackboneElement","documentation":"group DeviceConformsTo(source src, target tgt) extends BackboneElement {\r\nsrc.category -> tgt.category;\r\nsrc.specification -> tgt.specification;\r\nsrc.version -> tgt.version;\r\n}","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueQuantityQuantity","source":[{"context":"src","type":"Quantity","element":"valueQuantity","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"valueCodeCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"valueCode","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Device4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Device4to5",
+  "name" : "Device4to5",
+  "title" : "Device Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Device Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Device",
+    "mode" : "source",
+    "alias" : "DeviceR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Device",
+    "mode" : "target",
+    "alias" : "DeviceR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Device",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "DeviceR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "DeviceR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "definition",
+      "source" : [{
+        "context" : "src",
+        "element" : "definition",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "definition",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "udiCarrier",
+      "source" : [{
+        "context" : "src",
+        "element" : "udiCarrier",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "udiCarrier",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "DeviceUdiCarrier",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/dev.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "manufacturer",
+      "source" : [{
+        "context" : "src",
+        "element" : "manufacturer",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "manufacturer",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "manufactureDate",
+      "source" : [{
+        "context" : "src",
+        "element" : "manufactureDate",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "manufactureDate",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "expirationDate",
+      "source" : [{
+        "context" : "src",
+        "element" : "expirationDate",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "expirationDate",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "lotNumber",
+      "source" : [{
+        "context" : "src",
+        "element" : "lotNumber",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "lotNumber",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "serialNumber",
+      "source" : [{
+        "context" : "src",
+        "element" : "serialNumber",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "serialNumber",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "deviceName",
+      "source" : [{
+        "context" : "src",
+        "element" : "deviceName",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "name",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "DeviceName",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "modelNumber",
+      "source" : [{
+        "context" : "src",
+        "element" : "modelNumber",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "modelNumber",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "partNumber",
+      "source" : [{
+        "context" : "src",
+        "element" : "partNumber",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "partNumber",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "version",
+      "source" : [{
+        "context" : "src",
+        "element" : "version",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "version",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "DeviceVersion",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "property",
+      "source" : [{
+        "context" : "src",
+        "element" : "property",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "property",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "DeviceProperty",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "owner",
+      "source" : [{
+        "context" : "src",
+        "element" : "owner",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "owner",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "contact",
+      "source" : [{
+        "context" : "src",
+        "element" : "contact",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "contact",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "location",
+      "source" : [{
+        "context" : "src",
+        "element" : "location",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "location",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "url",
+      "source" : [{
+        "context" : "src",
+        "element" : "url",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "url",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "note",
+      "source" : [{
+        "context" : "src",
+        "element" : "note",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "note",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "safety",
+      "source" : [{
+        "context" : "src",
+        "element" : "safety",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "safety",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "parent",
+      "source" : [{
+        "context" : "src",
+        "element" : "parent",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "parent",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "DeviceUdiCarrier",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "deviceIdentifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "deviceIdentifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "deviceIdentifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "issuer",
+      "source" : [{
+        "context" : "src",
+        "element" : "issuer",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "issuer",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "jurisdiction",
+      "source" : [{
+        "context" : "src",
+        "element" : "jurisdiction",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "jurisdiction",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "carrierAIDC",
+      "source" : [{
+        "context" : "src",
+        "element" : "carrierAIDC",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "carrierAIDC",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "carrierHRF",
+      "source" : [{
+        "context" : "src",
+        "element" : "carrierHRF",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "carrierHRF",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "entryType",
+      "source" : [{
+        "context" : "src",
+        "element" : "entryType",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "entryType",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/dev.ud.entryType-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "DeviceName",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "name",
+      "source" : [{
+        "context" : "src",
+        "element" : "name",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/dev.de.type-dev.na.type-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "DeviceVersion",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "component",
+      "source" : [{
+        "context" : "src",
+        "element" : "component",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "component",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "value",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "DeviceProperty",
+    "extends" : "BackboneElement",
+    "documentation" : "group DeviceConformsTo(source src, target tgt) extends BackboneElement {\r\nsrc.category -> tgt.category;\r\nsrc.specification -> tgt.specification;\r\nsrc.version -> tgt.version;\r\n}",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueQuantityQuantity",
+      "source" : [{
+        "context" : "src",
+        "type" : "Quantity",
+        "element" : "valueQuantity",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "valueCodeCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "valueCode",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

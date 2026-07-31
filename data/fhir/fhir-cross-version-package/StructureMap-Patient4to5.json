@@ -1,1 +1,529 @@
-{"resourceType":"StructureMap","id":"Patient4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Patient4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Patient4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Patient Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Patient<span style=\"color: navy\">&quot; </span><b>alias </b>PatientR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Patient<span style=\"color: navy\">&quot; </span><b>alias </b>PatientR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Patient<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>PatientR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>PatientR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.active<span style=\"color: navy\"><b> -&gt; </b></span>tgt.active<span style=\"color: navy\">;</span>\r\n  src.name<span style=\"color: navy\"><b> -&gt; </b></span>tgt.name<span style=\"color: navy\">;</span>\r\n  src.telecom<span style=\"color: navy\"><b> -&gt; </b></span>tgt.telecom<span style=\"color: navy\">;</span>\r\n  src.gender<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.gender = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Patient.gender-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.birthDate<span style=\"color: navy\"><b> -&gt; </b></span>tgt.birthDate<span style=\"color: navy\">;</span>\r\n  src.deceased<span style=\"color: navy\"> : </span>boolean<span style=\"color: navy\"><b> -&gt; </b></span>tgt.deceased<span style=\"color: navy\">;</span>\r\n  src.deceased<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.deceased<span style=\"color: navy\">;</span>\r\n  src.address<span style=\"color: navy\"><b> -&gt; </b></span>tgt.address<span style=\"color: navy\">;</span>\r\n  src.maritalStatus<span style=\"color: navy\"><b> -&gt; </b></span>tgt.maritalStatus<span style=\"color: navy\">;</span>\r\n  src.multipleBirth<span style=\"color: navy\"> : </span>boolean<span style=\"color: navy\"><b> -&gt; </b></span>tgt.multipleBirth<span style=\"color: navy\">;</span>\r\n  src.multipleBirth<span style=\"color: navy\"> : </span>integer<span style=\"color: navy\"><b> -&gt; </b></span>tgt.multipleBirth<span style=\"color: navy\">;</span>\r\n  src.photo<span style=\"color: navy\"><b> -&gt; </b></span>tgt.photo<span style=\"color: navy\">;</span>\r\n  src.contact<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.contact<b> as </b><span style=\"color: maroon\">t</span><b> then </b>PatientContact<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.communication<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.communication<b> as </b><span style=\"color: maroon\">t</span><b> then </b>PatientCommunication<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.generalPractitioner<span style=\"color: navy\"><b> -&gt; </b></span>tgt.generalPractitioner<span style=\"color: navy\">;</span>\r\n  src.managingOrganization<span style=\"color: navy\"><b> -&gt; </b></span>tgt.managingOrganization<span style=\"color: navy\">;</span>\r\n  src.link<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.link<b> as </b><span style=\"color: maroon\">t</span><b> then </b>PatientLink<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>PatientContact<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.relationship<span style=\"color: navy\"><b> -&gt; </b></span>tgt.relationship<span style=\"color: navy\">;</span>\r\n  src.name<span style=\"color: navy\"><b> -&gt; </b></span>tgt.name<span style=\"color: navy\">;</span>\r\n  src.telecom<span style=\"color: navy\"><b> -&gt; </b></span>tgt.telecom<span style=\"color: navy\">;</span>\r\n  src.address<span style=\"color: navy\"><b> -&gt; </b></span>tgt.address<span style=\"color: navy\">;</span>\r\n  src.gender<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.gender = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Patient.contact.gender-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.organization<span style=\"color: navy\"><b> -&gt; </b></span>tgt.organization<span style=\"color: navy\">;</span>\r\n  src.period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.period<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>PatientCommunication<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.language<span style=\"color: navy\"><b> -&gt; </b></span>tgt.language<span style=\"color: navy\">;</span>\r\n  src.preferred<span style=\"color: navy\"><b> -&gt; </b></span>tgt.preferred<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>PatientLink<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.other<span style=\"color: navy\"><b> -&gt; </b></span>tgt.other<span style=\"color: navy\">;</span>\r\n  src.type<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.type = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Patient.link.type-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Patient4to5","version":"0.1.0","name":"Patient4to5","title":"Patient Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"PatientTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Patient","mode":"source","alias":"PatientR4"},{"url":"http://hl7.org/fhir/5.0/Patient","mode":"target","alias":"PatientR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Patient","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"PatientR4","mode":"source"},{"name":"tgt","type":"PatientR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"active","source":[{"context":"src","element":"active","variable":"vvv"}],"target":[{"context":"tgt","element":"active","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"name","source":[{"context":"src","element":"name","variable":"vvv"}],"target":[{"context":"tgt","element":"name","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"telecom","source":[{"context":"src","element":"telecom","variable":"vvv"}],"target":[{"context":"tgt","element":"telecom","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"gender","source":[{"context":"src","element":"gender","variable":"v"}],"target":[{"context":"tgt","element":"gender","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Patient.gender-R4toR5"},{"valueString":"code"}]}]},{"name":"birthDate","source":[{"context":"src","element":"birthDate","variable":"vvv"}],"target":[{"context":"tgt","element":"birthDate","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"deceasedBoolean","source":[{"context":"src","type":"boolean","element":"deceased","variable":"vvv"}],"target":[{"context":"tgt","element":"deceased","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"deceasedDateTime","source":[{"context":"src","type":"dateTime","element":"deceased","variable":"vvv"}],"target":[{"context":"tgt","element":"deceased","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"address","source":[{"context":"src","element":"address","variable":"vvv"}],"target":[{"context":"tgt","element":"address","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"maritalStatus","source":[{"context":"src","element":"maritalStatus","variable":"vvv"}],"target":[{"context":"tgt","element":"maritalStatus","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"multipleBirthBoolean","source":[{"context":"src","type":"boolean","element":"multipleBirth","variable":"vvv"}],"target":[{"context":"tgt","element":"multipleBirth","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"multipleBirthInteger","source":[{"context":"src","type":"integer","element":"multipleBirth","variable":"vvv"}],"target":[{"context":"tgt","element":"multipleBirth","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"photo","source":[{"context":"src","element":"photo","variable":"vvv"}],"target":[{"context":"tgt","element":"photo","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"contact","source":[{"context":"src","element":"contact","variable":"s"}],"target":[{"context":"tgt","element":"contact","variable":"t"}],"dependent":[{"name":"PatientContact","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"communication","source":[{"context":"src","element":"communication","variable":"s"}],"target":[{"context":"tgt","element":"communication","variable":"t"}],"dependent":[{"name":"PatientCommunication","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"generalPractitioner","source":[{"context":"src","element":"generalPractitioner","variable":"vvv"}],"target":[{"context":"tgt","element":"generalPractitioner","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"managingOrganization","source":[{"context":"src","element":"managingOrganization","variable":"vvv"}],"target":[{"context":"tgt","element":"managingOrganization","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"link","source":[{"context":"src","element":"link","variable":"s"}],"target":[{"context":"tgt","element":"link","variable":"t"}],"dependent":[{"name":"PatientLink","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"PatientContact","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"relationship","source":[{"context":"src","element":"relationship","variable":"vvv"}],"target":[{"context":"tgt","element":"relationship","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"name","source":[{"context":"src","element":"name","variable":"vvv"}],"target":[{"context":"tgt","element":"name","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"telecom","source":[{"context":"src","element":"telecom","variable":"vvv"}],"target":[{"context":"tgt","element":"telecom","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"address","source":[{"context":"src","element":"address","variable":"vvv"}],"target":[{"context":"tgt","element":"address","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"gender","source":[{"context":"src","element":"gender","variable":"v"}],"target":[{"context":"tgt","element":"gender","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Patient.contact.gender-R4toR5"},{"valueString":"code"}]}]},{"name":"organization","source":[{"context":"src","element":"organization","variable":"vvv"}],"target":[{"context":"tgt","element":"organization","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"period","source":[{"context":"src","element":"period","variable":"vvv"}],"target":[{"context":"tgt","element":"period","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"PatientCommunication","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"language","source":[{"context":"src","element":"language","variable":"vvv"}],"target":[{"context":"tgt","element":"language","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"preferred","source":[{"context":"src","element":"preferred","variable":"vvv"}],"target":[{"context":"tgt","element":"preferred","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"PatientLink","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"other","source":[{"context":"src","element":"other","variable":"vvv"}],"target":[{"context":"tgt","element":"other","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"v"}],"target":[{"context":"tgt","element":"type","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Patient.link.type-R4toR5"},{"valueString":"code"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Patient4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Patient4to5",
+  "name" : "Patient4to5",
+  "title" : "Patient Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Patient Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Patient",
+    "mode" : "source",
+    "alias" : "PatientR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Patient",
+    "mode" : "target",
+    "alias" : "PatientR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Patient",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "PatientR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "PatientR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "active",
+      "source" : [{
+        "context" : "src",
+        "element" : "active",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "active",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "name",
+      "source" : [{
+        "context" : "src",
+        "element" : "name",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "name",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "telecom",
+      "source" : [{
+        "context" : "src",
+        "element" : "telecom",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "telecom",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "gender",
+      "source" : [{
+        "context" : "src",
+        "element" : "gender",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "gender",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/pat.gender-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "birthDate",
+      "source" : [{
+        "context" : "src",
+        "element" : "birthDate",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "birthDate",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "deceasedBoolean",
+      "source" : [{
+        "context" : "src",
+        "type" : "boolean",
+        "element" : "deceased",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "deceased",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "deceasedDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "deceased",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "deceased",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "address",
+      "source" : [{
+        "context" : "src",
+        "element" : "address",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "address",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "maritalStatus",
+      "source" : [{
+        "context" : "src",
+        "element" : "maritalStatus",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "maritalStatus",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "multipleBirthBoolean",
+      "source" : [{
+        "context" : "src",
+        "type" : "boolean",
+        "element" : "multipleBirth",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "multipleBirth",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "multipleBirthInteger",
+      "source" : [{
+        "context" : "src",
+        "type" : "integer",
+        "element" : "multipleBirth",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "multipleBirth",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "photo",
+      "source" : [{
+        "context" : "src",
+        "element" : "photo",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "photo",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "contact",
+      "source" : [{
+        "context" : "src",
+        "element" : "contact",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "contact",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "PatientContact",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "communication",
+      "source" : [{
+        "context" : "src",
+        "element" : "communication",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "communication",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "PatientCommunication",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "generalPractitioner",
+      "source" : [{
+        "context" : "src",
+        "element" : "generalPractitioner",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "generalPractitioner",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "managingOrganization",
+      "source" : [{
+        "context" : "src",
+        "element" : "managingOrganization",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "managingOrganization",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "link",
+      "source" : [{
+        "context" : "src",
+        "element" : "link",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "link",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "PatientLink",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "PatientContact",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "relationship",
+      "source" : [{
+        "context" : "src",
+        "element" : "relationship",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "relationship",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "name",
+      "source" : [{
+        "context" : "src",
+        "element" : "name",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "name",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "telecom",
+      "source" : [{
+        "context" : "src",
+        "element" : "telecom",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "telecom",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "address",
+      "source" : [{
+        "context" : "src",
+        "element" : "address",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "address",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "gender",
+      "source" : [{
+        "context" : "src",
+        "element" : "gender",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "gender",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/pat.co.gender-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "organization",
+      "source" : [{
+        "context" : "src",
+        "element" : "organization",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "organization",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "period",
+      "source" : [{
+        "context" : "src",
+        "element" : "period",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "period",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "PatientCommunication",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "language",
+      "source" : [{
+        "context" : "src",
+        "element" : "language",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "language",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "preferred",
+      "source" : [{
+        "context" : "src",
+        "element" : "preferred",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "preferred",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "PatientLink",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "other",
+      "source" : [{
+        "context" : "src",
+        "element" : "other",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "other",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/pat.li.type-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    }]
+  }]
+}

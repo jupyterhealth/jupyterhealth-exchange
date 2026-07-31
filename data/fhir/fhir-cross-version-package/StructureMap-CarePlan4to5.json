@@ -1,1 +1,443 @@
-{"resourceType":"StructureMap","id":"CarePlan4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/CarePlan4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'CarePlan4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'CarePlan Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/CarePlan<span style=\"color: navy\">&quot; </span><b>alias </b>CarePlanR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/CarePlan<span style=\"color: navy\">&quot; </span><b>alias </b>CarePlanR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>CarePlan<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>CarePlanR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>CarePlanR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.instantiatesCanonical<span style=\"color: navy\"><b> -&gt; </b></span>tgt.instantiatesCanonical<span style=\"color: navy\">;</span>\r\n  src.instantiatesUri<span style=\"color: navy\"><b> -&gt; </b></span>tgt.instantiatesUri<span style=\"color: navy\">;</span>\r\n  src.basedOn<span style=\"color: navy\"><b> -&gt; </b></span>tgt.basedOn<span style=\"color: navy\">;</span>\r\n  src.replaces<span style=\"color: navy\"><b> -&gt; </b></span>tgt.replaces<span style=\"color: navy\">;</span>\r\n  src.partOf<span style=\"color: navy\"><b> -&gt; </b></span>tgt.partOf<span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/CarePlan.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.intent<span style=\"color: navy\"><b> -&gt; </b></span>tgt.intent<span style=\"color: navy\">;</span>\r\n  src.category<span style=\"color: navy\"><b> -&gt; </b></span>tgt.category<span style=\"color: navy\">;</span>\r\n  src.title<span style=\"color: navy\"><b> -&gt; </b></span>tgt.title<span style=\"color: navy\">;</span>\r\n  src.description<span style=\"color: navy\"><b> -&gt; </b></span>tgt.description<span style=\"color: navy\">;</span>\r\n  src.subject<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subject<span style=\"color: navy\">;</span>\r\n  src.encounter<span style=\"color: navy\"><b> -&gt; </b></span>tgt.encounter<span style=\"color: navy\">;</span>\r\n  src.period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.period<span style=\"color: navy\">;</span>\r\n  src.created<span style=\"color: navy\"><b> -&gt; </b></span>tgt.created<span style=\"color: navy\">;</span>\r\n  src.author<span style=\"color: navy\"><b> -&gt; </b></span>tgt.custodian<span style=\"color: navy\">;</span>\r\n  src.contributor<span style=\"color: navy\"><b> -&gt; </b></span>tgt.contributor<span style=\"color: navy\">;</span>\r\n  src.careTeam<span style=\"color: navy\"><b> -&gt; </b></span>tgt.careTeam<span style=\"color: navy\">;</span>\r\n  src.addresses<span style=\"color: navy\"><b> -&gt; </b></span>tgt.addresses<span style=\"color: navy\">;</span>\r\n  src.supportingInfo<span style=\"color: navy\"><b> -&gt; </b></span>tgt.supportingInfo<span style=\"color: navy\">;</span>\r\n  src.goal<span style=\"color: navy\"><b> -&gt; </b></span>tgt.goal<span style=\"color: navy\">;</span>\r\n  src.activity<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.activity<b> as </b><span style=\"color: maroon\">t</span><b> then </b>CarePlanActivity<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.note<span style=\"color: navy\"><b> -&gt; </b></span>tgt.note<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>CarePlanActivity<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.outcomeCodeableConcept<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.performedActivity<span style=\"color: navy\">;</span>\r\n  src.outcomeReference<span style=\"color: navy\"> : </span>Reference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.performedActivity<span style=\"color: navy\">;</span>\r\n  src.progress<span style=\"color: navy\"><b> -&gt; </b></span>tgt.progress<span style=\"color: navy\">;</span>\r\n  src.reference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.plannedActivityReference<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/CarePlan4to5","version":"0.1.0","name":"CarePlan4to5","title":"CarePlan Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"CarePlanTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/CarePlan","mode":"source","alias":"CarePlanR4"},{"url":"http://hl7.org/fhir/5.0/CarePlan","mode":"target","alias":"CarePlanR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"CarePlan","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"CarePlanR4","mode":"source"},{"name":"tgt","type":"CarePlanR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"instantiatesCanonical","source":[{"context":"src","element":"instantiatesCanonical","variable":"vvv"}],"target":[{"context":"tgt","element":"instantiatesCanonical","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"instantiatesUri","source":[{"context":"src","element":"instantiatesUri","variable":"vvv"}],"target":[{"context":"tgt","element":"instantiatesUri","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"basedOn","source":[{"context":"src","element":"basedOn","variable":"vvv"}],"target":[{"context":"tgt","element":"basedOn","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"replaces","source":[{"context":"src","element":"replaces","variable":"vvv"}],"target":[{"context":"tgt","element":"replaces","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"partOf","source":[{"context":"src","element":"partOf","variable":"vvv"}],"target":[{"context":"tgt","element":"partOf","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/CarePlan.status-R4toR5"},{"valueString":"code"}]}]},{"name":"intent","source":[{"context":"src","element":"intent","variable":"vvv"}],"target":[{"context":"tgt","element":"intent","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"category","source":[{"context":"src","element":"category","variable":"vvv"}],"target":[{"context":"tgt","element":"category","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"title","source":[{"context":"src","element":"title","variable":"vvv"}],"target":[{"context":"tgt","element":"title","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"description","source":[{"context":"src","element":"description","variable":"vvv"}],"target":[{"context":"tgt","element":"description","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"subject","source":[{"context":"src","element":"subject","variable":"vvv"}],"target":[{"context":"tgt","element":"subject","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"encounter","source":[{"context":"src","element":"encounter","variable":"vvv"}],"target":[{"context":"tgt","element":"encounter","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"period","source":[{"context":"src","element":"period","variable":"vvv"}],"target":[{"context":"tgt","element":"period","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"created","source":[{"context":"src","element":"created","variable":"vvv"}],"target":[{"context":"tgt","element":"created","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"author","source":[{"context":"src","element":"author","variable":"vvv"}],"target":[{"context":"tgt","element":"custodian","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"contributor","source":[{"context":"src","element":"contributor","variable":"vvv"}],"target":[{"context":"tgt","element":"contributor","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"careTeam","source":[{"context":"src","element":"careTeam","variable":"vvv"}],"target":[{"context":"tgt","element":"careTeam","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"addresses","source":[{"context":"src","element":"addresses","variable":"vvv"}],"target":[{"context":"tgt","element":"addresses","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"supportingInfo","source":[{"context":"src","element":"supportingInfo","variable":"vvv"}],"target":[{"context":"tgt","element":"supportingInfo","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"goal","source":[{"context":"src","element":"goal","variable":"vvv"}],"target":[{"context":"tgt","element":"goal","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"activity","source":[{"context":"src","element":"activity","variable":"s"}],"target":[{"context":"tgt","element":"activity","variable":"t"}],"dependent":[{"name":"CarePlanActivity","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"note","source":[{"context":"src","element":"note","variable":"vvv"}],"target":[{"context":"tgt","element":"note","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"CarePlanActivity","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"outcomeCodeableConceptCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"outcomeCodeableConcept","variable":"vvv"}],"target":[{"context":"tgt","element":"performedActivity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"outcomeReferenceReference","source":[{"context":"src","type":"Reference","element":"outcomeReference","variable":"vvv"}],"target":[{"context":"tgt","element":"performedActivity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"progress","source":[{"context":"src","element":"progress","variable":"vvv"}],"target":[{"context":"tgt","element":"progress","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"reference","source":[{"context":"src","element":"reference","variable":"vvv"}],"target":[{"context":"tgt","element":"plannedActivityReference","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "CarePlan4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/CarePlan4to5",
+  "name" : "CarePlan4to5",
+  "title" : "CarePlan Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "CarePlan Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/CarePlan",
+    "mode" : "source",
+    "alias" : "CarePlanR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/CarePlan",
+    "mode" : "target",
+    "alias" : "CarePlanR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "CarePlan",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "CarePlanR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "CarePlanR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "instantiatesCanonical",
+      "source" : [{
+        "context" : "src",
+        "element" : "instantiatesCanonical",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "instantiatesCanonical",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "instantiatesUri",
+      "source" : [{
+        "context" : "src",
+        "element" : "instantiatesUri",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "instantiatesUri",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "basedOn",
+      "source" : [{
+        "context" : "src",
+        "element" : "basedOn",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "basedOn",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "replaces",
+      "source" : [{
+        "context" : "src",
+        "element" : "replaces",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "replaces",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "partOf",
+      "source" : [{
+        "context" : "src",
+        "element" : "partOf",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "partOf",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/cpl.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "intent",
+      "source" : [{
+        "context" : "src",
+        "element" : "intent",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "intent",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "category",
+      "source" : [{
+        "context" : "src",
+        "element" : "category",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "category",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "title",
+      "source" : [{
+        "context" : "src",
+        "element" : "title",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "title",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "description",
+      "source" : [{
+        "context" : "src",
+        "element" : "description",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "description",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "subject",
+      "source" : [{
+        "context" : "src",
+        "element" : "subject",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subject",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "encounter",
+      "source" : [{
+        "context" : "src",
+        "element" : "encounter",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "encounter",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "period",
+      "source" : [{
+        "context" : "src",
+        "element" : "period",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "period",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "created",
+      "source" : [{
+        "context" : "src",
+        "element" : "created",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "created",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "author",
+      "source" : [{
+        "context" : "src",
+        "element" : "author",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "custodian",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "contributor",
+      "source" : [{
+        "context" : "src",
+        "element" : "contributor",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "contributor",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "careTeam",
+      "source" : [{
+        "context" : "src",
+        "element" : "careTeam",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "careTeam",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "addresses",
+      "source" : [{
+        "context" : "src",
+        "element" : "addresses",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "addresses",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "supportingInfo",
+      "source" : [{
+        "context" : "src",
+        "element" : "supportingInfo",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "supportingInfo",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "goal",
+      "source" : [{
+        "context" : "src",
+        "element" : "goal",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "goal",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "activity",
+      "source" : [{
+        "context" : "src",
+        "element" : "activity",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "activity",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "CarePlanActivity",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "note",
+      "source" : [{
+        "context" : "src",
+        "element" : "note",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "note",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "CarePlanActivity",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "outcomeCodeableConceptCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "outcomeCodeableConcept",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "performedActivity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "outcomeReferenceReference",
+      "source" : [{
+        "context" : "src",
+        "type" : "Reference",
+        "element" : "outcomeReference",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "performedActivity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "progress",
+      "source" : [{
+        "context" : "src",
+        "element" : "progress",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "progress",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "reference",
+      "source" : [{
+        "context" : "src",
+        "element" : "reference",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "plannedActivityReference",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

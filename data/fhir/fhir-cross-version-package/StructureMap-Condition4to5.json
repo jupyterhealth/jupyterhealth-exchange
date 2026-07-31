@@ -1,1 +1,652 @@
-{"resourceType":"StructureMap","id":"Condition4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Condition4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Condition4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Condition Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Condition<span style=\"color: navy\">&quot; </span><b>alias </b>ConditionR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Condition<span style=\"color: navy\">&quot; </span><b>alias </b>ConditionR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Condition<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>ConditionR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>ConditionR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.clinicalStatus<span style=\"color: navy\"><b> -&gt; </b></span>tgt.clinicalStatus<span style=\"color: navy\">;</span>\r\n  src.verificationStatus<span style=\"color: navy\"><b> -&gt; </b></span>tgt.verificationStatus<span style=\"color: navy\">;</span>\r\n  src.category<span style=\"color: navy\"><b> -&gt; </b></span>tgt.category<span style=\"color: navy\">;</span>\r\n  src.severity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.severity<span style=\"color: navy\">;</span>\r\n  src.code<span style=\"color: navy\"><b> -&gt; </b></span>tgt.code<span style=\"color: navy\">;</span>\r\n  src.bodySite<span style=\"color: navy\"><b> -&gt; </b></span>tgt.bodySite<span style=\"color: navy\">;</span>\r\n  src.subject<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subject<span style=\"color: navy\">;</span>\r\n  src.encounter<span style=\"color: navy\"><b> -&gt; </b></span>tgt.encounter<span style=\"color: navy\">;</span>\r\n  src.onset<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.onset<span style=\"color: navy\">;</span>\r\n  src.onset<span style=\"color: navy\"> : </span>Age<span style=\"color: navy\"><b> -&gt; </b></span>tgt.onset<span style=\"color: navy\">;</span>\r\n  src.onset<span style=\"color: navy\"> : </span>Period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.onset<span style=\"color: navy\">;</span>\r\n  src.onset<span style=\"color: navy\"> : </span>Range<span style=\"color: navy\"><b> -&gt; </b></span>tgt.onset<span style=\"color: navy\">;</span>\r\n  src.onset<span style=\"color: navy\"> : </span>string<span style=\"color: navy\"><b> -&gt; </b></span>tgt.onset<span style=\"color: navy\">;</span>\r\n  src.abatement<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.abatement<span style=\"color: navy\">;</span>\r\n  src.abatement<span style=\"color: navy\"> : </span>Age<span style=\"color: navy\"><b> -&gt; </b></span>tgt.abatement<span style=\"color: navy\">;</span>\r\n  src.abatement<span style=\"color: navy\"> : </span>Period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.abatement<span style=\"color: navy\">;</span>\r\n  src.abatement<span style=\"color: navy\"> : </span>Range<span style=\"color: navy\"><b> -&gt; </b></span>tgt.abatement<span style=\"color: navy\">;</span>\r\n  src.abatement<span style=\"color: navy\"> : </span>string<span style=\"color: navy\"><b> -&gt; </b></span>tgt.abatement<span style=\"color: navy\">;</span>\r\n  src.recordedDate<span style=\"color: navy\"><b> -&gt; </b></span>tgt.recordedDate<span style=\"color: navy\">;</span>\r\n  src.recorder<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.participant<b> as </b><span style=\"color: maroon\">t</span><b> then </b>ConditionRecorder<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.asserter<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.participant<b> as </b><span style=\"color: maroon\">t</span><b> then </b>ConditionAsserter<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.stage<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.stage<b> as </b><span style=\"color: maroon\">t</span><b> then </b>ConditionStage<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.evidence<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span><span style=\"color: maroon\">tgt</span><b> then</b><span style=\"color: navy\"> {\r\n</span>    s.code<span style=\"color: navy\"> : </span>CodeableConcept<b> as </b><span style=\"color: maroon\">c</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.evidence<span style=\"color: navy\">;</span>\r\n    s.detail<span style=\"color: navy\"> : </span>Reference<b> as </b><span style=\"color: maroon\">d</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.evidence<span style=\"color: navy\">;</span>\r\n  <span style=\"color: navy\">}</span><span style=\"color: navy\">;</span>\r\n  src.note<span style=\"color: navy\"><b> -&gt; </b></span>tgt.note<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>ConditionStage<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.summary<span style=\"color: navy\"><b> -&gt; </b></span>tgt.summary<span style=\"color: navy\">;</span>\r\n  src.assessment<span style=\"color: navy\"><b> -&gt; </b></span>tgt.assessment<span style=\"color: navy\">;</span>\r\n  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>ConditionRecorder<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.reference<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.function = <b>create</b><span style=\"color: navy\">(</span><span style=\"color: blue\">'CodeableConcept'</span><span style=\"color: navy\">)</span><b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.coding = <b>create</b><span style=\"color: navy\">(</span><span style=\"color: blue\">'Coding'</span><span style=\"color: navy\">)</span><b> as </b><span style=\"color: maroon\">tc</span><span style=\"color: navy\">, </span> tc.system = <span style=\"color: blue\">'http://terminology.hl7.org/CodeSystem/provenance-participant-type'</span><span style=\"color: navy\">, </span> tc.code = <span style=\"color: blue\">'enterer'</span><span style=\"color: navy\">, </span> tc.display = <span style=\"color: blue\">'Enterer'</span><span style=\"color: navy\">;</span>\r\n  src<span style=\"color: navy\"> : </span>Reference<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.actor = <span style=\"color: maroon\">v</span> <i>&quot;reference&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>ConditionAsserter<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.reference<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.function = <b>create</b><span style=\"color: navy\">(</span><span style=\"color: blue\">'CodeableConcept'</span><span style=\"color: navy\">)</span><b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.coding = <b>create</b><span style=\"color: navy\">(</span><span style=\"color: blue\">'Coding'</span><span style=\"color: navy\">)</span><b> as </b><span style=\"color: maroon\">tc</span><span style=\"color: navy\">, </span> tc.system = <span style=\"color: blue\">'http://terminology.hl7.org/CodeSystem/provenance-participant-type'</span><span style=\"color: navy\">, </span> tc.code = <span style=\"color: blue\">'author'</span><span style=\"color: navy\">, </span> tc.display = <span style=\"color: blue\">'Author'</span><span style=\"color: navy\">;</span>\r\n  src<span style=\"color: navy\"> : </span>Reference<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.actor = <span style=\"color: maroon\">v</span> <i>&quot;reference&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Condition4to5","version":"0.1.0","name":"Condition4to5","title":"Condition Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"ConditionTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Condition","mode":"source","alias":"ConditionR4"},{"url":"http://hl7.org/fhir/5.0/Condition","mode":"target","alias":"ConditionR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Condition","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"ConditionR4","mode":"source"},{"name":"tgt","type":"ConditionR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"clinicalStatus","source":[{"context":"src","element":"clinicalStatus","variable":"vvv"}],"target":[{"context":"tgt","element":"clinicalStatus","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"verificationStatus","source":[{"context":"src","element":"verificationStatus","variable":"vvv"}],"target":[{"context":"tgt","element":"verificationStatus","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"category","source":[{"context":"src","element":"category","variable":"vvv"}],"target":[{"context":"tgt","element":"category","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"severity","source":[{"context":"src","element":"severity","variable":"vvv"}],"target":[{"context":"tgt","element":"severity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"code","source":[{"context":"src","element":"code","variable":"vvv"}],"target":[{"context":"tgt","element":"code","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"bodySite","source":[{"context":"src","element":"bodySite","variable":"vvv"}],"target":[{"context":"tgt","element":"bodySite","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"subject","source":[{"context":"src","element":"subject","variable":"vvv"}],"target":[{"context":"tgt","element":"subject","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"encounter","source":[{"context":"src","element":"encounter","variable":"vvv"}],"target":[{"context":"tgt","element":"encounter","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"onsetDateTime","source":[{"context":"src","type":"dateTime","element":"onset","variable":"vvv"}],"target":[{"context":"tgt","element":"onset","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"onsetAge","source":[{"context":"src","type":"Age","element":"onset","variable":"vvv"}],"target":[{"context":"tgt","element":"onset","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"onsetPeriod","source":[{"context":"src","type":"Period","element":"onset","variable":"vvv"}],"target":[{"context":"tgt","element":"onset","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"onsetRange","source":[{"context":"src","type":"Range","element":"onset","variable":"vvv"}],"target":[{"context":"tgt","element":"onset","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"onsetString","source":[{"context":"src","type":"string","element":"onset","variable":"vvv"}],"target":[{"context":"tgt","element":"onset","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"abatementDateTime","source":[{"context":"src","type":"dateTime","element":"abatement","variable":"vvv"}],"target":[{"context":"tgt","element":"abatement","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"abatementAge","source":[{"context":"src","type":"Age","element":"abatement","variable":"vvv"}],"target":[{"context":"tgt","element":"abatement","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"abatementPeriod","source":[{"context":"src","type":"Period","element":"abatement","variable":"vvv"}],"target":[{"context":"tgt","element":"abatement","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"abatementRange","source":[{"context":"src","type":"Range","element":"abatement","variable":"vvv"}],"target":[{"context":"tgt","element":"abatement","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"abatementString","source":[{"context":"src","type":"string","element":"abatement","variable":"vvv"}],"target":[{"context":"tgt","element":"abatement","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"recordedDate","source":[{"context":"src","element":"recordedDate","variable":"vvv"}],"target":[{"context":"tgt","element":"recordedDate","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"recorder","source":[{"context":"src","element":"recorder","variable":"s"}],"target":[{"context":"tgt","element":"participant","variable":"t"}],"dependent":[{"name":"ConditionRecorder","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"asserter","source":[{"context":"src","element":"asserter","variable":"s"}],"target":[{"context":"tgt","element":"participant","variable":"t"}],"dependent":[{"name":"ConditionAsserter","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"stage","source":[{"context":"src","element":"stage","variable":"s"}],"target":[{"context":"tgt","element":"stage","variable":"t"}],"dependent":[{"name":"ConditionStage","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"evidence","source":[{"context":"src","element":"evidence","variable":"s"}],"target":[{"transform":"copy","parameter":[{"valueId":"tgt"}]}],"rule":[{"name":"codeCodeableConcept","source":[{"context":"s","type":"CodeableConcept","element":"code","variable":"c"}],"target":[{"context":"tgt","element":"evidence"}]},{"name":"detailReference","source":[{"context":"s","type":"Reference","element":"detail","variable":"d"}],"target":[{"context":"tgt","element":"evidence"}]}]},{"name":"note","source":[{"context":"src","element":"note","variable":"vvv"}],"target":[{"context":"tgt","element":"note","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"ConditionStage","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"summary","source":[{"context":"src","element":"summary","variable":"vvv"}],"target":[{"context":"tgt","element":"summary","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"assessment","source":[{"context":"src","element":"assessment","variable":"vvv"}],"target":[{"context":"tgt","element":"assessment","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"ConditionRecorder","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"reference","source":[{"context":"src","element":"reference","variable":"v"}],"target":[{"context":"tgt","element":"function","variable":"t","transform":"create","parameter":[{"valueString":"CodeableConcept"}]},{"context":"t","element":"coding","variable":"tc","transform":"create","parameter":[{"valueString":"Coding"}]},{"context":"tc","element":"system","transform":"copy","parameter":[{"valueString":"http://terminology.hl7.org/CodeSystem/provenance-participant-type"}]},{"context":"tc","element":"code","transform":"copy","parameter":[{"valueString":"enterer"}]},{"context":"tc","element":"display","transform":"copy","parameter":[{"valueString":"Enterer"}]}]},{"name":"reference","source":[{"context":"src","type":"Reference","variable":"v"}],"target":[{"context":"tgt","element":"actor","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"ConditionAsserter","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"reference","source":[{"context":"src","element":"reference","variable":"v"}],"target":[{"context":"tgt","element":"function","variable":"t","transform":"create","parameter":[{"valueString":"CodeableConcept"}]},{"context":"t","element":"coding","variable":"tc","transform":"create","parameter":[{"valueString":"Coding"}]},{"context":"tc","element":"system","transform":"copy","parameter":[{"valueString":"http://terminology.hl7.org/CodeSystem/provenance-participant-type"}]},{"context":"tc","element":"code","transform":"copy","parameter":[{"valueString":"author"}]},{"context":"tc","element":"display","transform":"copy","parameter":[{"valueString":"Author"}]}]},{"name":"reference","source":[{"context":"src","type":"Reference","variable":"v"}],"target":[{"context":"tgt","element":"actor","transform":"copy","parameter":[{"valueId":"v"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Condition4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Condition4to5",
+  "name" : "Condition4to5",
+  "title" : "Condition Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Condition Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Condition",
+    "mode" : "source",
+    "alias" : "ConditionR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Condition",
+    "mode" : "target",
+    "alias" : "ConditionR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Condition",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "ConditionR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "ConditionR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "clinicalStatus",
+      "source" : [{
+        "context" : "src",
+        "element" : "clinicalStatus",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "clinicalStatus",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "verificationStatus",
+      "source" : [{
+        "context" : "src",
+        "element" : "verificationStatus",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "verificationStatus",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "category",
+      "source" : [{
+        "context" : "src",
+        "element" : "category",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "category",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "severity",
+      "source" : [{
+        "context" : "src",
+        "element" : "severity",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "severity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "code",
+      "source" : [{
+        "context" : "src",
+        "element" : "code",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "code",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "bodySite",
+      "source" : [{
+        "context" : "src",
+        "element" : "bodySite",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "bodySite",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "subject",
+      "source" : [{
+        "context" : "src",
+        "element" : "subject",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subject",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "encounter",
+      "source" : [{
+        "context" : "src",
+        "element" : "encounter",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "encounter",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "onsetDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "onset",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "onset",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "onsetAge",
+      "source" : [{
+        "context" : "src",
+        "type" : "Age",
+        "element" : "onset",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "onset",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "onsetPeriod",
+      "source" : [{
+        "context" : "src",
+        "type" : "Period",
+        "element" : "onset",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "onset",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "onsetRange",
+      "source" : [{
+        "context" : "src",
+        "type" : "Range",
+        "element" : "onset",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "onset",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "onsetString",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "onset",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "onset",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "abatementDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "abatement",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "abatement",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "abatementAge",
+      "source" : [{
+        "context" : "src",
+        "type" : "Age",
+        "element" : "abatement",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "abatement",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "abatementPeriod",
+      "source" : [{
+        "context" : "src",
+        "type" : "Period",
+        "element" : "abatement",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "abatement",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "abatementRange",
+      "source" : [{
+        "context" : "src",
+        "type" : "Range",
+        "element" : "abatement",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "abatement",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "abatementString",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "abatement",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "abatement",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "recordedDate",
+      "source" : [{
+        "context" : "src",
+        "element" : "recordedDate",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "recordedDate",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "recorder",
+      "source" : [{
+        "context" : "src",
+        "element" : "recorder",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "participant",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "ConditionRecorder",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "asserter",
+      "source" : [{
+        "context" : "src",
+        "element" : "asserter",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "participant",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "ConditionAsserter",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "stage",
+      "source" : [{
+        "context" : "src",
+        "element" : "stage",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "stage",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "ConditionStage",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "evidence",
+      "source" : [{
+        "context" : "src",
+        "element" : "evidence",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt"
+      }],
+      "rule" : [{
+        "name" : "codeCodeableConcept",
+        "source" : [{
+          "context" : "s",
+          "type" : "CodeableConcept",
+          "element" : "code",
+          "variable" : "c"
+        }],
+        "target" : [{
+          "context" : "tgt",
+          "element" : "evidence"
+        }]
+      },
+      {
+        "name" : "detailReference",
+        "source" : [{
+          "context" : "s",
+          "type" : "Reference",
+          "element" : "detail",
+          "variable" : "d"
+        }],
+        "target" : [{
+          "context" : "tgt",
+          "element" : "evidence"
+        }]
+      }]
+    },
+    {
+      "name" : "note",
+      "source" : [{
+        "context" : "src",
+        "element" : "note",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "note",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "ConditionStage",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "summary",
+      "source" : [{
+        "context" : "src",
+        "element" : "summary",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "summary",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "assessment",
+      "source" : [{
+        "context" : "src",
+        "element" : "assessment",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "assessment",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "ConditionRecorder",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "reference",
+      "source" : [{
+        "context" : "src",
+        "element" : "reference",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "function",
+        "variable" : "t",
+        "transform" : "create",
+        "parameter" : [{
+          "valueString" : "CodeableConcept"
+        }]
+      },
+      {
+        "context" : "t",
+        "element" : "coding",
+        "variable" : "tc",
+        "transform" : "create",
+        "parameter" : [{
+          "valueString" : "Coding"
+        }]
+      },
+      {
+        "context" : "tc",
+        "element" : "system",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueString" : "http://terminology.hl7.org/CodeSystem/provenance-participant-type"
+        }]
+      },
+      {
+        "context" : "tc",
+        "element" : "code",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueString" : "enterer"
+        }]
+      },
+      {
+        "context" : "tc",
+        "element" : "display",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueString" : "Enterer"
+        }]
+      }]
+    },
+    {
+      "name" : "reference",
+      "source" : [{
+        "context" : "src",
+        "type" : "Reference",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "actor",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "ConditionAsserter",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "reference",
+      "source" : [{
+        "context" : "src",
+        "element" : "reference",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "function",
+        "variable" : "t",
+        "transform" : "create",
+        "parameter" : [{
+          "valueString" : "CodeableConcept"
+        }]
+      },
+      {
+        "context" : "t",
+        "element" : "coding",
+        "variable" : "tc",
+        "transform" : "create",
+        "parameter" : [{
+          "valueString" : "Coding"
+        }]
+      },
+      {
+        "context" : "tc",
+        "element" : "system",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueString" : "http://terminology.hl7.org/CodeSystem/provenance-participant-type"
+        }]
+      },
+      {
+        "context" : "tc",
+        "element" : "code",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueString" : "author"
+        }]
+      },
+      {
+        "context" : "tc",
+        "element" : "display",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueString" : "Author"
+        }]
+      }]
+    },
+    {
+      "name" : "reference",
+      "source" : [{
+        "context" : "src",
+        "type" : "Reference",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "actor",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  }]
+}

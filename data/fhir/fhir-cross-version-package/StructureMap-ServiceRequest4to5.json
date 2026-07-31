@@ -1,1 +1,616 @@
-{"resourceType":"StructureMap","id":"ServiceRequest4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/ServiceRequest4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'ServiceRequest4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'ServiceRequest Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/ServiceRequest<span style=\"color: navy\">&quot; </span><b>alias </b>ServiceRequestR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/ServiceRequest<span style=\"color: navy\">&quot; </span><b>alias </b>ServiceRequestR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>ServiceRequest<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>ServiceRequestR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>ServiceRequestR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.instantiatesCanonical<span style=\"color: navy\"><b> -&gt; </b></span>tgt.instantiatesCanonical<span style=\"color: navy\">;</span>\r\n  src.instantiatesUri<span style=\"color: navy\"><b> -&gt; </b></span>tgt.instantiatesUri<span style=\"color: navy\">;</span>\r\n  src.basedOn<span style=\"color: navy\"><b> -&gt; </b></span>tgt.basedOn<span style=\"color: navy\">;</span>\r\n  src.replaces<span style=\"color: navy\"><b> -&gt; </b></span>tgt.replaces<span style=\"color: navy\">;</span>\r\n  src.requisition<span style=\"color: navy\"><b> -&gt; </b></span>tgt.requisition<span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/ServiceRequest.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.intent<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.intent = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/ServiceRequest.intent-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.category<span style=\"color: navy\"><b> -&gt; </b></span>tgt.category<span style=\"color: navy\">;</span>\r\n  src.priority<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.priority = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/ServiceRequest.priority-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.doNotPerform<span style=\"color: navy\"><b> -&gt; </b></span>tgt.doNotPerform<span style=\"color: navy\">;</span>\r\n  src.code<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.code<span style=\"color: navy\">;</span>\r\n  src.orderDetail<span style=\"color: navy\"> : </span>CodeableConcept<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.orderDetail<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.parameterFocus = <span style=\"color: maroon\">s</span><span style=\"color: navy\">;</span>\r\n  src.quantity<span style=\"color: navy\"> : </span>Quantity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.quantity<span style=\"color: navy\">;</span>\r\n  src.quantity<span style=\"color: navy\"> : </span>Ratio<span style=\"color: navy\"><b> -&gt; </b></span>tgt.quantity<span style=\"color: navy\">;</span>\r\n  src.quantity<span style=\"color: navy\"> : </span>Range<span style=\"color: navy\"><b> -&gt; </b></span>tgt.quantity<span style=\"color: navy\">;</span>\r\n  src.subject<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subject<span style=\"color: navy\">;</span>\r\n  src.encounter<span style=\"color: navy\"><b> -&gt; </b></span>tgt.encounter<span style=\"color: navy\">;</span>\r\n  src.occurrence<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.occurrence<span style=\"color: navy\">;</span>\r\n  src.occurrence<span style=\"color: navy\"> : </span>Period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.occurrence<span style=\"color: navy\">;</span>\r\n  src.occurrence<span style=\"color: navy\"> : </span>Timing<span style=\"color: navy\"><b> -&gt; </b></span>tgt.occurrence<span style=\"color: navy\">;</span>\r\n  src.asNeeded<span style=\"color: navy\"> : </span>boolean<span style=\"color: navy\"><b> -&gt; </b></span>tgt.asNeeded<span style=\"color: navy\">;</span>\r\n  src.asNeeded<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.asNeeded<span style=\"color: navy\">;</span>\r\n  src.authoredOn<span style=\"color: navy\"><b> -&gt; </b></span>tgt.authoredOn<span style=\"color: navy\">;</span>\r\n  src.requester<span style=\"color: navy\"><b> -&gt; </b></span>tgt.requester<span style=\"color: navy\">;</span>\r\n  src.performerType<span style=\"color: navy\"><b> -&gt; </b></span>tgt.performerType<span style=\"color: navy\">;</span>\r\n  src.performer<span style=\"color: navy\"><b> -&gt; </b></span>tgt.performer<span style=\"color: navy\">;</span>\r\n  src.locationCode<span style=\"color: navy\"><b> -&gt; </b></span>tgt.location<span style=\"color: navy\">;</span>\r\n  src.locationReference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.location<span style=\"color: navy\">;</span>\r\n  src.reasonCode<span style=\"color: navy\"><b> -&gt; </b></span>tgt.reason<span style=\"color: navy\">;</span>\r\n  src.reasonReference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.reason<span style=\"color: navy\">;</span>\r\n  src.insurance<span style=\"color: navy\"><b> -&gt; </b></span>tgt.insurance<span style=\"color: navy\">;</span>\r\n  src.supportingInfo<span style=\"color: navy\"><b> -&gt; </b></span>tgt.supportingInfo<span style=\"color: navy\">;</span>\r\n  src.specimen<span style=\"color: navy\"><b> -&gt; </b></span>tgt.specimen<span style=\"color: navy\">;</span>\r\n  src.bodySite<span style=\"color: navy\"><b> -&gt; </b></span>tgt.bodySite<span style=\"color: navy\">;</span>\r\n  src.note<span style=\"color: navy\"><b> -&gt; </b></span>tgt.note<span style=\"color: navy\">;</span>\r\n  src.patientInstruction<span style=\"color: navy\"> : </span>string<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.patientInstruction<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.instruction = <span style=\"color: maroon\">s</span> <i>&quot;instruction&quot;</i><span style=\"color: navy\">;</span>\r\n  src.relevantHistory<span style=\"color: navy\"><b> -&gt; </b></span>tgt.relevantHistory<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/ServiceRequest4to5","version":"0.1.0","name":"ServiceRequest4to5","title":"ServiceRequest Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"ServiceRequestTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/ServiceRequest","mode":"source","alias":"ServiceRequestR4"},{"url":"http://hl7.org/fhir/5.0/ServiceRequest","mode":"target","alias":"ServiceRequestR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"ServiceRequest","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"ServiceRequestR4","mode":"source"},{"name":"tgt","type":"ServiceRequestR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"instantiatesCanonical","source":[{"context":"src","element":"instantiatesCanonical","variable":"vvv"}],"target":[{"context":"tgt","element":"instantiatesCanonical","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"instantiatesUri","source":[{"context":"src","element":"instantiatesUri","variable":"vvv"}],"target":[{"context":"tgt","element":"instantiatesUri","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"basedOn","source":[{"context":"src","element":"basedOn","variable":"vvv"}],"target":[{"context":"tgt","element":"basedOn","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"replaces","source":[{"context":"src","element":"replaces","variable":"vvv"}],"target":[{"context":"tgt","element":"replaces","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"requisition","source":[{"context":"src","element":"requisition","variable":"vvv"}],"target":[{"context":"tgt","element":"requisition","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/ServiceRequest.status-R4toR5"},{"valueString":"code"}]}]},{"name":"intent","source":[{"context":"src","element":"intent","variable":"v"}],"target":[{"context":"tgt","element":"intent","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/ServiceRequest.intent-R4toR5"},{"valueString":"code"}]}]},{"name":"category","source":[{"context":"src","element":"category","variable":"vvv"}],"target":[{"context":"tgt","element":"category","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"priority","source":[{"context":"src","element":"priority","variable":"v"}],"target":[{"context":"tgt","element":"priority","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/ServiceRequest.priority-R4toR5"},{"valueString":"code"}]}]},{"name":"doNotPerform","source":[{"context":"src","element":"doNotPerform","variable":"vvv"}],"target":[{"context":"tgt","element":"doNotPerform","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"codeCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"code","variable":"vvv"}],"target":[{"context":"tgt","element":"code","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"orderDetailCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"orderDetail","variable":"s"}],"target":[{"context":"tgt","element":"orderDetail","variable":"t"},{"context":"t","element":"parameterFocus","transform":"copy","parameter":[{"valueId":"s"}]}]},{"name":"quantityQuantity","source":[{"context":"src","type":"Quantity","element":"quantity","variable":"vvv"}],"target":[{"context":"tgt","element":"quantity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"quantityRatio","source":[{"context":"src","type":"Ratio","element":"quantity","variable":"vvv"}],"target":[{"context":"tgt","element":"quantity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"quantityRange","source":[{"context":"src","type":"Range","element":"quantity","variable":"vvv"}],"target":[{"context":"tgt","element":"quantity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"subject","source":[{"context":"src","element":"subject","variable":"vvv"}],"target":[{"context":"tgt","element":"subject","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"encounter","source":[{"context":"src","element":"encounter","variable":"vvv"}],"target":[{"context":"tgt","element":"encounter","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"occurrenceDateTime","source":[{"context":"src","type":"dateTime","element":"occurrence","variable":"vvv"}],"target":[{"context":"tgt","element":"occurrence","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"occurrencePeriod","source":[{"context":"src","type":"Period","element":"occurrence","variable":"vvv"}],"target":[{"context":"tgt","element":"occurrence","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"occurrenceTiming","source":[{"context":"src","type":"Timing","element":"occurrence","variable":"vvv"}],"target":[{"context":"tgt","element":"occurrence","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"asNeededBoolean","source":[{"context":"src","type":"boolean","element":"asNeeded","variable":"vvv"}],"target":[{"context":"tgt","element":"asNeeded","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"asNeededCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"asNeeded","variable":"vvv"}],"target":[{"context":"tgt","element":"asNeeded","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"authoredOn","source":[{"context":"src","element":"authoredOn","variable":"vvv"}],"target":[{"context":"tgt","element":"authoredOn","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"requester","source":[{"context":"src","element":"requester","variable":"vvv"}],"target":[{"context":"tgt","element":"requester","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"performerType","source":[{"context":"src","element":"performerType","variable":"vvv"}],"target":[{"context":"tgt","element":"performerType","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"performer","source":[{"context":"src","element":"performer","variable":"vvv"}],"target":[{"context":"tgt","element":"performer","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"locationCode","source":[{"context":"src","element":"locationCode","variable":"vvv"}],"target":[{"context":"tgt","element":"location","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"locationReference","source":[{"context":"src","element":"locationReference","variable":"vvv"}],"target":[{"context":"tgt","element":"location","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"reasonCode","source":[{"context":"src","element":"reasonCode","variable":"vvv"}],"target":[{"context":"tgt","element":"reason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"reasonReference","source":[{"context":"src","element":"reasonReference","variable":"vvv"}],"target":[{"context":"tgt","element":"reason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"insurance","source":[{"context":"src","element":"insurance","variable":"vvv"}],"target":[{"context":"tgt","element":"insurance","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"supportingInfo","source":[{"context":"src","element":"supportingInfo","variable":"vvv"}],"target":[{"context":"tgt","element":"supportingInfo","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"specimen","source":[{"context":"src","element":"specimen","variable":"vvv"}],"target":[{"context":"tgt","element":"specimen","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"bodySite","source":[{"context":"src","element":"bodySite","variable":"vvv"}],"target":[{"context":"tgt","element":"bodySite","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"note","source":[{"context":"src","element":"note","variable":"vvv"}],"target":[{"context":"tgt","element":"note","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"instruction","source":[{"context":"src","type":"string","element":"patientInstruction","variable":"s"}],"target":[{"context":"tgt","element":"patientInstruction","variable":"t"},{"context":"t","element":"instruction","transform":"copy","parameter":[{"valueId":"s"}]}]},{"name":"relevantHistory","source":[{"context":"src","element":"relevantHistory","variable":"vvv"}],"target":[{"context":"tgt","element":"relevantHistory","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "ServiceRequest4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/ServiceRequest4to5",
+  "name" : "ServiceRequest4to5",
+  "title" : "ServiceRequest Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "ServiceRequest Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/ServiceRequest",
+    "mode" : "source",
+    "alias" : "ServiceRequestR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/ServiceRequest",
+    "mode" : "target",
+    "alias" : "ServiceRequestR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "ServiceRequest",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "ServiceRequestR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "ServiceRequestR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "instantiatesCanonical",
+      "source" : [{
+        "context" : "src",
+        "element" : "instantiatesCanonical",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "instantiatesCanonical",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "instantiatesUri",
+      "source" : [{
+        "context" : "src",
+        "element" : "instantiatesUri",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "instantiatesUri",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "basedOn",
+      "source" : [{
+        "context" : "src",
+        "element" : "basedOn",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "basedOn",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "replaces",
+      "source" : [{
+        "context" : "src",
+        "element" : "replaces",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "replaces",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "requisition",
+      "source" : [{
+        "context" : "src",
+        "element" : "requisition",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "requisition",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/srq.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "intent",
+      "source" : [{
+        "context" : "src",
+        "element" : "intent",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "intent",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/srq.intent-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "category",
+      "source" : [{
+        "context" : "src",
+        "element" : "category",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "category",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "priority",
+      "source" : [{
+        "context" : "src",
+        "element" : "priority",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "priority",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/srq.priority-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "doNotPerform",
+      "source" : [{
+        "context" : "src",
+        "element" : "doNotPerform",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "doNotPerform",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "codeCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "code",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "code",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "orderDetailCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "orderDetail",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "orderDetail",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "parameterFocus",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "s"
+        }]
+      }]
+    },
+    {
+      "name" : "quantityQuantity",
+      "source" : [{
+        "context" : "src",
+        "type" : "Quantity",
+        "element" : "quantity",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "quantity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "quantityRatio",
+      "source" : [{
+        "context" : "src",
+        "type" : "Ratio",
+        "element" : "quantity",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "quantity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "quantityRange",
+      "source" : [{
+        "context" : "src",
+        "type" : "Range",
+        "element" : "quantity",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "quantity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "subject",
+      "source" : [{
+        "context" : "src",
+        "element" : "subject",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subject",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "encounter",
+      "source" : [{
+        "context" : "src",
+        "element" : "encounter",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "encounter",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "occurrenceDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "occurrence",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "occurrence",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "occurrencePeriod",
+      "source" : [{
+        "context" : "src",
+        "type" : "Period",
+        "element" : "occurrence",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "occurrence",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "occurrenceTiming",
+      "source" : [{
+        "context" : "src",
+        "type" : "Timing",
+        "element" : "occurrence",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "occurrence",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "asNeededBoolean",
+      "source" : [{
+        "context" : "src",
+        "type" : "boolean",
+        "element" : "asNeeded",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "asNeeded",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "asNeededCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "asNeeded",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "asNeeded",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "authoredOn",
+      "source" : [{
+        "context" : "src",
+        "element" : "authoredOn",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "authoredOn",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "requester",
+      "source" : [{
+        "context" : "src",
+        "element" : "requester",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "requester",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "performerType",
+      "source" : [{
+        "context" : "src",
+        "element" : "performerType",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "performerType",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "performer",
+      "source" : [{
+        "context" : "src",
+        "element" : "performer",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "performer",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "locationCode",
+      "source" : [{
+        "context" : "src",
+        "element" : "locationCode",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "location",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "locationReference",
+      "source" : [{
+        "context" : "src",
+        "element" : "locationReference",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "location",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "reasonCode",
+      "source" : [{
+        "context" : "src",
+        "element" : "reasonCode",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "reasonReference",
+      "source" : [{
+        "context" : "src",
+        "element" : "reasonReference",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "insurance",
+      "source" : [{
+        "context" : "src",
+        "element" : "insurance",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "insurance",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "supportingInfo",
+      "source" : [{
+        "context" : "src",
+        "element" : "supportingInfo",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "supportingInfo",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "specimen",
+      "source" : [{
+        "context" : "src",
+        "element" : "specimen",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "specimen",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "bodySite",
+      "source" : [{
+        "context" : "src",
+        "element" : "bodySite",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "bodySite",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "note",
+      "source" : [{
+        "context" : "src",
+        "element" : "note",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "note",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "instruction",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "patientInstruction",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "patientInstruction",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "instruction",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "s"
+        }]
+      }]
+    },
+    {
+      "name" : "relevantHistory",
+      "source" : [{
+        "context" : "src",
+        "element" : "relevantHistory",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "relevantHistory",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

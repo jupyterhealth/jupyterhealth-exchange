@@ -1,1 +1,404 @@
-{"resourceType":"StructureMap","id":"CodeableConcept4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/CodeableConcept4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'CodeableConcept4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'CodeableConcept Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/CodeableConcept<span style=\"color: navy\">&quot; </span><b>alias </b>CodeableConceptR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Coding<span style=\"color: navy\">&quot; </span><b>alias </b>CodingR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/code<span style=\"color: navy\">&quot; </span><b>alias </b>codeR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/string<span style=\"color: navy\">&quot; </span><b>alias </b>stringR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/CodeableConcept<span style=\"color: navy\">&quot; </span><b>alias </b>CodeableConceptR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/CodeableReference<span style=\"color: navy\">&quot; </span><b>alias </b>CodeableReferenceR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Coding<span style=\"color: navy\">&quot; </span><b>alias </b>CodingR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/code<span style=\"color: navy\">&quot; </span><b>alias </b>codeR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>CodeableConcept<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>CodeableConceptR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>CodeableConceptR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.coding<span style=\"color: navy\"><b> -&gt; </b></span>tgt.coding<span style=\"color: navy\">;</span>\r\n  src.text<span style=\"color: navy\"><b> -&gt; </b></span>tgt.text<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>CodeableConcept2Coding<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>CodeableConceptR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>CodingR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.coding<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span><span style=\"color: maroon\">tgt</span><b> as </b><span style=\"color: maroon\">t</span><b> then </b>Coding<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>CodeableConcept2CodeableReference<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>CodeableConceptR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>CodeableReferenceR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.concept<b> as </b><span style=\"color: maroon\">t</span><b> then </b>CodeableConcept<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span> <i>&quot;CodeableConcept2CodeableReference&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>string2CodeableConcept<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>stringR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>CodeableConceptR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.text = <span style=\"color: maroon\">v</span> <i>&quot;string2CodeableConcept&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>string2CodeableReference<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>stringR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>CodeableReferenceR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.concept<b> as </b><span style=\"color: maroon\">t</span><b> then </b>string2CodeableConcept<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span> <i>&quot;string2CodeableConcept&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>Coding2CodeableConcept<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>CodingR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>CodeableConceptR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.coding<b> as </b><span style=\"color: maroon\">t</span><b> then </b>Coding<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span> <i>&quot;Coding&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>Coding2CodeableReference<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>CodingR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>CodeableReferenceR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.concept = <b>create</b><span style=\"color: navy\">(</span><span style=\"color: blue\">'CodeableConcept'</span><span style=\"color: navy\">)</span><b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.coding<b> as </b><span style=\"color: maroon\">tc</span><b> then </b>Coding<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">tc</span><span style=\"color: navy\">)</span> <i>&quot;Coding&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>CodeableConcept2code<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>CodeableConceptR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>codeR5, <b>source</b> <span style=\"color: maroon\">sysUrl</span><span style=\"color: navy\"> : </span>string<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.coding<b> as </b><span style=\"color: maroon\">s</span><b> where </b>s.system = sysUrl<span style=\"color: navy\"><b> -&gt; </b></span><span style=\"color: maroon\">tgt</span><b> then</b><span style=\"color: navy\"> {\r\n</span>    s.code<span style=\"color: navy\"><b> -&gt; </b></span>tgt.value<span style=\"color: navy\">;</span>\r\n  <span style=\"color: navy\">}</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>code2CodeableConcept<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>codeR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>CodeableConceptR5, <b>source</b> <span style=\"color: maroon\">sysUrl</span><span style=\"color: navy\"> : </span>string<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;types&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.coding = <b>create</b><span style=\"color: navy\">(</span><span style=\"color: blue\">'Coding'</span><span style=\"color: navy\">)</span><b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.system = <span style=\"color: maroon\">sysUrl</span><span style=\"color: navy\">, </span> t.code = <span style=\"color: maroon\">s</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/CodeableConcept4to5","version":"0.1.0","name":"CodeableConcept4to5","title":"CodeableConcept Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"CodeableConceptTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/CodeableConcept","mode":"source","alias":"CodeableConceptR4"},{"url":"http://hl7.org/fhir/4.0/Coding","mode":"source","alias":"CodingR4"},{"url":"http://hl7.org/fhir/4.0/code","mode":"source","alias":"codeR4"},{"url":"http://hl7.org/fhir/4.0/string","mode":"source","alias":"stringR4"},{"url":"http://hl7.org/fhir/5.0/CodeableConcept","mode":"target","alias":"CodeableConceptR5"},{"url":"http://hl7.org/fhir/5.0/CodeableReference","mode":"target","alias":"CodeableReferenceR5"},{"url":"http://hl7.org/fhir/5.0/Coding","mode":"target","alias":"CodingR5"},{"url":"http://hl7.org/fhir/5.0/code","mode":"target","alias":"codeR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"CodeableConcept","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"CodeableConceptR4","mode":"source"},{"name":"tgt","type":"CodeableConceptR5","mode":"target"}],"rule":[{"name":"coding","source":[{"context":"src","element":"coding","variable":"vvv"}],"target":[{"context":"tgt","element":"coding","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"text","source":[{"context":"src","element":"text","variable":"vvv"}],"target":[{"context":"tgt","element":"text","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"CodeableConcept2Coding","extends":"Element","typeMode":"types","input":[{"name":"src","type":"CodeableConceptR4","mode":"source"},{"name":"tgt","type":"CodingR5","mode":"target"}],"rule":[{"name":"coding","source":[{"context":"src","element":"coding","variable":"s"}],"target":[{"variable":"t","transform":"copy","parameter":[{"valueId":"tgt"}]}],"dependent":[{"name":"Coding","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"CodeableConcept2CodeableReference","extends":"Element","typeMode":"types","input":[{"name":"src","type":"CodeableConceptR4","mode":"source"},{"name":"tgt","type":"CodeableReferenceR5","mode":"target"}],"rule":[{"name":"CodeableConcept2CodeableReference","source":[{"context":"src","variable":"s"}],"target":[{"context":"tgt","element":"concept","variable":"t"}],"dependent":[{"name":"CodeableConcept","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"string2CodeableConcept","extends":"Element","typeMode":"types","input":[{"name":"src","type":"stringR4","mode":"source"},{"name":"tgt","type":"CodeableConceptR5","mode":"target"}],"rule":[{"name":"string2CodeableConcept","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"text","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"string2CodeableReference","extends":"Element","typeMode":"types","input":[{"name":"src","type":"stringR4","mode":"source"},{"name":"tgt","type":"CodeableReferenceR5","mode":"target"}],"rule":[{"name":"string2CodeableConcept","source":[{"context":"src","variable":"s"}],"target":[{"context":"tgt","element":"concept","variable":"t"}],"dependent":[{"name":"string2CodeableConcept","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"Coding2CodeableConcept","extends":"Element","typeMode":"types","input":[{"name":"src","type":"CodingR4","mode":"source"},{"name":"tgt","type":"CodeableConceptR5","mode":"target"}],"rule":[{"name":"Coding","source":[{"context":"src","variable":"s"}],"target":[{"context":"tgt","element":"coding","variable":"t"}],"dependent":[{"name":"Coding","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"Coding2CodeableReference","extends":"Element","typeMode":"types","input":[{"name":"src","type":"CodingR4","mode":"source"},{"name":"tgt","type":"CodeableReferenceR5","mode":"target"}],"rule":[{"name":"Coding","source":[{"context":"src","variable":"s"}],"target":[{"context":"tgt","element":"concept","variable":"t","transform":"create","parameter":[{"valueString":"CodeableConcept"}]},{"context":"t","element":"coding","variable":"tc"}],"dependent":[{"name":"Coding","parameter":[{"valueId":"s"},{"valueId":"tc"}]}]}]},{"name":"CodeableConcept2code","extends":"Element","typeMode":"types","input":[{"name":"src","type":"CodeableConceptR4","mode":"source"},{"name":"tgt","type":"codeR5","mode":"target"},{"name":"sysUrl","type":"string","mode":"source"}],"rule":[{"name":"coding","source":[{"context":"src","element":"coding","variable":"s","condition":"s.system = sysUrl"}],"target":[{"transform":"copy","parameter":[{"valueId":"tgt"}]}],"rule":[{"name":"code","source":[{"context":"s","element":"code","variable":"vvv"}],"target":[{"context":"tgt","element":"value","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]},{"name":"code2CodeableConcept","extends":"Element","typeMode":"types","input":[{"name":"src","type":"codeR4","mode":"source"},{"name":"tgt","type":"CodeableConceptR5","mode":"target"},{"name":"sysUrl","type":"string","mode":"source"}],"rule":[{"name":"value","source":[{"context":"src","element":"value","variable":"s"}],"target":[{"context":"tgt","element":"coding","variable":"t","transform":"create","parameter":[{"valueString":"Coding"}]},{"context":"t","element":"system","transform":"copy","parameter":[{"valueId":"sysUrl"}]},{"context":"t","element":"code","transform":"copy","parameter":[{"valueId":"s"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "CodeableConcept4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/CodeableConcept4to5",
+  "name" : "CodeableConcept4to5",
+  "title" : "CodeableConcept Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "CodeableConcept Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/CodeableConcept",
+    "mode" : "source",
+    "alias" : "CodeableConceptR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Coding",
+    "mode" : "source",
+    "alias" : "CodingR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/code",
+    "mode" : "source",
+    "alias" : "codeR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/string",
+    "mode" : "source",
+    "alias" : "stringR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/CodeableConcept",
+    "mode" : "target",
+    "alias" : "CodeableConceptR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/CodeableReference",
+    "mode" : "target",
+    "alias" : "CodeableReferenceR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Coding",
+    "mode" : "target",
+    "alias" : "CodingR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/code",
+    "mode" : "target",
+    "alias" : "codeR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "CodeableConcept",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "CodeableConceptR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "CodeableConceptR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "coding",
+      "source" : [{
+        "context" : "src",
+        "element" : "coding",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "coding",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "text",
+      "source" : [{
+        "context" : "src",
+        "element" : "text",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "text",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "CodeableConcept2Coding",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "CodeableConceptR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "CodingR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "coding",
+      "source" : [{
+        "context" : "src",
+        "element" : "coding",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "Coding",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "CodeableConcept2CodeableReference",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "CodeableConceptR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "CodeableReferenceR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "CodeableConcept2CodeableReference",
+      "source" : [{
+        "context" : "src",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "concept",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "CodeableConcept",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "string2CodeableConcept",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "stringR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "CodeableConceptR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "string2CodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "text",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "string2CodeableReference",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "stringR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "CodeableReferenceR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "string2CodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "concept",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "string2CodeableConcept",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "Coding2CodeableConcept",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "CodingR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "CodeableConceptR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "Coding",
+      "source" : [{
+        "context" : "src",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "coding",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "Coding",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "Coding2CodeableReference",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "CodingR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "CodeableReferenceR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "Coding",
+      "source" : [{
+        "context" : "src",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "concept",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "coding",
+        "variable" : "tc"
+      }],
+      "dependent" : [{
+        "name" : "Coding",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "tc"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "CodeableConcept2code",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "CodeableConceptR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "codeR5",
+      "mode" : "target"
+    },
+    {
+      "name" : "sysUrl",
+      "type" : "string",
+      "mode" : "source"
+    }],
+    "rule" : [{
+      "name" : "coding",
+      "source" : [{
+        "context" : "src",
+        "element" : "coding",
+        "variable" : "s",
+        "condition" : "(s.system = sysUrl)"
+      }],
+      "target" : [{
+        "context" : "tgt"
+      }],
+      "rule" : [{
+        "name" : "code",
+        "source" : [{
+          "context" : "s",
+          "element" : "code",
+          "variable" : "vvv"
+        }],
+        "target" : [{
+          "context" : "tgt",
+          "element" : "value",
+          "variable" : "vvv",
+          "transform" : "create"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "code2CodeableConcept",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "codeR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "CodeableConceptR5",
+      "mode" : "target"
+    },
+    {
+      "name" : "sysUrl",
+      "type" : "string",
+      "mode" : "source"
+    }],
+    "rule" : [{
+      "name" : "value",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "coding",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "system",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "sysUrl"
+        }]
+      },
+      {
+        "context" : "t",
+        "element" : "code",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "s"
+        }]
+      }]
+    }]
+  }]
+}

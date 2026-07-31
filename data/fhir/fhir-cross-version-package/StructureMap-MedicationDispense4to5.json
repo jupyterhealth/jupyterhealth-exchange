@@ -1,1 +1,521 @@
-{"resourceType":"StructureMap","id":"MedicationDispense4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/MedicationDispense4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'MedicationDispense4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'MedicationDispense Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/MedicationDispense<span style=\"color: navy\">&quot; </span><b>alias </b>MedicationDispenseR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/MedicationDispense<span style=\"color: navy\">&quot; </span><b>alias </b>MedicationDispenseR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>MedicationDispense<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>MedicationDispenseR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>MedicationDispenseR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.partOf<span style=\"color: navy\"><b> -&gt; </b></span>tgt.partOf<span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/MedicationDispense.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.statusReason<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.notPerformedReason<span style=\"color: navy\">;</span>\r\n  src.statusReason<span style=\"color: navy\"> : </span>Reference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.notPerformedReason<span style=\"color: navy\">;</span>\r\n  src.category<span style=\"color: navy\"><b> -&gt; </b></span>tgt.category<span style=\"color: navy\">;</span>\r\n  src.medication<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.medication<span style=\"color: navy\">;</span>\r\n  src.medication<span style=\"color: navy\"> : </span>Reference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.medication<span style=\"color: navy\">;</span>\r\n  src.subject<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subject<span style=\"color: navy\">;</span>\r\n  src.context<span style=\"color: navy\"><b> -&gt; </b></span>tgt.encounter<span style=\"color: navy\">;</span>\r\n  src.supportingInformation<span style=\"color: navy\"><b> -&gt; </b></span>tgt.supportingInformation<span style=\"color: navy\">;</span>\r\n  src.performer<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.performer<b> as </b><span style=\"color: maroon\">t</span><b> then </b>MedicationDispensePerformer<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.location<span style=\"color: navy\"><b> -&gt; </b></span>tgt.location<span style=\"color: navy\">;</span>\r\n  src.authorizingPrescription<span style=\"color: navy\"><b> -&gt; </b></span>tgt.authorizingPrescription<span style=\"color: navy\">;</span>\r\n  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.quantity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.quantity<span style=\"color: navy\">;</span>\r\n  src.daysSupply<span style=\"color: navy\"><b> -&gt; </b></span>tgt.daysSupply<span style=\"color: navy\">;</span>\r\n  src.whenPrepared<span style=\"color: navy\"><b> -&gt; </b></span>tgt.whenPrepared<span style=\"color: navy\">;</span>\r\n  src.whenHandedOver<span style=\"color: navy\"><b> -&gt; </b></span>tgt.whenHandedOver<span style=\"color: navy\">;</span>\r\n  src.destination<span style=\"color: navy\"><b> -&gt; </b></span>tgt.destination<span style=\"color: navy\">;</span>\r\n  src.receiver<span style=\"color: navy\"><b> -&gt; </b></span>tgt.receiver<span style=\"color: navy\">;</span>\r\n  src.note<span style=\"color: navy\"><b> -&gt; </b></span>tgt.note<span style=\"color: navy\">;</span>\r\n  src.dosageInstruction<span style=\"color: navy\"><b> -&gt; </b></span>tgt.dosageInstruction<span style=\"color: navy\">;</span>\r\n  src.substitution<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.substitution<b> as </b><span style=\"color: maroon\">t</span><b> then </b>MedicationDispenseSubstitution<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.eventHistory<span style=\"color: navy\"><b> -&gt; </b></span>tgt.eventHistory<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>MedicationDispensePerformer<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.function<span style=\"color: navy\"><b> -&gt; </b></span>tgt.function<span style=\"color: navy\">;</span>\r\n  src.actor<span style=\"color: navy\"><b> -&gt; </b></span>tgt.actor<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>MedicationDispenseSubstitution<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.wasSubstituted<span style=\"color: navy\"><b> -&gt; </b></span>tgt.wasSubstituted<span style=\"color: navy\">;</span>\r\n  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.reason<span style=\"color: navy\"><b> -&gt; </b></span>tgt.reason<span style=\"color: navy\">;</span>\r\n  src.responsibleParty<span style=\"color: navy\"><b> -&gt; </b></span>tgt.responsibleParty<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/MedicationDispense4to5","version":"0.1.0","name":"MedicationDispense4to5","title":"MedicationDispense Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"MedicationDispenseTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/MedicationDispense","mode":"source","alias":"MedicationDispenseR4"},{"url":"http://hl7.org/fhir/5.0/MedicationDispense","mode":"target","alias":"MedicationDispenseR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"MedicationDispense","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"MedicationDispenseR4","mode":"source"},{"name":"tgt","type":"MedicationDispenseR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"partOf","source":[{"context":"src","element":"partOf","variable":"vvv"}],"target":[{"context":"tgt","element":"partOf","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/MedicationDispense.status-R4toR5"},{"valueString":"code"}]}]},{"name":"statusReasonCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"statusReason","variable":"vvv"}],"target":[{"context":"tgt","element":"notPerformedReason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"statusReasonReference","source":[{"context":"src","type":"Reference","element":"statusReason","variable":"vvv"}],"target":[{"context":"tgt","element":"notPerformedReason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"category","source":[{"context":"src","element":"category","variable":"vvv"}],"target":[{"context":"tgt","element":"category","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"medicationCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"medication","variable":"vvv"}],"target":[{"context":"tgt","element":"medication","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"medicationReference","source":[{"context":"src","type":"Reference","element":"medication","variable":"vvv"}],"target":[{"context":"tgt","element":"medication","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"subject","source":[{"context":"src","element":"subject","variable":"vvv"}],"target":[{"context":"tgt","element":"subject","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"context","source":[{"context":"src","element":"context","variable":"vvv"}],"target":[{"context":"tgt","element":"encounter","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"supportingInformation","source":[{"context":"src","element":"supportingInformation","variable":"vvv"}],"target":[{"context":"tgt","element":"supportingInformation","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"performer","source":[{"context":"src","element":"performer","variable":"s"}],"target":[{"context":"tgt","element":"performer","variable":"t"}],"dependent":[{"name":"MedicationDispensePerformer","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"location","source":[{"context":"src","element":"location","variable":"vvv"}],"target":[{"context":"tgt","element":"location","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"authorizingPrescription","source":[{"context":"src","element":"authorizingPrescription","variable":"vvv"}],"target":[{"context":"tgt","element":"authorizingPrescription","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"quantity","source":[{"context":"src","element":"quantity","variable":"vvv"}],"target":[{"context":"tgt","element":"quantity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"daysSupply","source":[{"context":"src","element":"daysSupply","variable":"vvv"}],"target":[{"context":"tgt","element":"daysSupply","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"whenPrepared","source":[{"context":"src","element":"whenPrepared","variable":"vvv"}],"target":[{"context":"tgt","element":"whenPrepared","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"whenHandedOver","source":[{"context":"src","element":"whenHandedOver","variable":"vvv"}],"target":[{"context":"tgt","element":"whenHandedOver","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"destination","source":[{"context":"src","element":"destination","variable":"vvv"}],"target":[{"context":"tgt","element":"destination","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"receiver","source":[{"context":"src","element":"receiver","variable":"vvv"}],"target":[{"context":"tgt","element":"receiver","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"note","source":[{"context":"src","element":"note","variable":"vvv"}],"target":[{"context":"tgt","element":"note","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"dosageInstruction","source":[{"context":"src","element":"dosageInstruction","variable":"vvv"}],"target":[{"context":"tgt","element":"dosageInstruction","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"substitution","source":[{"context":"src","element":"substitution","variable":"s"}],"target":[{"context":"tgt","element":"substitution","variable":"t"}],"dependent":[{"name":"MedicationDispenseSubstitution","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"eventHistory","source":[{"context":"src","element":"eventHistory","variable":"vvv"}],"target":[{"context":"tgt","element":"eventHistory","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"MedicationDispensePerformer","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"function","source":[{"context":"src","element":"function","variable":"vvv"}],"target":[{"context":"tgt","element":"function","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"actor","source":[{"context":"src","element":"actor","variable":"vvv"}],"target":[{"context":"tgt","element":"actor","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"MedicationDispenseSubstitution","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"wasSubstituted","source":[{"context":"src","element":"wasSubstituted","variable":"vvv"}],"target":[{"context":"tgt","element":"wasSubstituted","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"reason","source":[{"context":"src","element":"reason","variable":"vvv"}],"target":[{"context":"tgt","element":"reason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"responsibleParty","source":[{"context":"src","element":"responsibleParty","variable":"vvv"}],"target":[{"context":"tgt","element":"responsibleParty","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "MedicationDispense4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/MedicationDispense4to5",
+  "name" : "MedicationDispense4to5",
+  "title" : "MedicationDispense Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "MedicationDispense Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/MedicationDispense",
+    "mode" : "source",
+    "alias" : "MedicationDispenseR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/MedicationDispense",
+    "mode" : "target",
+    "alias" : "MedicationDispenseR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "MedicationDispense",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "MedicationDispenseR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "MedicationDispenseR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "partOf",
+      "source" : [{
+        "context" : "src",
+        "element" : "partOf",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "partOf",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/mdd.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "statusReasonCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "statusReason",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "notPerformedReason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "statusReasonReference",
+      "source" : [{
+        "context" : "src",
+        "type" : "Reference",
+        "element" : "statusReason",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "notPerformedReason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "category",
+      "source" : [{
+        "context" : "src",
+        "element" : "category",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "category",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "medicationCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "medication",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "medication",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "medicationReference",
+      "source" : [{
+        "context" : "src",
+        "type" : "Reference",
+        "element" : "medication",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "medication",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "subject",
+      "source" : [{
+        "context" : "src",
+        "element" : "subject",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subject",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "context",
+      "source" : [{
+        "context" : "src",
+        "element" : "context",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "encounter",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "supportingInformation",
+      "source" : [{
+        "context" : "src",
+        "element" : "supportingInformation",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "supportingInformation",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "performer",
+      "source" : [{
+        "context" : "src",
+        "element" : "performer",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "performer",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "MedicationDispensePerformer",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "location",
+      "source" : [{
+        "context" : "src",
+        "element" : "location",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "location",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "authorizingPrescription",
+      "source" : [{
+        "context" : "src",
+        "element" : "authorizingPrescription",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "authorizingPrescription",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "quantity",
+      "source" : [{
+        "context" : "src",
+        "element" : "quantity",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "quantity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "daysSupply",
+      "source" : [{
+        "context" : "src",
+        "element" : "daysSupply",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "daysSupply",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "whenPrepared",
+      "source" : [{
+        "context" : "src",
+        "element" : "whenPrepared",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "whenPrepared",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "whenHandedOver",
+      "source" : [{
+        "context" : "src",
+        "element" : "whenHandedOver",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "whenHandedOver",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "destination",
+      "source" : [{
+        "context" : "src",
+        "element" : "destination",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "destination",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "receiver",
+      "source" : [{
+        "context" : "src",
+        "element" : "receiver",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "receiver",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "note",
+      "source" : [{
+        "context" : "src",
+        "element" : "note",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "note",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "dosageInstruction",
+      "source" : [{
+        "context" : "src",
+        "element" : "dosageInstruction",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "dosageInstruction",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "substitution",
+      "source" : [{
+        "context" : "src",
+        "element" : "substitution",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "substitution",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "MedicationDispenseSubstitution",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "eventHistory",
+      "source" : [{
+        "context" : "src",
+        "element" : "eventHistory",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "eventHistory",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "MedicationDispensePerformer",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "function",
+      "source" : [{
+        "context" : "src",
+        "element" : "function",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "function",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "actor",
+      "source" : [{
+        "context" : "src",
+        "element" : "actor",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "actor",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "MedicationDispenseSubstitution",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "wasSubstituted",
+      "source" : [{
+        "context" : "src",
+        "element" : "wasSubstituted",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "wasSubstituted",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "reason",
+      "source" : [{
+        "context" : "src",
+        "element" : "reason",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "responsibleParty",
+      "source" : [{
+        "context" : "src",
+        "element" : "responsibleParty",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "responsibleParty",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

@@ -1,1 +1,502 @@
-{"resourceType":"StructureMap","id":"Specimen4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Specimen4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Specimen4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Specimen Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Specimen<span style=\"color: navy\">&quot; </span><b>alias </b>SpecimenR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Specimen<span style=\"color: navy\">&quot; </span><b>alias </b>SpecimenR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Specimen<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>SpecimenR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>SpecimenR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.accessionIdentifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.accessionIdentifier<span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Specimen.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.subject<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subject<span style=\"color: navy\">;</span>\r\n  src.receivedTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.receivedTime<span style=\"color: navy\">;</span>\r\n  src.parent<span style=\"color: navy\"><b> -&gt; </b></span>tgt.parent<span style=\"color: navy\">;</span>\r\n  src.request<span style=\"color: navy\"><b> -&gt; </b></span>tgt.request<span style=\"color: navy\">;</span>\r\n  src.collection<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.collection<b> as </b><span style=\"color: maroon\">t</span><b> then </b>SpecimenCollection<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.processing<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.processing<b> as </b><span style=\"color: maroon\">t</span><b> then </b>SpecimenProcessing<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.container<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.container<b> as </b><span style=\"color: maroon\">t</span><b> then </b>SpecimenContainer<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.condition<span style=\"color: navy\"><b> -&gt; </b></span>tgt.condition<span style=\"color: navy\">;</span>\r\n  src.note<span style=\"color: navy\"><b> -&gt; </b></span>tgt.note<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><span style=\"color: navy\">// </span><span style=\"color: green\">group SpecimenFeature(source src, target tgt) extends BackboneElement {</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.type -&gt; tgt.type;</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.description -&gt; tgt.description;</span>\r\n<span style=\"color: navy\">// </span><span style=\"color: green\">}</span>\r\n<b>group </b>SpecimenCollection<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.collector<span style=\"color: navy\"><b> -&gt; </b></span>tgt.collector<span style=\"color: navy\">;</span>\r\n  src.collected<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.collected<span style=\"color: navy\">;</span>\r\n  src.collected<span style=\"color: navy\"> : </span>Period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.collected<span style=\"color: navy\">;</span>\r\n  src.duration<span style=\"color: navy\"><b> -&gt; </b></span>tgt.duration<span style=\"color: navy\">;</span>\r\n  src.quantity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.quantity<span style=\"color: navy\">;</span>\r\n  src.method<span style=\"color: navy\"><b> -&gt; </b></span>tgt.method<span style=\"color: navy\">;</span>\r\n  src.bodySite<span style=\"color: navy\"><b> -&gt; </b></span>tgt.bodySite<span style=\"color: navy\">;</span>\r\n  src.fastingStatus<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.fastingStatus<span style=\"color: navy\">;</span>\r\n  src.fastingStatus<span style=\"color: navy\"> : </span>Duration<span style=\"color: navy\"><b> -&gt; </b></span>tgt.fastingStatus<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>SpecimenProcessing<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.description<span style=\"color: navy\"><b> -&gt; </b></span>tgt.description<span style=\"color: navy\">;</span>\r\n  src.procedure<span style=\"color: navy\"><b> -&gt; </b></span>tgt.method<span style=\"color: navy\">;</span>\r\n  src.additive<span style=\"color: navy\"><b> -&gt; </b></span>tgt.additive<span style=\"color: navy\">;</span>\r\n  src.time<span style=\"color: navy\"> : </span>dateTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.time<span style=\"color: navy\">;</span>\r\n  src.time<span style=\"color: navy\"> : </span>Period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.time<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>SpecimenContainer<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.specimenQuantity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.specimenQuantity<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Specimen4to5","version":"0.1.0","name":"Specimen4to5","title":"Specimen Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"SpecimenTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Specimen","mode":"source","alias":"SpecimenR4"},{"url":"http://hl7.org/fhir/5.0/Specimen","mode":"target","alias":"SpecimenR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Specimen","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"SpecimenR4","mode":"source"},{"name":"tgt","type":"SpecimenR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"accessionIdentifier","source":[{"context":"src","element":"accessionIdentifier","variable":"vvv"}],"target":[{"context":"tgt","element":"accessionIdentifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Specimen.status-R4toR5"},{"valueString":"code"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"subject","source":[{"context":"src","element":"subject","variable":"vvv"}],"target":[{"context":"tgt","element":"subject","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"receivedTime","source":[{"context":"src","element":"receivedTime","variable":"vvv"}],"target":[{"context":"tgt","element":"receivedTime","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"parent","source":[{"context":"src","element":"parent","variable":"vvv"}],"target":[{"context":"tgt","element":"parent","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"request","source":[{"context":"src","element":"request","variable":"vvv"}],"target":[{"context":"tgt","element":"request","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"collection","source":[{"context":"src","element":"collection","variable":"s"}],"target":[{"context":"tgt","element":"collection","variable":"t"}],"dependent":[{"name":"SpecimenCollection","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"processing","source":[{"context":"src","element":"processing","variable":"s"}],"target":[{"context":"tgt","element":"processing","variable":"t"}],"dependent":[{"name":"SpecimenProcessing","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"container","source":[{"context":"src","element":"container","variable":"s"}],"target":[{"context":"tgt","element":"container","variable":"t"}],"dependent":[{"name":"SpecimenContainer","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"condition","source":[{"context":"src","element":"condition","variable":"vvv"}],"target":[{"context":"tgt","element":"condition","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"note","source":[{"context":"src","element":"note","variable":"vvv"}],"target":[{"context":"tgt","element":"note","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"SpecimenCollection","extends":"BackboneElement","documentation":"group SpecimenFeature(source src, target tgt) extends BackboneElement {\r\nsrc.type -> tgt.type;\r\nsrc.description -> tgt.description;\r\n}","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"collector","source":[{"context":"src","element":"collector","variable":"vvv"}],"target":[{"context":"tgt","element":"collector","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"collectedDateTime","source":[{"context":"src","type":"dateTime","element":"collected","variable":"vvv"}],"target":[{"context":"tgt","element":"collected","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"collectedPeriod","source":[{"context":"src","type":"Period","element":"collected","variable":"vvv"}],"target":[{"context":"tgt","element":"collected","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"duration","source":[{"context":"src","element":"duration","variable":"vvv"}],"target":[{"context":"tgt","element":"duration","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"quantity","source":[{"context":"src","element":"quantity","variable":"vvv"}],"target":[{"context":"tgt","element":"quantity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"method","source":[{"context":"src","element":"method","variable":"vvv"}],"target":[{"context":"tgt","element":"method","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"bodySite","source":[{"context":"src","element":"bodySite","variable":"vvv"}],"target":[{"context":"tgt","element":"bodySite","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"fastingStatusCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"fastingStatus","variable":"vvv"}],"target":[{"context":"tgt","element":"fastingStatus","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"fastingStatusDuration","source":[{"context":"src","type":"Duration","element":"fastingStatus","variable":"vvv"}],"target":[{"context":"tgt","element":"fastingStatus","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"SpecimenProcessing","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"description","source":[{"context":"src","element":"description","variable":"vvv"}],"target":[{"context":"tgt","element":"description","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"procedure","source":[{"context":"src","element":"procedure","variable":"vvv"}],"target":[{"context":"tgt","element":"method","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"additive","source":[{"context":"src","element":"additive","variable":"vvv"}],"target":[{"context":"tgt","element":"additive","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"timeDateTime","source":[{"context":"src","type":"dateTime","element":"time","variable":"vvv"}],"target":[{"context":"tgt","element":"time","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"timePeriod","source":[{"context":"src","type":"Period","element":"time","variable":"vvv"}],"target":[{"context":"tgt","element":"time","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"SpecimenContainer","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"specimenQuantity","source":[{"context":"src","element":"specimenQuantity","variable":"vvv"}],"target":[{"context":"tgt","element":"specimenQuantity","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Specimen4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Specimen4to5",
+  "name" : "Specimen4to5",
+  "title" : "Specimen Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Specimen Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Specimen",
+    "mode" : "source",
+    "alias" : "SpecimenR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Specimen",
+    "mode" : "target",
+    "alias" : "SpecimenR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Specimen",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "SpecimenR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "SpecimenR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "accessionIdentifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "accessionIdentifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "accessionIdentifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/spm.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "subject",
+      "source" : [{
+        "context" : "src",
+        "element" : "subject",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subject",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "receivedTime",
+      "source" : [{
+        "context" : "src",
+        "element" : "receivedTime",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "receivedTime",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "parent",
+      "source" : [{
+        "context" : "src",
+        "element" : "parent",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "parent",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "request",
+      "source" : [{
+        "context" : "src",
+        "element" : "request",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "request",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "collection",
+      "source" : [{
+        "context" : "src",
+        "element" : "collection",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "collection",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "SpecimenCollection",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "processing",
+      "source" : [{
+        "context" : "src",
+        "element" : "processing",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "processing",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "SpecimenProcessing",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "container",
+      "source" : [{
+        "context" : "src",
+        "element" : "container",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "container",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "SpecimenContainer",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "condition",
+      "source" : [{
+        "context" : "src",
+        "element" : "condition",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "condition",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "note",
+      "source" : [{
+        "context" : "src",
+        "element" : "note",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "note",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "SpecimenCollection",
+    "extends" : "BackboneElement",
+    "documentation" : "group SpecimenFeature(source src, target tgt) extends BackboneElement {\r\nsrc.type -> tgt.type;\r\nsrc.description -> tgt.description;\r\n}",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "collector",
+      "source" : [{
+        "context" : "src",
+        "element" : "collector",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "collector",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "collectedDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "collected",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "collected",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "collectedPeriod",
+      "source" : [{
+        "context" : "src",
+        "type" : "Period",
+        "element" : "collected",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "collected",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "duration",
+      "source" : [{
+        "context" : "src",
+        "element" : "duration",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "duration",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "quantity",
+      "source" : [{
+        "context" : "src",
+        "element" : "quantity",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "quantity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "method",
+      "source" : [{
+        "context" : "src",
+        "element" : "method",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "method",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "bodySite",
+      "source" : [{
+        "context" : "src",
+        "element" : "bodySite",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "bodySite",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "fastingStatusCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "fastingStatus",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "fastingStatus",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "fastingStatusDuration",
+      "source" : [{
+        "context" : "src",
+        "type" : "Duration",
+        "element" : "fastingStatus",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "fastingStatus",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "SpecimenProcessing",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "description",
+      "source" : [{
+        "context" : "src",
+        "element" : "description",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "description",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "procedure",
+      "source" : [{
+        "context" : "src",
+        "element" : "procedure",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "method",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "additive",
+      "source" : [{
+        "context" : "src",
+        "element" : "additive",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "additive",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "timeDateTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "dateTime",
+        "element" : "time",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "time",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "timePeriod",
+      "source" : [{
+        "context" : "src",
+        "type" : "Period",
+        "element" : "time",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "time",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "SpecimenContainer",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "specimenQuantity",
+      "source" : [{
+        "context" : "src",
+        "element" : "specimenQuantity",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "specimenQuantity",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

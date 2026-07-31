@@ -1,1 +1,438 @@
-{"resourceType":"StructureMap","id":"Goal4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Goal4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Goal4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Goal Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Goal<span style=\"color: navy\">&quot; </span><b>alias </b>GoalR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Goal<span style=\"color: navy\">&quot; </span><b>alias </b>GoalR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Goal<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>GoalR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>GoalR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.lifecycleStatus<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.lifecycleStatus = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Goal.lifecycleStatus-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.achievementStatus<span style=\"color: navy\"><b> -&gt; </b></span>tgt.achievementStatus<span style=\"color: navy\">;</span>\r\n  src.category<span style=\"color: navy\"><b> -&gt; </b></span>tgt.category<span style=\"color: navy\">;</span>\r\n  src.priority<span style=\"color: navy\"><b> -&gt; </b></span>tgt.priority<span style=\"color: navy\">;</span>\r\n  src.description<span style=\"color: navy\"><b> -&gt; </b></span>tgt.description<span style=\"color: navy\">;</span>\r\n  src.subject<span style=\"color: navy\"><b> -&gt; </b></span>tgt.subject<span style=\"color: navy\">;</span>\r\n  src.start<span style=\"color: navy\"> : </span>date<span style=\"color: navy\"><b> -&gt; </b></span>tgt.start<span style=\"color: navy\">;</span>\r\n  src.start<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.start<span style=\"color: navy\">;</span>\r\n  src.target<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.target<b> as </b><span style=\"color: maroon\">t</span><b> then </b>GoalTarget<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.statusDate<span style=\"color: navy\"><b> -&gt; </b></span>tgt.statusDate<span style=\"color: navy\">;</span>\r\n  src.statusReason<span style=\"color: navy\"><b> -&gt; </b></span>tgt.statusReason<span style=\"color: navy\">;</span>\r\n  src.addresses<span style=\"color: navy\"><b> -&gt; </b></span>tgt.addresses<span style=\"color: navy\">;</span>\r\n  src.note<span style=\"color: navy\"><b> -&gt; </b></span>tgt.note<span style=\"color: navy\">;</span>\r\n  src.outcomeCode<span style=\"color: navy\"><b> -&gt; </b></span>tgt.outcome<span style=\"color: navy\">;</span>\r\n  src.outcomeReference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.outcome<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>GoalTarget<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.measure<span style=\"color: navy\"><b> -&gt; </b></span>tgt.measure<span style=\"color: navy\">;</span>\r\n  src.detail<span style=\"color: navy\"> : </span>Quantity<span style=\"color: navy\"><b> -&gt; </b></span>tgt.detail<span style=\"color: navy\">;</span>\r\n  src.detail<span style=\"color: navy\"> : </span>Range<span style=\"color: navy\"><b> -&gt; </b></span>tgt.detail<span style=\"color: navy\">;</span>\r\n  src.detail<span style=\"color: navy\"> : </span>CodeableConcept<span style=\"color: navy\"><b> -&gt; </b></span>tgt.detail<span style=\"color: navy\">;</span>\r\n  src.detail<span style=\"color: navy\"> : </span>string<span style=\"color: navy\"><b> -&gt; </b></span>tgt.detail<span style=\"color: navy\">;</span>\r\n  src.detail<span style=\"color: navy\"> : </span>boolean<span style=\"color: navy\"><b> -&gt; </b></span>tgt.detail<span style=\"color: navy\">;</span>\r\n  src.detail<span style=\"color: navy\"> : </span>integer<span style=\"color: navy\"><b> -&gt; </b></span>tgt.detail<span style=\"color: navy\">;</span>\r\n  src.detail<span style=\"color: navy\"> : </span>Ratio<span style=\"color: navy\"><b> -&gt; </b></span>tgt.detail<span style=\"color: navy\">;</span>\r\n  src.due<span style=\"color: navy\"> : </span>date<span style=\"color: navy\"><b> -&gt; </b></span>tgt.due<span style=\"color: navy\">;</span>\r\n  src.due<span style=\"color: navy\"> : </span>Duration<span style=\"color: navy\"><b> -&gt; </b></span>tgt.due<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Goal4to5","version":"0.1.0","name":"Goal4to5","title":"Goal Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"GoalTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Goal","mode":"source","alias":"GoalR4"},{"url":"http://hl7.org/fhir/5.0/Goal","mode":"target","alias":"GoalR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Goal","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"GoalR4","mode":"source"},{"name":"tgt","type":"GoalR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"lifecycleStatus","source":[{"context":"src","element":"lifecycleStatus","variable":"v"}],"target":[{"context":"tgt","element":"lifecycleStatus","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Goal.lifecycleStatus-R4toR5"},{"valueString":"code"}]}]},{"name":"achievementStatus","source":[{"context":"src","element":"achievementStatus","variable":"vvv"}],"target":[{"context":"tgt","element":"achievementStatus","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"category","source":[{"context":"src","element":"category","variable":"vvv"}],"target":[{"context":"tgt","element":"category","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"priority","source":[{"context":"src","element":"priority","variable":"vvv"}],"target":[{"context":"tgt","element":"priority","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"description","source":[{"context":"src","element":"description","variable":"vvv"}],"target":[{"context":"tgt","element":"description","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"subject","source":[{"context":"src","element":"subject","variable":"vvv"}],"target":[{"context":"tgt","element":"subject","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"startDate","source":[{"context":"src","type":"date","element":"start","variable":"vvv"}],"target":[{"context":"tgt","element":"start","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"startCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"start","variable":"vvv"}],"target":[{"context":"tgt","element":"start","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"target","source":[{"context":"src","element":"target","variable":"s"}],"target":[{"context":"tgt","element":"target","variable":"t"}],"dependent":[{"name":"GoalTarget","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"statusDate","source":[{"context":"src","element":"statusDate","variable":"vvv"}],"target":[{"context":"tgt","element":"statusDate","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"statusReason","source":[{"context":"src","element":"statusReason","variable":"vvv"}],"target":[{"context":"tgt","element":"statusReason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"addresses","source":[{"context":"src","element":"addresses","variable":"vvv"}],"target":[{"context":"tgt","element":"addresses","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"note","source":[{"context":"src","element":"note","variable":"vvv"}],"target":[{"context":"tgt","element":"note","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"outcomeCode","source":[{"context":"src","element":"outcomeCode","variable":"vvv"}],"target":[{"context":"tgt","element":"outcome","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"outcomeReference","source":[{"context":"src","element":"outcomeReference","variable":"vvv"}],"target":[{"context":"tgt","element":"outcome","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"GoalTarget","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"measure","source":[{"context":"src","element":"measure","variable":"vvv"}],"target":[{"context":"tgt","element":"measure","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"detailQuantity","source":[{"context":"src","type":"Quantity","element":"detail","variable":"vvv"}],"target":[{"context":"tgt","element":"detail","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"detailRange","source":[{"context":"src","type":"Range","element":"detail","variable":"vvv"}],"target":[{"context":"tgt","element":"detail","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"detailCodeableConcept","source":[{"context":"src","type":"CodeableConcept","element":"detail","variable":"vvv"}],"target":[{"context":"tgt","element":"detail","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"detailString","source":[{"context":"src","type":"string","element":"detail","variable":"vvv"}],"target":[{"context":"tgt","element":"detail","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"detailBoolean","source":[{"context":"src","type":"boolean","element":"detail","variable":"vvv"}],"target":[{"context":"tgt","element":"detail","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"detailInteger","source":[{"context":"src","type":"integer","element":"detail","variable":"vvv"}],"target":[{"context":"tgt","element":"detail","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"detailRatio","source":[{"context":"src","type":"Ratio","element":"detail","variable":"vvv"}],"target":[{"context":"tgt","element":"detail","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"dueDate","source":[{"context":"src","type":"date","element":"due","variable":"vvv"}],"target":[{"context":"tgt","element":"due","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"dueDuration","source":[{"context":"src","type":"Duration","element":"due","variable":"vvv"}],"target":[{"context":"tgt","element":"due","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Goal4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Goal4to5",
+  "name" : "Goal4to5",
+  "title" : "Goal Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Goal Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Goal",
+    "mode" : "source",
+    "alias" : "GoalR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Goal",
+    "mode" : "target",
+    "alias" : "GoalR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Goal",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "GoalR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "GoalR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "lifecycleStatus",
+      "source" : [{
+        "context" : "src",
+        "element" : "lifecycleStatus",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "lifecycleStatus",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/gol.lifecycleStatus-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "achievementStatus",
+      "source" : [{
+        "context" : "src",
+        "element" : "achievementStatus",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "achievementStatus",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "category",
+      "source" : [{
+        "context" : "src",
+        "element" : "category",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "category",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "priority",
+      "source" : [{
+        "context" : "src",
+        "element" : "priority",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "priority",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "description",
+      "source" : [{
+        "context" : "src",
+        "element" : "description",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "description",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "subject",
+      "source" : [{
+        "context" : "src",
+        "element" : "subject",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "subject",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "startDate",
+      "source" : [{
+        "context" : "src",
+        "type" : "date",
+        "element" : "start",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "start",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "startCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "start",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "start",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "target",
+      "source" : [{
+        "context" : "src",
+        "element" : "target",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "target",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "GoalTarget",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "statusDate",
+      "source" : [{
+        "context" : "src",
+        "element" : "statusDate",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "statusDate",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "statusReason",
+      "source" : [{
+        "context" : "src",
+        "element" : "statusReason",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "statusReason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "addresses",
+      "source" : [{
+        "context" : "src",
+        "element" : "addresses",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "addresses",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "note",
+      "source" : [{
+        "context" : "src",
+        "element" : "note",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "note",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "outcomeCode",
+      "source" : [{
+        "context" : "src",
+        "element" : "outcomeCode",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "outcome",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "outcomeReference",
+      "source" : [{
+        "context" : "src",
+        "element" : "outcomeReference",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "outcome",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "GoalTarget",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "measure",
+      "source" : [{
+        "context" : "src",
+        "element" : "measure",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "measure",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "detailQuantity",
+      "source" : [{
+        "context" : "src",
+        "type" : "Quantity",
+        "element" : "detail",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "detail",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "detailRange",
+      "source" : [{
+        "context" : "src",
+        "type" : "Range",
+        "element" : "detail",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "detail",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "detailCodeableConcept",
+      "source" : [{
+        "context" : "src",
+        "type" : "CodeableConcept",
+        "element" : "detail",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "detail",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "detailString",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "detail",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "detail",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "detailBoolean",
+      "source" : [{
+        "context" : "src",
+        "type" : "boolean",
+        "element" : "detail",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "detail",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "detailInteger",
+      "source" : [{
+        "context" : "src",
+        "type" : "integer",
+        "element" : "detail",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "detail",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "detailRatio",
+      "source" : [{
+        "context" : "src",
+        "type" : "Ratio",
+        "element" : "detail",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "detail",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "dueDate",
+      "source" : [{
+        "context" : "src",
+        "type" : "date",
+        "element" : "due",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "due",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "dueDuration",
+      "source" : [{
+        "context" : "src",
+        "type" : "Duration",
+        "element" : "due",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "due",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

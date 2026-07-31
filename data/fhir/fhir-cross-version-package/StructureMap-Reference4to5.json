@@ -1,1 +1,303 @@
-{"resourceType":"StructureMap","id":"Reference4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Reference4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Reference4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Reference Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Reference<span style=\"color: navy\">&quot; </span><b>alias </b>ReferenceR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/CodeableReference<span style=\"color: navy\">&quot; </span><b>alias </b>CodeableReferenceR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Reference<span style=\"color: navy\">&quot; </span><b>alias </b>ReferenceR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/canonical<span style=\"color: navy\">&quot; </span><b>alias </b>canonicalR5 <b>as </b><b>target</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/url<span style=\"color: navy\">&quot; </span><b>alias </b>urlR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/url<span style=\"color: navy\">&quot; </span><b>alias </b>urlR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Reference<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>ReferenceR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>ReferenceR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.reference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.reference<span style=\"color: navy\">;</span>\r\n  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.display<span style=\"color: navy\"><b> -&gt; </b></span>tgt.display<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>Reference2canonical<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>ReferenceR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>canonicalR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.reference<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;canonicalValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>Reference2Url<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>ReferenceR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>urlR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.reference<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.value = <span style=\"color: maroon\">v</span> <i>&quot;canonicalValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>url2Reference<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>urlR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>ReferenceR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.value<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.reference = <span style=\"color: maroon\">v</span> <i>&quot;canonicalValue&quot;</i><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>Reference2CodeableReference<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>ReferenceR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>CodeableReferenceR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.reference<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.reference<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.reference = <span style=\"color: maroon\">v</span><span style=\"color: navy\">;</span>\r\n  src.type<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.reference<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.type = <span style=\"color: maroon\">v</span><span style=\"color: navy\">;</span>\r\n  src.identifier<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.reference<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.identifier = <span style=\"color: maroon\">v</span><span style=\"color: navy\">;</span>\r\n  src.display<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.reference<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.display = <span style=\"color: maroon\">v</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Reference4to5","version":"0.1.0","name":"Reference4to5","title":"Reference Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"ReferenceTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Reference","mode":"source","alias":"ReferenceR4"},{"url":"http://hl7.org/fhir/5.0/CodeableReference","mode":"target","alias":"CodeableReferenceR5"},{"url":"http://hl7.org/fhir/5.0/Reference","mode":"target","alias":"ReferenceR5"},{"url":"http://hl7.org/fhir/5.0/canonical","mode":"target","alias":"canonicalR5"},{"url":"http://hl7.org/fhir/4.0/url","mode":"source","alias":"urlR4"},{"url":"http://hl7.org/fhir/5.0/url","mode":"target","alias":"urlR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Reference","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"ReferenceR4","mode":"source"},{"name":"tgt","type":"ReferenceR5","mode":"target"}],"rule":[{"name":"reference","source":[{"context":"src","element":"reference","variable":"vvv"}],"target":[{"context":"tgt","element":"reference","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"display","source":[{"context":"src","element":"display","variable":"vvv"}],"target":[{"context":"tgt","element":"display","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"Reference2canonical","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"ReferenceR4","mode":"source"},{"name":"tgt","type":"canonicalR5","mode":"target"}],"rule":[{"name":"canonicalValue","source":[{"context":"src","element":"reference","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"Reference2Url","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"ReferenceR4","mode":"source"},{"name":"tgt","type":"urlR5","mode":"target"}],"rule":[{"name":"canonicalValue","source":[{"context":"src","element":"reference","variable":"v"}],"target":[{"context":"tgt","element":"value","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"url2Reference","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"urlR4","mode":"source"},{"name":"tgt","type":"ReferenceR5","mode":"target"}],"rule":[{"name":"canonicalValue","source":[{"context":"src","element":"value","variable":"v"}],"target":[{"context":"tgt","element":"reference","transform":"copy","parameter":[{"valueId":"v"}]}]}]},{"name":"Reference2CodeableReference","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"ReferenceR4","mode":"source"},{"name":"tgt","type":"CodeableReferenceR5","mode":"target"}],"rule":[{"name":"reference","source":[{"context":"src","element":"reference","variable":"v"}],"target":[{"context":"tgt","element":"reference","variable":"t"},{"context":"t","element":"reference","transform":"copy","parameter":[{"valueId":"v"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"v"}],"target":[{"context":"tgt","element":"reference","variable":"t"},{"context":"t","element":"type","transform":"copy","parameter":[{"valueId":"v"}]}]},{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"v"}],"target":[{"context":"tgt","element":"reference","variable":"t"},{"context":"t","element":"identifier","transform":"copy","parameter":[{"valueId":"v"}]}]},{"name":"display","source":[{"context":"src","element":"display","variable":"v"}],"target":[{"context":"tgt","element":"reference","variable":"t"},{"context":"t","element":"display","transform":"copy","parameter":[{"valueId":"v"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Reference4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Reference4to5",
+  "name" : "Reference4to5",
+  "title" : "Reference Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Reference Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Reference",
+    "mode" : "source",
+    "alias" : "ReferenceR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/CodeableReference",
+    "mode" : "target",
+    "alias" : "CodeableReferenceR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Reference",
+    "mode" : "target",
+    "alias" : "ReferenceR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/canonical",
+    "mode" : "target",
+    "alias" : "canonicalR5"
+  },
+  {
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/url",
+    "mode" : "source",
+    "alias" : "urlR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/url",
+    "mode" : "target",
+    "alias" : "urlR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Reference",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "ReferenceR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "ReferenceR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "reference",
+      "source" : [{
+        "context" : "src",
+        "element" : "reference",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reference",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "display",
+      "source" : [{
+        "context" : "src",
+        "element" : "display",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "display",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "Reference2canonical",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "ReferenceR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "canonicalR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "canonicalValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "reference",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "Reference2Url",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "ReferenceR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "urlR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "canonicalValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "reference",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "value",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "url2Reference",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "urlR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "ReferenceR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "canonicalValue",
+      "source" : [{
+        "context" : "src",
+        "element" : "value",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reference",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "Reference2CodeableReference",
+    "extends" : "Element",
+    "typeMode" : "types",
+    "input" : [{
+      "name" : "src",
+      "type" : "ReferenceR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "CodeableReferenceR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "reference",
+      "source" : [{
+        "context" : "src",
+        "element" : "reference",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reference",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "reference",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reference",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "type",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    },
+    {
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reference",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "identifier",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    },
+    {
+      "name" : "display",
+      "source" : [{
+        "context" : "src",
+        "element" : "display",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reference",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "display",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "v"
+        }]
+      }]
+    }]
+  }]
+}

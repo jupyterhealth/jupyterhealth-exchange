@@ -1,1 +1,455 @@
-{"resourceType":"StructureMap","id":"Location4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Location4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Location4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Location Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Location<span style=\"color: navy\">&quot; </span><b>alias </b>LocationR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Location<span style=\"color: navy\">&quot; </span><b>alias </b>LocationR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Location<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>LocationR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>LocationR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Location.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.operationalStatus<span style=\"color: navy\"><b> -&gt; </b></span>tgt.operationalStatus<span style=\"color: navy\">;</span>\r\n  src.name<span style=\"color: navy\"><b> -&gt; </b></span>tgt.name<span style=\"color: navy\">;</span>\r\n  src.alias<span style=\"color: navy\"><b> -&gt; </b></span>tgt.alias<span style=\"color: navy\">;</span>\r\n  src.description<span style=\"color: navy\"><b> -&gt; </b></span>tgt.description<span style=\"color: navy\">;</span>\r\n  src.mode<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.mode = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/Location.mode-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.telecom<span style=\"color: navy\"> : </span>ContactPoint<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.contact = <b>create</b><span style=\"color: navy\">(</span><span style=\"color: blue\">'ExtendedContactDetail'</span><span style=\"color: navy\">)</span><b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.telecom = <span style=\"color: maroon\">s</span><span style=\"color: navy\">;</span>\r\n  src.address<span style=\"color: navy\"><b> -&gt; </b></span>tgt.address<span style=\"color: navy\">;</span>\r\n  src.physicalType<span style=\"color: navy\"><b> -&gt; </b></span>tgt.form<span style=\"color: navy\">;</span>\r\n  src.position<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.position<b> as </b><span style=\"color: maroon\">t</span><b> then </b>LocationPosition<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.managingOrganization<span style=\"color: navy\"><b> -&gt; </b></span>tgt.managingOrganization<span style=\"color: navy\">;</span>\r\n  src.partOf<span style=\"color: navy\"><b> -&gt; </b></span>tgt.partOf<span style=\"color: navy\">;</span>\r\n  src.hoursOfOperation<span style=\"color: navy\"> : </span>BackboneElement<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.hoursOfOperation<b> as </b><span style=\"color: maroon\">t</span><b> then </b>LocationAvailabilityAvailableTime<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span> <i>&quot;availableTime&quot;</i><span style=\"color: navy\">;</span>\r\n  src.endpoint<span style=\"color: navy\"><b> -&gt; </b></span>tgt.endpoint<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>LocationPosition<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.longitude<span style=\"color: navy\"><b> -&gt; </b></span>tgt.longitude<span style=\"color: navy\">;</span>\r\n  src.latitude<span style=\"color: navy\"><b> -&gt; </b></span>tgt.latitude<span style=\"color: navy\">;</span>\r\n  src.altitude<span style=\"color: navy\"><b> -&gt; </b></span>tgt.altitude<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>LocationAvailabilityAvailableTime<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.daysOfWeek<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.availableTime<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.daysOfWeek = <span style=\"color: maroon\">s</span><span style=\"color: navy\">;</span>\r\n  src.allDay<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.availableTime<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.allDay = <span style=\"color: maroon\">s</span><span style=\"color: navy\">;</span>\r\n  src.openingTime<span style=\"color: navy\"> : </span>time<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.availableTime<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.availableStartTime = <span style=\"color: maroon\">s</span><span style=\"color: navy\">;</span>\r\n  src.closingTime<span style=\"color: navy\"> : </span>time<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.availableTime<b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.availableEndTime = <span style=\"color: maroon\">s</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Location4to5","version":"0.1.0","name":"Location4to5","title":"Location Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"LocationTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Location","mode":"source","alias":"LocationR4"},{"url":"http://hl7.org/fhir/5.0/Location","mode":"target","alias":"LocationR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Location","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"LocationR4","mode":"source"},{"name":"tgt","type":"LocationR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Location.status-R4toR5"},{"valueString":"code"}]}]},{"name":"operationalStatus","source":[{"context":"src","element":"operationalStatus","variable":"vvv"}],"target":[{"context":"tgt","element":"operationalStatus","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"name","source":[{"context":"src","element":"name","variable":"vvv"}],"target":[{"context":"tgt","element":"name","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"alias","source":[{"context":"src","element":"alias","variable":"vvv"}],"target":[{"context":"tgt","element":"alias","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"description","source":[{"context":"src","element":"description","variable":"vvv"}],"target":[{"context":"tgt","element":"description","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"mode","source":[{"context":"src","element":"mode","variable":"v"}],"target":[{"context":"tgt","element":"mode","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/Location.mode-R4toR5"},{"valueString":"code"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"telecomContactPoint","source":[{"context":"src","type":"ContactPoint","element":"telecom","variable":"s"}],"target":[{"context":"tgt","element":"contact","variable":"t","transform":"create","parameter":[{"valueString":"ExtendedContactDetail"}]},{"context":"t","element":"telecom","transform":"copy","parameter":[{"valueId":"s"}]}]},{"name":"address","source":[{"context":"src","element":"address","variable":"vvv"}],"target":[{"context":"tgt","element":"address","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"physicalType","source":[{"context":"src","element":"physicalType","variable":"vvv"}],"target":[{"context":"tgt","element":"form","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"position","source":[{"context":"src","element":"position","variable":"s"}],"target":[{"context":"tgt","element":"position","variable":"t"}],"dependent":[{"name":"LocationPosition","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"managingOrganization","source":[{"context":"src","element":"managingOrganization","variable":"vvv"}],"target":[{"context":"tgt","element":"managingOrganization","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"partOf","source":[{"context":"src","element":"partOf","variable":"vvv"}],"target":[{"context":"tgt","element":"partOf","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"availableTime","source":[{"context":"src","type":"BackboneElement","element":"hoursOfOperation","variable":"s"}],"target":[{"context":"tgt","element":"hoursOfOperation","variable":"t"}],"dependent":[{"name":"LocationAvailabilityAvailableTime","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"endpoint","source":[{"context":"src","element":"endpoint","variable":"vvv"}],"target":[{"context":"tgt","element":"endpoint","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"LocationPosition","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"longitude","source":[{"context":"src","element":"longitude","variable":"vvv"}],"target":[{"context":"tgt","element":"longitude","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"latitude","source":[{"context":"src","element":"latitude","variable":"vvv"}],"target":[{"context":"tgt","element":"latitude","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"altitude","source":[{"context":"src","element":"altitude","variable":"vvv"}],"target":[{"context":"tgt","element":"altitude","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"LocationAvailabilityAvailableTime","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"daysOfWeek","source":[{"context":"src","element":"daysOfWeek","variable":"s"}],"target":[{"context":"tgt","element":"availableTime","variable":"t"},{"context":"t","element":"daysOfWeek","transform":"copy","parameter":[{"valueId":"s"}]}]},{"name":"allDay","source":[{"context":"src","element":"allDay","variable":"s"}],"target":[{"context":"tgt","element":"availableTime","variable":"t"},{"context":"t","element":"allDay","transform":"copy","parameter":[{"valueId":"s"}]}]},{"name":"openingTimeTime","source":[{"context":"src","type":"time","element":"openingTime","variable":"s"}],"target":[{"context":"tgt","element":"availableTime","variable":"t"},{"context":"t","element":"availableStartTime","transform":"copy","parameter":[{"valueId":"s"}]}]},{"name":"closingTimeTime","source":[{"context":"src","type":"time","element":"closingTime","variable":"s"}],"target":[{"context":"tgt","element":"availableTime","variable":"t"},{"context":"t","element":"availableEndTime","transform":"copy","parameter":[{"valueId":"s"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Location4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Location4to5",
+  "name" : "Location4to5",
+  "title" : "Location Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Location Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Location",
+    "mode" : "source",
+    "alias" : "LocationR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Location",
+    "mode" : "target",
+    "alias" : "LocationR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Location",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "LocationR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "LocationR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/loc.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "operationalStatus",
+      "source" : [{
+        "context" : "src",
+        "element" : "operationalStatus",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "operationalStatus",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "name",
+      "source" : [{
+        "context" : "src",
+        "element" : "name",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "name",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "alias",
+      "source" : [{
+        "context" : "src",
+        "element" : "alias",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "alias",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "description",
+      "source" : [{
+        "context" : "src",
+        "element" : "description",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "description",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "mode",
+      "source" : [{
+        "context" : "src",
+        "element" : "mode",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "mode",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/loc.mode-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "telecomContactPoint",
+      "source" : [{
+        "context" : "src",
+        "type" : "ContactPoint",
+        "element" : "telecom",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "contact",
+        "variable" : "t",
+        "transform" : "create",
+        "parameter" : [{
+          "valueString" : "ExtendedContactDetail"
+        }]
+      },
+      {
+        "context" : "t",
+        "element" : "telecom",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "s"
+        }]
+      }]
+    },
+    {
+      "name" : "address",
+      "source" : [{
+        "context" : "src",
+        "element" : "address",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "address",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "physicalType",
+      "source" : [{
+        "context" : "src",
+        "element" : "physicalType",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "form",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "position",
+      "source" : [{
+        "context" : "src",
+        "element" : "position",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "position",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "LocationPosition",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "managingOrganization",
+      "source" : [{
+        "context" : "src",
+        "element" : "managingOrganization",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "managingOrganization",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "partOf",
+      "source" : [{
+        "context" : "src",
+        "element" : "partOf",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "partOf",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "availableTime",
+      "source" : [{
+        "context" : "src",
+        "element" : "hoursOfOperation",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "hoursOfOperation",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "LocationAvailabilityAvailableTime",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "endpoint",
+      "source" : [{
+        "context" : "src",
+        "element" : "endpoint",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "endpoint",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "LocationPosition",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "longitude",
+      "source" : [{
+        "context" : "src",
+        "element" : "longitude",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "longitude",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "latitude",
+      "source" : [{
+        "context" : "src",
+        "element" : "latitude",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "latitude",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "altitude",
+      "source" : [{
+        "context" : "src",
+        "element" : "altitude",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "altitude",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "LocationAvailabilityAvailableTime",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "daysOfWeek",
+      "source" : [{
+        "context" : "src",
+        "element" : "daysOfWeek",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "availableTime",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "daysOfWeek",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "s"
+        }]
+      }]
+    },
+    {
+      "name" : "allDay",
+      "source" : [{
+        "context" : "src",
+        "element" : "allDay",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "availableTime",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "allDay",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "s"
+        }]
+      }]
+    },
+    {
+      "name" : "openingTimeTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "time",
+        "element" : "openingTime",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "availableTime",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "availableStartTime",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "s"
+        }]
+      }]
+    },
+    {
+      "name" : "closingTimeTime",
+      "source" : [{
+        "context" : "src",
+        "type" : "time",
+        "element" : "closingTime",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "availableTime",
+        "variable" : "t"
+      },
+      {
+        "context" : "t",
+        "element" : "availableEndTime",
+        "transform" : "copy",
+        "parameter" : [{
+          "valueId" : "s"
+        }]
+      }]
+    }]
+  }]
+}

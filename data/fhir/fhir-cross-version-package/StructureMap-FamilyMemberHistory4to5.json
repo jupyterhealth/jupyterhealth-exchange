@@ -1,1 +1,555 @@
-{"resourceType":"StructureMap","id":"FamilyMemberHistory4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/FamilyMemberHistory4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'FamilyMemberHistory4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'FamilyMemberHistory Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/FamilyMemberHistory<span style=\"color: navy\">&quot; </span><b>alias </b>FamilyMemberHistoryR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/FamilyMemberHistory<span style=\"color: navy\">&quot; </span><b>alias </b>FamilyMemberHistoryR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>FamilyMemberHistory<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>FamilyMemberHistoryR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>FamilyMemberHistoryR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.instantiatesCanonical<span style=\"color: navy\"><b> -&gt; </b></span>tgt.instantiatesCanonical<span style=\"color: navy\">;</span>\r\n  src.instantiatesUri<span style=\"color: navy\"><b> -&gt; </b></span>tgt.instantiatesUri<span style=\"color: navy\">;</span>\r\n  src.status<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.status = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/FamilyMemberHistory.status-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.dataAbsentReason<span style=\"color: navy\"><b> -&gt; </b></span>tgt.dataAbsentReason<span style=\"color: navy\">;</span>\r\n  src.patient<span style=\"color: navy\"><b> -&gt; </b></span>tgt.patient<span style=\"color: navy\">;</span>\r\n  src.date<span style=\"color: navy\"><b> -&gt; </b></span>tgt.date<span style=\"color: navy\">;</span>\r\n  src.name<span style=\"color: navy\"><b> -&gt; </b></span>tgt.name<span style=\"color: navy\">;</span>\r\n  src.relationship<span style=\"color: navy\"><b> -&gt; </b></span>tgt.relationship<span style=\"color: navy\">;</span>\r\n  src.sex<span style=\"color: navy\"><b> -&gt; </b></span>tgt.sex<span style=\"color: navy\">;</span>\r\n  src.born<span style=\"color: navy\"> : </span>Period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.born<span style=\"color: navy\">;</span>\r\n  src.born<span style=\"color: navy\"> : </span>date<span style=\"color: navy\"><b> -&gt; </b></span>tgt.born<span style=\"color: navy\">;</span>\r\n  src.born<span style=\"color: navy\"> : </span>string<span style=\"color: navy\"><b> -&gt; </b></span>tgt.born<span style=\"color: navy\">;</span>\r\n  src.age<span style=\"color: navy\"> : </span>Age<span style=\"color: navy\"><b> -&gt; </b></span>tgt.age<span style=\"color: navy\">;</span>\r\n  src.age<span style=\"color: navy\"> : </span>Range<span style=\"color: navy\"><b> -&gt; </b></span>tgt.age<span style=\"color: navy\">;</span>\r\n  src.age<span style=\"color: navy\"> : </span>string<span style=\"color: navy\"><b> -&gt; </b></span>tgt.age<span style=\"color: navy\">;</span>\r\n  src.estimatedAge<span style=\"color: navy\"><b> -&gt; </b></span>tgt.estimatedAge<span style=\"color: navy\">;</span>\r\n  src.deceased<span style=\"color: navy\"> : </span>boolean<span style=\"color: navy\"><b> -&gt; </b></span>tgt.deceased<span style=\"color: navy\">;</span>\r\n  src.deceased<span style=\"color: navy\"> : </span>Age<span style=\"color: navy\"><b> -&gt; </b></span>tgt.deceased<span style=\"color: navy\">;</span>\r\n  src.deceased<span style=\"color: navy\"> : </span>Range<span style=\"color: navy\"><b> -&gt; </b></span>tgt.deceased<span style=\"color: navy\">;</span>\r\n  src.deceased<span style=\"color: navy\"> : </span>date<span style=\"color: navy\"><b> -&gt; </b></span>tgt.deceased<span style=\"color: navy\">;</span>\r\n  src.deceased<span style=\"color: navy\"> : </span>string<span style=\"color: navy\"><b> -&gt; </b></span>tgt.deceased<span style=\"color: navy\">;</span>\r\n  src.reasonCode<span style=\"color: navy\"><b> -&gt; </b></span>tgt.reason<span style=\"color: navy\">;</span>\r\n  src.reasonReference<span style=\"color: navy\"><b> -&gt; </b></span>tgt.reason<span style=\"color: navy\">;</span>\r\n  src.note<span style=\"color: navy\"><b> -&gt; </b></span>tgt.note<span style=\"color: navy\">;</span>\r\n  src.condition<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.condition<b> as </b><span style=\"color: maroon\">t</span><b> then </b>FamilyMemberHistoryCondition<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><span style=\"color: navy\">// </span><span style=\"color: green\">group FamilyMemberHistoryParticipant(source src, target tgt) extends BackboneElement {</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.function -&gt; tgt.function;</span>\r\n<span style=\"color: #b36b00\" title=\"This element was not defined prior to R5\">// src.actor -&gt; tgt.actor;</span>\r\n<span style=\"color: navy\">// </span><span style=\"color: green\">}</span>\r\n<b>group </b>FamilyMemberHistoryCondition<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.code<span style=\"color: navy\"><b> -&gt; </b></span>tgt.code<span style=\"color: navy\">;</span>\r\n  src.outcome<span style=\"color: navy\"><b> -&gt; </b></span>tgt.outcome<span style=\"color: navy\">;</span>\r\n  src.contributedToDeath<span style=\"color: navy\"><b> -&gt; </b></span>tgt.contributedToDeath<span style=\"color: navy\">;</span>\r\n  src.onset<span style=\"color: navy\"> : </span>Age<span style=\"color: navy\"><b> -&gt; </b></span>tgt.onset<span style=\"color: navy\">;</span>\r\n  src.onset<span style=\"color: navy\"> : </span>Range<span style=\"color: navy\"><b> -&gt; </b></span>tgt.onset<span style=\"color: navy\">;</span>\r\n  src.onset<span style=\"color: navy\"> : </span>Period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.onset<span style=\"color: navy\">;</span>\r\n  src.onset<span style=\"color: navy\"> : </span>string<span style=\"color: navy\"><b> -&gt; </b></span>tgt.onset<span style=\"color: navy\">;</span>\r\n  src.note<span style=\"color: navy\"><b> -&gt; </b></span>tgt.note<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/FamilyMemberHistory4to5","version":"0.1.0","name":"FamilyMemberHistory4to5","title":"FamilyMemberHistory Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"FamilyMemberHistoryTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/FamilyMemberHistory","mode":"source","alias":"FamilyMemberHistoryR4"},{"url":"http://hl7.org/fhir/5.0/FamilyMemberHistory","mode":"target","alias":"FamilyMemberHistoryR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"FamilyMemberHistory","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"FamilyMemberHistoryR4","mode":"source"},{"name":"tgt","type":"FamilyMemberHistoryR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"instantiatesCanonical","source":[{"context":"src","element":"instantiatesCanonical","variable":"vvv"}],"target":[{"context":"tgt","element":"instantiatesCanonical","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"instantiatesUri","source":[{"context":"src","element":"instantiatesUri","variable":"vvv"}],"target":[{"context":"tgt","element":"instantiatesUri","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"status","source":[{"context":"src","element":"status","variable":"v"}],"target":[{"context":"tgt","element":"status","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/FamilyMemberHistory.status-R4toR5"},{"valueString":"code"}]}]},{"name":"dataAbsentReason","source":[{"context":"src","element":"dataAbsentReason","variable":"vvv"}],"target":[{"context":"tgt","element":"dataAbsentReason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"patient","source":[{"context":"src","element":"patient","variable":"vvv"}],"target":[{"context":"tgt","element":"patient","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"date","source":[{"context":"src","element":"date","variable":"vvv"}],"target":[{"context":"tgt","element":"date","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"name","source":[{"context":"src","element":"name","variable":"vvv"}],"target":[{"context":"tgt","element":"name","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"relationship","source":[{"context":"src","element":"relationship","variable":"vvv"}],"target":[{"context":"tgt","element":"relationship","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"sex","source":[{"context":"src","element":"sex","variable":"vvv"}],"target":[{"context":"tgt","element":"sex","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"bornPeriod","source":[{"context":"src","type":"Period","element":"born","variable":"vvv"}],"target":[{"context":"tgt","element":"born","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"bornDate","source":[{"context":"src","type":"date","element":"born","variable":"vvv"}],"target":[{"context":"tgt","element":"born","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"bornString","source":[{"context":"src","type":"string","element":"born","variable":"vvv"}],"target":[{"context":"tgt","element":"born","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"ageAge","source":[{"context":"src","type":"Age","element":"age","variable":"vvv"}],"target":[{"context":"tgt","element":"age","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"ageRange","source":[{"context":"src","type":"Range","element":"age","variable":"vvv"}],"target":[{"context":"tgt","element":"age","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"ageString","source":[{"context":"src","type":"string","element":"age","variable":"vvv"}],"target":[{"context":"tgt","element":"age","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"estimatedAge","source":[{"context":"src","element":"estimatedAge","variable":"vvv"}],"target":[{"context":"tgt","element":"estimatedAge","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"deceasedBoolean","source":[{"context":"src","type":"boolean","element":"deceased","variable":"vvv"}],"target":[{"context":"tgt","element":"deceased","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"deceasedAge","source":[{"context":"src","type":"Age","element":"deceased","variable":"vvv"}],"target":[{"context":"tgt","element":"deceased","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"deceasedRange","source":[{"context":"src","type":"Range","element":"deceased","variable":"vvv"}],"target":[{"context":"tgt","element":"deceased","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"deceasedDate","source":[{"context":"src","type":"date","element":"deceased","variable":"vvv"}],"target":[{"context":"tgt","element":"deceased","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"deceasedString","source":[{"context":"src","type":"string","element":"deceased","variable":"vvv"}],"target":[{"context":"tgt","element":"deceased","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"reasonCode","source":[{"context":"src","element":"reasonCode","variable":"vvv"}],"target":[{"context":"tgt","element":"reason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"reasonReference","source":[{"context":"src","element":"reasonReference","variable":"vvv"}],"target":[{"context":"tgt","element":"reason","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"note","source":[{"context":"src","element":"note","variable":"vvv"}],"target":[{"context":"tgt","element":"note","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"condition","source":[{"context":"src","element":"condition","variable":"s"}],"target":[{"context":"tgt","element":"condition","variable":"t"}],"dependent":[{"name":"FamilyMemberHistoryCondition","parameter":[{"valueId":"s"},{"valueId":"t"}]}]}]},{"name":"FamilyMemberHistoryCondition","extends":"BackboneElement","documentation":"group FamilyMemberHistoryParticipant(source src, target tgt) extends BackboneElement {\r\nsrc.function -> tgt.function;\r\nsrc.actor -> tgt.actor;\r\n}","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"code","source":[{"context":"src","element":"code","variable":"vvv"}],"target":[{"context":"tgt","element":"code","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"outcome","source":[{"context":"src","element":"outcome","variable":"vvv"}],"target":[{"context":"tgt","element":"outcome","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"contributedToDeath","source":[{"context":"src","element":"contributedToDeath","variable":"vvv"}],"target":[{"context":"tgt","element":"contributedToDeath","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"onsetAge","source":[{"context":"src","type":"Age","element":"onset","variable":"vvv"}],"target":[{"context":"tgt","element":"onset","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"onsetRange","source":[{"context":"src","type":"Range","element":"onset","variable":"vvv"}],"target":[{"context":"tgt","element":"onset","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"onsetPeriod","source":[{"context":"src","type":"Period","element":"onset","variable":"vvv"}],"target":[{"context":"tgt","element":"onset","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"onsetString","source":[{"context":"src","type":"string","element":"onset","variable":"vvv"}],"target":[{"context":"tgt","element":"onset","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"note","source":[{"context":"src","element":"note","variable":"vvv"}],"target":[{"context":"tgt","element":"note","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "FamilyMemberHistory4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/FamilyMemberHistory4to5",
+  "name" : "FamilyMemberHistory4to5",
+  "title" : "FamilyMemberHistory Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "FamilyMemberHistory Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/FamilyMemberHistory",
+    "mode" : "source",
+    "alias" : "FamilyMemberHistoryR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/FamilyMemberHistory",
+    "mode" : "target",
+    "alias" : "FamilyMemberHistoryR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "FamilyMemberHistory",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "FamilyMemberHistoryR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "FamilyMemberHistoryR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "instantiatesCanonical",
+      "source" : [{
+        "context" : "src",
+        "element" : "instantiatesCanonical",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "instantiatesCanonical",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "instantiatesUri",
+      "source" : [{
+        "context" : "src",
+        "element" : "instantiatesUri",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "instantiatesUri",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "status",
+      "source" : [{
+        "context" : "src",
+        "element" : "status",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "status",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/fhs.status-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "dataAbsentReason",
+      "source" : [{
+        "context" : "src",
+        "element" : "dataAbsentReason",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "dataAbsentReason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "patient",
+      "source" : [{
+        "context" : "src",
+        "element" : "patient",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "patient",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "date",
+      "source" : [{
+        "context" : "src",
+        "element" : "date",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "date",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "name",
+      "source" : [{
+        "context" : "src",
+        "element" : "name",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "name",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "relationship",
+      "source" : [{
+        "context" : "src",
+        "element" : "relationship",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "relationship",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "sex",
+      "source" : [{
+        "context" : "src",
+        "element" : "sex",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "sex",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "bornPeriod",
+      "source" : [{
+        "context" : "src",
+        "type" : "Period",
+        "element" : "born",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "born",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "bornDate",
+      "source" : [{
+        "context" : "src",
+        "type" : "date",
+        "element" : "born",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "born",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "bornString",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "born",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "born",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "ageAge",
+      "source" : [{
+        "context" : "src",
+        "type" : "Age",
+        "element" : "age",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "age",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "ageRange",
+      "source" : [{
+        "context" : "src",
+        "type" : "Range",
+        "element" : "age",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "age",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "ageString",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "age",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "age",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "estimatedAge",
+      "source" : [{
+        "context" : "src",
+        "element" : "estimatedAge",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "estimatedAge",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "deceasedBoolean",
+      "source" : [{
+        "context" : "src",
+        "type" : "boolean",
+        "element" : "deceased",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "deceased",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "deceasedAge",
+      "source" : [{
+        "context" : "src",
+        "type" : "Age",
+        "element" : "deceased",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "deceased",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "deceasedRange",
+      "source" : [{
+        "context" : "src",
+        "type" : "Range",
+        "element" : "deceased",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "deceased",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "deceasedDate",
+      "source" : [{
+        "context" : "src",
+        "type" : "date",
+        "element" : "deceased",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "deceased",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "deceasedString",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "deceased",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "deceased",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "reasonCode",
+      "source" : [{
+        "context" : "src",
+        "element" : "reasonCode",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "reasonReference",
+      "source" : [{
+        "context" : "src",
+        "element" : "reasonReference",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "reason",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "note",
+      "source" : [{
+        "context" : "src",
+        "element" : "note",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "note",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "condition",
+      "source" : [{
+        "context" : "src",
+        "element" : "condition",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "condition",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "FamilyMemberHistoryCondition",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    }]
+  },
+  {
+    "name" : "FamilyMemberHistoryCondition",
+    "extends" : "BackboneElement",
+    "documentation" : "group FamilyMemberHistoryParticipant(source src, target tgt) extends BackboneElement {\r\nsrc.function -> tgt.function;\r\nsrc.actor -> tgt.actor;\r\n}",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "code",
+      "source" : [{
+        "context" : "src",
+        "element" : "code",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "code",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "outcome",
+      "source" : [{
+        "context" : "src",
+        "element" : "outcome",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "outcome",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "contributedToDeath",
+      "source" : [{
+        "context" : "src",
+        "element" : "contributedToDeath",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "contributedToDeath",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "onsetAge",
+      "source" : [{
+        "context" : "src",
+        "type" : "Age",
+        "element" : "onset",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "onset",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "onsetRange",
+      "source" : [{
+        "context" : "src",
+        "type" : "Range",
+        "element" : "onset",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "onset",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "onsetPeriod",
+      "source" : [{
+        "context" : "src",
+        "type" : "Period",
+        "element" : "onset",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "onset",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "onsetString",
+      "source" : [{
+        "context" : "src",
+        "type" : "string",
+        "element" : "onset",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "onset",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "note",
+      "source" : [{
+        "context" : "src",
+        "element" : "note",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "note",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

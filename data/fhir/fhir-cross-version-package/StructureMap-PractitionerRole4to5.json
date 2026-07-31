@@ -1,1 +1,376 @@
-{"resourceType":"StructureMap","id":"PractitionerRole4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/PractitionerRole4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'PractitionerRole4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'PractitionerRole Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/PractitionerRole<span style=\"color: navy\">&quot; </span><b>alias </b>PractitionerRoleR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/PractitionerRole<span style=\"color: navy\">&quot; </span><b>alias </b>PractitionerRoleR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>PractitionerRole<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>PractitionerRoleR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>PractitionerRoleR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.active<span style=\"color: navy\"><b> -&gt; </b></span>tgt.active<span style=\"color: navy\">;</span>\r\n  src.period<span style=\"color: navy\"><b> -&gt; </b></span>tgt.period<span style=\"color: navy\">;</span>\r\n  src.practitioner<span style=\"color: navy\"><b> -&gt; </b></span>tgt.practitioner<span style=\"color: navy\">;</span>\r\n  src.organization<span style=\"color: navy\"><b> -&gt; </b></span>tgt.organization<span style=\"color: navy\">;</span>\r\n  src.code<span style=\"color: navy\"><b> -&gt; </b></span>tgt.code<span style=\"color: navy\">;</span>\r\n  src.specialty<span style=\"color: navy\"><b> -&gt; </b></span>tgt.specialty<span style=\"color: navy\">;</span>\r\n  src.location<span style=\"color: navy\"><b> -&gt; </b></span>tgt.location<span style=\"color: navy\">;</span>\r\n  src.healthcareService<span style=\"color: navy\"><b> -&gt; </b></span>tgt.healthcareService<span style=\"color: navy\">;</span>\r\n  src.telecom<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.contact = <b>create</b><span style=\"color: navy\">(</span><span style=\"color: blue\">'ExtendedContactDetail'</span><span style=\"color: navy\">)</span><b> as </b><span style=\"color: maroon\">t</span><span style=\"color: navy\">, </span> t.telecom<b> as </b><span style=\"color: maroon\">telecom</span><b> then </b>ContactPoint<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">telecom</span><span style=\"color: navy\">)</span> <i>&quot;contact&quot;</i><span style=\"color: navy\">;</span>\r\n  src.availableTime<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.availability = <b>create</b><span style=\"color: navy\">(</span><span style=\"color: blue\">'Availability'</span><span style=\"color: navy\">)</span><b> as </b><span style=\"color: maroon\">av</span> <b>share</b> <b>av</b><span style=\"color: navy\">, </span> av.availableTime<b> as </b><span style=\"color: maroon\">t</span><b> then </b>PractitionerRoleAvailabilityAvailableTime<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.notAvailable<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span> tgt.availability = <b>create</b><span style=\"color: navy\">(</span><span style=\"color: blue\">'Availability'</span><span style=\"color: navy\">)</span><b> as </b><span style=\"color: maroon\">av</span> <b>share</b> <b>av</b><span style=\"color: navy\">, </span> av.notAvailableTime<b> as </b><span style=\"color: maroon\">t</span><b> then </b>PractitionerRoleAvailabilityNotAvailableTime<span style=\"color: navy\">(</span><span style=\"color: maroon\">s</span><span style=\"color: navy\">, </span><span style=\"color: maroon\">t</span><span style=\"color: navy\">)</span> <i>&quot;notAvailableTime&quot;</i><span style=\"color: navy\">;</span>\r\n  src.endpoint<span style=\"color: navy\"><b> -&gt; </b></span>tgt.endpoint<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>PractitionerRoleAvailabilityAvailableTime<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.daysOfWeek<span style=\"color: navy\"><b> -&gt; </b></span>tgt.daysOfWeek<span style=\"color: navy\">;</span>\r\n  src.allDay<span style=\"color: navy\"><b> -&gt; </b></span>tgt.allDay<span style=\"color: navy\">;</span>\r\n  src.availableStartTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.availableStartTime<span style=\"color: navy\">;</span>\r\n  src.availableEndTime<span style=\"color: navy\"><b> -&gt; </b></span>tgt.availableEndTime<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span><b>group </b>PractitionerRoleAvailabilityNotAvailableTime<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span>, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\">)</span><b> extends </b>BackboneElement<span style=\"color: navy\"> {\r\n</span>  src.description<span style=\"color: navy\"><b> -&gt; </b></span>tgt.description<span style=\"color: navy\">;</span>\r\n  src.during<span style=\"color: navy\"><b> -&gt; </b></span>tgt.during<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/PractitionerRole4to5","version":"0.1.0","name":"PractitionerRole4to5","title":"PractitionerRole Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"PractitionerRoleTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/PractitionerRole","mode":"source","alias":"PractitionerRoleR4"},{"url":"http://hl7.org/fhir/5.0/PractitionerRole","mode":"target","alias":"PractitionerRoleR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"PractitionerRole","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"PractitionerRoleR4","mode":"source"},{"name":"tgt","type":"PractitionerRoleR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"active","source":[{"context":"src","element":"active","variable":"vvv"}],"target":[{"context":"tgt","element":"active","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"period","source":[{"context":"src","element":"period","variable":"vvv"}],"target":[{"context":"tgt","element":"period","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"practitioner","source":[{"context":"src","element":"practitioner","variable":"vvv"}],"target":[{"context":"tgt","element":"practitioner","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"organization","source":[{"context":"src","element":"organization","variable":"vvv"}],"target":[{"context":"tgt","element":"organization","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"code","source":[{"context":"src","element":"code","variable":"vvv"}],"target":[{"context":"tgt","element":"code","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"specialty","source":[{"context":"src","element":"specialty","variable":"vvv"}],"target":[{"context":"tgt","element":"specialty","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"location","source":[{"context":"src","element":"location","variable":"vvv"}],"target":[{"context":"tgt","element":"location","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"healthcareService","source":[{"context":"src","element":"healthcareService","variable":"vvv"}],"target":[{"context":"tgt","element":"healthcareService","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"contact","source":[{"context":"src","element":"telecom","variable":"s"}],"target":[{"context":"tgt","element":"contact","variable":"t","transform":"create","parameter":[{"valueString":"ExtendedContactDetail"}]},{"context":"t","element":"telecom","variable":"telecom"}],"dependent":[{"name":"ContactPoint","parameter":[{"valueId":"s"},{"valueId":"telecom"}]}]},{"name":"availableTime","source":[{"context":"src","element":"availableTime","variable":"s"}],"target":[{"context":"tgt","element":"availability","variable":"av","listMode":["share"],"listRuleId":"av","transform":"create","parameter":[{"valueString":"Availability"}]},{"context":"av","element":"availableTime","variable":"t"}],"dependent":[{"name":"PractitionerRoleAvailabilityAvailableTime","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"notAvailableTime","source":[{"context":"src","element":"notAvailable","variable":"s"}],"target":[{"context":"tgt","element":"availability","variable":"av","listMode":["share"],"listRuleId":"av","transform":"create","parameter":[{"valueString":"Availability"}]},{"context":"av","element":"notAvailableTime","variable":"t"}],"dependent":[{"name":"PractitionerRoleAvailabilityNotAvailableTime","parameter":[{"valueId":"s"},{"valueId":"t"}]}]},{"name":"endpoint","source":[{"context":"src","element":"endpoint","variable":"vvv"}],"target":[{"context":"tgt","element":"endpoint","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"PractitionerRoleAvailabilityAvailableTime","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"daysOfWeek","source":[{"context":"src","element":"daysOfWeek","variable":"vvv"}],"target":[{"context":"tgt","element":"daysOfWeek","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"allDay","source":[{"context":"src","element":"allDay","variable":"vvv"}],"target":[{"context":"tgt","element":"allDay","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"availableStartTime","source":[{"context":"src","element":"availableStartTime","variable":"vvv"}],"target":[{"context":"tgt","element":"availableStartTime","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"availableEndTime","source":[{"context":"src","element":"availableEndTime","variable":"vvv"}],"target":[{"context":"tgt","element":"availableEndTime","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"PractitionerRoleAvailabilityNotAvailableTime","extends":"BackboneElement","input":[{"name":"src","mode":"source"},{"name":"tgt","mode":"target"}],"rule":[{"name":"description","source":[{"context":"src","element":"description","variable":"vvv"}],"target":[{"context":"tgt","element":"description","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"during","source":[{"context":"src","element":"during","variable":"vvv"}],"target":[{"context":"tgt","element":"during","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "PractitionerRole4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/PractitionerRole4to5",
+  "name" : "PractitionerRole4to5",
+  "title" : "PractitionerRole Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "PractitionerRole Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/PractitionerRole",
+    "mode" : "source",
+    "alias" : "PractitionerRoleR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/PractitionerRole",
+    "mode" : "target",
+    "alias" : "PractitionerRoleR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "PractitionerRole",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "PractitionerRoleR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "PractitionerRoleR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "active",
+      "source" : [{
+        "context" : "src",
+        "element" : "active",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "active",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "period",
+      "source" : [{
+        "context" : "src",
+        "element" : "period",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "period",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "practitioner",
+      "source" : [{
+        "context" : "src",
+        "element" : "practitioner",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "practitioner",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "organization",
+      "source" : [{
+        "context" : "src",
+        "element" : "organization",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "organization",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "code",
+      "source" : [{
+        "context" : "src",
+        "element" : "code",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "code",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "specialty",
+      "source" : [{
+        "context" : "src",
+        "element" : "specialty",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "specialty",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "location",
+      "source" : [{
+        "context" : "src",
+        "element" : "location",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "location",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "healthcareService",
+      "source" : [{
+        "context" : "src",
+        "element" : "healthcareService",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "healthcareService",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "contact",
+      "source" : [{
+        "context" : "src",
+        "element" : "telecom",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "contact",
+        "variable" : "t",
+        "transform" : "create",
+        "parameter" : [{
+          "valueString" : "ExtendedContactDetail"
+        }]
+      },
+      {
+        "context" : "t",
+        "element" : "telecom",
+        "variable" : "telecom"
+      }],
+      "dependent" : [{
+        "name" : "ContactPoint",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "telecom"
+        }]
+      }]
+    },
+    {
+      "name" : "availableTime",
+      "source" : [{
+        "context" : "src",
+        "element" : "availableTime",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "availability",
+        "variable" : "av",
+        "transform" : "create",
+        "parameter" : [{
+          "valueString" : "Availability"
+        }]
+      },
+      {
+        "context" : "av",
+        "element" : "availableTime",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "PractitionerRoleAvailabilityAvailableTime",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "notAvailableTime",
+      "source" : [{
+        "context" : "src",
+        "element" : "notAvailable",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "availability",
+        "variable" : "av",
+        "transform" : "create",
+        "parameter" : [{
+          "valueString" : "Availability"
+        }]
+      },
+      {
+        "context" : "av",
+        "element" : "notAvailableTime",
+        "variable" : "t"
+      }],
+      "dependent" : [{
+        "name" : "PractitionerRoleAvailabilityNotAvailableTime",
+        "parameter" : [{
+          "valueId" : "s"
+        },
+        {
+          "valueId" : "t"
+        }]
+      }]
+    },
+    {
+      "name" : "endpoint",
+      "source" : [{
+        "context" : "src",
+        "element" : "endpoint",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "endpoint",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "PractitionerRoleAvailabilityAvailableTime",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "daysOfWeek",
+      "source" : [{
+        "context" : "src",
+        "element" : "daysOfWeek",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "daysOfWeek",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "allDay",
+      "source" : [{
+        "context" : "src",
+        "element" : "allDay",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "allDay",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "availableStartTime",
+      "source" : [{
+        "context" : "src",
+        "element" : "availableStartTime",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "availableStartTime",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "availableEndTime",
+      "source" : [{
+        "context" : "src",
+        "element" : "availableEndTime",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "availableEndTime",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  },
+  {
+    "name" : "PractitionerRoleAvailabilityNotAvailableTime",
+    "extends" : "BackboneElement",
+    "input" : [{
+      "name" : "src",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "description",
+      "source" : [{
+        "context" : "src",
+        "element" : "description",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "description",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "during",
+      "source" : [{
+        "context" : "src",
+        "element" : "during",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "during",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

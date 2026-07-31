@@ -1,1 +1,149 @@
-{"resourceType":"StructureMap","id":"ParameterDefinition4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/ParameterDefinition4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'ParameterDefinition4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'ParameterDefinition Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/ParameterDefinition<span style=\"color: navy\">&quot; </span><b>alias </b>ParameterDefinitionR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/ParameterDefinition<span style=\"color: navy\">&quot; </span><b>alias </b>ParameterDefinitionR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>ParameterDefinition<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>ParameterDefinitionR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>ParameterDefinitionR5<span style=\"color: navy\">)</span><b> extends </b>Element<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.name<span style=\"color: navy\"><b> -&gt; </b></span>tgt.name<span style=\"color: navy\">;</span>\r\n  src.use<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.use = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/ConceptMap/ParameterDefinition.use-R4toR5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.min<span style=\"color: navy\"><b> -&gt; </b></span>tgt.min<span style=\"color: navy\">;</span>\r\n  src.max<span style=\"color: navy\"><b> -&gt; </b></span>tgt.max<span style=\"color: navy\">;</span>\r\n  src.documentation<span style=\"color: navy\"><b> -&gt; </b></span>tgt.documentation<span style=\"color: navy\">;</span>\r\n  src.type<b> as </b><span style=\"color: maroon\">v</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.type = <b>translate</b><span style=\"color: navy\">(</span><span style=\"color: maroon\">v</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'http://hl7.org/fhir/cross-version/types4to5'</span><span style=\"color: navy\">, </span><span style=\"color: blue\">'code'</span><span style=\"color: navy\">)</span><span style=\"color: navy\">;</span>\r\n  src.profile<span style=\"color: navy\"><b> -&gt; </b></span>tgt.profile<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/ParameterDefinition4to5","version":"0.1.0","name":"ParameterDefinition4to5","title":"ParameterDefinition Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"ParameterDefinitionTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/ParameterDefinition","mode":"source","alias":"ParameterDefinitionR4"},{"url":"http://hl7.org/fhir/5.0/ParameterDefinition","mode":"target","alias":"ParameterDefinitionR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"ParameterDefinition","extends":"Element","typeMode":"type-and-types","input":[{"name":"src","type":"ParameterDefinitionR4","mode":"source"},{"name":"tgt","type":"ParameterDefinitionR5","mode":"target"}],"rule":[{"name":"name","source":[{"context":"src","element":"name","variable":"vvv"}],"target":[{"context":"tgt","element":"name","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"use","source":[{"context":"src","element":"use","variable":"v"}],"target":[{"context":"tgt","element":"use","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/ConceptMap/ParameterDefinition.use-R4toR5"},{"valueString":"code"}]}]},{"name":"min","source":[{"context":"src","element":"min","variable":"vvv"}],"target":[{"context":"tgt","element":"min","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"max","source":[{"context":"src","element":"max","variable":"vvv"}],"target":[{"context":"tgt","element":"max","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"documentation","source":[{"context":"src","element":"documentation","variable":"vvv"}],"target":[{"context":"tgt","element":"documentation","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"v"}],"target":[{"context":"tgt","element":"type","transform":"translate","parameter":[{"valueId":"v"},{"valueString":"http://hl7.org/fhir/cross-version/types4to5"},{"valueString":"code"}]}]},{"name":"profile","source":[{"context":"src","element":"profile","variable":"vvv"}],"target":[{"context":"tgt","element":"profile","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "ParameterDefinition4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/ParameterDefinition4to5",
+  "name" : "ParameterDefinition4to5",
+  "title" : "ParameterDefinition Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "ParameterDefinition Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/ParameterDefinition",
+    "mode" : "source",
+    "alias" : "ParameterDefinitionR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/ParameterDefinition",
+    "mode" : "target",
+    "alias" : "ParameterDefinitionR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "ParameterDefinition",
+    "extends" : "Element",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "ParameterDefinitionR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "ParameterDefinitionR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "name",
+      "source" : [{
+        "context" : "src",
+        "element" : "name",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "name",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "use",
+      "source" : [{
+        "context" : "src",
+        "element" : "use",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "use",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/prd.use-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "min",
+      "source" : [{
+        "context" : "src",
+        "element" : "min",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "min",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "max",
+      "source" : [{
+        "context" : "src",
+        "element" : "max",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "max",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "documentation",
+      "source" : [{
+        "context" : "src",
+        "element" : "documentation",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "documentation",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "v"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "transform" : "translate",
+        "parameter" : [{
+          "valueId" : "v"
+        },
+        {
+          "valueString" : "http://hl7.org/fhir/uv/xver/ConceptMap/types-4to5"
+        },
+        {
+          "valueString" : "code"
+        }]
+      }]
+    },
+    {
+      "name" : "profile",
+      "source" : [{
+        "context" : "src",
+        "element" : "profile",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "profile",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

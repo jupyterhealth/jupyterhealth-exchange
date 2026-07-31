@@ -1,1 +1,202 @@
-{"resourceType":"StructureMap","id":"Organization4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Organization4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Organization4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Organization Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Organization<span style=\"color: navy\">&quot; </span><b>alias </b>OrganizationR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Organization<span style=\"color: navy\">&quot; </span><b>alias </b>OrganizationR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Organization<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>OrganizationR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>OrganizationR5<span style=\"color: navy\">)</span><b> extends </b>DomainResource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.identifier<span style=\"color: navy\"><b> -&gt; </b></span>tgt.identifier<span style=\"color: navy\">;</span>\r\n  src.active<span style=\"color: navy\"><b> -&gt; </b></span>tgt.active<span style=\"color: navy\">;</span>\r\n  src.type<span style=\"color: navy\"><b> -&gt; </b></span>tgt.type<span style=\"color: navy\">;</span>\r\n  src.name<span style=\"color: navy\"><b> -&gt; </b></span>tgt.name<span style=\"color: navy\">;</span>\r\n  src.alias<span style=\"color: navy\"><b> -&gt; </b></span>tgt.alias<span style=\"color: navy\">;</span>\r\n  src.contact<b> as </b><span style=\"color: maroon\">s</span><span style=\"color: navy\"><b> -&gt; </b></span>tgt.contact<b> as </b><span style=\"color: maroon\">t</span><b> then</b><span style=\"color: navy\"> {\r\n</span>    s.purpose<span style=\"color: navy\"><b> -&gt; </b></span>t.purpose<span style=\"color: navy\">;</span>\r\n    s.name<span style=\"color: navy\"><b> -&gt; </b></span>t.name<span style=\"color: navy\">;</span>\r\n    s.telecom<span style=\"color: navy\"><b> -&gt; </b></span>t.telecom<span style=\"color: navy\">;</span>\r\n    s.address<span style=\"color: navy\"><b> -&gt; </b></span>t.address<span style=\"color: navy\">;</span>\r\n  <span style=\"color: navy\">}</span><span style=\"color: navy\">;</span>\r\n  src.partOf<span style=\"color: navy\"><b> -&gt; </b></span>tgt.partOf<span style=\"color: navy\">;</span>\r\n  src.endpoint<span style=\"color: navy\"><b> -&gt; </b></span>tgt.endpoint<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Organization4to5","version":"0.1.0","name":"Organization4to5","title":"Organization Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"OrganizationTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Organization","mode":"source","alias":"OrganizationR4"},{"url":"http://hl7.org/fhir/5.0/Organization","mode":"target","alias":"OrganizationR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Organization","extends":"DomainResource","typeMode":"type-and-types","input":[{"name":"src","type":"OrganizationR4","mode":"source"},{"name":"tgt","type":"OrganizationR5","mode":"target"}],"rule":[{"name":"identifier","source":[{"context":"src","element":"identifier","variable":"vvv"}],"target":[{"context":"tgt","element":"identifier","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"active","source":[{"context":"src","element":"active","variable":"vvv"}],"target":[{"context":"tgt","element":"active","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"type","source":[{"context":"src","element":"type","variable":"vvv"}],"target":[{"context":"tgt","element":"type","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"name","source":[{"context":"src","element":"name","variable":"vvv"}],"target":[{"context":"tgt","element":"name","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"alias","source":[{"context":"src","element":"alias","variable":"vvv"}],"target":[{"context":"tgt","element":"alias","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"contact","source":[{"context":"src","element":"contact","variable":"s"}],"target":[{"context":"tgt","element":"contact","variable":"t"}],"rule":[{"name":"purpose","source":[{"context":"s","element":"purpose","variable":"vvv"}],"target":[{"context":"t","element":"purpose","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"name","source":[{"context":"s","element":"name","variable":"vvv"}],"target":[{"context":"t","element":"name","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"telecom","source":[{"context":"s","element":"telecom","variable":"vvv"}],"target":[{"context":"t","element":"telecom","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"address","source":[{"context":"s","element":"address","variable":"vvv"}],"target":[{"context":"t","element":"address","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]},{"name":"partOf","source":[{"context":"src","element":"partOf","variable":"vvv"}],"target":[{"context":"tgt","element":"partOf","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"endpoint","source":[{"context":"src","element":"endpoint","variable":"vvv"}],"target":[{"context":"tgt","element":"endpoint","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Organization4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Organization4to5",
+  "name" : "Organization4to5",
+  "title" : "Organization Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Organization Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Organization",
+    "mode" : "source",
+    "alias" : "OrganizationR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Organization",
+    "mode" : "target",
+    "alias" : "OrganizationR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Organization",
+    "extends" : "DomainResource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "OrganizationR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "OrganizationR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "identifier",
+      "source" : [{
+        "context" : "src",
+        "element" : "identifier",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "identifier",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "active",
+      "source" : [{
+        "context" : "src",
+        "element" : "active",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "active",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "type",
+      "source" : [{
+        "context" : "src",
+        "element" : "type",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "type",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "name",
+      "source" : [{
+        "context" : "src",
+        "element" : "name",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "name",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "alias",
+      "source" : [{
+        "context" : "src",
+        "element" : "alias",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "alias",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "contact",
+      "source" : [{
+        "context" : "src",
+        "element" : "contact",
+        "variable" : "s"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "contact",
+        "variable" : "t"
+      }],
+      "rule" : [{
+        "name" : "purpose",
+        "source" : [{
+          "context" : "s",
+          "element" : "purpose",
+          "variable" : "vvv"
+        }],
+        "target" : [{
+          "context" : "t",
+          "element" : "purpose",
+          "variable" : "vvv",
+          "transform" : "create"
+        }]
+      },
+      {
+        "name" : "name",
+        "source" : [{
+          "context" : "s",
+          "element" : "name",
+          "variable" : "vvv"
+        }],
+        "target" : [{
+          "context" : "t",
+          "element" : "name",
+          "variable" : "vvv",
+          "transform" : "create"
+        }]
+      },
+      {
+        "name" : "telecom",
+        "source" : [{
+          "context" : "s",
+          "element" : "telecom",
+          "variable" : "vvv"
+        }],
+        "target" : [{
+          "context" : "t",
+          "element" : "telecom",
+          "variable" : "vvv",
+          "transform" : "create"
+        }]
+      },
+      {
+        "name" : "address",
+        "source" : [{
+          "context" : "s",
+          "element" : "address",
+          "variable" : "vvv"
+        }],
+        "target" : [{
+          "context" : "t",
+          "element" : "address",
+          "variable" : "vvv",
+          "transform" : "create"
+        }]
+      }]
+    },
+    {
+      "name" : "partOf",
+      "source" : [{
+        "context" : "src",
+        "element" : "partOf",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "partOf",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "endpoint",
+      "source" : [{
+        "context" : "src",
+        "element" : "endpoint",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "endpoint",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

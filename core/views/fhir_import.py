@@ -10,8 +10,8 @@ Because this is an **import** (a lossy R4 -> R5 conversion), not a pure FHIR cre
 endpoints always return a ``batch-response`` **Bundle**, and every entry carries an
 ``OperationOutcome`` at ``response.outcome``: warnings naming any R4 fields dropped in conversion,
 an "informational, no loss" note when nothing was dropped, or the error when an entry failed. The
-conversion is best-effort and lossy (see ``fhir-r4-import.md`` at the repo root); R5 validation on
-the create path is the gate that rejects anything the transform could not produce cleanly.
+conversion is best-effort and lossy; R5 validation on the create path is the gate that rejects
+anything the transform could not produce cleanly.
 """
 
 import logging
@@ -74,6 +74,7 @@ class FHIRImportView(FHIRResourceView):
 
     def _process_resource(self, resource_type, body, already_camel=False):
         """Convert one R4 resource and create it; return a Bundle entry (success or error)."""
+        dropped = []
         try:
             if not resource_type:
                 raise DRFValidationError("Bundle entry is missing a resource / resourceType.")
@@ -90,7 +91,9 @@ class FHIRImportView(FHIRResourceView):
             created = self._create(resource_type, r5)
             return _success_entry(created, resource_type, dropped)
         except Exception as exc:  # per-entry best-effort, mirroring batch semantics.
-            return _error_entry(exc)
+            # Include any drops even on failure: a dropped *required* field is usually *why* the
+            # create failed (e.g. "medication field required" alongside "medication was dropped").
+            return _error_entry(exc, resource_type, dropped)
 
     def _convert(self, resource_type, camel_body):
         try:
@@ -106,38 +109,39 @@ def _success_entry(created, resource_type, dropped):
     }
 
 
+def _dropped_issues(resource_type, dropped):
+    return [
+        {
+            "severity": "warning",
+            "code": "not-supported",
+            "diagnostics": f"R4 field '{resource_type}.{path}' has no R5 equivalent and was dropped in conversion.",
+            "expression": [f"{resource_type}.{path}"],
+        }
+        for path in (dropped or [])
+    ]
+
+
 def _outcome(resource_type, dropped):
     """An OperationOutcome: one warning per dropped R4 path, or an informational "no loss" note."""
-    if dropped:
-        issues = [
-            {
-                "severity": "warning",
-                "code": "not-supported",
-                "diagnostics": f"R4 field '{resource_type}.{path}' has no R5 equivalent and was dropped in conversion.",
-                "expression": [f"{resource_type}.{path}"],
-            }
-            for path in dropped
-        ]
-    else:
-        issues = [
-            {
-                "severity": "information",
-                "code": "informational",
-                "diagnostics": "Converted R4 -> R5 with no detected field loss.",
-            }
-        ]
+    issues = _dropped_issues(resource_type, dropped) or [
+        {
+            "severity": "information",
+            "code": "informational",
+            "diagnostics": "Converted R4 -> R5 with no detected field loss.",
+        }
+    ]
     return {"resourceType": "OperationOutcome", "issue": issues}
 
 
-def _error_entry(exc):
+def _error_entry(exc, resource_type=None, dropped=None):
     detail = getattr(exc, "detail", None) or str(exc)
     code = getattr(exc, "status_code", http_status.HTTP_400_BAD_REQUEST)
+    # The error first, then any dropped-field warnings (a dropped required field is often the cause).
+    issues = [{"severity": "error", "code": "processing", "diagnostics": str(detail)}]
+    issues += _dropped_issues(resource_type, dropped)
     return {
         "response": {
             "status": f"{code} {getattr(exc, 'default_code', 'error')}",
-            "outcome": {
-                "resourceType": "OperationOutcome",
-                "issue": [{"severity": "error", "code": "processing", "diagnostics": str(detail)}],
-            },
+            "outcome": {"resourceType": "OperationOutcome", "issue": issues},
         }
     }

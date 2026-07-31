@@ -1,1 +1,77 @@
-{"resourceType":"StructureMap","id":"Binary4to5","text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre class=\"fml\">\r\n<span style=\"color: #cc00cc\">/// <b>url</b> = </span><span style=\"color: blue\">'http://hl7.org/fhir/StructureMap/Binary4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>name</b> = </span><span style=\"color: blue\">'Binary4to5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>title</b> = </span><span style=\"color: blue\">'Binary Transforms: R4 to R5'</span>\r\n<span style=\"color: #cc00cc\">/// <b>status</b> = </span><span style=\"color: blue\">'active'</span>\r\n\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/4.0/Binary<span style=\"color: navy\">&quot; </span><b>alias </b>BinaryR4 <b>as </b><b>source</b>\r\n<b>uses</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/5.0/Binary<span style=\"color: navy\">&quot; </span><b>alias </b>BinaryR5 <b>as </b><b>target</b>\r\n\r\n<b>imports</b><span style=\"color: navy\"> &quot;</span>http://hl7.org/fhir/StructureMap/*4to5<span style=\"color: navy\">&quot;\r\n</span>\r\n<b>group </b>Binary<span style=\"color: navy\">(</span><b>source</b> <span style=\"color: maroon\">src</span><span style=\"color: navy\"> : </span>BinaryR4, <b>target</b> <span style=\"color: maroon\">tgt</span><span style=\"color: navy\"> : </span>BinaryR5<span style=\"color: navy\">)</span><b> extends </b>Resource<b> &lt;&lt;type+&gt;&gt;</b><span style=\"color: navy\"> {\r\n</span>  src.contentType<span style=\"color: navy\"><b> -&gt; </b></span>tgt.contentType<span style=\"color: navy\">;</span>\r\n  src.securityContext<span style=\"color: navy\"><b> -&gt; </b></span>tgt.securityContext<span style=\"color: navy\">;</span>\r\n  src.data<span style=\"color: navy\"><b> -&gt; </b></span>tgt.data<span style=\"color: navy\">;</span>\r\n<span style=\"color: navy\">}\r\n\r\n</span></pre></div>"},"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-wg","valueCode":"fhir"},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-fmm","valueInteger":1,"_valueInteger":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}},{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-standards-status","valueCode":"draft","_valueCode":{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/structuredefinition-conformance-derivedFrom","valueCanonical":"http://hl7.org/fhir/extensions/ImplementationGuide/hl7.fhir.uv.xver"}]}}],"url":"http://hl7.org/fhir/StructureMap/Binary4to5","version":"0.1.0","name":"Binary4to5","title":"Binary Transforms: R4 to R5","status":"active","date":"2024-02-22T03:16:50+00:00","publisher":"HL7 International / FHIR Infrastructure","contact":[{"telecom":[{"system":"url","value":"http://www.hl7.org/Special/committees/fiwg"}]}],"description":"BinaryTransformsR4toR5","jurisdiction":[{"coding":[{"system":"http://unstats.un.org/unsd/methods/m49/m49.htm","code":"001"}]}],"structure":[{"url":"http://hl7.org/fhir/4.0/Binary","mode":"source","alias":"BinaryR4"},{"url":"http://hl7.org/fhir/5.0/Binary","mode":"target","alias":"BinaryR5"}],"import":["http://hl7.org/fhir/StructureMap/*4to5"],"group":[{"name":"Binary","extends":"Resource","typeMode":"type-and-types","input":[{"name":"src","type":"BinaryR4","mode":"source"},{"name":"tgt","type":"BinaryR5","mode":"target"}],"rule":[{"name":"contentType","source":[{"context":"src","element":"contentType","variable":"vvv"}],"target":[{"context":"tgt","element":"contentType","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"securityContext","source":[{"context":"src","element":"securityContext","variable":"vvv"}],"target":[{"context":"tgt","element":"securityContext","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]},{"name":"data","source":[{"context":"src","element":"data","variable":"vvv"}],"target":[{"context":"tgt","element":"data","variable":"vvv","transform":"create"}],"dependent":[{"name":"DefaultMappingGroupAnonymousAlias","parameter":[{"valueId":"vvv"},{"valueId":"vvv"}]}]}]}]}
+{
+  "resourceType" : "StructureMap",
+  "id" : "Binary4to5",
+  "url" : "http://hl7.org/fhir/uv/xver/StructureMap/Binary4to5",
+  "name" : "Binary4to5",
+  "title" : "Binary Transforms: R4 to R5",
+  "status" : "active",
+  "description" : "Binary Transforms: R4 to R5",
+  "structure" : [{
+    "url" : "http://hl7.org/fhir/4.0/StructureDefinition/Binary",
+    "mode" : "source",
+    "alias" : "BinaryR4"
+  },
+  {
+    "url" : "http://hl7.org/fhir/5.0/StructureDefinition/Binary",
+    "mode" : "target",
+    "alias" : "BinaryR5"
+  }],
+  "import" : ["http://hl7.org/fhir/uv/xver/StructureMap/*4to5"],
+  "group" : [{
+    "name" : "Binary",
+    "extends" : "Resource",
+    "typeMode" : "type-and-types",
+    "input" : [{
+      "name" : "src",
+      "type" : "BinaryR4",
+      "mode" : "source"
+    },
+    {
+      "name" : "tgt",
+      "type" : "BinaryR5",
+      "mode" : "target"
+    }],
+    "rule" : [{
+      "name" : "contentType",
+      "source" : [{
+        "context" : "src",
+        "element" : "contentType",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "contentType",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "securityContext",
+      "source" : [{
+        "context" : "src",
+        "element" : "securityContext",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "securityContext",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    },
+    {
+      "name" : "data",
+      "source" : [{
+        "context" : "src",
+        "element" : "data",
+        "variable" : "vvv"
+      }],
+      "target" : [{
+        "context" : "tgt",
+        "element" : "data",
+        "variable" : "vvv",
+        "transform" : "create"
+      }]
+    }]
+  }]
+}

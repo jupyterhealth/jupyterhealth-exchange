@@ -84,7 +84,7 @@ class Command(BaseCommand):
 
         jhe_settings = [
             # Honor the SITE_URL env so the seeded host matches where JHE is actually
-            # served (e.g. http://localhost:8010 for the MyChart client). Defaults to
+            # served (e.g. http://localhost:8001 for the Patient Access client). Defaults to
             # http://localhost:8000 when SITE_URL is unset, preserving prior behavior.
             # Invitation links embed this host, so a mismatch sends redemption to the
             # wrong server.
@@ -217,9 +217,9 @@ class Command(BaseCommand):
             ("iHealth", "personal_device", ["omh:body-temperature:4.0", "omh:heart-rate:2.0"]),
             ("Oura", "personal_device", ["omh:heart-rate:2.0"]),
             ("Questionnaire", "patient_app", ["QuestionnaireResponse"]),
-            # Source for clinical records pulled from Epic MyChart (#489). No OMH
+            # Source for clinical records pulled from Patient Access API (#489). No OMH
             # supported scopes: its data is stored as auxiliary FHIR resources.
-            ("Epic MyChart", "medical_device", []),
+            ("Patient Access API", "medical_device", []),
         ]
         for name, type, scope_codes in data_sources:
             ds, _ = DataSource.objects.update_or_create(name=name, type=type)
@@ -247,26 +247,25 @@ class Command(BaseCommand):
                 "data_sources": ["Dexcom", "iHealth"],
             },
             {
-                # SMART on FHIR patient EHR-records client (issue #489). Port 8010 is
-                # temporary: it matches the Epic redirect already registered for the
-                # Phase 1 POC. Revert to 8001 once Epic's redirect is updated.
+                # SMART on FHIR patient EHR-records client (issue #489). Served on JHE's
+                # normal :8001, which the Epic app has registered as a redirect.
                 #
                 # NOTE: this app's redirect_uris is the JHE OAuth callback (the default
                 # /auth/callback, used by the invitation -> /o/token exchange), NOT the
                 # Epic callback. The Epic callback URLs
-                # (http://localhost:8010/clients/mychart/callback and the jhe.fly.dev
+                # (http://localhost:8001/clients/patient-access/callback and the jhe.fly.dev
                 # equivalent) are registered separately on the Epic app at fhir.epic.com.
-                "name": "MyChart",
-                "invitation_url": "http://localhost:8010/clients/mychart/?code=CODE",
+                "name": "Patient Access",
+                "invitation_url": "http://localhost:8001/clients/patient-access/?code=CODE",
                 "data_sources": [],
+                # No iss here: the hospital the patient picks supplies it (EhrBrand.fhir_base_url).
                 "aux_data": {
-                    "iss": "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4",
                     # Non-production client id of the Epic app "JupyterHealth Exchange -
-                    # USCDI v3" (appId 55446), the app that has the localhost:8010 +
-                    # jhe.fly.dev /clients/mychart/callback redirect URIs registered.
-                    # (Same app/client id as the Phase 1 smart-mychart-poc.)
+                    # USCDI v3" (appId 55446), the app that has the localhost:8001 +
+                    # jhe.fly.dev /clients/patient-access/callback redirect URIs registered.
+                    # (Same Epic sandbox app/client id used in the Phase 1 POC.)
                     "client_id": "77849e74-8e2a-4c2f-826c-bdbef6da3357",
-                    "scopes": "openid profile launch/patient patient/Patient.read patient/Observation.read",
+                    "scopes": "openid profile launch/patient patient/Patient.read patient/Observation.read patient/Condition.read patient/MedicationRequest.read patient/AllergyIntolerance.read",
                 },
             },
         ]
@@ -358,11 +357,16 @@ class Command(BaseCommand):
             StudyDataSource.objects.create(study=study, data_source=questionnaire_ds)
             StudyClient.objects.create(study=study, client=carex_client)
 
-        # Wire the MyChart (Epic SMART) client to Peter's BP & HR study so it shows up
+        # Wire the Patient Access (Epic SMART) client to Peter's BP & HR study so it shows up
         # as an invitable client for him (consolidated_clients gates on StudyClient).
-        # This makes the MyChart end-to-end flow (#489) testable out of the box.
-        mychart_client = get_application_model().objects.get(name="MyChart")
-        StudyClient.objects.create(study=lifespan_study_bp_hr, client=mychart_client)
+        # This makes the Patient Access end-to-end flow (#489) testable out of the box.
+        patient_access_client = get_application_model().objects.get(name="Patient Access")
+        StudyClient.objects.create(study=lifespan_study_bp_hr, client=patient_access_client)
+
+        # Seed EHR hospital brands so the Patient Access hospital picker (#489) has data to
+        # search out of the box. Uses the curated sample bundle; production imports the
+        # full Epic file via `manage.py import_ehr_brands --file <download>`.
+        call_command("import_ehr_brands")
 
         ll_patient_pete = self.create_user_with_profile("ll_patient_peter@example.com", user_type="patient")
         ll_patient_pete.organizations.add(lifespan_lab)

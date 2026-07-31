@@ -1,0 +1,35 @@
+{% extends "clients/patient-access/base.html" %} {% block title %}Connect clinical records{% endblock %}
+
+{% block body_content %}
+<div class="w-100 text-center mt-5">
+  <h1>Connect clinical records</h1>
+  <pre id="out" class="text-start ms-5 me-5"></pre>
+
+  <!-- Hospital picker: revealed after the invitation is redeemed. -->
+  <div id="hospital-picker" class="mx-auto mt-3" style="max-width: 640px" hidden>
+    <label for="hospital-search" class="form-label fw-bold">Find your hospital</label>
+    <input
+      id="hospital-search"
+      type="search"
+      class="form-control mb-3"
+      placeholder="Search by hospital name, city, or state"
+      autocomplete="off"
+    />
+    <div id="hospital-results"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block body_footer %}
+<script>
+  var out = document.getElementById("out");
+  var picker = {
+    container: document.getElementById("hospital-picker"),
+    input: document.getElementById("hospital-search"),
+    results: document.getElementById("hospital-results"),
+  };
+  // Redeem the invitation for a JHE access token, then let the patient pick their
+  // hospital; selecting one launches the Epic SMART flow against that hospital.
+  startPatientAccessConnect(out, PATIENT_ACCESS_CONFIG, picker);
+</script>
+{% endblock %}
