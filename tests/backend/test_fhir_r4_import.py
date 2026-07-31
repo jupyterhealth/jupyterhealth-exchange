@@ -7,6 +7,8 @@ provenance).
 """
 
 import json
+import pathlib
+import re
 import uuid
 
 import pytest
@@ -620,3 +622,129 @@ def test_import_bundle_reports_per_entry_error(api_client, patient, fhir_source)
     entries = r.json()["entry"]
     assert entries[0]["response"]["outcome"]["resourceType"] == "OperationOutcome"
     assert entries[1]["response"]["status"] == "201 Created"
+
+
+# ---------------------------------------------------------------------------
+# Pull-list invariants: everything the patient-access client pulls must convert
+# to valid R5 (with import-path enrichment applied), and every pulled type must
+# have a matching seeded scope. These are the invariants RFC 0003 states.
+# ---------------------------------------------------------------------------
+
+_REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
+_SEED_PY_PATH = _REPO_ROOT / "core" / "management" / "commands" / "seed.py"
+_CLIENT_JS = _REPO_ROOT / "core" / "static" / "clients" / "patient-access" / "js" / "client-patient-access.js"
+
+
+def _pulled_types():
+    text = _CLIENT_JS.read_text()
+    block = re.search(r"var PATIENT_ACCESS_PULLS = \[(.*?)\n\];", text, re.DOTALL).group(1)
+    return set(re.findall(r'type: "(\w+)"', block))
+
+
+# Minimal Epic-shaped R4 instance per pulled type (Patient/Condition/Observation etc. are
+# covered by dedicated tests above; this sweep guards the whole list against a type that
+# cannot survive convert+validate — the failure mode that would have shipped Coverage).
+_MINIMAL_PULL_R4 = {
+    "Patient": {"resourceType": "Patient", "name": [{"family": "Doe"}]},
+    "Condition": {"resourceType": "Condition", "subject": _PATIENT_REF},
+    "MedicationRequest": {
+        "resourceType": "MedicationRequest",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "med"},
+        "subject": _PATIENT_REF,
+    },
+    "MedicationDispense": {
+        "resourceType": "MedicationDispense",
+        "status": "completed",
+        "medicationCodeableConcept": {"text": "med"},
+        "subject": _PATIENT_REF,
+    },
+    "AllergyIntolerance": {"resourceType": "AllergyIntolerance", "category": ["medication"], "patient": _PATIENT_REF},
+    "Immunization": _MINIMAL_R4["Immunization"],
+    "Procedure": _MINIMAL_R4["Procedure"],
+    "Observation": {
+        "resourceType": "Observation",
+        "status": "final",
+        "category": [{"coding": [{"code": "laboratory"}]}],
+        "code": {"text": "glucose"},
+        "subject": _PATIENT_REF,
+    },
+    "DiagnosticReport": {
+        "resourceType": "DiagnosticReport",
+        "status": "final",
+        "code": {"text": "panel"},
+        "subject": _PATIENT_REF,
+    },
+    "DocumentReference": {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "content": [{"attachment": {"contentType": "text/plain", "url": "Binary/b1"}}],
+        "subject": _PATIENT_REF,
+    },
+    "Encounter": _MINIMAL_R4["Encounter"],
+    "CarePlan": _MINIMAL_R4["CarePlan"],
+    "CareTeam": {"resourceType": "CareTeam", "status": "active", "subject": _PATIENT_REF},
+    "Goal": _MINIMAL_R4["Goal"],
+    "FamilyMemberHistory": _MINIMAL_R4["FamilyMemberHistory"],
+    "ServiceRequest": _MINIMAL_R4["ServiceRequest"],
+    "Specimen": {"resourceType": "Specimen", "subject": _PATIENT_REF},
+    "Device": _MINIMAL_R4["Device"],
+    # R5 requires `questionnaire` (optional in R4); Epic populates it in practice, so the
+    # fixture mirrors that - a rare source record without one fails with a labeled reason.
+    "QuestionnaireResponse": {
+        "resourceType": "QuestionnaireResponse",
+        "status": "completed",
+        "questionnaire": "Questionnaire/q1",
+    },
+}
+
+
+def test_pull_list_fixture_coverage_matches_client():
+    assert _pulled_types() == set(_MINIMAL_PULL_R4), (
+        "PATIENT_ACCESS_PULLS and _MINIMAL_PULL_R4 diverged - add/remove the fixture "
+        "so every pulled type stays convert+validate guarded"
+    )
+
+
+@pytest.mark.parametrize("resource_type", sorted(_MINIMAL_PULL_R4))
+def test_every_pulled_type_converts_to_valid_r5(resource_type):
+    from core.views.fhir_import import _enrich_r5
+
+    r5 = transform_to_r5(resource_type, _MINIMAL_PULL_R4[resource_type])
+    _enrich_r5(resource_type, r5)
+    validate_fhir_resource(resource_type, r5)
+
+
+def test_pulled_types_match_seeded_scopes():
+    seed_text = _SEED_PY_PATH.read_text()
+    scoped = set(re.findall(r"patient/(\w+)\.read", seed_text))
+    assert scoped == _pulled_types(), "seed.py patient-access scopes and PATIENT_ACCESS_PULLS diverged"
+
+
+def test_import_condition_without_clinical_status_defaults_to_unknown(api_client, patient, fhir_source):
+    # R4 Condition.clinicalStatus is optional; R5 requires it. The import defaults absent
+    # statuses to the value set's 'unknown' (per product decision) and says so per record.
+    r4 = {"resourceType": "Condition", "code": {"text": "HTN"}, "subject": {"reference": f"Patient/{patient.id}"}}
+    r = api_client.post("/fhir-import/R4/Condition", r4, **_src(fhir_source))
+    assert r.status_code == 200, r.text
+    entry = r.json()["entry"][0]
+    assert entry["response"]["status"].startswith("2")
+    assert entry["resource"]["clinicalStatus"]["coding"][0]["code"] == "unknown"
+    warnings = [i for i in entry["response"]["outcome"]["issue"] if i["severity"] == "warning"]
+    assert any("clinicalStatus" in (i.get("diagnostics") or "") for i in warnings)
+
+
+def test_import_condition_with_clinical_status_is_untouched(api_client, patient, fhir_source):
+    r4 = {
+        "resourceType": "Condition",
+        "clinicalStatus": {
+            "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active"}]
+        },
+        "code": {"text": "HTN"},
+        "subject": {"reference": f"Patient/{patient.id}"},
+    }
+    r = api_client.post("/fhir-import/R4/Condition", r4, **_src(fhir_source))
+    entry = r.json()["entry"][0]
+    assert entry["response"]["status"].startswith("2")
+    assert entry["resource"]["clinicalStatus"]["coding"][0]["code"] == "active"

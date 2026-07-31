@@ -88,8 +88,9 @@ class FHIRImportView(FHIRResourceView):
                     resource_type,
                     ", ".join(dropped),
                 )
+            enriched = _enrich_r5(resource_type, r5)
             created = self._create(resource_type, r5)
-            return _success_entry(created, resource_type, dropped)
+            return _success_entry(created, resource_type, dropped, enriched)
         except Exception as exc:  # per-entry best-effort, mirroring batch semantics.
             # Include any drops even on failure: a dropped *required* field is usually *why* the
             # create failed (e.g. "medication field required" alongside "medication was dropped").
@@ -102,9 +103,35 @@ class FHIRImportView(FHIRResourceView):
             raise DRFValidationError(str(exc))
 
 
-def _success_entry(created, resource_type, dropped):
+def _enrich_r5(resource_type, r5):
+    """Default R5-mandatory fields that are optional in R4 and absent at the source.
+
+    Returns the warning issues describing what was defaulted (empty when nothing was).
+    Today: R4 Condition.clinicalStatus is 0..1 but R5 requires it; Epic emits many
+    encounter-diagnosis/health-concern Conditions without one. Rather than reject the
+    record, default to the value-set's own escape hatch 'unknown' and say so per record.
+    """
+    if resource_type == "Condition" and not r5.get("clinicalStatus"):
+        r5["clinicalStatus"] = {
+            "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "unknown"}]
+        }
+        return [
+            {
+                "severity": "warning",
+                "code": "informational",
+                "diagnostics": (
+                    "clinicalStatus was absent in the R4 source (optional in R4, required in R5); "
+                    "defaulted to 'unknown'."
+                ),
+                "expression": ["Condition.clinicalStatus"],
+            }
+        ]
+    return []
+
+
+def _success_entry(created, resource_type, dropped, enriched=None):
     return {
-        "response": {"status": "201 Created", "outcome": _outcome(resource_type, dropped)},
+        "response": {"status": "201 Created", "outcome": _outcome(resource_type, dropped, enriched)},
         "resource": created,
     }
 
@@ -121,9 +148,10 @@ def _dropped_issues(resource_type, dropped):
     ]
 
 
-def _outcome(resource_type, dropped):
-    """An OperationOutcome: one warning per dropped R4 path, or an informational "no loss" note."""
-    issues = _dropped_issues(resource_type, dropped) or [
+def _outcome(resource_type, dropped, enriched=None):
+    """An OperationOutcome: enrichment + dropped-field warnings, or an informational "no loss" note."""
+    issues = (enriched or []) + _dropped_issues(resource_type, dropped)
+    issues = issues or [
         {
             "severity": "information",
             "code": "informational",

@@ -1,7 +1,7 @@
 # RFC 0003: Patient-access pull coverage + Observation views in the FHIR browser
 
 - **Status:** Discussion
-- **Companion PR:** #681 (stacked on #680) · **Builds on:** #671 (patient-access), #667/#674 (FHIR search)
+- **Companion PR:** #681 (stacked on #680) · **Builds on:** #671 (patient-access), #667 (FHIR search)
 - **Follows:** the provenance-manifest format of RFC 0001 (#677) and RFC 0002 (#679)
 
 This document explains two coupled changes shipped in #681: (1) expanding the
@@ -41,11 +41,14 @@ appear in the browser, while Conditions/Medications/Allergies from the same
 sync displayed fine. Root cause (by design, from #671's search routing in
 `core/views/fhir.py`): **a FHIR search hits exactly one store**, selected by
 the `_source` parameter — absent `_source` routes a *mapped* type to the
-Django-mapped rows. Observation is the **only dual-store type** (JHE-native
-OMH device data in the mapped model; EHR imports in the aux store), and the
-browser never sent `_source`, so every Observation query landed on the OMH
-store. Aux-only types have no mapped store, which is why everything else
-displayed. Nothing was lost; the imported rows were simply never queried.
+Django-mapped rows. Six types are mapped (Device, Group, Observation,
+Organization, Patient, Practitioner) and any of them can also hold imported
+aux rows — so imported Patient demographics were equally invisible; users
+noticed Observations because that is where the volume is. Aux-only types
+have no mapped store, which is why the other clinical types displayed.
+Nothing was lost; the imported rows were simply never queried. The fix
+therefore covers every mapped type the sync writes (Observation, Patient,
+Device), not Observation alone.
 
 ## 2. Decisions (made interactively, recorded per the RFC 0001 process)
 
@@ -63,27 +66,45 @@ displayed. Nothing was lost; the imported rows were simply never queried.
    `category` token search on `category.coding`, and the token matcher
    (`core/fhir/search.py`) matches bare codes system-agnostically — exactly
    what Epic emits. Zero server changes were needed for the views.
-4. **Deferred (human):** the R5 mandatory-`clinicalStatus` rejection of
-   status-less R4 Conditions stays a known, now-visible-in-UI limitation
-   (#680 surfaces the reason); policy fix deferred.
+4. **Status-less Conditions import as `unknown` (human, reversing an earlier
+   deferral):** R4 `Condition.clinicalStatus` is optional; R5 requires it,
+   which rejected 45 of 67 sandbox Conditions. Decision: do not drop them —
+   the R4 import path defaults an absent `clinicalStatus` to the value set's
+   own escape hatch `unknown` (R5-compliant, correctly excluded by
+   `clinical-status=active` filters) and emits a per-record OperationOutcome
+   warning so the enrichment is visible, not silent. Confined to the R4
+   import endpoint; the native R5 API's validation is unchanged.
+5. **Coverage is not pulled (review finding):** R5 added a mandatory
+   `Coverage.kind` that the stock StructureMap cannot produce, so every
+   Coverage import fails validation — pulling it would violate decision 1.
+   Excluded until a JHE patch map supplies `kind`/`insurer` (follow-up).
 
 ## 3. What changed
 
 ### 3.1 Pull list (client-patient-access.js)
 
-19 typed pulls + two Observation category pulls, in display order:
+18 typed pulls + two Observation category pulls, in display order:
 Demographics, Conditions, Medications, Medication Dispenses, Allergies,
 Immunizations, Procedures, **Labs**, **Vital Signs**, Diagnostic Reports,
 Documents, Encounters, Care Plans, Care Teams, Goals, Family History,
-Service Requests, Specimens, Coverage, Devices, Questionnaire Responses.
+Service Requests, Specimens, Devices, Questionnaire Responses. Three
+queries carry Epic-required filters (`CarePlan?category=assess-plan`,
+`CareTeam?status=active`, `DocumentReference?category=clinical-note` — US
+Core's mandatory search combinations, which Epic enforces). The two
+Observation category pulls share a per-run dedupe set: an Epic Observation
+categorized as both `laboratory` and `vital-signs` (e.g. POC glucose)
+imports once, not twice.
 
 Deliberately **not** pulled:
 
+- **Coverage** — every record is guaranteed to fail R5 validation (`kind` is
+  new-in-R5 and mandatory; the stock map has no rule for it and drops
+  `payor`). Verified empirically; excluded until a patch map exists.
 - **Reference/meta types** — Practitioner, PractitionerRole, Location,
-  Organization, Medication, Provenance, Binary. They are not
-  patient-compartment clinical data; they arrive by reference from resources
-  that cite them. (Resolving those references into stored aux rows is a
-  possible follow-up, tracked below.)
+  Organization, Medication, Provenance, Binary, Group, and RelatedPerson
+  (in the Patient compartment but demographic/administrative, not clinical).
+  They arrive by reference from resources that cite them. (Resolving those
+  references into stored aux rows is a possible follow-up, tracked below.)
 - **DocumentReference note content** — the resource imports; its Binary
   attachment content is not fetched (needs a content pipeline + storage
   decision; follow-up).
@@ -106,20 +127,37 @@ already covers all of them, so no Epic portal work is needed for sandbox.
 JheClient row carries the old 5-scope string and needs a one-time update
 (planned post-merge, via a management shell on the fly app).
 
-### 3.3 Observation views (client-jhe-admin.js)
+### 3.3 Resource views (client-jhe-admin.js)
 
-The dropdown replaces the single `Observation` entry with three views, each a
-client-side mapping onto the existing single-store search API:
+The dropdown splits every mapped type the sync writes into per-store views,
+each a client-side mapping onto the existing single-store search API
+(`RESOURCE_VIEWS`):
 
 | View | Store | Query added |
 |---|---|---|
 | Observation - Device Data | mapped (OMH native) | — (today's behavior) |
-| Observation - Labs | aux (imported) | `_source:below=https://jupyterhealth.org/fhir/fhir-source/` + `category=laboratory` |
-| Observation - Vital Signs | aux (imported) | same `_source:below` + `category=vital-signs` |
+| Observation - Labs | aux (imported) | `_source:below=<jhe-fhir-source-base>/` + `category=laboratory` |
+| Observation - Vital Signs | aux (imported) | same + `category=vital-signs` |
+| Patient - JHE | mapped (JHE accounts) | — |
+| Patient - Imported EHR | aux (imported) | `_source:below=<jhe-fhir-source-base>/` |
+| Device - Data Sources | mapped (DataSource rows) | — |
+| Device - Imported EHR | aux (imported) | `_source:below=<jhe-fhir-source-base>/` |
 
-A profile-restored plain `Observation` (the server remembers the path, not
-the view) maps to the Device Data view. No server changes; no new endpoint;
-no separate selector UI.
+The `_source:below` prefix is a single hoisted constant mirroring
+`JHE_FHIR_SOURCE_BASE` (`core/models/fhir_aux_resource.py`; the server
+tolerates the trailing slash via `rstrip`). A profile-restored plain type
+name (the server remembers the URL path, not the view) maps to that type's
+first view — so a user who was on "Observation - Labs" restores to Device
+Data; accepted, noted in cons. No server changes; no new endpoint; no
+separate selector UI.
+
+### 3.4 Import enrichment (core/views/fhir_import.py)
+
+`_enrich_r5` defaults R5-mandatory-but-R4-optional fields after conversion,
+per decision 4: today only `Condition.clinicalStatus` → `unknown`, always
+paired with a per-record OperationOutcome warning naming what was defaulted.
+The enrichment lives in the R4 import endpoint only — the native R5 API
+rejects a status-less Condition exactly as before.
 
 ## 4. Alternatives considered
 
@@ -141,16 +179,33 @@ no separate selector UI.
   documented (one scope per pulled type).
 
 **Cons / accepted risks**
+- **Re-running Connect duplicates imported records** — the aux create path
+  has no upsert on the source resource id. Pre-existing since #671, but the
+  expanded list scales it from 5 types to 20. Within a single run the two
+  Observation pulls dedupe by id; across runs, idempotent re-import is
+  follow-up 6.
 - First expanded sync will likely surface new per-type conversion failures
-  (visible, isolated, and reportable — by design).
+  (visible, isolated, and reportable — by design). Empirical pre-check: 14
+  of the 15 added types convert to valid R5; two are lossy-but-valid
+  (`Encounter.reasonCode` has no stock map rule; `Device.patient` was
+  removed in R5 — harmless, since aux visibility scopes via FhirSource).
 - More scopes on the consent screen: Epic will show the patient a longer
   grant list. Acceptable for a PGD-sync product whose purpose is whole-record
   import; revisit if consent UX becomes a concern.
-- The three Observation views are hardcoded client-side; a fourth category
-  pull without its view would be invisible again. The pairing rule is
-  documented at both sites as a guard.
-- `_source:below` value is a hardcoded constant in the client (mirrors
+- Resource views are hardcoded client-side; a new category pull (or a new
+  mapped type the sync writes) without its view would be invisible again.
+  The pairing rule is documented at both sites, and the pull list itself is
+  now test-enforced: a parametrized backend test converts+validates a
+  minimal R4 instance of every pulled type (the test that would have caught
+  Coverage), and a companion test asserts the seeded scopes match the pull
+  list exactly.
+- Sticky view restore lands on a type's first view (server persists the URL
+  path, not the view name) — a "Labs" user restores to Device Data.
+- `_source:below` value is a hoisted client constant (mirrors
   `JHE_FHIR_SOURCE_BASE`); if that base ever changes, both move together.
+- The Epic-required query filters (CarePlan/CareTeam/DocumentReference) are
+  taken from US Core's mandatory search combinations; Epic's per-version
+  behavior varies, so the sandbox e2e (follow-up 2) remains the arbiter.
 
 ## 6. Follow-ups
 
@@ -162,6 +217,11 @@ no separate selector UI.
    Practitioner/Location/Medication resources.
 5. Additional Observation category views (social-history etc.) as pulls are
    added — always in pull+view pairs.
+6. Idempotent re-import: upsert aux rows on (FhirSource, resourceType,
+   source id) so re-running Connect refreshes instead of duplicating.
+7. JHE patch maps (`fhir-cross-version-patches/`, mechanism exists, unused):
+   Coverage `kind`/`insurer` (unblocks pulling Coverage) and
+   `Encounter.reasonCode → reason.value`.
 
 ## 7. Provenance
 
@@ -175,4 +235,10 @@ coverage and category questions answered by cross-referencing the Epic app's
 registered API list (screenshot provided by the human) against
 `fhir_config.json` and the cross-version package contents. All scoping
 decisions in §2 were made by the human; the tool proposed the candidate type
-list and the view mapping. Full transcripts available.
+list and the view mapping. Before publication the stacked PRs were reviewed
+by three parallel agent reviewers (backend correctness with empirical
+conversion runs of every pulled type; frontend correctness incl. Epic search
+requirements; architecture/claims falsification) — their findings produced
+the Coverage exclusion, the Epic query filters, the Observation dedupe, the
+Patient/Device views, the dual-store correction in §1.2, and the invariant
+tests. Full transcripts available.

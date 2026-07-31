@@ -276,7 +276,7 @@ class Command(BaseCommand):
                         " patient/DocumentReference.read patient/Encounter.read"
                         " patient/CarePlan.read patient/CareTeam.read patient/Goal.read"
                         " patient/FamilyMemberHistory.read patient/ServiceRequest.read"
-                        " patient/Specimen.read patient/Coverage.read patient/Device.read"
+                        " patient/Specimen.read patient/Device.read"
                         " patient/QuestionnaireResponse.read"
                     ),
                 },

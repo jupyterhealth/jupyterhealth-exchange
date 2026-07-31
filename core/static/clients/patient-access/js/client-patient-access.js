@@ -178,22 +178,24 @@ var PATIENT_ACCESS_PULLS = [
   { label: "Labs", type: "Observation", query: "Observation?category=laboratory" },
   { label: "Vital Signs", type: "Observation", query: "Observation?category=vital-signs" },
   { label: "Diagnostic Reports", type: "DiagnosticReport", query: "DiagnosticReport" },
-  { label: "Documents", type: "DocumentReference", query: "DocumentReference" },
+  { label: "Documents", type: "DocumentReference", query: "DocumentReference?category=clinical-note" },
   { label: "Encounters", type: "Encounter", query: "Encounter" },
-  { label: "Care Plans", type: "CarePlan", query: "CarePlan" },
-  { label: "Care Teams", type: "CareTeam", query: "CareTeam" },
+  { label: "Care Plans", type: "CarePlan", query: "CarePlan?category=assess-plan" },
+  { label: "Care Teams", type: "CareTeam", query: "CareTeam?status=active" },
   { label: "Goals", type: "Goal", query: "Goal" },
   { label: "Family History", type: "FamilyMemberHistory", query: "FamilyMemberHistory" },
   { label: "Service Requests", type: "ServiceRequest", query: "ServiceRequest" },
   { label: "Specimens", type: "Specimen", query: "Specimen" },
-  { label: "Coverage", type: "Coverage", query: "Coverage" },
   { label: "Devices", type: "Device", query: "Device" },
   { label: "Questionnaire Responses", type: "QuestionnaireResponse", query: "QuestionnaireResponse" },
 ];
 
 // Pull one resource type and write each item to JHE. Isolated so one type's failure
 // (fetch error, unsupported type) does not abort the others. Returns {written, failed, error}.
-async function paPullResourceType(client, jheToken, sourceId, pull, iss) {
+// seenIds (optional Set): resource ids already written by an earlier pull of the same type
+// in this run — an Epic Observation categorized as both laboratory and vital-signs is
+// returned by both category pulls and must import once, not twice.
+async function paPullResourceType(client, jheToken, sourceId, pull, iss, seenIds) {
   var resources;
   try {
     // A single instance read (Patient) is a plain read; fhir-client's patient.request injects a
@@ -214,6 +216,10 @@ async function paPullResourceType(client, jheToken, sourceId, pull, iss) {
   for (var i = 0; i < resources.length; i++) {
     var resource = resources[i];
     if (!resource || resource.resourceType !== pull.type) continue;
+    if (seenIds && resource.id) {
+      if (seenIds.has(resource.id)) continue;
+      seenIds.add(resource.id);
+    }
     paSanitizeResource(resource, iss);
     var write = await paWriteResource(jheToken, sourceId, pull.type, resource);
     if (write.ok) written++;
@@ -366,10 +372,14 @@ async function finishPatientAccessConnect(out, config) {
   // Pull each USCDI type independently. pageLimit:0 + flat:true makes fhir-client.js
   // follow every `next` link so patients with more records than one page are not truncated.
   var summary = [];
+  var observationSeen = new Set(); // dedupe across the per-category Observation pulls
   for (var p = 0; p < PATIENT_ACCESS_PULLS.length; p++) {
     var pull = PATIENT_ACCESS_PULLS[p];
     out.textContent += "\n\nFetching " + pull.label + " from Patient Access...";
-    var result = await paPullResourceType(client, jheToken, sourceId, pull, iss);
+    var result = await paPullResourceType(
+      client, jheToken, sourceId, pull, iss,
+      pull.type === "Observation" ? observationSeen : undefined
+    );
     if (result.error) {
       out.textContent += "\n  could not fetch " + pull.label + ": " + result.error;
       summary.push(pull.label + ": fetch failed");
