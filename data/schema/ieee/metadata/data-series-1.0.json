@@ -1,0 +1,29 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/data-series.json",
+    "title": "Data Series",
+    "type": "object",
+    "description": "This schema represents a data series, i.e., an array of measures that share the same header.",
+    "definitions": {
+        "header": {
+            "$ref": "header-1.0.json"
+        }
+    },
+    "properties": {
+        "header": {
+            "description": "The header of the data point.",
+            "$ref": "#/definitions/header"
+        },
+        "body": {
+            "description": "The body of the data series. The elements of this array complye with the schema identified in the header property.",
+            "type": "array",
+            "items": {
+                "type": "object"
+            }
+        }
+    },
+    "required": [
+        "header",
+        "body"
+    ]
+}

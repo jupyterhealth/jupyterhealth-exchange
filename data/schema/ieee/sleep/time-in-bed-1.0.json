@@ -1,0 +1,63 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/time-in-bed.json",
+    "title": "Time In Bed",
+    "type": "object",
+    "description": "This schema represents time in bed, an interval derived from the time the person went to bed and the time they got up out of bed. It does not include extended periods out of bed other than brief interruptions. If the person gets out of bed in the middle of the sleep episode to watch TV for example this period of time should be subtracted from time in bed",
+    "definitions": {
+        "duration_unit_value": {
+            "$ref": "duration-unit-value-1.0.json"
+        },
+        "time_frame": {
+            "$ref": "time-frame-1.0.json"
+        },
+        "descriptive_statistic": {
+            "$ref": "descriptive-statistic-1.0.json"
+        },
+        "descriptive_statistic_denominator": {
+            "$ref": "descriptive-statistic-denominator-1.0.json"
+        }
+    },
+    "properties": {
+        "time_in_bed": {
+            "$ref": "#/definitions/duration_unit_value"
+        },
+        "effective_time_frame": {
+            "description": "The date-time at which, or time interval during which the measurement is asserted as being valid.",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/time_frame"
+                },
+                {
+                    "required": [
+                        "time_interval"
+                    ]
+                }
+            ]
+        },
+        "is_main_sleep": {
+            "description": "This value is used to differentiate brief periods of sleep (naps) from a main sleep episode",
+            "type": "boolean"
+        },
+        "descriptive_statistic": {
+            "description": "The descriptive statistic is a set of measurements (eg. average, maximum) within the specified time frame.",
+            "$ref": "#/definitions/descriptive_statistic"
+        },
+        "descriptive_statistic_denominator": {
+            "description": "The denominator of the descriptive statistic when the measure has an implicit duration (eg. if the descriptive statistic is 'average' and the statistic denominator is 'd' the measure describes the average time in bed during the period delimited by the effective time frame).",
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/descriptive_statistic_denominator"
+                },
+                {
+                    "description": "If the value needed is a standard unit of duration, select from the duration-unit-value value set.",
+                    "type": "string"
+                }
+            ]
+        }
+    },
+    "required": [
+        "time_in_bed",
+        "effective_time_frame"
+    ]
+}

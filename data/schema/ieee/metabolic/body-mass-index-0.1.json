@@ -1,0 +1,54 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Body Mass Index",	
+    "description": "This schema represents a person's body mass index (BMI).",
+    "type": "object",
+
+    "definitions": {
+        "unit_value": {
+            "$ref": "unit-value-1.0.json"
+         },
+        "time_frame": {
+            "$ref": "time-frame-1.0.json"
+        },
+        "descriptive_statistic": {
+            "$ref": "descriptive-statistic-1.0.json"
+        }
+    },
+
+    "properties": {
+        "body_mass_index": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/unit_value"
+                },
+                {
+                    "properties": {
+                        "unit": {
+                            "references": [
+                                {
+                                    "description": "The unit of measure the element.  Allowed value is drawn from the Areic mass Units Common Synonyms (non-UCUM).",
+                                    "url": "http://download.hl7.de/documents/ucum/ucumdata.html"
+                                }
+                            ],
+                            "enum": ["kg/m^2"]
+                        }
+                    }
+                }
+            ]
+        },
+        "effective_time_frame": {
+			"description": "The date-time at which, or time interval during which the measurement is asserted as being valid.",
+            "$ref": "#/definitions/time_frame"
+        },
+        "descriptive_statistic": {
+			"description": "The descriptive statistic of a set of measurements (e.g., average, maximum) within the specified time frame.",
+            "$ref": "#/definitions/descriptive_statistic"
+        }
+    },
+
+    "required": [
+        "body_mass_index",
+        "effective_time_frame"
+    ]
+}

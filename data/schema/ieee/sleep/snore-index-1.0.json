@@ -1,0 +1,113 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/snore-index.json",
+    "title": "Snore Index",
+    "type": "object",
+    "description": "This schema represents the snore index in a sleep episode (main sleep or nap), i.e., the average number of snores per hour during a sleep episode. Snoring is usually in sync with breathing.",
+    "definitions": {
+        "unit_value": {
+            "$ref": "unit-value-1.0.json"
+        },
+        "duration_unit_value": {
+            "$ref": "duration-unit-value-1.0.json"
+        },
+        "sound_unit_value": {
+            "$ref": "sound-unit-value-1.0.json"
+        },
+        "time_frame": {
+            "$ref": "time-frame-1.0.json"
+        },
+        "time_interval": {
+            "$ref": "time-interval-1.0.json"
+        },
+        "body_posture": {
+            "$ref": "body-posture-1.0.json"
+        },
+        "descriptive_statistic": {
+            "$ref": "descriptive-statistic-1.0.json"
+        },
+        "descriptive_statistic_denominator": {
+            "$ref": "descriptive-statistic-denominator-1.0.json"
+        }
+    },
+    "properties": {
+        "snore_index": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/unit_value"
+                },
+                {
+                    "properties": {
+                        "unit": {
+                            "enum": [
+                                "snores/h"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "snore_events": {
+            "description": "An array contains a sequence of consecutive snoring/non-snoring periods during an entire sleep episode (main or nap). Each array element contains a flag of snore/non-snore period, its time interval, its average intensity and corresponding majority body posture.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "snored": {
+                        "type": "boolean"
+                    },
+                    "snore_time_frame": {
+                        "$ref": "#/definitions/time_interval"
+                    },
+                    "snore_intensity": {
+                        "$ref": "#/definitions/sound_unit_value"
+                    },
+                    "body_posture": {
+                        "description": "body position during sleep",
+                        "$ref": "#/definitions/body_posture"
+                    }
+                },
+                "required": [
+                    "snored",
+                    "snore_time_frame"
+                ]
+            }
+        },
+        "effective_time_frame": {
+            "description": "The date-time at which, or time interval during which the measurement is asserted as being valid.",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/time_frame"
+                },
+                {
+                    "required": [
+                        "time_interval"
+                    ]
+                }
+            ]
+        },
+        "is_main_sleep": {
+            "type": "boolean"
+        },
+        "descriptive_statistic": {
+            "description": "The descriptive statistic of a set of measurements (e.g., average, maximum) within the specified time frame.",
+            "$ref": "#/definitions/descriptive_statistic"
+        },
+        "descriptive_statistic_denominator": {
+            "description": "The denominator of the descriptive statistic when the measure has an implicit duration (e.g., if the descriptive statistic is 'average' and the statistic denominator is 'd' the measure describes the average daily snore index during the period delimited by the effective time frame).",
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/descriptive_statistic_denominator"
+                },
+                {
+                    "description": "If the value needed is a standard unit of duration, select from the duration-unit-value value set.",
+                    "type": "string"
+                }
+            ]
+        }
+    },
+    "required": [
+        "snore_index",
+        "effective_time_frame"
+    ]
+}

@@ -1,0 +1,66 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://w3id.org/ieee/ieee-1752-schema/ambient-light.json",
+    "title": "Ambient Light",
+    "description": "This schema represents measurement of ambient light.",
+    "type": "object",
+    "definitions": {
+        "illuminance_unit_value": {
+            "$ref": "illuminance-unit-value-1.0.json"
+        },
+        "length_unit_value": {
+            "$ref": "length-unit-value-1.0.json"
+        },
+        "time_frame": {
+            "$ref": "time-frame-1.0.json"
+        },
+        "descriptive_statistic": {
+            "$ref": "descriptive-statistic-1.0.json"
+        }
+    },
+    "properties": {
+        "ambient_light": {
+            "description": "An array of individual light wavelength and its intensity to describe the composition of the ambient light.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "wavelength": {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/length_unit_value"
+                            },
+                            {
+                                "properties": {
+                                    "unit": {
+                                        "enum": [
+                                            "nm"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "intensity": {
+                        "$ref": "#/definitions/illuminance_unit_value"
+                    }
+                },
+                "required": [
+                    "intensity"
+                ]
+            }
+        },
+        "effective_time_frame": {
+            "$ref": "#/definitions/time_frame",
+            "description": "The date-time at which, or time interval during which the measurement is asserted as being valid."
+        },
+        "descriptive_statistic": {
+            "description": "The descriptive statistic of a set of measurements (e.g., average, maximum) within the specified time frame.",
+            "$ref": "#/definitions/descriptive_statistic"
+        }
+    },
+    "required": [
+        "ambient_light",
+        "effective_time_frame"
+    ]
+}
