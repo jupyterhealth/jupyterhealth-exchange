@@ -328,9 +328,8 @@ class GetDefaultOrgsTests(TestCase):
 
     @patch(GET_SETTING_USER)
     def test_practitioner_assigned_to_default_org(self, mock_gs):
-        # ROLE_CHOICES is a dict; valid_roles = {c[0] for c in dict} gives first char of keys
-        # So valid roles are 'm', 'v' (from 'member', 'manager', 'viewer')
-        mock_gs.return_value = f"{self.org.id}:v"
+        # valid roles are keys in ROLE_CHOICES
+        mock_gs.return_value = f"{self.org.id}:viewer"
         user = JheUser.objects.create_user(
             email="default-org@example.com",
             password="pw",
@@ -339,7 +338,9 @@ class GetDefaultOrgsTests(TestCase):
         )
         practitioner = Practitioner.objects.get(jhe_user=user)
         self.assertTrue(
-            PractitionerOrganization.objects.filter(practitioner=practitioner, organization=self.org, role="v").exists()
+            PractitionerOrganization.objects.filter(
+                practitioner=practitioner, organization=self.org, role=PractitionerOrganization.ROLE_VIEWER
+            ).exists()
         )
 
     @patch(GET_SETTING_USER, return_value="")

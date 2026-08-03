@@ -143,7 +143,7 @@ class JheUser(AbstractUser):
                         if not parts:
                             raise DjangoValidationError("PRACTITIONER_DEFAULT_ORGS must be non-empty when set.")
 
-                        valid_roles = {c[0] for c in PractitionerOrganization.ROLE_CHOICES}
+                        valid_roles = set(PractitionerOrganization.ROLE_CHOICES.keys())
                         requested: list[tuple[int, str]] = []
 
                         for idx, part in enumerate(parts, start=1):
