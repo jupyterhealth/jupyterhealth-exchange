@@ -512,15 +512,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f4/87/647ce93053cb5e35e07bded676340774fe43190388b885c54aff47d8557b/djangorestframework-camel-case-1.4.2.tar.gz", hash = "sha256:cdae75846648abb6585c7470639a1d2fb064dc45f8e8b62aaa50be7f1a7a61f4", size = 8839, upload-time = "2023-02-13T15:28:11.941Z" }
 
 [[package]]
-name = "dnspython"
-version = "2.8.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/8c/8b/57666417c0f90f08bcafa776861060426765fdb422eb10212086fb811d26/dnspython-2.8.0.tar.gz", hash = "sha256:181d3c6996452cb1189c4046c61599b84a5a86e099562ffde77d26984ff26d0f", size = 368251, upload-time = "2025-09-07T18:58:00.022Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ba/5a/18ad964b0086c6e62e2e7500f7edc89e3faa45033c71c1893d34eed2b2de/dnspython-2.8.0-py3-none-any.whl", hash = "sha256:01d9bbc4a2d76bf0db7c1f729812ded6d912bd318d3b1cf81d30c0f845dbf3af", size = 331094, upload-time = "2025-09-07T18:57:58.071Z" },
-]
-
-[[package]]
 name = "drf-spectacular"
 version = "0.30.0"
 source = { registry = "https://pypi.org/simple" }
@@ -547,19 +538,6 @@ wheels = [
 ]
 
 [[package]]
-name = "email-validator"
-version = "2.3.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "dnspython" },
-    { name = "idna" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/f5/22/900cb125c76b7aaa450ce02fd727f452243f2e91a61af068b40adba60ea9/email_validator-2.3.0.tar.gz", hash = "sha256:9fc05c37f2f6cf439ff414f8fc46d917929974a82244c20eb10231ba60c54426", size = 51238, upload-time = "2025-08-26T13:09:06.831Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/de/15/545e2b6cf2e3be84bc1ed85613edd75b8aea69807a71c26f4ca6a9258e82/email_validator-2.3.0-py3-none-any.whl", hash = "sha256:80f13f623413e6b197ae73bb10bf4eb0908faf509ad8362c5edeb0be7fd450b4", size = 35604, upload-time = "2025-08-26T13:09:05.858Z" },
-]
-
-[[package]]
 name = "executing"
 version = "2.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -581,15 +559,27 @@ wheels = [
 ]
 
 [[package]]
-name = "fhir-resources"
-version = "7.1.0"
+name = "fhir-core"
+version = "1.1.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pydantic", extra = ["email"] },
+    { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2f/cf/3ce9e45ec0b5bddade9d06dfafc91108d6841649ec70057bda785556c1d5/fhir.resources-7.1.0.tar.gz", hash = "sha256:fae2d43c03dacf85a9f9fbce3b62148f3166fe297471cd43b74d91abbf69f818", size = 1916569, upload-time = "2023-12-14T12:28:27.907Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/93/19/4debca62dce6602c7e5f284600e4cbd3faf2383d2081b7f21b8005da9482/fhir_core-1.1.10.tar.gz", hash = "sha256:de8ee2ff7c14854641b7ad12e23fb5c53d9b3a99ebaeaad360d1d40a086629c3", size = 35713, upload-time = "2026-07-25T10:02:20.711Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/15/58/00b50d32c9669acfeaac2c60989a9b49e7bde79c1a8d31801be61ee558e1/fhir.resources-7.1.0-py2.py3-none-any.whl", hash = "sha256:4d37c3aadb3afbabad28ca7701b87323680468a13f6a6426bb6c282d4efd5c62", size = 3121497, upload-time = "2023-12-14T12:28:23.565Z" },
+    { url = "https://files.pythonhosted.org/packages/46/8f/004089ac25fddc6b839e58bdfba0f9a97f56889e4f80715105d91994f1eb/fhir_core-1.1.10-py2.py3-none-any.whl", hash = "sha256:bdbe6164e26843e7e63559a08961e44df54b1ed8bd52a1df415ee8c02f7ec965", size = 30658, upload-time = "2026-07-25T10:02:19.297Z" },
+]
+
+[[package]]
+name = "fhir-resources"
+version = "8.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "fhir-core" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/98/06/331d78ad6db6903be6b912701c44b32af295279907b3a2e6ad6c2e2f97b1/fhir_resources-8.3.0.tar.gz", hash = "sha256:bdfd1c7bd1b89bfa269c1f435727771f6c632cd857e2848221713b3f8b9f46e8", size = 1617996, upload-time = "2026-07-03T15:23:54.01Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d1/86/32914542064b8aee77ac48142f8a1955df78da4eb905dd41697d26941d21/fhir_resources-8.3.0-py2.py3-none-any.whl", hash = "sha256:151e6c9b4336e36383cc2aaf2067a6f112a420fce1c7bd289182e55dd950871b", size = 2288069, upload-time = "2026-07-03T15:23:51.97Z" },
 ]
 
 [[package]]
@@ -785,7 +775,7 @@ requires-dist = [
     { name = "djangorestframework-camel-case" },
     { name = "drf-spectacular" },
     { name = "faker" },
-    { name = "fhir-resources", specifier = "==7.1.0" },
+    { name = "fhir-resources", specifier = "==8.3.0" },
     { name = "gunicorn" },
     { name = "ipython" },
     { name = "jsonschema" },
@@ -1064,11 +1054,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/18/a5/b60d21ac674192f8ab0ba4e9fd860690f9b4a6e51ca5df118733b487d8d6/pydantic-2.13.4.tar.gz", hash = "sha256:c40756b57adaa8b1efeeced5c196f3f3b7c435f90e84ea7f443901bec8099ef6", size = 844775, upload-time = "2026-05-06T13:43:05.343Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/fd/7b/122376b1fd3c62c1ed9dc80c931ace4844b3c55407b6fb2d199377c9736f/pydantic-2.13.4-py3-none-any.whl", hash = "sha256:45a282cde31d808236fd7ea9d919b128653c8b38b393d1c4ab335c62924d9aba", size = 472262, upload-time = "2026-05-06T13:43:02.641Z" },
-]
-
-[package.optional-dependencies]
-email = [
-    { name = "email-validator" },
 ]
 
 [[package]]

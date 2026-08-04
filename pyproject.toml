@@ -16,7 +16,7 @@ dependencies = [
     "gunicorn",
     "whitenoise",
     "djangorestframework-camel-case",
-    "fhir.resources==7.1.0",
+    "fhir.resources==8.3.0",
     "pydantic",
     "pydantic-core",
     "pyhumps",
