@@ -23,7 +23,7 @@ dependencies = [
     # additive releases flow; Dependabot (.github/dependabot.yaml, uv /
     # mcp_server) moves the lock.
     "omh-shim>=1.4.0",
-    "cryptography>=49.0.0,<50",
+    "cryptography>=50.0.0,<51",
 ]
 
 [project.optional-dependencies]
