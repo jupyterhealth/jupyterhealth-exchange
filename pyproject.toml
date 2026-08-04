@@ -18,7 +18,6 @@ dependencies = [
     "djangorestframework-camel-case",
     "fhir.resources==7.1.0",
     "pydantic",
-    "pydantic-core",
     "pyhumps",
     "django-allauth",
     "faker",
