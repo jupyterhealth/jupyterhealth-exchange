@@ -92,7 +92,7 @@ class Command(BaseCommand):
             ("site.ui.title", "string", "JupyterHealth Exchange"),
             ("site.time_zone", "string", "America/Los_Angeles"),
             ("site.registration_invite_code", "string", invite_code),
-            ("auth.default_orgs", "string", ""),  # "20001:v;20002:m"
+            ("auth.default_orgs", "string", ""),  # "20001:viewer;20002:member"
             ("auth.sso.saml2", "int", 0),
             ("auth.sso.idp_metadata_url", "string", ""),
             ("auth.sso.valid_domains", "string", ""),
