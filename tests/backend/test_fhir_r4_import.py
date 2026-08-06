@@ -686,7 +686,6 @@ _MINIMAL_PULL_R4 = {
     "CarePlan": _MINIMAL_R4["CarePlan"],
     "CareTeam": {"resourceType": "CareTeam", "status": "active", "subject": _PATIENT_REF},
     "Goal": _MINIMAL_R4["Goal"],
-    "FamilyMemberHistory": _MINIMAL_R4["FamilyMemberHistory"],
     "ServiceRequest": _MINIMAL_R4["ServiceRequest"],
     "Specimen": {"resourceType": "Specimen", "subject": _PATIENT_REF},
     "Device": _MINIMAL_R4["Device"],
