@@ -183,10 +183,12 @@ var PATIENT_ACCESS_PULLS = [
   { label: "Care Plans", type: "CarePlan", query: "CarePlan?category=assess-plan" },
   { label: "Care Teams", type: "CareTeam", query: "CareTeam?status=active" },
   { label: "Goals", type: "Goal", query: "Goal" },
-  { label: "Family History", type: "FamilyMemberHistory", query: "FamilyMemberHistory" },
   { label: "Service Requests", type: "ServiceRequest", query: "ServiceRequest" },
-  { label: "Specimens", type: "Specimen", query: "Specimen" },
-  { label: "Devices", type: "Device", query: "Device" },
+  // fhir-client's patient.request cannot scope Specimen/Device (no compartment
+  // param in its map), so these two carry the patient param explicitly and are
+  // fetched through plain client.request.
+  { label: "Specimens", type: "Specimen", query: "Specimen?patient=", explicitPatient: true },
+  { label: "Devices", type: "Device", query: "Device?patient=", explicitPatient: true },
   { label: "Questionnaire Responses", type: "QuestionnaireResponse", query: "QuestionnaireResponse" },
 ];
 
@@ -203,7 +205,9 @@ async function paPullResourceType(client, jheToken, sourceId, pull, iss, seenIds
     // Searches stay on patient.request so they are scoped to this patient.
     var result = pull.single
       ? await client.request(pull.query + "/" + client.patient.id)
-      : await client.patient.request(pull.query, { pageLimit: 0, flat: true });
+      : pull.explicitPatient
+        ? await client.request(pull.query + client.patient.id, { pageLimit: 0, flat: true })
+        : await client.patient.request(pull.query, { pageLimit: 0, flat: true });
     resources = pull.single ? (result ? [result] : []) : result || [];
   } catch (e) {
     return { written: 0, failed: 0, error: e && e.message ? e.message : String(e), reasons: {} };
