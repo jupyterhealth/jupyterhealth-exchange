@@ -687,7 +687,6 @@ _MINIMAL_PULL_R4 = {
     "CareTeam": {"resourceType": "CareTeam", "status": "active", "subject": _PATIENT_REF},
     "Goal": _MINIMAL_R4["Goal"],
     "ServiceRequest": _MINIMAL_R4["ServiceRequest"],
-    "Specimen": {"resourceType": "Specimen", "subject": _PATIENT_REF},
     "Device": _MINIMAL_R4["Device"],
     # R5 requires `questionnaire` (optional in R4); Epic populates it in practice, so the
     # fixture mirrors that - a rare source record without one fails with a labeled reason.

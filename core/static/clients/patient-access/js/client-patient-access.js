@@ -184,10 +184,10 @@ var PATIENT_ACCESS_PULLS = [
   { label: "Care Teams", type: "CareTeam", query: "CareTeam?status=active" },
   { label: "Goals", type: "Goal", query: "Goal" },
   { label: "Service Requests", type: "ServiceRequest", query: "ServiceRequest" },
-  // fhir-client's patient.request cannot scope Specimen/Device (no compartment
-  // param in its map), so these two carry the patient param explicitly and are
-  // fetched through plain client.request.
-  { label: "Specimens", type: "Specimen", query: "Specimen?patient=", explicitPatient: true },
+  // fhir-client's patient.request cannot scope Device (no compartment param in
+  // its map), so it carries the patient param explicitly through plain
+  // client.request. (Specimen is not pulled: Epic's Specimen API has no
+  // patient-level search -- it 400s on Specimen?patient=.)
   { label: "Devices", type: "Device", query: "Device?patient=", explicitPatient: true },
   { label: "Questionnaire Responses", type: "QuestionnaireResponse", query: "QuestionnaireResponse" },
 ];
