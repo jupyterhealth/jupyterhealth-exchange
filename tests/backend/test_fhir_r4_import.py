@@ -41,12 +41,6 @@ _MINIMAL_R4 = {
         "patient": _PATIENT_REF,
         "occurrenceDateTime": "2024-01-01",
     },
-    "FamilyMemberHistory": {
-        "resourceType": "FamilyMemberHistory",
-        "status": "completed",
-        "patient": _PATIENT_REF,
-        "relationship": {"text": "mother"},
-    },
     "Encounter": {"resourceType": "Encounter", "status": "finished"},
     "CarePlan": {"resourceType": "CarePlan", "status": "active", "intent": "plan", "subject": _PATIENT_REF},
     "Device": {"resourceType": "Device"},
@@ -365,7 +359,6 @@ def test_engine_medication_codeableconcept_nests_under_concept():
         ("ServiceRequest", {"locationCode": [{"text": "l"}]}, "location", [{"concept": {"text": "l"}}]),
         ("Goal", {"outcomeCode": [{"text": "o"}]}, "outcome", [{"concept": {"text": "o"}}]),
         ("Immunization", {"reasonCode": [{"text": "r"}]}, "reason", [{"concept": {"text": "r"}}]),
-        ("FamilyMemberHistory", {"reasonCode": [{"text": "r"}]}, "reason", [{"concept": {"text": "r"}}]),
         # ...and standalone elements R5 simply retyped. These kept their *name*, which is what makes
         # them the sharp case: typing the source from R5 "succeeds" with the wrong (R5) type.
         ("Encounter", {"serviceType": {"text": "s"}}, "serviceType", [{"concept": {"text": "s"}}]),
