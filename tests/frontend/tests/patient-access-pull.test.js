@@ -8,11 +8,21 @@ beforeAll(() => {
 // Epic serves R4; JHE validates R5. Writes must go through the /fhir-import/R4/ endpoint,
 // which converts R4->R5 and returns a batch-response Bundle whose single entry carries the
 // real create status. A 200 HTTP response can still contain a per-entry 400.
-function importResponse(entryStatus) {
+function importResponse(entryStatus, outcome) {
   return Promise.resolve({
     ok: true,
-    json: () => Promise.resolve({ resourceType: "Bundle", type: "batch-response", entry: [{ response: { status: entryStatus } }] }),
+    json: () =>
+      Promise.resolve({
+        resourceType: "Bundle",
+        type: "batch-response",
+        entry: [{ response: { status: entryStatus, outcome: outcome } }],
+      }),
   });
+}
+
+// The endpoint's failure outcome: the create-path error as an OperationOutcome issue.
+function errorOutcome(diagnostics) {
+  return { resourceType: "OperationOutcome", issue: [{ severity: "error", code: "invalid", diagnostics: diagnostics }] };
 }
 
 beforeEach(() => {
@@ -37,14 +47,40 @@ describe("paWriteResource", () => {
     expect(url).not.toContain("/FHIR/R5/");
   });
 
-  test("returns true when the import entry status is 2xx", async () => {
+  test("reports ok when the import entry status is 2xx", async () => {
     global.fetch = jest.fn(() => importResponse("201 Created"));
-    expect(await window.paWriteResource("tok", "1", "Condition", {})).toBe(true);
+    expect(await window.paWriteResource("tok", "1", "Condition", {})).toEqual({ ok: true, reason: null });
   });
 
-  test("returns false when the import entry status is 4xx (conversion/validation failed)", async () => {
+  test("reports the entry's OperationOutcome error when the status is 4xx", async () => {
+    global.fetch = jest.fn(() => importResponse("400 invalid", errorOutcome("clinicalStatus: field required")));
+    expect(await window.paWriteResource("tok", "1", "MedicationRequest", {})).toEqual({
+      ok: false,
+      reason: "clinicalStatus: field required",
+    });
+  });
+
+  test("falls back to the entry status when the outcome carries no error issue", async () => {
     global.fetch = jest.fn(() => importResponse("400 invalid"));
-    expect(await window.paWriteResource("tok", "1", "MedicationRequest", {})).toBe(false);
+    expect(await window.paWriteResource("tok", "1", "MedicationRequest", {})).toEqual({
+      ok: false,
+      reason: "400 invalid",
+    });
+  });
+
+  test("keeps the response body in the reason for a transport-level failure", async () => {
+    // A scope rejection must not read as a bare 403 — the body says which scope.
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: false,
+        status: 403,
+        text: () => Promise.resolve('{"detail":"missing patient/Condition.read scope"}'),
+      }),
+    );
+    expect(await window.paWriteResource("tok", "1", "Condition", {})).toEqual({
+      ok: false,
+      reason: 'HTTP 403: {"detail":"missing patient/Condition.read scope"}',
+    });
   });
 });
 
@@ -52,7 +88,7 @@ describe("paPullResourceType", () => {
   test("writes each matching resource and counts them", async () => {
     const client = fakeClient([{ resourceType: "Condition" }, { resourceType: "Condition" }]);
     const r = await window.paPullResourceType(client, "tok", "1", CONDITION_PULL, "iss");
-    expect(r).toEqual({ written: 2, failed: 0, error: null });
+    expect(r).toEqual({ written: 2, failed: 0, error: null, reasons: {} });
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 
@@ -65,14 +101,19 @@ describe("paPullResourceType", () => {
   test("a pull failure is isolated, not thrown", async () => {
     const client = { patient: { id: "epic-1", request: jest.fn(() => Promise.reject(new Error("timeout"))) } };
     const r = await window.paPullResourceType(client, "tok", "1", CONDITION_PULL, "iss");
-    expect(r).toEqual({ written: 0, failed: 0, error: "timeout" });
+    expect(r).toEqual({ written: 0, failed: 0, error: "timeout", reasons: {} });
   });
 
-  test("a per-entry import error counts as failed, not written", async () => {
-    global.fetch = jest.fn(() => importResponse("400 invalid"));
-    const client = fakeClient([{ resourceType: "Condition" }]);
+  test("a per-entry import error counts as failed and aggregates the distinct reason", async () => {
+    global.fetch = jest.fn(() => importResponse("400 invalid", errorOutcome("clinicalStatus: field required")));
+    const client = fakeClient([{ resourceType: "Condition" }, { resourceType: "Condition" }]);
     const r = await window.paPullResourceType(client, "tok", "1", CONDITION_PULL, "iss");
-    expect(r).toEqual({ written: 0, failed: 1, error: null });
+    expect(r).toEqual({
+      written: 0,
+      failed: 2,
+      error: null,
+      reasons: { "clinicalStatus: field required": 2 },
+    });
   });
 
   test("single read uses a plain instance read (not a patient-compartment search)", async () => {

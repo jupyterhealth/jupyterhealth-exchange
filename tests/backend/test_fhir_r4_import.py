@@ -200,6 +200,130 @@ def test_engine_implicit_datatype_dispatch():
     assert component["referenceRange"][0]["low"] == {"value": 90, "unit": "mmHg"}
 
 
+def test_engine_copy_transform_keeps_repeating_primitive_list():
+    # AllergyIntolerance.category maps through a plain ``copy`` target (unlike Patient's
+    # repeating primitives, which go through ``create``). The rule runs once per source item,
+    # so a copy that assigns instead of appending keeps only the last item and mistypes the
+    # element as a scalar -- every Epic allergy carries a category, so all of them failed R5
+    # validation with "value is not a valid list".
+    r4 = {
+        "resourceType": "AllergyIntolerance",
+        "category": ["medication", "food"],
+        "code": {"text": "PENICILLIN G"},
+        "patient": {"reference": "Patient/p1"},
+    }
+    out = transform_to_r5("AllergyIntolerance", r4)
+    validate_fhir_resource("AllergyIntolerance", out)
+    assert out["category"] == ["medication", "food"]
+
+
+def test_engine_assign_semantics_directly():
+    # _assign backs both the copy and translate transforms: repeating target -> append per
+    # iterated source item; scalar target or already-a-list value -> plain assignment; a
+    # scalar left under a repeating key by any earlier rule is promoted to a list.
+    from fhir.resources.allergyintolerance import AllergyIntolerance as R5A
+
+    from core.fhir.cross_version import _Engine, _Var
+
+    ctx = _Var({}, R5A)
+    _Engine._assign(ctx, "category", "medication")
+    _Engine._assign(ctx, "category", "food")
+    assert ctx.value["category"] == ["medication", "food"]
+
+    ctx = _Var({}, R5A)
+    _Engine._assign(ctx, "category", ["medication", "food"])  # pre-built list assigns wholesale
+    assert ctx.value["category"] == ["medication", "food"]
+
+    ctx = _Var({"category": "medication"}, R5A)  # scalar residue under a repeating key
+    _Engine._assign(ctx, "category", "food")
+    assert ctx.value["category"] == ["medication", "food"]
+
+    ctx = _Var({}, R5A)
+    _Engine._assign(ctx, "criticality", "high")  # scalar element: plain assignment
+    assert ctx.value["criticality"] == "high"
+
+
+def test_engine_translate_transform_appends_on_repeating_element():
+    # translate shares _assign with copy, but no pack map translates onto a repeating
+    # element today, so drive the engine with a minimal synthetic map: both source codes
+    # must survive a translate-transform rule over a repeating element (plain assignment
+    # would keep only the last and mistype the element as a scalar).
+    from core.fhir.cross_version import _Engine
+
+    group = {
+        "name": "AllergyIntolerance",
+        "input": [{"name": "src", "mode": "source"}, {"name": "tgt", "mode": "target"}],
+        "rule": [
+            {
+                "name": "category",
+                "source": [{"context": "src", "element": "category", "variable": "v", "type": "code"}],
+                "target": [
+                    {
+                        "context": "tgt",
+                        "element": "category",
+                        "transform": "translate",
+                        "parameter": [{"valueId": "v"}, {"valueString": "http://example.org/cat4to5"}],
+                    }
+                ],
+            },
+            {
+                "name": "patient",  # R5-required; carried over so the output validates
+                "source": [{"context": "src", "element": "patient", "variable": "p"}],
+                "target": [
+                    {"context": "tgt", "element": "patient", "transform": "copy", "parameter": [{"valueId": "p"}]}
+                ],
+            },
+        ],
+    }
+
+    class _StubMaps:
+        def group_for(self, name):
+            return group if name == "AllergyIntolerance" else None
+
+        def translate(self, url, code):
+            assert url == "http://example.org/cat4to5"
+            return {"med": "medication", "fd": "food"}[code]
+
+    r4 = {"resourceType": "AllergyIntolerance", "category": ["med", "fd"], "patient": {"reference": "Patient/p1"}}
+    out = _Engine(maps=_StubMaps()).transform("AllergyIntolerance", r4)
+    validate_fhir_resource("AllergyIntolerance", out)
+    assert out["category"] == ["medication", "food"]
+
+
+def test_engine_copy_flattens_choice_target_and_wraps_codeableconcept():
+    # Two DocumentReference4to5 gaps found via live Epic pulls (every clinical-note
+    # document failed R5 validation):
+    # 1. R4 ``content.format`` (Coding) copies into R5 ``content.profile.value[x]`` -- a
+    #    choice element the copy transform must flatten to ``valueCoding``, exactly as
+    #    ``create`` targets already do.
+    # 2. R4 ``authenticator`` maps to an attester whose ``mode`` the map fills with the
+    #    bare code "professional", but R5 mode is a CodeableConcept -- the copy wraps it.
+    r4 = {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "content": [
+            {
+                "attachment": {"contentType": "text/html", "url": "Binary/b1"},
+                "format": {
+                    "system": "http://ihe.net/fhir/ValueSet/IHE.FormatCode.codesystem",
+                    "code": "urn:ihe:iti:xds:2017:mimeTypeSufficient",
+                },
+            }
+        ],
+        "authenticator": {"reference": "Practitioner/pr1"},
+    }
+    out = transform_to_r5("DocumentReference", r4)
+    validate_fhir_resource("DocumentReference", out)
+    profile = out["content"][0]["profile"][0]
+    assert profile["valueCoding"]["code"] == "urn:ihe:iti:xds:2017:mimeTypeSufficient"
+    # The local patch map merges the official map's two attester rules into one entry
+    # carrying both mode and party (data/fhir/fhir-cross-version-patches).
+    assert len(out["attester"]) == 1
+    attester = out["attester"][0]
+    assert attester["party"]["reference"] == "Practitioner/pr1"
+    assert attester["mode"] == {"text": "professional"}
+
+
 def test_engine_parenthesised_condition():
     # Newer maps parenthesise rule conditions (`where (s = 'allergy')`); AllergyIntolerance.type is
     # mapped only through such a rule, so a parser that cannot read them drops the field.
@@ -413,6 +537,19 @@ def test_import_error_entry_still_reports_dropped_fields(api_client, patient, fh
     severities = [i["severity"] for i in issues]
     assert "error" in severities
     assert any(i["severity"] == "warning" and i["expression"] == ["Coverage.payor"] for i in issues)
+
+
+def test_import_error_issue_carries_diagnostics_string(api_client, fhir_source):
+    # The patient-access client renders entry.response.outcome.issue[].diagnostics for failed
+    # records (paEntryFailureReason). Pin the contract: the first error issue is severity
+    # "error" with a non-empty diagnostics string.
+    # Coverage reliably fails R5 validation (kind is new-in-R5 and mandatory; no map rule).
+    r4 = {"resourceType": "Coverage", "status": "active", "beneficiary": {"reference": "Patient/p1"}}
+    r = api_client.post("/fhir-import/R4/Coverage", r4, **_src(fhir_source))
+    assert r.status_code == 200, r.text
+    issue = r.json()["entry"][0]["response"]["outcome"]["issue"][0]
+    assert issue["severity"] == "error"
+    assert isinstance(issue["diagnostics"], str) and issue["diagnostics"]
 
 
 def test_import_get_not_allowed(api_client, fhir_source):

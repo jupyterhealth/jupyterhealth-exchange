@@ -115,9 +115,22 @@ function paSanitizeResource(resource, iss) {
   return resource;
 }
 
+// The error text of a failed import entry, from the OperationOutcome the endpoint puts at
+// response.outcome (the first error/fatal issue's diagnostics). Null when there is none.
+function paEntryFailureReason(entry) {
+  var issues = (entry && entry.response && entry.response.outcome && entry.response.outcome.issue) || [];
+  for (var i = 0; i < issues.length; i++) {
+    if (issues[i].severity === "error" || issues[i].severity === "fatal") {
+      return issues[i].diagnostics || (issues[i].details && issues[i].details.text) || issues[i].code || "unknown error";
+    }
+  }
+  return null;
+}
+
 // POST one R4 resource to the JHE R4 import endpoint (converts R4->R5, then creates).
 // The endpoint returns HTTP 200 with a batch-response Bundle even when the single entry
 // failed, so success is the entry's own create status (2xx), not just response.ok.
+// Returns {ok, reason}: reason carries the entry's OperationOutcome error on failure.
 async function paWriteResource(jheToken, sourceId, resourceType, resource) {
   var response = await fetch(IMPORT_ENDPOINT + resourceType, {
     method: "POST",
@@ -129,11 +142,21 @@ async function paWriteResource(jheToken, sourceId, resourceType, resource) {
     },
     body: JSON.stringify(resource),
   });
-  if (!response.ok) return false;
+  if (!response.ok) {
+    // Keep the response body: a scope rejection reads as a bare 403 without it.
+    var detail = "";
+    try {
+      detail = (await response.text()).slice(0, 300);
+    } catch (e) {
+      /* body unreadable; status alone will have to do */
+    }
+    return { ok: false, reason: "HTTP " + response.status + (detail ? ": " + detail : "") };
+  }
   var bundle = await response.json();
   var entry = bundle && bundle.entry && bundle.entry[0];
   var status = entry && entry.response && entry.response.status;
-  return typeof status === "string" && status.charAt(0) === "2";
+  var ok = typeof status === "string" && status.charAt(0) === "2";
+  return { ok: ok, reason: ok ? null : paEntryFailureReason(entry) || status || "unknown error" };
 }
 
 // USCDI resources pulled for the demo phenotype. `single` reads one instance (Patient),
@@ -159,19 +182,26 @@ async function paPullResourceType(client, jheToken, sourceId, pull, iss) {
       : await client.patient.request(pull.query, { pageLimit: 0, flat: true });
     resources = pull.single ? (result ? [result] : []) : result || [];
   } catch (e) {
-    return { written: 0, failed: 0, error: e && e.message ? e.message : String(e) };
+    return { written: 0, failed: 0, error: e && e.message ? e.message : String(e), reasons: {} };
   }
   var written = 0;
   var failed = 0;
+  // Distinct failure text -> count, so 45 identical errors read as one line. Null prototype:
+  // a diagnostics string like "__proto__" or "constructor" must count as a plain key.
+  var reasons = Object.create(null);
   for (var i = 0; i < resources.length; i++) {
     var resource = resources[i];
     if (!resource || resource.resourceType !== pull.type) continue;
     paSanitizeResource(resource, iss);
-    var ok = await paWriteResource(jheToken, sourceId, pull.type, resource);
-    if (ok) written++;
-    else failed++;
+    var write = await paWriteResource(jheToken, sourceId, pull.type, resource);
+    if (write.ok) written++;
+    else {
+      failed++;
+      var reason = write.reason || "unknown error";
+      reasons[reason] = (reasons[reason] || 0) + 1;
+    }
   }
-  return { written: written, failed: failed, error: null };
+  return { written: written, failed: failed, error: null, reasons: reasons };
 }
 
 // Search hospital brands for the picker. Returns an array of facility rows (or []).
@@ -324,6 +354,23 @@ async function finishPatientAccessConnect(out, config) {
       continue;
     }
     out.textContent += "\n  saved " + result.written + " record(s)";
+    if (result.failed) {
+      out.textContent += "\n  " + result.failed + " record(s) could not be saved:";
+      // The on-screen list below is capped; log the complete map so a console capture
+      // keeps every distinct reason.
+      console.error("Patient Access import failures for " + pull.label + ":", result.reasons);
+      // Validation messages can embed record values, making every reason distinct — cap the
+      // list at the 5 most frequent so one bad type cannot flood the page.
+      var reasonList = Object.keys(result.reasons).sort(function (a, b) {
+        return result.reasons[b] - result.reasons[a];
+      });
+      reasonList.slice(0, 5).forEach(function (reason) {
+        out.textContent += "\n    - " + reason + " (x" + result.reasons[reason] + ")";
+      });
+      if (reasonList.length > 5) {
+        out.textContent += "\n    ... and " + (reasonList.length - 5) + " more distinct error(s)";
+      }
+    }
     summary.push(pull.label + ": " + result.written + (result.failed ? " (" + result.failed + " failed)" : ""));
   }
 
