@@ -144,9 +144,18 @@ class _Engine:
         element = target.get("element")
 
         if transform == "copy":
-            value = self._param_value(target["parameter"][0], svars, tvars)
+            param = target["parameter"][0]
+            value = self._param_value(param, svars, tvars)
             if element is not None and value is not None:
-                context.value[element] = value
+                source_var = svars.get(param["valueId"]) if "valueId" in param else None
+                json_key, child_model = _target_key(context.model, element, source_var)
+                # A bare code copied into a CodeableConcept-typed element (e.g. the
+                # DocumentReference4to5 map's attester.mode = "professional") is wrapped
+                # rather than assigned raw, which would fail R5 validation. No coding
+                # system is available from the map, so the code lands in ``text``.
+                if isinstance(value, str) and getattr(child_model, "__name__", None) == "CodeableConcept":
+                    value = {"text": value}
+                self._assign(context, json_key, value)
             return
 
         if transform == "translate":
@@ -154,7 +163,7 @@ class _Engine:
             code = self._param_value(params[0], svars, tvars)
             url = params[1].get("valueString") if len(params) > 1 else None
             if element is not None and code is not None:
-                context.value[element] = self.maps.translate(url, code)
+                self._assign(context, element, self.maps.translate(url, code))
             return
 
         if transform in (None, "create") and element is not None:
@@ -164,6 +173,21 @@ class _Engine:
             return
 
         # ``evaluate`` (Subscription only) and any other transform are unsupported -> skipped.
+
+    @staticmethod
+    def _assign(context, element, value):
+        # A rule over a repeating source runs once per item (see _run_rule), so a repeating
+        # target must append -- plain assignment keeps only the last item and mistypes the
+        # element as a scalar (e.g. R4 AllergyIntolerance.category ["medication", "food"]
+        # collapsed to "food", failing R5 validation).
+        if is_list(context.model, element) and not isinstance(value, list):
+            existing = context.value.setdefault(element, [])
+            if isinstance(existing, list):
+                existing.append(value)
+            else:
+                context.value[element] = [existing, value]
+        else:
+            context.value[element] = value
 
     def _apply_create(self, target, svars, tvars, context, element):
         # The variable a ``create`` binds carries the *source* element into the target under the

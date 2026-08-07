@@ -13,7 +13,10 @@
         ]
       },
       "__search": {
-        "type": {"type": "const", "value": "data-source"}
+        "type": {
+          "type": "const",
+          "value": "data-source"
+        }
       },
       "name": "DataSource.name",
       "type": {
@@ -58,10 +61,22 @@
         ]
       },
       "__search": {
-        "status": {"type": "const", "value": "final"},
-        "date": {"type": "date", "path": ["effective_date_time", "effective_period_start"]}
+        "status": {
+          "type": "const",
+          "value": "final"
+        },
+        "date": {
+          "type": "date",
+          "path": [
+            "effective_date_time",
+            "effective_period_start"
+          ]
+        }
       },
-      "__sortDate": ["effective_date_time", "effective_period_start"],
+      "__sortDate": [
+        "effective_date_time",
+        "effective_period_start"
+      ],
       "id": "Observation.id",
       "identifier": "Observation.identifiers",
       "status": "'final'",
@@ -97,7 +112,10 @@
         ]
       },
       "__search": {
-        "name": {"type": "string", "path": "name"}
+        "name": {
+          "type": "string",
+          "path": "name"
+        }
       },
       "name": "Organization.name",
       "type": {
@@ -122,10 +140,25 @@
         ]
       },
       "__search": {
-        "birthdate": {"type": "date", "path": "birth_date"},
-        "family": {"type": "string", "path": "name_family"},
-        "given": {"type": "string", "path": "name_given"},
-        "name": {"type": "string", "path": ["name_family", "name_given"]}
+        "birthdate": {
+          "type": "date",
+          "path": "birth_date"
+        },
+        "family": {
+          "type": "string",
+          "path": "name_family"
+        },
+        "given": {
+          "type": "string",
+          "path": "name_given"
+        },
+        "name": {
+          "type": "string",
+          "path": [
+            "name_family",
+            "name_given"
+          ]
+        }
       },
       "name": [
         {
@@ -161,8 +194,17 @@
         ]
       },
       "__search": {
-        "identifier": {"type": "token", "path": "identifier"},
-        "name": {"type": "string", "path": ["name_family", "name_given"]}
+        "identifier": {
+          "type": "token",
+          "path": "identifier"
+        },
+        "name": {
+          "type": "string",
+          "path": [
+            "name_family",
+            "name_given"
+          ]
+        }
       },
       "name": [
         {
@@ -181,9 +223,14 @@
         "*"
       ],
       "__search": {
-        "clinical-status": {"type": "token", "path": "clinicalStatus.coding"}
+        "clinical-status": {
+          "type": "token",
+          "path": "clinicalStatus.coding"
+        }
       },
-      "__sortDate": ["recordedDate"]
+      "__sortDate": [
+        "recordedDate"
+      ]
     },
     {
       "resourceType": "CarePlan",
@@ -195,11 +242,24 @@
         "encounter.reference"
       ],
       "__search": {
-        "category": {"type": "token", "path": "category.coding"},
-        "status": {"type": "code", "path": "status"},
-        "date": {"type": "date", "path": ["period.start"]}
+        "category": {
+          "type": "token",
+          "path": "category.coding"
+        },
+        "status": {
+          "type": "code",
+          "path": "status"
+        },
+        "date": {
+          "type": "date",
+          "path": [
+            "period.start"
+          ]
+        }
       },
-      "__sortDate": ["period.start"]
+      "__sortDate": [
+        "period.start"
+      ]
     },
     {
       "resourceType": "CareTeam",
@@ -207,10 +267,18 @@
         "*"
       ],
       "__search": {
-        "role": {"type": "token", "path": "participant.role.coding"},
-        "status": {"type": "code", "path": "status"}
+        "role": {
+          "type": "token",
+          "path": "participant.role.coding"
+        },
+        "status": {
+          "type": "code",
+          "path": "status"
+        }
       },
-      "__sortDate": ["period.start"]
+      "__sortDate": [
+        "period.start"
+      ]
     },
     {
       "resourceType": "Condition",
@@ -222,16 +290,52 @@
         "encounter.reference"
       ],
       "__search": {
-        "abatement-date": {"type": "date", "path": ["abatementDateTime", "abatementPeriod.start"]},
-        "asserted-date": {"type": "date", "path": ["assertedDate"]},
-        "category": {"type": "token", "path": "category.coding"},
-        "clinical-status": {"type": "token", "path": "clinicalStatus.coding"},
-        "code": {"type": "token", "path": "code.coding"},
-        "encounter": {"type": "reference", "path": "encounter.reference"},
-        "onset-date": {"type": "date", "path": ["onsetDateTime", "onsetPeriod.start"]},
-        "recorded-date": {"type": "date", "path": ["recordedDate"]}
+        "abatement-date": {
+          "type": "date",
+          "path": [
+            "abatementDateTime",
+            "abatementPeriod.start"
+          ]
+        },
+        "asserted-date": {
+          "type": "date",
+          "path": [
+            "assertedDate"
+          ]
+        },
+        "category": {
+          "type": "token",
+          "path": "category.coding"
+        },
+        "clinical-status": {
+          "type": "token",
+          "path": "clinicalStatus.coding"
+        },
+        "code": {
+          "type": "token",
+          "path": "code.coding"
+        },
+        "encounter": {
+          "type": "reference",
+          "path": "encounter.reference"
+        },
+        "onset-date": {
+          "type": "date",
+          "path": [
+            "onsetDateTime",
+            "onsetPeriod.start"
+          ]
+        },
+        "recorded-date": {
+          "type": "date",
+          "path": [
+            "recordedDate"
+          ]
+        }
       },
-      "__sortDate": ["recordedDate"]
+      "__sortDate": [
+        "recordedDate"
+      ]
     },
     {
       "resourceType": "Coverage",
@@ -245,8 +349,14 @@
         "*"
       ],
       "__search": {
-        "status": {"type": "code", "path": "status"},
-        "type": {"type": "token", "path": "type.coding"}
+        "status": {
+          "type": "code",
+          "path": "status"
+        },
+        "type": {
+          "type": "token",
+          "path": "type.coding"
+        }
       }
     },
     {
@@ -259,12 +369,30 @@
         "encounter.reference"
       ],
       "__search": {
-        "category": {"type": "token", "path": "category.coding"},
-        "code": {"type": "token", "path": "code.coding"},
-        "status": {"type": "code", "path": "status"},
-        "date": {"type": "date", "path": ["effectiveDateTime", "effectivePeriod.start"]}
+        "category": {
+          "type": "token",
+          "path": "category.coding"
+        },
+        "code": {
+          "type": "token",
+          "path": "code.coding"
+        },
+        "status": {
+          "type": "code",
+          "path": "status"
+        },
+        "date": {
+          "type": "date",
+          "path": [
+            "effectiveDateTime",
+            "effectivePeriod.start"
+          ]
+        }
       },
-      "__sortDate": ["effectiveDateTime", "effectivePeriod.start"]
+      "__sortDate": [
+        "effectiveDateTime",
+        "effectivePeriod.start"
+      ]
     },
     {
       "resourceType": "DocumentReference",
@@ -272,13 +400,35 @@
         "*"
       ],
       "__search": {
-        "category": {"type": "token", "path": "category.coding"},
-        "type": {"type": "token", "path": "type.coding"},
-        "status": {"type": "code", "path": "status"},
-        "date": {"type": "date", "path": ["date"]},
-        "period": {"type": "date", "path": ["context.period.start", "context.period.end"]}
+        "category": {
+          "type": "token",
+          "path": "category.coding"
+        },
+        "type": {
+          "type": "token",
+          "path": "type.coding"
+        },
+        "status": {
+          "type": "code",
+          "path": "status"
+        },
+        "date": {
+          "type": "date",
+          "path": [
+            "date"
+          ]
+        },
+        "period": {
+          "type": "date",
+          "path": [
+            "context.period.start",
+            "context.period.end"
+          ]
+        }
       },
-      "__sortDate": ["date"]
+      "__sortDate": [
+        "date"
+      ]
     },
     {
       "resourceType": "Encounter",
@@ -289,24 +439,40 @@
         "subject.reference"
       ],
       "__search": {
-        "class": {"type": "token", "path": "class.coding"},
-        "identifier": {"type": "identifier", "path": "identifier"},
-        "discharge-disposition": {"type": "token", "path": "admission.dischargeDisposition.coding"},
-        "location": {"type": "reference", "path": "location.location.reference"},
-        "status": {"type": "code", "path": "status"},
-        "type": {"type": "token", "path": "type.coding"},
-        "date": {"type": "date", "path": ["period.start"]}
+        "class": {
+          "type": "token",
+          "path": "class.coding"
+        },
+        "identifier": {
+          "type": "identifier",
+          "path": "identifier"
+        },
+        "discharge-disposition": {
+          "type": "token",
+          "path": "admission.dischargeDisposition.coding"
+        },
+        "location": {
+          "type": "reference",
+          "path": "location.location.reference"
+        },
+        "status": {
+          "type": "code",
+          "path": "status"
+        },
+        "type": {
+          "type": "token",
+          "path": "type.coding"
+        },
+        "date": {
+          "type": "date",
+          "path": [
+            "period.start"
+          ]
+        }
       },
-      "__sortDate": ["period.start"]
-    },
-    {
-      "resourceType": "FamilyMemberHistory",
-      "__interaction": [
-        "*"
-      ],
-      "__search": {
-        "code": {"type": "token", "path": "condition.code.coding"}
-      }
+      "__sortDate": [
+        "period.start"
+      ]
     },
     {
       "resourceType": "Goal",
@@ -314,11 +480,24 @@
         "*"
       ],
       "__search": {
-        "description": {"type": "string", "path": "description.text"},
-        "lifecycle-status": {"type": "code", "path": "lifecycleStatus"},
-        "target-date": {"type": "date", "path": ["target.dueDate"]}
+        "description": {
+          "type": "string",
+          "path": "description.text"
+        },
+        "lifecycle-status": {
+          "type": "code",
+          "path": "lifecycleStatus"
+        },
+        "target-date": {
+          "type": "date",
+          "path": [
+            "target.dueDate"
+          ]
+        }
       },
-      "__sortDate": ["target.dueDate"]
+      "__sortDate": [
+        "target.dueDate"
+      ]
     },
     {
       "resourceType": "Group",
@@ -336,10 +515,20 @@
         "encounter.reference"
       ],
       "__search": {
-        "status": {"type": "code", "path": "status"},
-        "date": {"type": "date", "path": ["occurrenceDateTime"]}
+        "status": {
+          "type": "code",
+          "path": "status"
+        },
+        "date": {
+          "type": "date",
+          "path": [
+            "occurrenceDateTime"
+          ]
+        }
       },
-      "__sortDate": ["occurrenceDateTime"]
+      "__sortDate": [
+        "occurrenceDateTime"
+      ]
     },
     {
       "resourceType": "Location",
@@ -347,11 +536,32 @@
         "*"
       ],
       "__search": {
-        "name": {"type": "string", "path": "name"},
-        "address": {"type": "string", "path": ["address.text", "address.line", "address.city", "address.state", "address.postalCode"]},
-        "address-city": {"type": "string", "path": "address.city"},
-        "address-state": {"type": "string", "path": "address.state"},
-        "address-postalcode": {"type": "string", "path": "address.postalCode"}
+        "name": {
+          "type": "string",
+          "path": "name"
+        },
+        "address": {
+          "type": "string",
+          "path": [
+            "address.text",
+            "address.line",
+            "address.city",
+            "address.state",
+            "address.postalCode"
+          ]
+        },
+        "address-city": {
+          "type": "string",
+          "path": "address.city"
+        },
+        "address-state": {
+          "type": "string",
+          "path": "address.state"
+        },
+        "address-postalcode": {
+          "type": "string",
+          "path": "address.postalCode"
+        }
       }
     },
     {
@@ -366,8 +576,14 @@
         "*"
       ],
       "__search": {
-        "status": {"type": "code", "path": "status"},
-        "type": {"type": "token", "path": "type.coding"}
+        "status": {
+          "type": "code",
+          "path": "status"
+        },
+        "type": {
+          "type": "token",
+          "path": "type.coding"
+        }
       }
     },
     {
@@ -380,12 +596,28 @@
         "encounter.reference"
       ],
       "__search": {
-        "intent": {"type": "code", "path": "intent"},
-        "status": {"type": "code", "path": "status"},
-        "encounter": {"type": "reference", "path": "encounter.reference"},
-        "authoredon": {"type": "date", "path": ["authoredOn"]}
+        "intent": {
+          "type": "code",
+          "path": "intent"
+        },
+        "status": {
+          "type": "code",
+          "path": "status"
+        },
+        "encounter": {
+          "type": "reference",
+          "path": "encounter.reference"
+        },
+        "authoredon": {
+          "type": "date",
+          "path": [
+            "authoredOn"
+          ]
+        }
       },
-      "__sortDate": ["authoredOn"]
+      "__sortDate": [
+        "authoredOn"
+      ]
     },
     {
       "resourceType": "Observation",
@@ -397,12 +629,30 @@
         "encounter.reference"
       ],
       "__search": {
-        "category": {"type": "token", "path": "category.coding"},
-        "code": {"type": "token", "path": "code.coding"},
-        "status": {"type": "code", "path": "status"},
-        "date": {"type": "date", "path": ["effectiveDateTime", "effectivePeriod.start"]}
+        "category": {
+          "type": "token",
+          "path": "category.coding"
+        },
+        "code": {
+          "type": "token",
+          "path": "code.coding"
+        },
+        "status": {
+          "type": "code",
+          "path": "status"
+        },
+        "date": {
+          "type": "date",
+          "path": [
+            "effectiveDateTime",
+            "effectivePeriod.start"
+          ]
+        }
       },
-      "__sortDate": ["effectiveDateTime", "effectivePeriod.start"]
+      "__sortDate": [
+        "effectiveDateTime",
+        "effectivePeriod.start"
+      ]
     },
     {
       "resourceType": "Organization",
@@ -410,8 +660,20 @@
         "*"
       ],
       "__search": {
-        "name": {"type": "string", "path": "name"},
-        "address": {"type": "string", "path": ["address.text", "address.line", "address.city", "address.state", "address.postalCode"]}
+        "name": {
+          "type": "string",
+          "path": "name"
+        },
+        "address": {
+          "type": "string",
+          "path": [
+            "address.text",
+            "address.line",
+            "address.city",
+            "address.state",
+            "address.postalCode"
+          ]
+        }
       }
     },
     {
@@ -420,12 +682,38 @@
         "*"
       ],
       "__search": {
-        "birthdate": {"type": "date", "path": ["birthDate"]},
-        "death-date": {"type": "date", "path": ["deceasedDateTime"]},
-        "family": {"type": "string", "path": "name.family"},
-        "given": {"type": "string", "path": "name.given"},
-        "name": {"type": "string", "path": ["name.family", "name.given", "name.text"]},
-        "identifier": {"type": "identifier", "path": "identifier"}
+        "birthdate": {
+          "type": "date",
+          "path": [
+            "birthDate"
+          ]
+        },
+        "death-date": {
+          "type": "date",
+          "path": [
+            "deceasedDateTime"
+          ]
+        },
+        "family": {
+          "type": "string",
+          "path": "name.family"
+        },
+        "given": {
+          "type": "string",
+          "path": "name.given"
+        },
+        "name": {
+          "type": "string",
+          "path": [
+            "name.family",
+            "name.given",
+            "name.text"
+          ]
+        },
+        "identifier": {
+          "type": "identifier",
+          "path": "identifier"
+        }
       }
     },
     {
@@ -434,8 +722,18 @@
         "*"
       ],
       "__search": {
-        "name": {"type": "string", "path": ["name.family", "name.given", "name.text"]},
-        "identifier": {"type": "identifier", "path": "identifier"}
+        "name": {
+          "type": "string",
+          "path": [
+            "name.family",
+            "name.given",
+            "name.text"
+          ]
+        },
+        "identifier": {
+          "type": "identifier",
+          "path": "identifier"
+        }
       }
     },
     {
@@ -444,8 +742,14 @@
         "*"
       ],
       "__search": {
-        "practitioner": {"type": "reference", "path": "practitioner.reference"},
-        "specialty": {"type": "token", "path": "specialty.coding"}
+        "practitioner": {
+          "type": "reference",
+          "path": "practitioner.reference"
+        },
+        "specialty": {
+          "type": "token",
+          "path": "specialty.coding"
+        }
       }
     },
     {
@@ -458,11 +762,26 @@
         "encounter.reference"
       ],
       "__search": {
-        "code": {"type": "token", "path": "code.coding"},
-        "status": {"type": "code", "path": "status"},
-        "date": {"type": "date", "path": ["performedDateTime", "performedPeriod.start"]}
+        "code": {
+          "type": "token",
+          "path": "code.coding"
+        },
+        "status": {
+          "type": "code",
+          "path": "status"
+        },
+        "date": {
+          "type": "date",
+          "path": [
+            "performedDateTime",
+            "performedPeriod.start"
+          ]
+        }
       },
-      "__sortDate": ["performedDateTime", "performedPeriod.start"]
+      "__sortDate": [
+        "performedDateTime",
+        "performedPeriod.start"
+      ]
     },
     {
       "resourceType": "Provenance",
@@ -476,11 +795,24 @@
         "*"
       ],
       "__search": {
-        "questionnaire": {"type": "reference", "path": "questionnaire"},
-        "status": {"type": "code", "path": "status"},
-        "authored": {"type": "date", "path": ["authored"]}
+        "questionnaire": {
+          "type": "reference",
+          "path": "questionnaire"
+        },
+        "status": {
+          "type": "code",
+          "path": "status"
+        },
+        "authored": {
+          "type": "date",
+          "path": [
+            "authored"
+          ]
+        }
       },
-      "__sortDate": ["authored"]
+      "__sortDate": [
+        "authored"
+      ]
     },
     {
       "resourceType": "RelatedPerson",
@@ -488,7 +820,14 @@
         "*"
       ],
       "__search": {
-        "name": {"type": "string", "path": ["name.family", "name.given", "name.text"]}
+        "name": {
+          "type": "string",
+          "path": [
+            "name.family",
+            "name.given",
+            "name.text"
+          ]
+        }
       }
     },
     {
@@ -497,17 +836,27 @@
         "*"
       ],
       "__search": {
-        "category": {"type": "token", "path": "category.coding"},
-        "code": {"type": "token", "path": "code.coding"},
-        "status": {"type": "code", "path": "status"},
-        "authored": {"type": "date", "path": ["authoredOn"]}
+        "category": {
+          "type": "token",
+          "path": "category.coding"
+        },
+        "code": {
+          "type": "token",
+          "path": "code.coding"
+        },
+        "status": {
+          "type": "code",
+          "path": "status"
+        },
+        "authored": {
+          "type": "date",
+          "path": [
+            "authoredOn"
+          ]
+        }
       },
-      "__sortDate": ["authoredOn"]
-    },
-    {
-      "resourceType": "Specimen",
-      "__interaction": [
-        "*"
+      "__sortDate": [
+        "authoredOn"
       ]
     }
   ]

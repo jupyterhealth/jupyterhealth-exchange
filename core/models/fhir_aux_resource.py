@@ -111,6 +111,16 @@ class FhirAuxResource(models.Model):
         indexes = [
             models.Index(fields=["resource_type", "fhir_source"]),
         ]
+        constraints = [
+            # One aux row per upstream record: create_aux_resource (core/views/fhir.py) updates
+            # in place on re-import, and this backs it against races. Rows with no upstream id
+            # cannot be identified across imports and are exempt.
+            models.UniqueConstraint(
+                fields=["fhir_source", "resource_type", "fhir_resource_id"],
+                condition=models.Q(fhir_resource_id__isnull=False) & ~models.Q(fhir_resource_id=""),
+                name="uniq_aux_upstream_record_per_source",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.resource_type}/{self.pk}"
