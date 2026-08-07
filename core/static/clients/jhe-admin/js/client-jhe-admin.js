@@ -1891,12 +1891,11 @@ async function renderFhir(queryParams) {
 
   // Six types are "mapped" (served from native Django models when no _source is sent) and
   // also accept imported EHR rows into the aux store; a search hits exactly ONE store (see
-  // core/views/fhir.py). The picker splits the mapped types the sync pulls (Observation,
-  // Patient, Device) into per-store views instead of exposing a source selector — otherwise
-  // imported rows are unreachable from the browser. KNOWN GAP: the other three mapped types
-  // (Group, Organization, Practitioner) keep a single native view; the patient-access pull
-  // never writes them (pulled resources only *reference* practitioners/orgs), but rows
-  // imported directly through /fhir-import stay invisible here until views are added.
+  // core/views/fhir.py). Every mapped type is therefore split into per-store views instead
+  // of exposing a source selector — otherwise its imported rows are unreachable from the
+  // browser. The patient-access pull only writes Observation/Patient/Device; the other three
+  // fill via direct /fhir-import calls (pulled resources merely *reference* practitioners
+  // and organizations).
   // Mirrors JHE_FHIR_SOURCE_BASE (core/models/fhir_aux_resource.py); the server rstrips the slash.
   const IMPORTED_SOURCE_PREFIX = "https://jupyterhealth.org/fhir/fhir-source/";
   const RESOURCE_VIEWS = {
@@ -1912,6 +1911,18 @@ async function renderFhir(queryParams) {
     Device: {
       "Device - Data Sources": {},
       "Device - Imported EHR": { "_source:below": IMPORTED_SOURCE_PREFIX },
+    },
+    Group: {
+      "Group - Studies": {},
+      "Group - Imported EHR": { "_source:below": IMPORTED_SOURCE_PREFIX },
+    },
+    Organization: {
+      "Organization - JHE": {},
+      "Organization - Imported EHR": { "_source:below": IMPORTED_SOURCE_PREFIX },
+    },
+    Practitioner: {
+      "Practitioner - JHE": {},
+      "Practitioner - Imported EHR": { "_source:below": IMPORTED_SOURCE_PREFIX },
     },
   };
   // viewName -> {path, query}; and mapped-type name -> its first view (for restores of the

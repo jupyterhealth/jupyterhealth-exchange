@@ -471,6 +471,19 @@ def test_labs_view_query_returns_imported_lab_and_plain_search_does_not(api_clie
     assert lab_id not in [e["resource"]["id"] for e in plain.get("entry", [])]
 
 
+def test_imported_ehr_view_query_returns_aux_rows_for_native_mapped_types(
+    api_client, organization, patient, fhir_source
+):
+    # The exact query the "Organization - Imported EHR" browser view sends (Group and
+    # Practitioner share the shape): _source:below on the fhir-source base returns the
+    # imported row and excludes the native Django one, and vice versa for the plain search.
+    api_client.post("/FHIR/R5/Organization", {"resourceType": "Organization", "name": "Aux Org"}, **_src(fhir_source))
+    imported = api_client.get("/FHIR/R5/Organization", {"_source:below": f"{JHE_FHIR_SOURCE_BASE}/"}).json()
+    assert {e["resource"].get("name") for e in imported["entry"]} == {"Aux Org"}
+    native = api_client.get("/FHIR/R5/Organization").json()
+    assert "Aux Org" not in {e["resource"].get("name") for e in native["entry"]}
+
+
 def test_search_remembers_view_params_not_just_the_path(api_client, user, patient, fhir_source):
     # The admin UI restores the last-used browser view from this setting. Remembering only the
     # URL path sent "Observation - Labs" users back to the first Observation view (Device Data);
