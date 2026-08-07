@@ -82,10 +82,11 @@ INSTALLED_APPS = [
     # Required for allauth
     "allauth",
     "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.saml",
     "oauth2_provider",
     "rest_framework",
     "drf_spectacular",
-    "django_saml2_auth",
 ]
 
 # Required for allauth
@@ -95,7 +96,10 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Custom adapter rewords allauth's bundled error messages (e.g. "Incorrect code.").
-ACCOUNT_ADAPTER = "core.user_messages.JheAccountAdapter"
+ACCOUNT_ADAPTER = "core.adapters.JheAccountAdapter"
+# JheUser has no username field; without this, allauth's social signup path
+# raises KeyError('username') writing the auto-generated username.
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_LOGIN_METHODS = ["email"]
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
@@ -107,6 +111,29 @@ ACCOUNT_LOGIN_BY_CODE_ENABLED = True
 ACCOUNT_LOGIN_BY_CODE_SUPPORTS_RESEND = True
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "/allauth/email/"
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
+# SAML SSO via allauth's saml provider. IdP config (metadata URL, attribute
+# map, SP certs) is a per-deployment SocialApp row in Django admin; the login
+# button is gated by the auth.sso.saml2 JheSetting. Operator setup guide:
+# jhe/auth.md in the software-documentation repo.
+SOCIALACCOUNT_ADAPTER = "core.adapters.JheSocialAccountAdapter"
+# "none": the IdP asserts the email (default falls through to the account
+# setting above, which would bounce SSO users through email verification).
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+# GET-initiated login (skips allauth's interstitial confirm page). Login-CSRF
+# surface accepted: attacker-account substitution is blocked regardless by
+# allauth's session-bound InResponseTo state check plus its default rejection
+# of unsolicited IdP-initiated assertions; the residual is a third party
+# force-starting the victim's own login.
+SOCIALACCOUNT_LOGIN_ON_GET = True
+# Email-authentication — logging an SSO user into an existing same-email
+# account instead of allauth's enumeration-safe dead end — is enabled per-IdP
+# by `"email_authentication": true` in that SocialApp's settings JSON, not
+# globally here (the global stays allauth's default False). The matched email
+# must also count as verified: either the IdP asserts the mapped
+# `email_verified` attribute or the SocialApp sets `"verified_email": true`.
+# AUTO_CONNECT (link the SocialAccount on first use) has no per-app key; it
+# is global but inert until email-authentication actually fires.
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
 REST_FRAMEWORK = {
     # uncomment if you need to revert to the default pagination class
@@ -279,53 +306,6 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
-SAML2_AUTH = {
-    "TRIGGER": {
-        "GET_METADATA_AUTO_CONF_URLS": "core.services.jhe_settings.get_saml_metadata_urls",
-    },
-    "ASSERTION_URL": SITE_URL,
-    "ENTITY_ID": f"{SITE_URL}/sso/acs/",
-    # Attributes according to the Identity Provider.
-    "ATTRIBUTES_MAP": {
-        "email": "email",
-        "first_name": "firstName",
-        "last_name": "lastName",
-    },
-    "CREATE_USER": True,
-    "AUTHN_REQUESTS_SIGNED": not DEBUG,
-    "TOKEN_REQUIRED": not DEBUG,
-    "SIGN_REQUEST": not DEBUG,
-    # Landing page after login
-    "DEFAULT_NEXT_URL": "/clients/jhe-admin/organizations?",
-    "ALLOWED_REDIRECT_HOSTS": ALLOWED_HOSTS,
-    "DEBUG": DEBUG,
-    "LOGGING": {
-        "version": 1,
-        "formatters": {
-            "simple": {
-                "format": "[%(asctime)s] [%(levelname)s] [%(name)s.%(funcName)s] %(message)s",
-            },
-        },
-        "handlers": {
-            "stdout": {
-                "class": "logging.StreamHandler",
-                "stream": "ext://sys.stdout",
-                "level": "DEBUG",
-                "formatter": "simple",
-            },
-        },
-        "loggers": {
-            "saml2": {"level": "DEBUG"},
-        },
-        "root": {
-            "level": "DEBUG",
-            "handlers": [
-                "stdout",
-            ],
-        },
-    },
-}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

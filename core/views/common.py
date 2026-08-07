@@ -5,38 +5,19 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import jwt
 from allauth.account.models import EmailAddress
 from allauth.account.views import RequestLoginCodeView
-from dictor import dictor  # type: ignore
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.views import LoginView as BaseLoginView
-from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
+from django.http import HttpRequest, JsonResponse
 from django.shortcuts import redirect, render
-from django.template import TemplateDoesNotExist
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django_saml2_auth.errors import INACTIVE_USER, USER_MISMATCH
-from django_saml2_auth.exceptions import SAMLAuthError
-from django_saml2_auth.saml import (
-    decode_saml_response,
-    extract_user_identity,
-    get_default_next_url,
-)
-from django_saml2_auth.user import (
-    create_custom_or_default_jwt,
-    decode_custom_or_default_jwt,
-    get_user_id,
-)
-from django_saml2_auth.utils import (
-    exception_handler,
-    is_jwt_well_formed,
-    run_hook,
-)
 from oauth2_provider.models import get_access_token_model
 from oauth2_provider.views import TokenView
 from oauthlib.common import Request
@@ -45,7 +26,6 @@ from core.models import JheUser
 from core.oauth2_validators import JheOAuth2Validator
 from core.oidc_verify import IdTokenError, parse_fhir_user, verify_id_token
 from core.services.jhe_settings import get_setting
-from core.utils import get_or_create_user
 
 from ..forms import UserRegistrationForm
 from ..tokens import account_activation_token
@@ -236,140 +216,6 @@ def ow_complete(request):
 
 def ow_manage(request):
     return render(request, "clients/ow/manage.html")
-
-
-@csrf_exempt
-@exception_handler
-def acs(request: HttpRequest):
-    """Assertion Consumer Service is SAML terminology for the location at a ServiceProvider that
-    accepts <samlp:Response> messages (or SAML artifacts) for the purpose of establishing a session
-    based on an assertion. Assertion is a signed authentication request from identity provider (IdP)
-    to acs endpoint.
-
-    Args:
-        request (HttpRequest): Incoming request from identity provider (IdP) for authentication
-
-    Exceptions:
-        SAMLAuthError: The target user is inactive.
-
-    Returns:
-        HttpResponseRedirect: Redirect to various endpoints: denied, welcome or next_url (e.g.
-            the front-end app)
-
-    Notes:
-        https://wiki.shibboleth.net/confluence/display/CONCEPT/AssertionConsumerService
-    """
-    saml2_auth_settings = settings.SAML2_AUTH
-
-    authn_response = decode_saml_response(request, acs)
-    # decode_saml_response() will raise SAMLAuthError if the response is invalid,
-    # so we can safely ignore the type check here.
-    user = extract_user_identity(authn_response)  # type: ignore
-
-    next_url = request.session.get("login_next_url")
-
-    # A RelayState is an HTTP parameter that can be included as part of the SAML request
-    # and SAML response; usually is meant to be an opaque identifier that is passed back
-    # without any modification or inspection, and it is used to specify additional information
-    # to the SP or the IdP.
-    # If RelayState params is passed, it could be JWT token that identifies the user trying to
-    # login via sp_initiated_login endpoint, or it could be a URL used for redirection.
-    RELAYSTATE_NULL_LITERALS = {"undefined", "null", "none", "", None}
-
-    relay_state = request.POST.get("RelayState")
-    relay_state = None if relay_state in RELAYSTATE_NULL_LITERALS else relay_state
-
-    relay_state_is_token = is_jwt_well_formed(relay_state) if relay_state else False
-    if next_url is None and relay_state and not relay_state_is_token:
-        next_url = relay_state
-    elif next_url is None:
-        next_url = get_default_next_url()
-
-    if relay_state and relay_state_is_token:
-        redirected_user_id = decode_custom_or_default_jwt(relay_state)
-
-        # This prevents users from entering an email on the SP, but use a different email on IdP
-        if get_user_id(user) != redirected_user_id:
-            raise SAMLAuthError(
-                "The user identifier doesn't match.",
-                extra={
-                    "exc_type": ValueError,
-                    "error_code": USER_MISMATCH,
-                    "reason": "User identifier mismatch.",
-                    "status_code": 403,
-                },
-            )
-
-    is_new_user, target_user = get_or_create_user(user)
-
-    before_login_trigger = dictor(saml2_auth_settings, "TRIGGER.BEFORE_LOGIN")
-    if before_login_trigger:
-        run_hook(before_login_trigger, user)  # type: ignore
-
-    request.session.flush()
-
-    if target_user.is_active:
-        # Try to load from the `AUTHENTICATION_BACKENDS` setting in settings.py
-        if hasattr(settings, "AUTHENTICATION_BACKENDS") and settings.AUTHENTICATION_BACKENDS:
-            model_backend = settings.AUTHENTICATION_BACKENDS[0]
-        else:
-            model_backend = "django.contrib.auth.backends.ModelBackend"
-
-        login(request, target_user, model_backend)
-
-        after_login_trigger = dictor(saml2_auth_settings, "TRIGGER.AFTER_LOGIN")
-        if after_login_trigger:
-            run_hook(after_login_trigger, request.session, user)  # type: ignore
-    else:
-        raise SAMLAuthError(
-            "The target user is inactive.",
-            extra={
-                "exc_type": Exception,
-                "error_code": INACTIVE_USER,
-                "reason": "User is inactive.",
-                "status_code": 500,
-            },
-        )
-
-    use_jwt = dictor(saml2_auth_settings, "USE_JWT", False)
-    if use_jwt:
-        # Create a new JWT token for IdP-initiated login (acs)
-        jwt_token = create_custom_or_default_jwt(target_user)
-        custom_token_query_trigger = dictor(saml2_auth_settings, "TRIGGER.CUSTOM_TOKEN_QUERY")
-        if custom_token_query_trigger:
-            query = run_hook(custom_token_query_trigger, jwt_token)
-        else:
-            query = f"?token={jwt_token}"
-
-        # Use JWT auth to send token to frontend
-        frontend_url = dictor(saml2_auth_settings, "FRONTEND_URL", next_url)
-        custom_frontend_url_trigger = dictor(saml2_auth_settings, "TRIGGER.GET_CUSTOM_FRONTEND_URL")
-        if custom_frontend_url_trigger:
-            frontend_url = run_hook(custom_frontend_url_trigger, relay_state)  # type: ignore
-
-        return HttpResponseRedirect(frontend_url + query)
-
-    def redirect(redirect_url: str | None = None) -> HttpResponseRedirect:
-        """Redirect to the redirect_url or the root page.
-
-        Args:
-            redirect_url (str, optional): Redirect URL. Defaults to None.
-
-        Returns:
-            HttpResponseRedirect: Redirect to the redirect_url or the root page.
-        """
-        if redirect_url:
-            return HttpResponseRedirect(redirect_url)
-        else:
-            return HttpResponseRedirect("/")
-
-    if is_new_user:
-        try:
-            return render(request, "django_saml2_auth/welcome.html", {"user": request.user})
-        except TemplateDoesNotExist:
-            return redirect(next_url)
-    else:
-        return redirect(next_url)
 
 
 def json_error(msg, status_code=400):

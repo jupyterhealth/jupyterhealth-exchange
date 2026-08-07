@@ -15,10 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-import django_saml2_auth.views
 from django.contrib import admin
 from django.contrib.auth import views as auth_views  # noqa
-from django.urls import include, path, re_path
+from django.urls import include, path
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -50,6 +49,4 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-    path("sso/", include("django_saml2_auth.urls")),
-    re_path(r"^saml/login/$", django_saml2_auth.views.signin, name="saml_signin"),
 ]

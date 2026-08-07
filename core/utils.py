@@ -5,20 +5,10 @@ import random
 from datetime import timedelta
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
 from uuid import uuid4
 
-from dictor import dictor  # type: ignore
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group, User
 from django.utils import timezone
-from django_saml2_auth.errors import (
-    SHOULD_NOT_CREATE_USER,
-)
-from django_saml2_auth.exceptions import SAMLAuthError
-from django_saml2_auth.user import create_new_user, get_user, get_user_id
-from django_saml2_auth.utils import run_hook
 from jsonschema import validators
 from referencing import Registry, Resource
 
@@ -120,87 +110,3 @@ def generate_observation_value_attachment_data(coding_code):
         "date_time": timezone.localtime(timezone.now() + timedelta(hours=1)).replace(microsecond=0).isoformat()
     }
     return placeholder
-
-
-def get_or_create_user(user: dict[str, Any]) -> tuple[bool, User]:
-    """Get or create a new user and optionally add it to one or more group(s)
-
-    Args:
-        user (Dict[str, Any]): User information
-
-    Raises:
-        SAMLAuthError: Cannot create user. Missing user_id.
-        SAMLAuthError: Cannot create user.
-
-    Returns:
-        Tuple[bool, User]: A tuple containing user creation status and user object
-    """
-    saml2_auth_settings = settings.SAML2_AUTH
-    user_model = get_user_model()
-    created = False
-
-    try:
-        target_user = get_user(user)
-    except user_model.DoesNotExist:
-        should_create_new_user = dictor(saml2_auth_settings, "CREATE_USER", True)
-        if should_create_new_user:
-            user_id = get_user_id(user)
-            if not user_id:
-                raise SAMLAuthError(
-                    "Cannot create user. Missing user_id.",
-                    extra={
-                        "error_code": SHOULD_NOT_CREATE_USER,
-                        "reason": "Cannot create user. Missing user_id.",
-                        "status_code": 400,
-                    },
-                )
-            target_user = create_new_user(
-                user_id,
-                user["first_name"],
-                user["last_name"],
-                user_type="practitioner",
-                identifier=user.get("user_identity", {}).get("id")[0],
-            )
-
-            create_user_trigger = dictor(saml2_auth_settings, "TRIGGER.CREATE_USER")
-            if create_user_trigger:
-                run_hook(create_user_trigger, user)  # type: ignore
-
-            target_user.refresh_from_db()
-            created = True
-        else:
-            raise SAMLAuthError(
-                "Cannot create user.",
-                extra={
-                    "exc_type": Exception,
-                    "error_code": SHOULD_NOT_CREATE_USER,
-                    "reason": "Due to current config, a new user should not be created.",
-                    "status_code": 500,
-                },
-            )
-
-    # Optionally update this user's group assignments by updating group memberships from SAML groups
-    # to Django equivalents
-    group_attribute = dictor(saml2_auth_settings, "ATTRIBUTES_MAP.groups")
-    group_map = dictor(saml2_auth_settings, "GROUPS_MAP")
-
-    if group_attribute and group_attribute in user["user_identity"]:
-        groups = []
-
-        for group_name in user["user_identity"][group_attribute]:
-            # Group names can optionally be mapped to different names in Django
-            if group_map and group_name in group_map:
-                group_name_django = group_map[group_name]
-            else:
-                group_name_django = group_name
-
-            try:
-                groups.append(Group.objects.get(name=group_name_django))
-            except Group.DoesNotExist:
-                should_create_new_groups = dictor(saml2_auth_settings, "CREATE_GROUPS", False)
-                if should_create_new_groups:
-                    groups.append(Group.objects.create(name=group_name_django))
-
-        target_user.groups.set(groups)
-
-    return (created, target_user)

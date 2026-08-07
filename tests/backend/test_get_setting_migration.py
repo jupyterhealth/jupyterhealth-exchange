@@ -407,7 +407,6 @@ class SeedJheSettingsTests(TestCase):
             "site.registration_invite_code",
             "auth.default_orgs",
             "auth.sso.saml2",
-            "auth.sso.idp_metadata_url",
             "auth.sso.valid_domains",
         ]
         for key in expected_keys:

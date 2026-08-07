@@ -59,7 +59,6 @@ urlpatterns = [
     path("accounts/profile/", common.profile, name="profile"),
     path("accounts/verify_email/", common.verify_email, name="verify_email"),
     path("accounts/verify_email_done", common.verify_email_done, name="verify_email_done"),
-    path(r"sso/acs/", common.acs, name="acs"),
     path(
         "accounts/verify_email_confirm/<user_id_base64>/<token>/",
         common.verify_email_confirm,
