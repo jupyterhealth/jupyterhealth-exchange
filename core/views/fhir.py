@@ -403,8 +403,22 @@ def _persist_aux(instance, resource_type, body, fhir_source):
 
 
 def create_aux_resource(resource_type, data, fhir_source):
-    """Create a FhirAuxResource of ``resource_type`` linked to ``fhir_source`` (and its patient)."""
-    return _persist_aux(FhirAuxResource(), resource_type, _aux_body(data), fhir_source)
+    """Create -- or refresh -- the FhirAuxResource for this body under ``fhir_source``.
+
+    Imports are idempotent per upstream record: when the body carries the EHR's own ``id`` and a
+    row for (source, type, that id) already exists, that row is updated in place -- re-running a
+    patient-access Connect refreshes records instead of duplicating them -- keeping its JHE UUID
+    so stored references to it stay valid. A body with no upstream id cannot be recognised across
+    runs and always creates. Backed by the conditional unique constraint on FhirAuxResource.
+    """
+    body = _aux_body(data)
+    upstream_id = body.get("id")
+    instance = None
+    if upstream_id:
+        instance = FhirAuxResource.objects.filter(
+            fhir_source=fhir_source, resource_type=resource_type, fhir_resource_id=upstream_id
+        ).first()
+    return _persist_aux(instance or FhirAuxResource(), resource_type, body, fhir_source)
 
 
 # ---------------------------------------------------------------------------

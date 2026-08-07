@@ -534,6 +534,29 @@ def test_import_error_entry_still_reports_dropped_fields(api_client, patient, fh
     assert any(i["severity"] == "warning" and i["expression"] == ["Coverage.payor"] for i in issues)
 
 
+def test_reimport_is_idempotent_per_upstream_record(api_client, patient, fhir_source):
+    # Re-running a patient-access Connect re-posts every record; the import must refresh the
+    # existing rows (same source + upstream id), not duplicate them.
+    r4 = {
+        "resourceType": "Condition",
+        "id": "epic-cond-1",
+        "clinicalStatus": {
+            "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active"}]
+        },
+        "code": {"text": "HTN"},
+        "subject": {"reference": f"Patient/{patient.id}"},
+    }
+    first = api_client.post("/fhir-import/R4/Condition", r4, **_src(fhir_source))
+    again = api_client.post("/fhir-import/R4/Condition", {**r4, "code": {"text": "HTN (updated)"}}, **_src(fhir_source))
+    assert first.status_code == 200 and again.status_code == 200
+    assert all(r.json()["entry"][0]["response"]["status"].startswith("2") for r in (first, again))
+    assert again.json()["entry"][0]["resource"]["id"] == first.json()["entry"][0]["resource"]["id"]
+
+    rows = FhirAuxResource.objects.filter(resource_type="Condition", fhir_resource_id="epic-cond-1")
+    assert rows.count() == 1
+    assert rows.get().fhir_data["code"] == {"text": "HTN (updated)"}
+
+
 def test_import_error_entry_still_reports_enrichment(api_client, fhir_source):
     # A Condition with no clinicalStatus is enriched (defaulted to 'unknown') before the create;
     # when the create then fails (no subject here), the enrichment warning must survive into the

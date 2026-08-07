@@ -82,6 +82,38 @@ def test_aux_create_and_read(api_client, patient, fhir_source):
     assert r.json() == created
 
 
+def test_aux_create_upserts_on_same_source_and_upstream_id(api_client, patient, fhir_source):
+    # Re-importing the same upstream record (same source, same EHR id) refreshes the existing
+    # row in place — same JHE UUID, new body — instead of duplicating it.
+    first = api_client.post(
+        "/FHIR/R5/Condition", _condition(patient.id, id="cond-9", code={"text": "old"}), **_src(fhir_source)
+    )
+    again = api_client.post(
+        "/FHIR/R5/Condition", _condition(patient.id, id="cond-9", code={"text": "new"}), **_src(fhir_source)
+    )
+    assert first.status_code == 201 and again.status_code == 201
+    assert again.json()["id"] == first.json()["id"]
+    rows = FhirAuxResource.objects.filter(resource_type="Condition", fhir_resource_id="cond-9")
+    assert rows.count() == 1
+    assert rows.get().fhir_data["code"] == {"text": "new"}
+
+
+def test_aux_create_same_upstream_id_different_source_stays_separate(api_client, patient, device, fhir_source):
+    # The same EHR id from two different sources is two records (two hospitals can both
+    # have a "cond-9").
+    other = FhirSource.objects.create(patient=patient, data_source=device, label="o2", fhir_base_url="https://o2/fhir")
+    api_client.post("/FHIR/R5/Condition", _condition(patient.id, id="cond-9"), **_src(fhir_source))
+    api_client.post("/FHIR/R5/Condition", _condition(patient.id, id="cond-9"), **_src(other))
+    assert FhirAuxResource.objects.filter(resource_type="Condition", fhir_resource_id="cond-9").count() == 2
+
+
+def test_aux_create_without_upstream_id_always_creates(api_client, patient, fhir_source):
+    # No upstream id -> no cross-run identity -> both POSTs create.
+    for _ in range(2):
+        assert api_client.post("/FHIR/R5/Condition", _condition(patient.id), **_src(fhir_source)).status_code == 201
+    assert FhirAuxResource.objects.filter(resource_type="Condition").count() == 2
+
+
 def test_aux_write_requires_source_header_400(api_client, patient, fhir_source):
     # A write requires the source header; a read does not.
     assert api_client.post("/FHIR/R5/Condition", _condition(patient.id)).status_code == 400

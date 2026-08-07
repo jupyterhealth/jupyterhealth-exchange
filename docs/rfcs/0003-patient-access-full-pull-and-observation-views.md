@@ -179,11 +179,11 @@ rejects a status-less Condition exactly as before.
   documented (one scope per pulled type).
 
 **Cons / accepted risks**
-- **Re-running Connect duplicates imported records** — the aux create path
-  has no upsert on the source resource id. Pre-existing since #671, but the
-  expanded list scales it from 5 types to 20. Within a single run the two
-  Observation pulls dedupe by id; across runs, idempotent re-import is
-  follow-up 6.
+- ~~Re-running Connect duplicates imported records~~ — resolved in-PR
+  (review): the aux create path upserts on (FhirSource, resourceType,
+  source resource id), backed by a conditional unique constraint whose
+  migration also collapses previously accumulated duplicates. Within a
+  single run the two Observation pulls additionally dedupe by id.
 - First expanded sync will likely surface new per-type conversion failures
   (visible, isolated, and reportable — by design). Empirical pre-check: 14
   of the 15 added types convert to valid R5; two are lossy-but-valid
@@ -199,8 +199,9 @@ rejects a status-less Condition exactly as before.
   minimal R4 instance of every pulled type (the test that would have caught
   Coverage), and a companion test asserts the seeded scopes match the pull
   list exactly.
-- Sticky view restore lands on a type's first view (server persists the URL
-  path, not the view name) — a "Labs" user restores to Device Data.
+- ~~Sticky view restore lands on a type's first view~~ — resolved in-PR
+  (review): the server persists the view-defining search params alongside
+  the path and the client resolves them back to the named view.
 - `_source:below` value is a hoisted client constant (mirrors
   `JHE_FHIR_SOURCE_BASE`); if that base ever changes, both move together.
 - The Epic-required query filters (CarePlan/CareTeam/DocumentReference) are
@@ -209,7 +210,8 @@ rejects a status-less Condition exactly as before.
 
 ## 6. Follow-ups
 
-1. One-time deployed `JheClient.aux_data` scope update on fly (post-merge).
+1. ~~One-time deployed `JheClient.aux_data` scope update on fly~~ — now a
+   data migration (0043), applied automatically on deploy.
 2. Sandbox end-to-end run of the expanded pull; triage surfaced conversion
    failures (now labeled per-record).
 3. Condition `clinicalStatus` policy (deferred from #680).
@@ -217,8 +219,8 @@ rejects a status-less Condition exactly as before.
    Practitioner/Location/Medication resources.
 5. Additional Observation category views (social-history etc.) as pulls are
    added — always in pull+view pairs.
-6. Idempotent re-import: upsert aux rows on (FhirSource, resourceType,
-   source id) so re-running Connect refreshes instead of duplicating.
+6. ~~Idempotent re-import~~ — done in-PR: aux rows upsert on (FhirSource,
+   resourceType, source id); migration 0044 dedupes and adds the constraint.
 7. JHE patch maps (`fhir-cross-version-patches/`, mechanism exists, unused):
    Coverage `kind`/`insurer` (unblocks pulling Coverage) and
    `Encounter.reasonCode → reason.value`.
