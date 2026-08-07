@@ -191,7 +191,7 @@ def signup(request):
 def verify_email(request):
     if request.method == "POST":
         if request.user.email_is_verified is not True:
-            request.user.send_email_verificaion
+            request.user.send_email_verificaion()
             return redirect("verify_email_done")
         else:
             return redirect("verify_email_complete")
