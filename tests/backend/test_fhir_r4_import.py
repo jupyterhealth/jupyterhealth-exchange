@@ -557,6 +557,82 @@ def test_reimport_is_idempotent_per_upstream_record(api_client, patient, fhir_so
     assert rows.get().fhir_data["code"] == {"text": "HTN (updated)"}
 
 
+def test_import_long_epic_id_still_keys_the_upsert(api_client, patient, fhir_source):
+    # Epic "Unconstrained FHIR IDs" exceed the 64-char limit; the server moves the id into an
+    # identifier and keys the upsert on it — re-imports refresh instead of duplicating.
+    long_id = "e" + "Q" * 80
+    r4 = {
+        "resourceType": "Condition",
+        "id": long_id,
+        "clinicalStatus": {
+            "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active"}]
+        },
+        "code": {"text": "HTN"},
+        "subject": {"reference": f"Patient/{patient.id}"},
+    }
+    first = api_client.post("/fhir-import/R4/Condition", r4, **_src(fhir_source))
+    again = api_client.post("/fhir-import/R4/Condition", r4, **_src(fhir_source))
+    assert all(r.json()["entry"][0]["response"]["status"].startswith("2") for r in (first, again))
+    assert again.json()["entry"][0]["resource"]["id"] == first.json()["entry"][0]["resource"]["id"]
+    assert FhirAuxResource.objects.filter(resource_type="Condition", fhir_resource_id=long_id).count() == 1
+
+
+def test_import_bundle_malformed_entry_fails_alone(api_client, patient, fhir_source):
+    # A malformed entry gets ITS error entry; the valid neighbours still import (per-entry
+    # best-effort — earlier entries are already committed, so a whole-request error would lie).
+    good = {
+        "resourceType": "Condition",
+        "clinicalStatus": {
+            "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active"}]
+        },
+        "subject": {"reference": f"Patient/{patient.id}"},
+    }
+    bundle = {"resourceType": "Bundle", "type": "batch", "entry": [{"resource": good}, {"resource": "oops"}, "junk"]}
+    r = api_client.post("/fhir-import/R4", bundle, **_src(fhir_source))
+    assert r.status_code == 200, r.text
+    statuses = [e["response"]["status"] for e in r.json()["entry"]]
+    assert statuses[0].startswith("2")
+    assert not statuses[1].startswith("2") and not statuses[2].startswith("2")
+
+
+def test_import_bundle_honors_per_entry_meta_source(api_client, patient, fhir_source):
+    # No header: each entry names its source via meta.source — the request-level gate must
+    # defer instead of 400ing with advice the bundle route then refuses to honor.
+    from core.models import fhir_source_uri
+
+    body = {
+        "resourceType": "Condition",
+        "meta": {"source": fhir_source_uri(fhir_source.id)},
+        "clinicalStatus": {
+            "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active"}]
+        },
+        "subject": {"reference": f"Patient/{patient.id}"},
+    }
+    r = api_client.post("/fhir-import/R4", {"resourceType": "Bundle", "type": "batch", "entry": [{"resource": body}]})
+    assert r.status_code == 200, r.text
+    assert r.json()["entry"][0]["response"]["status"].startswith("2")
+    # Nothing names a source anywhere -> still a request-level 400.
+    r = api_client.post("/fhir-import/R4", {"resourceType": "Bundle", "type": "batch", "entry": [{"resource": {}}]})
+    assert r.status_code == 400
+
+
+def test_import_device_issuerless_udicarrier_is_dropped_with_warning(api_client, patient, fhir_source):
+    # R4 udiCarrier.issuer is 0..1, R5 requires it; Epic emits carriers without one. The
+    # incomplete carrier is dropped (warned per record) instead of rejecting the Device.
+    r4 = {
+        "resourceType": "Device",
+        "udiCarrier": [{"deviceIdentifier": "00844588003288", "carrierHRF": "(01)00844588003288"}],
+        "patient": {"reference": f"Patient/{patient.id}"},
+    }
+    r = api_client.post("/fhir-import/R4/Device", r4, **_src(fhir_source))
+    assert r.status_code == 200, r.text
+    entry = r.json()["entry"][0]
+    assert entry["response"]["status"].startswith("2")
+    assert "udiCarrier" not in entry["resource"]
+    warnings = [i for i in entry["response"]["outcome"]["issue"] if i["severity"] == "warning"]
+    assert any("udiCarrier" in (i.get("diagnostics") or "") for i in warnings)
+
+
 def test_import_error_entry_still_reports_enrichment(api_client, fhir_source):
     # A Condition with no clinicalStatus is enriched (defaulted to 'unknown') before the create;
     # when the create then fails (no subject here), the enrichment warning must survive into the

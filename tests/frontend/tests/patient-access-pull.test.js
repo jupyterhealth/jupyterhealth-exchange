@@ -140,6 +140,24 @@ describe("paWriteBundle", () => {
     expect(writes[0]).toEqual({ ok: false, reason: 'HTTP 403: {"detail":"nope"}', warnings: [] });
     expect(writes[1]).toEqual(writes[0]);
   });
+
+  test("a rejected fetch is reported per resource, never thrown (pull isolation)", async () => {
+    // A network blip / worker timeout mid-chunk must not abort the whole multi-type pull.
+    global.fetch = jest.fn(() => Promise.reject(new TypeError("Failed to fetch")));
+    const writes = await window.paWriteBundle("tok", "1", [{}, {}]);
+    expect(writes).toEqual([
+      { ok: false, reason: "network error: Failed to fetch", warnings: [] },
+      { ok: false, reason: "network error: Failed to fetch", warnings: [] },
+    ]);
+
+    // Same for a truncated 200 body (response.json() rejects).
+    global.fetch = jest.fn(() =>
+      Promise.resolve({ ok: true, json: () => Promise.reject(new SyntaxError("Unexpected end of JSON input")) }),
+    );
+    const writes2 = await window.paWriteBundle("tok", "1", [{}]);
+    expect(writes2[0].ok).toBe(false);
+    expect(writes2[0].reason).toContain("Unexpected end of JSON input");
+  });
 });
 
 describe("paPullResourceType", () => {

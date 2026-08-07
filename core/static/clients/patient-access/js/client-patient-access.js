@@ -103,18 +103,6 @@ async function paCreateFhirSource(jheToken, fhirBaseUrl, dataSourceId) {
   return data.id;
 }
 
-// Epic (with "Unconstrained FHIR IDs") can emit resource ids longer than the FHIR
-// spec's 64-char limit, which the JHE FHIR write rejects. When that happens, move the
-// over-long id into an identifier (no length limit, so provenance is kept) and drop the
-// top-level id; JHE assigns the aux resource its own id. Mutates and returns the resource.
-function paSanitizeResource(resource, iss) {
-  if (resource && typeof resource.id === "string" && resource.id.length > 64) {
-    resource.identifier = (resource.identifier || []).concat({ system: iss, value: resource.id });
-    delete resource.id;
-  }
-  return resource;
-}
-
 // The error text of a failed import entry, from the OperationOutcome the endpoint puts at
 // response.outcome (the first error/fatal issue's diagnostics). Null when there is none.
 function paEntryFailureReason(entry) {
@@ -192,24 +180,34 @@ async function paWriteResource(jheToken, sourceId, resourceType, resource) {
 // not mean hundreds of round trips. Returns one {ok, reason, warnings} per posted resource,
 // order-aligned with the request (a transport failure is replicated across all of them).
 async function paWriteBundle(jheToken, sourceId, resources) {
-  var response = await fetch(IMPORT_ENDPOINT, {
-    method: "POST",
-    headers: paImportHeaders(jheToken, sourceId),
-    body: JSON.stringify({
-      resourceType: "Bundle",
-      type: "batch",
-      entry: resources.map(function (resource) {
-        return { resource: resource };
+  // Everything that can reject (network drop, worker timeout, truncated JSON) is caught
+  // here and reported per resource — one failed chunk must not abort the whole multi-type
+  // pull ("failures are isolated per type" is the contract).
+  try {
+    var response = await fetch(IMPORT_ENDPOINT, {
+      method: "POST",
+      headers: paImportHeaders(jheToken, sourceId),
+      body: JSON.stringify({
+        resourceType: "Bundle",
+        type: "batch",
+        entry: resources.map(function (resource) {
+          return { resource: resource };
+        }),
       }),
-    }),
-  });
-  if (!response.ok) {
-    var failure = await paTransportFailure(response);
+    });
+    if (!response.ok) {
+      var failure = await paTransportFailure(response);
+      return resources.map(function () {
+        return failure;
+      });
+    }
+    var bundle = await response.json();
+  } catch (e) {
+    var reason = "network error: " + (e && e.message ? e.message : String(e));
     return resources.map(function () {
-      return failure;
+      return { ok: false, reason: reason, warnings: [] };
     });
   }
-  var bundle = await response.json();
   var entries = (bundle && bundle.entry) || [];
   return resources.map(function (resource, i) {
     return paEntryWrite(entries[i]);
@@ -280,7 +278,8 @@ async function paPullResourceType(client, jheToken, sourceId, pull, iss, seenIds
     var resource = resources[i];
     if (!resource || resource.resourceType !== pull.type) continue;
     if (seenIds && resource.id && seenIds.has(resource.id)) continue;
-    paSanitizeResource(resource, iss);
+    // Over-64-char Epic ids ("Unconstrained FHIR IDs") are handled server-side: the import
+    // moves them into an identifier and keys the upsert on them, so the id must survive here.
     candidates.push(resource);
   }
   // Chunked Bundle posts, not one POST per record: the import endpoint takes a batch Bundle
@@ -453,10 +452,17 @@ async function finishPatientAccessConnect(out, config) {
   for (var p = 0; p < PATIENT_ACCESS_PULLS.length; p++) {
     var pull = PATIENT_ACCESS_PULLS[p];
     out.textContent += "\n\nFetching " + pull.label + " from Patient Access...";
-    var result = await paPullResourceType(
-      client, jheToken, sourceId, pull, iss,
-      pull.type === "Observation" ? observationSeen : undefined
-    );
+    var result;
+    try {
+      result = await paPullResourceType(
+        client, jheToken, sourceId, pull, iss,
+        pull.type === "Observation" ? observationSeen : undefined
+      );
+    } catch (e) {
+      // Belt over paPullResourceType's own isolation: nothing may abort the loop and
+      // freeze the page mid-connect with the remaining types silently skipped.
+      result = { written: 0, failed: 0, error: e && e.message ? e.message : String(e), reasons: {}, warnings: {} };
+    }
     if (result.error) {
       out.textContent += "\n  could not fetch " + pull.label + ": " + result.error;
       summary.push(pull.label + ": fetch failed");

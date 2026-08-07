@@ -82,6 +82,51 @@ def test_aux_create_and_read(api_client, patient, fhir_source):
     assert r.json() == created
 
 
+def _patient_client(patient):
+    client = APIClient()
+    client.default_format = "json"
+    client.force_authenticate(patient.jhe_user)
+    return client
+
+
+def test_fhir_source_registration_is_idempotent_per_endpoint(patient, device):
+    # The Connect flow registers its source on every run; the aux upsert is keyed on
+    # fhir_source, so re-registration must return the SAME source, not mint a new one.
+    client = _patient_client(patient)
+    body = {"label": "Epic / Patient Access", "fhir_base_url": "https://epic.example/FHIR/R4", "data_source": device.id}
+    first = client.post("/api/v1/fhir_sources", body)
+    again = client.post("/api/v1/fhir_sources", {**body, "label": "Epic / Patient Access (rerun)"})
+    assert first.status_code == 201 and again.status_code == 201
+    assert again.json()["id"] == first.json()["id"]
+    assert FhirSource.objects.filter(patient=patient).count() == 1
+    # A different endpoint is a different source; an empty base URL identifies nothing.
+    other = client.post("/api/v1/fhir_sources", {**body, "fhir_base_url": "https://cerner.example/FHIR/R4"})
+    assert other.json()["id"] != first.json()["id"]
+    client.post("/api/v1/fhir_sources", {"label": "x", "fhir_base_url": "", "data_source": device.id})
+    client.post("/api/v1/fhir_sources", {"label": "y", "fhir_base_url": "", "data_source": device.id})
+    assert FhirSource.objects.filter(patient=patient).count() == 4
+
+
+def test_aux_create_sanitizes_over_64_char_id_and_still_upserts(api_client, patient, fhir_source):
+    # Epic "Unconstrained FHIR IDs" exceed FHIR's 64-char id limit. The server moves the long
+    # id into an identifier (so validation passes) but still keys the upsert on it.
+    long_id = "e" + "x" * 70
+    body = _condition(patient.id, id=long_id, code={"text": "old"})
+    first = api_client.post("/FHIR/R5/Condition", body, **_src(fhir_source))
+    assert first.status_code == 201, first.text
+    row = FhirAuxResource.objects.get(pk=first.json()["id"])
+    assert row.fhir_resource_id == long_id
+    assert {"system": fhir_source.fhir_base_url, "value": long_id} in first.json()["identifier"]
+
+    again = api_client.post(
+        "/FHIR/R5/Condition", _condition(patient.id, id=long_id, code={"text": "new"}), **_src(fhir_source)
+    )
+    assert again.json()["id"] == first.json()["id"]
+    rows = FhirAuxResource.objects.filter(resource_type="Condition", fhir_resource_id=long_id)
+    assert rows.count() == 1
+    assert rows.get().fhir_data["code"] == {"text": "new"}
+
+
 def test_aux_create_upserts_on_same_source_and_upstream_id(api_client, patient, fhir_source):
     # Re-importing the same upstream record (same source, same EHR id) refreshes the existing
     # row in place — same JHE UUID, new body — instead of duplicating it.
@@ -516,13 +561,25 @@ def test_imported_ehr_view_query_returns_aux_rows_for_native_mapped_types(
     assert "Aux Org" not in {e["resource"].get("name") for e in native["entry"]}
 
 
+_REMEMBER = {"HTTP_X_JHE_REMEMBER_VIEW": "1"}  # the header only the jhe-admin browser sends
+
+
 def test_search_remembers_view_params_not_just_the_path(api_client, user, patient, fhir_source):
     # The admin UI restores the last-used browser view from this setting. Remembering only the
     # URL path sent "Observation - Labs" users back to the first Observation view (Device Data);
     # the view-defining params must be kept, while pagination/org/study context params are not.
+    # NOTE: the study filter is checked in its POST-middleware spelling (_group), which is how
+    # the view sees it (CamelCaseMiddleWare underscoreizes query-param keys).
     api_client.get(
         "/FHIR/R5/Observation",
-        {"_source:below": f"{JHE_FHIR_SOURCE_BASE}/", "category": "laboratory", "_page": 2, "_count": 20},
+        {
+            "_source:below": f"{JHE_FHIR_SOURCE_BASE}/",
+            "category": "laboratory",
+            "_page": 2,
+            "_count": 20,
+            "patient._has:_group:member:_id": 7,
+        },
+        **_REMEMBER,
     )
     user.refresh_from_db()
     remembered = user.practitioner_profile.get_setting("current_fhir_resource")
@@ -533,9 +590,19 @@ def test_search_remembers_view_params_not_just_the_path(api_client, user, patien
     assert parse_qs(query) == {"_source:below": [f"{JHE_FHIR_SOURCE_BASE}/"], "category": ["laboratory"]}
 
     # A plain search (no view params) keeps the legacy bare-path form.
-    api_client.get("/FHIR/R5/Condition")
+    api_client.get("/FHIR/R5/Condition", **_REMEMBER)
     user.refresh_from_db()
     assert user.practitioner_profile.get_setting("current_fhir_resource") == "Condition"
+
+
+def test_search_without_remember_header_never_touches_the_sticky_view(api_client, user, patient, fhir_source):
+    # MCP-server and API-script searches don't send the header; they must not clobber the
+    # practitioner's remembered browser view with their own search params.
+    api_client.get("/FHIR/R5/Observation", {"category": "laboratory"}, **_REMEMBER)
+    api_client.get("/FHIR/R5/Condition", {"code": "http://loinc.org|4548-4"})
+    user.refresh_from_db()
+    remembered = user.practitioner_profile.get_setting("current_fhir_resource")
+    assert remembered.startswith("Observation")
 
 
 def test_search_unrecognized_source_returns_empty(api_client, patient, fhir_source):

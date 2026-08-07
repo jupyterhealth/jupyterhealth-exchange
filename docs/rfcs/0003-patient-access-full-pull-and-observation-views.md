@@ -182,8 +182,13 @@ rejects a status-less Condition exactly as before.
 - ~~Re-running Connect duplicates imported records~~ — resolved in-PR
   (review): the aux create path upserts on (FhirSource, resourceType,
   source resource id), backed by a conditional unique constraint whose
-  migration also collapses previously accumulated duplicates. Within a
-  single run the two Observation pulls additionally dedupe by id.
+  migration also collapses previously accumulated duplicates (repointing
+  ref-indexed references at the kept row). FhirSource registration is
+  itself idempotent per (patient, data source, base URL) — without that,
+  each Connect run minted a fresh source and the upsert never matched.
+  Over-64-char Epic ids are sanitized server-side so they still key the
+  upsert. Within a single run the two Observation pulls additionally
+  dedupe by id.
 - First expanded sync will likely surface new per-type conversion failures
   (visible, isolated, and reportable — by design). Empirical pre-check: 14
   of the 15 added types convert to valid R5; two are lossy-but-valid

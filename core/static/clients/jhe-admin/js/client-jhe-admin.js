@@ -345,12 +345,13 @@ function getCurrentRouteAndParams() {
   };
 }
 
-async function apiRequest(method, resourcePath, query) {
+async function apiRequest(method, resourcePath, query, extraHeaders) {
   console.log(
     `apiRequest: ${method} ${resourcePath} ${JSON.stringify(query)}`
   );
   const headers = {
     "Cache-Control": "no-cache",
+    ...(extraHeaders || {}),
   };
   const user = await userManager.getUser();
   if (user) headers["Authorization"] = `Bearer ${user.access_token}`;
@@ -1982,10 +1983,13 @@ async function renderFhir(queryParams) {
     Object.assign(fhirQuery, resourceView.query);
   }
 
+  // The header opts this search into the server's sticky-view memory; searches without it
+  // (MCP server, API scripts) never clobber the browser's remembered view.
   const fhirResponse = await apiRequest(
     "GET",
     `FHIR/R5/${selectedResourcePath}`,
     fhirQuery,
+    { "X-JHE-Remember-View": "1" },
   );
 
   const bundle = await fhirResponse.json();
