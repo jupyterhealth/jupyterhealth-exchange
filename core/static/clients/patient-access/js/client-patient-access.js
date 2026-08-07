@@ -127,36 +127,93 @@ function paEntryFailureReason(entry) {
   return null;
 }
 
+// Warning texts on an import entry (dropped R4 fields, defaulted required fields).
+// Present on *successful* entries too — that data changed shape must not be silent.
+function paEntryWarnings(entry) {
+  var issues = (entry && entry.response && entry.response.outcome && entry.response.outcome.issue) || [];
+  var texts = [];
+  for (var i = 0; i < issues.length; i++) {
+    if (issues[i].severity === "warning") {
+      texts.push(issues[i].diagnostics || (issues[i].details && issues[i].details.text) || issues[i].code);
+    }
+  }
+  return texts;
+}
+
+// One import entry's {ok, reason, warnings}: success is the entry's own create status (2xx);
+// reason carries its OperationOutcome error on failure; warnings its warning issues (a
+// successful create can still have them, e.g. a defaulted clinicalStatus).
+function paEntryWrite(entry) {
+  var status = entry && entry.response && entry.response.status;
+  var ok = typeof status === "string" && status.charAt(0) === "2";
+  return {
+    ok: ok,
+    reason: ok ? null : paEntryFailureReason(entry) || status || "unknown error",
+    warnings: paEntryWarnings(entry),
+  };
+}
+
+// The failure {ok, reason, warnings} for a transport-level (non-200) import response.
+async function paTransportFailure(response) {
+  // Keep the response body: a scope rejection reads as a bare 403 without it.
+  var detail = "";
+  try {
+    detail = (await response.text()).slice(0, 300);
+  } catch (e) {
+    /* body unreadable; status alone will have to do */
+  }
+  return { ok: false, reason: "HTTP " + response.status + (detail ? ": " + detail : ""), warnings: [] };
+}
+
+function paImportHeaders(jheToken, sourceId) {
+  return {
+    Authorization: "Bearer " + jheToken,
+    "Content-Type": "application/json",
+    "X-JHE-FHIR-Source-ID": String(sourceId),
+    "Cache-Control": "no-cache",
+  };
+}
+
 // POST one R4 resource to the JHE R4 import endpoint (converts R4->R5, then creates).
 // The endpoint returns HTTP 200 with a batch-response Bundle even when the single entry
-// failed, so success is the entry's own create status (2xx), not just response.ok.
-// Returns {ok, reason}: reason carries the entry's OperationOutcome error on failure.
+// failed, so success is judged per entry (see paEntryWrite).
 async function paWriteResource(jheToken, sourceId, resourceType, resource) {
   var response = await fetch(IMPORT_ENDPOINT + resourceType, {
     method: "POST",
-    headers: {
-      Authorization: "Bearer " + jheToken,
-      "Content-Type": "application/json",
-      "X-JHE-FHIR-Source-ID": String(sourceId),
-      "Cache-Control": "no-cache",
-    },
+    headers: paImportHeaders(jheToken, sourceId),
     body: JSON.stringify(resource),
   });
+  if (!response.ok) return paTransportFailure(response);
+  var bundle = await response.json();
+  return paEntryWrite(bundle && bundle.entry && bundle.entry[0]);
+}
+
+// POST a batch of R4 resources as ONE Bundle to the import endpoint — hundreds of labs must
+// not mean hundreds of round trips. Returns one {ok, reason, warnings} per posted resource,
+// order-aligned with the request (a transport failure is replicated across all of them).
+async function paWriteBundle(jheToken, sourceId, resources) {
+  var response = await fetch(IMPORT_ENDPOINT, {
+    method: "POST",
+    headers: paImportHeaders(jheToken, sourceId),
+    body: JSON.stringify({
+      resourceType: "Bundle",
+      type: "batch",
+      entry: resources.map(function (resource) {
+        return { resource: resource };
+      }),
+    }),
+  });
   if (!response.ok) {
-    // Keep the response body: a scope rejection reads as a bare 403 without it.
-    var detail = "";
-    try {
-      detail = (await response.text()).slice(0, 300);
-    } catch (e) {
-      /* body unreadable; status alone will have to do */
-    }
-    return { ok: false, reason: "HTTP " + response.status + (detail ? ": " + detail : "") };
+    var failure = await paTransportFailure(response);
+    return resources.map(function () {
+      return failure;
+    });
   }
   var bundle = await response.json();
-  var entry = bundle && bundle.entry && bundle.entry[0];
-  var status = entry && entry.response && entry.response.status;
-  var ok = typeof status === "string" && status.charAt(0) === "2";
-  return { ok: ok, reason: ok ? null : paEntryFailureReason(entry) || status || "unknown error" };
+  var entries = (bundle && bundle.entry) || [];
+  return resources.map(function (resource, i) {
+    return paEntryWrite(entries[i]);
+  });
 }
 
 // Every patient-compartment clinical type JHE can ingest today: each has an R4->R5
@@ -210,30 +267,46 @@ async function paPullResourceType(client, jheToken, sourceId, pull, iss, seenIds
         : await client.patient.request(pull.query, { pageLimit: 0, flat: true });
     resources = pull.single ? (result ? [result] : []) : result || [];
   } catch (e) {
-    return { written: 0, failed: 0, error: e && e.message ? e.message : String(e), reasons: {} };
+    return { written: 0, failed: 0, error: e && e.message ? e.message : String(e), reasons: {}, warnings: {} };
   }
   var written = 0;
   var failed = 0;
-  // Distinct failure text -> count, so 45 identical errors read as one line. Null prototype:
-  // a diagnostics string like "__proto__" or "constructor" must count as a plain key.
+  // Distinct failure/warning text -> count, so 45 identical messages read as one line. Null
+  // prototype: a diagnostics string like "__proto__" or "constructor" must count as a plain key.
   var reasons = Object.create(null);
+  var warnings = Object.create(null);
+  var candidates = [];
   for (var i = 0; i < resources.length; i++) {
     var resource = resources[i];
     if (!resource || resource.resourceType !== pull.type) continue;
-    if (seenIds && resource.id) {
-      if (seenIds.has(resource.id)) continue;
-      seenIds.add(resource.id);
-    }
+    if (seenIds && resource.id && seenIds.has(resource.id)) continue;
     paSanitizeResource(resource, iss);
-    var write = await paWriteResource(jheToken, sourceId, pull.type, resource);
-    if (write.ok) written++;
-    else {
-      failed++;
-      var reason = write.reason || "unknown error";
-      reasons[reason] = (reasons[reason] || 0) + 1;
+    candidates.push(resource);
+  }
+  // Chunked Bundle posts, not one POST per record: the import endpoint takes a batch Bundle
+  // and replies per entry, so a few-hundred-lab pull is a handful of round trips.
+  var BUNDLE_CHUNK = 100;
+  for (var start = 0; start < candidates.length; start += BUNDLE_CHUNK) {
+    var chunk = candidates.slice(start, start + BUNDLE_CHUNK);
+    var writes = await paWriteBundle(jheToken, sourceId, chunk);
+    for (var j = 0; j < chunk.length; j++) {
+      var write = writes[j];
+      if (write.ok) {
+        written++;
+        // Mark seen only after a successful write: a record that failed in one pull
+        // (e.g. Labs) must be retried by a later pull that returns it (e.g. Vital Signs).
+        if (seenIds && chunk[j].id) seenIds.add(chunk[j].id);
+        (write.warnings || []).forEach(function (w) {
+          warnings[w] = (warnings[w] || 0) + 1;
+        });
+      } else {
+        failed++;
+        var reason = write.reason || "unknown error";
+        reasons[reason] = (reasons[reason] || 0) + 1;
+      }
     }
   }
-  return { written: written, failed: failed, error: null, reasons: reasons };
+  return { written: written, failed: failed, error: null, reasons: reasons, warnings: warnings };
 }
 
 // Search hospital brands for the picker. Returns an array of facility rows (or []).
@@ -390,6 +463,24 @@ async function finishPatientAccessConnect(out, config) {
       continue;
     }
     out.textContent += "\n  saved " + result.written + " record(s)";
+    var warningList = Object.keys(result.warnings || {});
+    if (warningList.length) {
+      // Saved-with-changes must be visible (RFC 0003): e.g. Conditions whose missing
+      // clinicalStatus was defaulted to 'unknown'. Same cap + console pattern as failures.
+      console.warn("Patient Access import warnings for " + pull.label + ":", result.warnings);
+      out.textContent += "\n  some saved record(s) were adjusted during import:";
+      warningList
+        .sort(function (a, b) {
+          return result.warnings[b] - result.warnings[a];
+        })
+        .slice(0, 5)
+        .forEach(function (warning) {
+          out.textContent += "\n    - " + warning + " (x" + result.warnings[warning] + ")";
+        });
+      if (warningList.length > 5) {
+        out.textContent += "\n    ... and " + (warningList.length - 5) + " more distinct warning(s)";
+      }
+    }
     if (result.failed) {
       out.textContent += "\n  " + result.failed + " record(s) could not be saved:";
       // The on-screen list below is capped; log the complete map so a console capture
@@ -417,6 +508,7 @@ async function finishPatientAccessConnect(out, config) {
 if (typeof window !== "undefined") {
   window.paPullResourceType = paPullResourceType;
   window.paWriteResource = paWriteResource;
+  window.paWriteBundle = paWriteBundle;
   window.PATIENT_ACCESS_PULLS = PATIENT_ACCESS_PULLS;
   window.paSearchBrands = paSearchBrands;
   window.paAuthorizeWithIss = paAuthorizeWithIss;

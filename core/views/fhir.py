@@ -24,6 +24,7 @@ The FHIR bundle batch endpoint (POST at the base, e.g. ``FHIR/R5/``) remains ser
 
 import logging
 import uuid
+from urllib.parse import urlencode
 
 from django.core.exceptions import BadRequest as DjangoBadRequest
 from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
@@ -464,12 +465,25 @@ class FHIRResourceView(APIView):
             return self._search_bundle(resource)
         return Response(self._read(resource, id))
 
+    # Context filters the admin UI sends with every search; everything else (category,
+    # _source:below, ...) is part of the *view* the user is on and must survive a restore —
+    # a bare path would land "Observation - Labs" users back on the first Observation view.
+    _EPHEMERAL_SEARCH_PARAMS = {"_page", "_count", "_summary", "patient.organization", "patient._has:Group:member:_id"}
+
     def _remember_resource(self, resource):
         # Make the admin UI's Resource select sticky, mirroring how the studies/observations
         # viewsets persist current_organization_id / current_study_id (see core/views/study.py).
         user = self.request.user
         if hasattr(user, "practitioner_profile"):
-            user.practitioner_profile.save_setting("current_fhir_resource", resource)
+            view_params = urlencode(
+                sorted(
+                    (key, value)
+                    for key, value in self.request.query_params.items()
+                    if key not in self._EPHEMERAL_SEARCH_PARAMS
+                )
+            )
+            remembered = f"{resource}?{view_params}" if view_params else resource
+            user.practitioner_profile.save_setting("current_fhir_resource", remembered)
 
     def post(self, request, resource, id=None):
         self._check_supported(resource)

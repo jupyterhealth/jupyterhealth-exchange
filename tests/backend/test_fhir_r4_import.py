@@ -534,6 +534,18 @@ def test_import_error_entry_still_reports_dropped_fields(api_client, patient, fh
     assert any(i["severity"] == "warning" and i["expression"] == ["Coverage.payor"] for i in issues)
 
 
+def test_import_error_entry_still_reports_enrichment(api_client, fhir_source):
+    # A Condition with no clinicalStatus is enriched (defaulted to 'unknown') before the create;
+    # when the create then fails (no subject here), the enrichment warning must survive into the
+    # error entry — it narrows what was actually attempted.
+    r4 = {"resourceType": "Condition", "code": {"text": "HTN"}}
+    r = api_client.post("/fhir-import/R4/Condition", r4, **_src(fhir_source))
+    assert r.status_code == 200, r.text
+    issues = r.json()["entry"][0]["response"]["outcome"]["issue"]
+    assert any(i["severity"] == "error" for i in issues)
+    assert any(i["severity"] == "warning" and i.get("expression") == ["Condition.clinicalStatus"] for i in issues)
+
+
 def test_import_error_issue_carries_diagnostics_string(api_client, fhir_source):
     # The patient-access client renders entry.response.outcome.issue[].diagnostics for failed
     # records (paEntryFailureReason). Pin the contract: the first error issue is severity
@@ -630,8 +642,18 @@ _CLIENT_JS = _REPO_ROOT / "core" / "static" / "clients" / "patient-access" / "js
 
 def _pulled_types():
     text = _CLIENT_JS.read_text()
-    block = re.search(r"var PATIENT_ACCESS_PULLS = \[(.*?)\n\];", text, re.DOTALL).group(1)
-    return set(re.findall(r'type: "(\w+)"', block))
+    match = re.search(r"var PATIENT_ACCESS_PULLS = \[(.*?)\n\];", text, re.DOTALL)
+    assert match, "PATIENT_ACCESS_PULLS not found in client-patient-access.js — was it renamed or reformatted?"
+    return set(re.findall(r'type: "(\w+)"', match.group(1)))
+
+
+def _patient_access_seed_scopes():
+    # Scope the parse to the Patient Access client's aux_data block — a future client with
+    # its own patient/*.read scopes elsewhere in seed.py must not bleed into this invariant.
+    text = _SEED_PY_PATH.read_text()
+    match = re.search(r'"name": "Patient Access".*?"scopes": \((.*?)\)', text, re.DOTALL)
+    assert match, 'Patient Access client "scopes" block not found in seed.py'
+    return match.group(1)
 
 
 # Minimal Epic-shaped R4 instance per pulled type (Patient/Condition/Observation etc. are
@@ -708,9 +730,37 @@ def test_every_pulled_type_converts_to_valid_r5(resource_type):
 
 
 def test_pulled_types_match_seeded_scopes():
-    seed_text = _SEED_PY_PATH.read_text()
-    scoped = set(re.findall(r"patient/(\w+)\.read", seed_text))
+    scoped = set(re.findall(r"patient/(\w+)\.read", _patient_access_seed_scopes()))
     assert scoped == _pulled_types(), "seed.py patient-access scopes and PATIENT_ACCESS_PULLS diverged"
+
+
+def test_scope_migration_matches_seed_and_updates_existing_clients(db):
+    # Migration 0043 exists because seed.py only writes aux_data on creation: an already-deployed
+    # Patient Access row must pick the widened scopes up via migrate, not a manual step.
+    import importlib
+
+    from django.apps import apps as django_apps
+    from oauth2_provider.models import get_application_model
+
+    from core.models import JheClient
+
+    migration = importlib.import_module("core.migrations.0043_patient_access_scopes")
+
+    # Lockstep guard: the migration's scope list is a copy of seed.py's and must cover the pulls.
+    assert set(re.findall(r"patient/(\w+)\.read", migration.NEW_SCOPES)) == _pulled_types()
+    assert migration.NEW_SCOPES == "".join(
+        part.strip().strip('"') for part in _patient_access_seed_scopes().splitlines() if part.strip()
+    )
+
+    # Functional guard: an existing deployed row gets the new scopes; its client_id survives.
+    app = get_application_model().objects.create(name="Patient Access", client_id="local-app-id")
+    JheClient.objects.create(
+        application=app, aux_data={"client_id": "deployed-epic-id", "scopes": migration.OLD_SCOPES}
+    )
+    migration.widen_scopes(django_apps, None)
+    aux = JheClient.objects.get(application=app).aux_data
+    assert aux["scopes"] == migration.NEW_SCOPES
+    assert aux["client_id"] == "deployed-epic-id"
 
 
 def test_import_condition_without_clinical_status_defaults_to_unknown(api_client, patient, fhir_source):

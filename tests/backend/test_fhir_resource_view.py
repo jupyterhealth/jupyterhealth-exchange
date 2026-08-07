@@ -442,6 +442,57 @@ def test_search_source_below_returns_all_imported(api_client, patient, device, f
     assert bundle["total"] == 2
 
 
+def _lab_observation(patient_id):
+    return {
+        "resourceType": "Observation",
+        "status": "final",
+        "code": {"text": "glucose"},
+        "category": [
+            {"coding": [{"system": "http://terminology.hl7.org/CodeSystem/observation-category", "code": "laboratory"}]}
+        ],
+        "subject": {"reference": f"Patient/{patient_id}"},
+    }
+
+
+def test_labs_view_query_returns_imported_lab_and_plain_search_does_not(api_client, patient, fhir_source):
+    # The exact query the "Observation - Labs" browser view sends: _source:below scoped to the
+    # fhir-source base + category=laboratory. The imported lab must be there — and absent from
+    # the plain (mapped/device-data) search, which serves the Django store only.
+    r = api_client.post("/FHIR/R5/Observation", _lab_observation(patient.id), **_src(fhir_source))
+    assert r.status_code == 201, r.text
+    lab_id = r.json()["id"]
+
+    labs_view = api_client.get(
+        "/FHIR/R5/Observation", {"_source:below": f"{JHE_FHIR_SOURCE_BASE}/", "category": "laboratory"}
+    ).json()
+    assert [e["resource"]["id"] for e in labs_view["entry"]] == [lab_id]
+
+    plain = api_client.get("/FHIR/R5/Observation").json()
+    assert lab_id not in [e["resource"]["id"] for e in plain.get("entry", [])]
+
+
+def test_search_remembers_view_params_not_just_the_path(api_client, user, patient, fhir_source):
+    # The admin UI restores the last-used browser view from this setting. Remembering only the
+    # URL path sent "Observation - Labs" users back to the first Observation view (Device Data);
+    # the view-defining params must be kept, while pagination/org/study context params are not.
+    api_client.get(
+        "/FHIR/R5/Observation",
+        {"_source:below": f"{JHE_FHIR_SOURCE_BASE}/", "category": "laboratory", "_page": 2, "_count": 20},
+    )
+    user.refresh_from_db()
+    remembered = user.practitioner_profile.get_setting("current_fhir_resource")
+    from urllib.parse import parse_qs
+
+    path, _, query = remembered.partition("?")
+    assert path == "Observation"
+    assert parse_qs(query) == {"_source:below": [f"{JHE_FHIR_SOURCE_BASE}/"], "category": ["laboratory"]}
+
+    # A plain search (no view params) keeps the legacy bare-path form.
+    api_client.get("/FHIR/R5/Condition")
+    user.refresh_from_db()
+    assert user.practitioner_profile.get_setting("current_fhir_resource") == "Condition"
+
+
 def test_search_unrecognized_source_returns_empty(api_client, patient, fhir_source):
     api_client.post("/FHIR/R5/Condition", _condition(patient.id), **_src(fhir_source))
     bundle = api_client.get("/FHIR/R5/Condition", {"_source": "https://external.example/fhir"}).json()

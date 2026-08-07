@@ -75,6 +75,7 @@ class FHIRImportView(FHIRResourceView):
     def _process_resource(self, resource_type, body, already_camel=False):
         """Convert one R4 resource and create it; return a Bundle entry (success or error)."""
         dropped = []
+        enriched = []
         try:
             if not resource_type:
                 raise DRFValidationError("Bundle entry is missing a resource / resourceType.")
@@ -92,9 +93,9 @@ class FHIRImportView(FHIRResourceView):
             created = self._create(resource_type, r5)
             return _success_entry(created, resource_type, dropped, enriched)
         except Exception as exc:  # per-entry best-effort, mirroring batch semantics.
-            # Include any drops even on failure: a dropped *required* field is usually *why* the
-            # create failed (e.g. "medication field required" alongside "medication was dropped").
-            return _error_entry(exc, resource_type, dropped)
+            # Include any drops and enrichments even on failure: a dropped *required* field is
+            # usually *why* the create failed, and a defaulted field narrows what was tried.
+            return _error_entry(exc, resource_type, dropped, enriched)
 
     def _convert(self, resource_type, camel_body):
         try:
@@ -161,11 +162,13 @@ def _outcome(resource_type, dropped, enriched=None):
     return {"resourceType": "OperationOutcome", "issue": issues}
 
 
-def _error_entry(exc, resource_type=None, dropped=None):
+def _error_entry(exc, resource_type=None, dropped=None, enriched=None):
     detail = getattr(exc, "detail", None) or str(exc)
     code = getattr(exc, "status_code", http_status.HTTP_400_BAD_REQUEST)
-    # The error first, then any dropped-field warnings (a dropped required field is often the cause).
+    # The error first, then enrichment + dropped-field warnings (a dropped required field is
+    # often the cause, and a defaulted field narrows what was attempted).
     issues = [{"severity": "error", "code": "processing", "diagnostics": str(detail)}]
+    issues += enriched or []
     issues += _dropped_issues(resource_type, dropped)
     return {
         "response": {

@@ -1891,9 +1891,12 @@ async function renderFhir(queryParams) {
 
   // Six types are "mapped" (served from native Django models when no _source is sent) and
   // also accept imported EHR rows into the aux store; a search hits exactly ONE store (see
-  // core/views/fhir.py). For the mapped types the sync pulls (Observation, Patient, Device),
-  // the picker splits the entry into per-store views instead of exposing a source selector —
-  // otherwise imported rows are unreachable from the browser.
+  // core/views/fhir.py). The picker splits the mapped types the sync pulls (Observation,
+  // Patient, Device) into per-store views instead of exposing a source selector — otherwise
+  // imported rows are unreachable from the browser. KNOWN GAP: the other three mapped types
+  // (Group, Organization, Practitioner) keep a single native view; the patient-access pull
+  // never writes them (pulled resources only *reference* practitioners/orgs), but rows
+  // imported directly through /fhir-import stay invisible here until views are added.
   // Mirrors JHE_FHIR_SOURCE_BASE (core/models/fhir_aux_resource.py); the server rstrips the slash.
   const IMPORTED_SOURCE_PREFIX = "https://jupyterhealth.org/fhir/fhir-source/";
   const RESOURCE_VIEWS = {
@@ -1918,6 +1921,19 @@ async function renderFhir(queryParams) {
     for (const [name, query] of Object.entries(views)) {
       viewsByName[name] = { path, query };
     }
+  }
+  // The server remembers "path?viewParams" (see _remember_resource): resolve it to the view
+  // whose query matches, so "Observation - Labs" survives navigating away and back instead
+  // of landing on the first Observation view. No match -> the bare path, handled below.
+  if (queryParams.resource && queryParams.resource.includes("?")) {
+    const [savedPath, savedQuery] = queryParams.resource.split("?");
+    const savedParams = Object.fromEntries(new URLSearchParams(savedQuery));
+    const match = Object.keys(RESOURCE_VIEWS[savedPath] || {}).find((name) => {
+      const view = RESOURCE_VIEWS[savedPath][name];
+      const keys = Object.keys(view);
+      return keys.length === Object.keys(savedParams).length && keys.every((k) => savedParams[k] === view[k]);
+    });
+    queryParams.resource = match || savedPath;
   }
   if (RESOURCE_VIEWS[queryParams.resource]) {
     queryParams.resource = Object.keys(RESOURCE_VIEWS[queryParams.resource])[0];
