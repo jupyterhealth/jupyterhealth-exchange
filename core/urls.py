@@ -6,7 +6,7 @@ from core.fhir.config import FHIR_VERSION
 
 from . import views
 from .views import common, ow, patient_access
-from .views.fhir import FHIRResourceView
+from .views.fhir import FHIRResourceView, capability_statement, smart_configuration
 from .views.fhir_import import FHIRImportView
 
 
@@ -19,6 +19,9 @@ def fhir_urls(prefix):
     """
     batch = views.FHIRBase.as_view({"post": "create"})
     return [
+        # The discovery documents precede <str:resource> so they can never be shadowed.
+        path(f"{prefix}metadata", capability_statement, name="fhir-metadata"),
+        path(f"{prefix}.well-known/smart-configuration", smart_configuration, name="fhir-smart-configuration"),
         path(prefix, batch, name="fhir-batch"),
         path(prefix.rstrip("/"), batch, name="fhir-batch-no-slash"),
         path(f"{prefix}<str:resource>", FHIRResourceView.as_view(), name="fhir-resource"),

@@ -31,13 +31,18 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.utils import IntegrityError
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
+from django.views.decorators.cache import cache_control
 from rest_framework import status as http_status
+from rest_framework.decorators import api_view, permission_classes, renderer_classes
 from rest_framework.exceptions import APIException, MethodNotAllowed, NotFound
 from rest_framework.exceptions import PermissionDenied as DRFPermissionDenied
 from rest_framework.exceptions import ValidationError as DRFValidationError
+from rest_framework.permissions import AllowAny
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.fhir.capability import build_capability_statement
 from core.fhir.config import (
     aux_interactions,
     get_config_errors,
@@ -64,7 +69,7 @@ from core.models import (
     parse_fhir_source_id,
 )
 from core.serializers import FHIRAuxResourceSerializer, FHIRObservationSerializer
-from core.views.fhir_base import FHIRBase
+from core.views.fhir_base import FHIR_RENDERER_CLASSES, FHIRBase
 
 logger = logging.getLogger(__name__)
 
@@ -422,6 +427,8 @@ class FHIRResourceView(APIView):
     the mapped Django model and/or the FhirAuxResource store per the config (see module docstring).
     """
 
+    renderer_classes = FHIR_RENDERER_CLASSES
+
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
         errors = get_config_errors()
@@ -640,3 +647,36 @@ def _camelized(data):
     import humps
 
     return humps.camelize(data)
+
+
+@api_view(["GET", "HEAD"])
+@permission_classes([AllowAny])
+@renderer_classes(FHIR_RENDERER_CLASSES)
+@cache_control(public=True, max_age=3600)
+def capability_statement(request):
+    """GET /FHIR/R5/metadata -- the public capabilities interaction (no auth, per FHIR)."""
+    return Response(build_capability_statement(request))
+
+
+@api_view(["GET", "HEAD"])
+@permission_classes([AllowAny])
+@renderer_classes([JSONRenderer])  # NOT the camel-case renderer: SMART keys are snake_case by spec
+@cache_control(public=True, max_age=3600)
+def smart_configuration(request):
+    """GET /FHIR/R5/.well-known/smart-configuration -- SMART App Launch discovery.
+
+    SMART App Launch requires this document at the FHIR base; it is what
+    public (PKCE) browser clients fetch to find the OAuth endpoints. The
+    capability list is deliberately minimal-honest: standalone launch with
+    public or confidential clients over the authorization-code + PKCE flow.
+    """
+    return Response(
+        {
+            "authorization_endpoint": request.build_absolute_uri("/o/authorize/"),
+            "token_endpoint": request.build_absolute_uri("/o/token/"),
+            "grant_types_supported": ["authorization_code"],
+            "response_types_supported": ["code"],
+            "code_challenge_methods_supported": ["S256"],
+            "capabilities": ["launch-standalone", "client-public", "client-confidential-symmetric"],
+        }
+    )

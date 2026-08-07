@@ -21,7 +21,13 @@ class OAuthCorsMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        is_oauth = request.path.startswith("/o/")
+        # The FHIR discovery documents (capabilities + SMART configuration) are
+        # public, credential-free, read-only, and consumed cross-origin by
+        # browser-based SMART apps — same reasoning as the /o/ endpoints.
+        is_discovery = request.path.startswith("/FHIR/") and (
+            request.path.endswith("/metadata") or request.path.endswith("/.well-known/smart-configuration")
+        )
+        is_oauth = request.path.startswith("/o/") or is_discovery
         if is_oauth and request.method == "OPTIONS":
             response = HttpResponse(status=204)
         else:
