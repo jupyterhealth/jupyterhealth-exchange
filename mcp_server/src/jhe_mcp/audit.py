@@ -1,9 +1,12 @@
 """Deliberate, structured audit log for JHE data access.
 
-Records WHO (subject), WHAT (method + resource path — the path intentionally
-includes the target study/patient id for audit traceability), and RESULT
-(HTTP status). Never logs response bodies or token values, so it carries
-identifiers but no PHI.
+Records WHO (subject), WHAT (method + resource path), and RESULT (HTTP
+status). Where the target id is part of the path (reads, per-patient queries)
+it is intentionally included for audit traceability; search requests carry
+their criteria (names, birthdates) only in query params, which are NEVER
+logged — a search audit line records that a search happened, not against
+whom. Never logs response bodies or token values, so it carries identifiers
+but no PHI.
 """
 
 from __future__ import annotations

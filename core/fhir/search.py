@@ -363,8 +363,16 @@ def _apply_sort(queryset, resource_type, request, store):
             sort_name, queryset = _annotate_sort_date(queryset, resource_type, store)
             if sort_name is None:
                 continue
-            order.append(("-" if descending else "") + sort_name)
+            # The date sort key is nullable (a row may have no effective time).
+            # Postgres puts NULLs first on DESC by default, which would surface
+            # undated rows as the "newest" — keep them last in either direction.
+            key = F(sort_name)
+            order.append(key.desc(nulls_last=True) if descending else key.asc(nulls_last=True))
         # Unknown sort keys are ignored (FHIR permits a server to ignore unsupported _sort keys).
     if order:
+        # A pk tiebreaker makes the ordering total: LIMIT/OFFSET paging over a
+        # non-unique sort key is otherwise nondeterministic across queries, so
+        # rows sharing a sort value could be skipped or duplicated across pages.
+        order.append("pk")
         queryset = queryset.order_by(*order)
     return queryset

@@ -99,6 +99,12 @@ class Observation(BaseModel):
             if effective_at is None:
                 interval = tf.get("time_interval") or {}
                 effective_at = interval.get("start_date_time") or interval.get("end_date_time")
+        if effective_at is None:
+            # OMH shapes this parser doesn't compute (e.g. date + part_of_day)
+            # are still projected onto the FHIR effective[x] elements by the
+            # server — fall back to those so the record stays placeable in time
+            # (and isn't skipped as a date-range boundary).
+            effective_at = r.get("effectiveDateTime") or (r.get("effectivePeriod") or {}).get("start")
         return cls(
             observation_id=str(r["id"]),
             patient_id=patient_id,
@@ -169,4 +175,40 @@ class SlimObservation(BaseModel):
             effective_at=obs.effective_at,
             value=value,
             unit=unit,
+        )
+
+
+class PatientSearchResult(BaseModel):
+    patient_id: str
+    given_name: str | None = None
+    family_name: str | None = None
+    birth_date: str | None = None
+    phone: str | None = None
+    email: str | None = None
+
+    @classmethod
+    def from_fhir_entry(cls, entry: dict[str, Any]) -> PatientSearchResult:
+        from jhe_mcp.fhir.client import JheClientError
+
+        r = entry.get("resource") or entry
+        if not isinstance(r, dict) or "id" not in r:
+            # Labeled like bundle_total's guard: a malformed upstream entry must
+            # not surface as an anonymous KeyError.
+            raise JheClientError(0, f"Expected a Patient entry with an id, got: {str(entry)[:200]}")
+        name = (r.get("name") or [{}])[0]
+        given = (name.get("given") or [None])[0]
+
+        def _telecom(system: str) -> str | None:
+            for item in r.get("telecom") or []:
+                if item.get("system") == system and item.get("value"):
+                    return item["value"]
+            return None
+
+        return cls(
+            patient_id=str(r["id"]),
+            given_name=given,
+            family_name=name.get("family"),
+            birth_date=r.get("birthDate"),
+            phone=_telecom("phone"),
+            email=_telecom("email"),
         )

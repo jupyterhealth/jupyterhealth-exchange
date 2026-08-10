@@ -12,6 +12,7 @@ async def test_observation_tools_registered(monkeypatch):
     mcp = build_server(Settings.from_env())
     # Server instructions are sent to every client on initialize.
     assert mcp.instructions and "get_patient_date_range" in mcp.instructions
+    assert "search_patients" in mcp.instructions
     names = {tool.name for tool in await mcp.list_tools()}
     assert {
         "get_patient_observations",
@@ -19,4 +20,5 @@ async def test_observation_tools_registered(monkeypatch):
         "count_study_observations",
         "summarize_patient_observations",
         "get_patient_date_range",
+        "search_patients",
     } <= names

@@ -1,3 +1,67 @@
+[project]
+name = "jupyterhealth-exchange"
+version = "0.0.0"
+description = "JupyterHealth Exchange - Django web application for sharing patient-consented medical data"
+requires-python = ">=3.11"
+dependencies = [
+    "django==5.2.16",
+    "python-dotenv",
+    "psycopg2-binary",
+    "django-oauth-toolkit",
+    "six",
+    "requests",
+    # >=2.13 is the security floor: GHSA-xgmm-8j9v-c9wx et al. are fixed in 2.13.0
+    "pyjwt[crypto]>=2.13",
+    "djangorestframework",
+    "gunicorn",
+    "whitenoise",
+    "djangorestframework-camel-case",
+    "fhir.resources==7.1.0",
+    "pydantic",
+    "pyhumps",
+    "django-allauth",
+    "faker",
+    "drf-spectacular",
+    # Formerly grafana-django-saml2-auth: Grafana archived their repo 2026-06-16
+    # and the grafana-named package is frozen at 3.21.0 (pyjwt==2.12.1) forever.
+    # The maintained continuation is django-saml2-auth-community (same
+    # django_saml2_auth import paths). See docs/rfcs/0002.
+    "django-saml2-auth-community>=3.22.0",
+    "jsonschema",
+    "ipython",
+    "dictor",
+    "boto3",
+    "omh-shim==1.4.0",
+]
+
+[dependency-groups]
+dev = [
+    "coverage",
+    "responses",
+    "pre-commit",
+    "pytest",
+    "pytest-django",
+    "pytest-cov",
+    "pyyaml",
+]
+
+[tool.uv]
+# This is a Django application, not an installable package.
+package = false
+override-dependencies = [
+    # pysaml2 <=7.5.4 caps pyopenssl<24.3.0 only because pyopenssl 24.3 removed
+    # OpenSSL.crypto.verify, which pysaml2 calls in exactly one path that is
+    # gated behind the validate_certificate config option (unset here; it
+    # fails closed regardless). Upstream is frozen (IdentityPython/pysaml2#975,
+    # replacement PR #977 unmerged, maintainer unreachable since 2026-02);
+    # meanwhile the cap transitively holds cryptography <44, blocking security
+    # updates. Lifting it lets pyopenssl/cryptography track current releases
+    # (also clears pyopenssl's own CVE-2026-27459). Precedent: Flagsmith ships
+    # this same override in production SAML. Remove when pysaml2 releases with
+    # #977 or #1021 merged. See docs/rfcs/0002 for the full analysis.
+    "pyopenssl>=26.2",
+]
+
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "jhe.test_settings"
 addopts = "--cov=core --cov=jhe"

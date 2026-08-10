@@ -11,7 +11,7 @@ the email one-time-code login (see [../../login_otp.md](../../login_otp.md)).
 
 ## Prerequisites (one-time)
 
-Run all snippets from the JHE repo root: `pipenv run python manage.py shell`.
+Run all snippets from the JHE repo root: `uv run python manage.py shell`.
 
 ### 1. Register a public OAuth client
 
@@ -70,7 +70,7 @@ Edit `CONFIG.clientId` in **both** `index.html` and `callback.html`, replacing
 1. Start JHE on :8000 (it now ships `core.middleware.OAuthCorsMiddleware`, which
    adds permissive CORS on `/o/` so the cross-origin token POST can be read):
    ```
-   pipenv run python manage.py runserver 8000
+   uv run python manage.py runserver 8000
    ```
 2. Serve this directory on :8001:
    ```

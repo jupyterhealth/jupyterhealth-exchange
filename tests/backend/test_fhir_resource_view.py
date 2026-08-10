@@ -655,3 +655,33 @@ def test_mapped_observation_status_const_and_date(api_client, patient, hr_study)
     # date filters on effective[x].
     assert api_client.get("/FHIR/R5/Observation", {"date": "ge2021-01-01"}).json()["total"] == 2
     assert api_client.get("/FHIR/R5/Observation", {"date": "ge2022-01-01"}).json()["total"] == 0
+
+
+def test_mapped_observation_sort_keeps_undated_rows_last(api_client, patient, hr_study):
+    # A row with no effective time (extract yields all-None) must not surface as the
+    # "newest" record: Postgres sorts NULLs first on DESC unless told otherwise.
+    add_observations(patient=patient, code=Code.HeartRate, n=3)
+    older, newer, undated = Observation.objects.filter(subject_patient=patient).order_by("id")
+    Observation.objects.filter(pk=older.pk).update(effective_date_time="2021-06-15T00:00:00Z")
+    Observation.objects.filter(pk=newer.pk).update(effective_date_time="2022-06-15T00:00:00Z")
+    Observation.objects.filter(pk=undated.pk).update(
+        effective_date_time=None, effective_period_start=None, effective_period_end=None
+    )
+    asc = [e["resource"]["id"] for e in api_client.get("/FHIR/R5/Observation", {"_sort": "date"}).json()["entry"]]
+    assert asc == [str(older.pk), str(newer.pk), str(undated.pk)]
+    desc = [e["resource"]["id"] for e in api_client.get("/FHIR/R5/Observation", {"_sort": "-date"}).json()["entry"]]
+    assert desc == [str(newer.pk), str(older.pk), str(undated.pk)]
+
+
+def test_mapped_observation_sort_pages_are_stable_on_ties(api_client, patient, hr_study):
+    # Identical sort keys need a tiebreaker for LIMIT/OFFSET paging to be a
+    # partition: without one, rows sharing a timestamp can repeat or vanish
+    # across pages.
+    add_observations(patient=patient, code=Code.HeartRate, n=4)
+    Observation.objects.filter(subject_patient=patient).update(effective_date_time="2021-06-15T00:00:00Z")
+    seen = []
+    for page in (1, 2):
+        bundle = api_client.get("/FHIR/R5/Observation", {"_sort": "date", "_count": 2, "_page": page}).json()
+        seen += [e["resource"]["id"] for e in bundle["entry"]]
+    assert len(seen) == 4
+    assert len(set(seen)) == 4

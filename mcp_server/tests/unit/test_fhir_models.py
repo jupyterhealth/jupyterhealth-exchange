@@ -176,3 +176,17 @@ def test_observation_from_fhir_entry_non_json_attachment_data():
     o = Observation.from_fhir_entry(entry)
     assert o.observation_id == "obs-badjson"
     assert o.omh_body is None
+
+
+def test_observation_effective_falls_back_to_fhir_elements():
+    # OMH time-frame shapes the parser doesn't compute (e.g. date + part_of_day)
+    # are still projected onto FHIR effective[x] by the server — use those so
+    # the record stays placeable in time.
+    from jhe_mcp.fhir.models import Observation
+
+    instant = Observation.from_fhir_entry({"resource": {"id": "o1", "effectiveDateTime": "2026-07-18T09:30:00+00:00"}})
+    assert instant.effective_at == "2026-07-18T09:30:00+00:00"
+    period = Observation.from_fhir_entry(
+        {"resource": {"id": "o2", "effectivePeriod": {"start": "2026-07-18T06:00:00+00:00"}}}
+    )
+    assert period.effective_at == "2026-07-18T06:00:00+00:00"
