@@ -10,6 +10,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth import logout as django_logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView as BaseLoginView
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
@@ -188,6 +189,7 @@ def signup(request):
     return render(request, "registration/signup.html", context)
 
 
+@login_required
 def verify_email(request):
     if request.method == "POST":
         if request.user.email_is_verified is not True:
