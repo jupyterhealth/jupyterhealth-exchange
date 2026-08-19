@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db import transaction
 
 from core.models import (
     ClientDataSource,
@@ -63,8 +64,57 @@ class OrganizationAdmin(admin.ModelAdmin):
     list_filter = ("type",)
 
 
+class ProfileAdminMixin:
+    """Delete the profile's JheUser along with the profile, as the API viewsets do.
+
+    Without this, deleting a Practitioner/Patient here removes only the profile row and
+    leaves its JheUser behind with no profile at all -- an account that can still log in,
+    holds the email address hostage, and shows up nowhere in the UI.
+    """
+
+    def get_deleted_objects(self, objs, request):
+        to_delete, model_count, perms_needed, protected = super().get_deleted_objects(objs, request)
+        # Django's collector walks Practitioner/Patient -> dependents; it has no way to know
+        # we also drop the (now profile-less) JheUser, so spell that out on the confirmation
+        # page instead of surprising the operator.
+        users = [user for user in (self._orphaned_user(obj) for obj in objs) if user]
+        if users:
+            to_delete = list(to_delete) + [f"JHE user: {user.email}" for user in users]
+            model_count = dict(model_count)
+            model_count[JheUser._meta.verbose_name_plural] = len(users)
+        return to_delete, model_count, perms_needed, protected
+
+    @staticmethod
+    def _orphaned_user(obj):
+        """The JheUser that deleting `obj` would leave with no profile at all (else None)."""
+        user = obj.jhe_user
+        if user is None or user.is_superuser:
+            return None
+        # jhe_user is a OneToOne on both profiles, so the only profile that could keep the
+        # user alive is one of the other kind.
+        other = Patient if isinstance(obj, Practitioner) else Practitioner
+        if other.objects.filter(jhe_user_id=user.id).exists():
+            return None
+        return user
+
+    def delete_model(self, request, obj):
+        self._delete_with_user(obj)
+
+    def delete_queryset(self, request, queryset):
+        for obj in queryset:
+            self._delete_with_user(obj)
+
+    @staticmethod
+    def _delete_with_user(obj):
+        user = obj.jhe_user
+        with transaction.atomic():
+            obj.delete()
+            if user:
+                user.delete_if_unused()
+
+
 @admin.register(Practitioner)
-class PractitionerAdmin(admin.ModelAdmin):
+class PractitionerAdmin(ProfileAdminMixin, admin.ModelAdmin):
     list_display = ("__str__", "email", "identifier", "id")
     search_fields = ("name_given", "name_family", "jhe_user__email")
 
@@ -74,7 +124,7 @@ class PractitionerAdmin(admin.ModelAdmin):
 
 
 @admin.register(Patient)
-class PatientAdmin(admin.ModelAdmin):
+class PatientAdmin(ProfileAdminMixin, admin.ModelAdmin):
     list_display = ("__str__", "email", "birth_date", "id")
     search_fields = ("name_given", "name_family", "jhe_user__email", "identifiers__value")
 

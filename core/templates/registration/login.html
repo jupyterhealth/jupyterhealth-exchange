@@ -1,4 +1,5 @@
 {% extends "common/partials/base_accounts_forms.html" %}
+{% load socialaccount %}
 
 {% block title %}Log In{% endblock %}
 
@@ -26,7 +27,8 @@
 
 <p class="mt-3">
 {% if SAML2_ENABLED %}
-    <a class="btn btn-primary" href="{% url 'saml_signin' %}">Continue with SAML2</a>
+    {# Honor ?next= like the password form above; allauth validates it (is_safe_url) before redirecting. #}
+    <a class="btn btn-primary" href="{% provider_login_url 'saml' next=request.GET.next|default:'/clients/jhe-admin/organizations' %}">Continue with SAML2</a>
 {% endif %}
 </p>
 

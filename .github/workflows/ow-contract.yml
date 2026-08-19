@@ -65,8 +65,8 @@ jobs:
       DB_PASSWORD: postgres
       API_PORT: 8000
       OW_URL: http://localhost:8000
-      # Must match the omh-shim pin in JHE's Pipfile.
-      OMH_SHIM_VERSION: "1.0.2"
+      # Must match the omh-shim pin in JHE's pyproject.toml.
+      OMH_SHIM_VERSION: "1.4.0"
     steps:
       - name: Checkout JHE (contract harness)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

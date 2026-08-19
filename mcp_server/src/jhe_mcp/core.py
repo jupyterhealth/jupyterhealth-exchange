@@ -12,6 +12,7 @@ from mcp.server.transport_security import TransportSecuritySettings
 from jhe_mcp.auth.oauth_flow import AuthenticationRequired
 from jhe_mcp.auth.token_verifier import JheTokenVerifier
 from jhe_mcp.config import Settings
+from jhe_mcp.fhir.capabilities import get_capabilities
 from jhe_mcp.omh_registry import all_schema_ids, all_short_names, load_schema, short_name
 from jhe_mcp.tools import observation_counts, observation_views
 from jhe_mcp.tools import patients as patient_tools
@@ -40,6 +41,7 @@ Tools by purpose:
 - Observations: count_patient_observations, count_study_observations,
   summarize_patient_observations, get_patient_observations
 - OMH schemas: get_omh_schema(name); also browsable as resources at omh://schema/<name>
+- Capabilities: get_server_capabilities
 
 Key behaviors:
 - Dates are OPTIONAL on observation tools. Pass start/end as YYYY-MM-DD (inclusive)
@@ -64,6 +66,8 @@ Efficient workflows — do NOT dump or page through records just to count or fin
   ({truncated, types: {type: {count, earliest, latest}}}) for the overview, then page
   get_patient_observations (slim); fetch verbosity="full" only for specific records.
 - Need a data type's schema: get_omh_schema("blood-glucose"), etc.
+- Unsure whether this JHE instance supports a resource or search param?
+  get_server_capabilities returns its CapabilityStatement digest.
 """
 
 
@@ -137,6 +141,31 @@ def build_server(
             if short_name(sid) == name:
                 return load_schema(sid)
         return {"error": f"Unknown schema name {name!r}", "known": all_short_names()}
+
+    @mcp.tool()
+    async def get_server_capabilities() -> dict | str:
+        """What this JHE instance supports, from its FHIR CapabilityStatement.
+
+        Returns {available, fhir_version, resources: {type: {interactions,
+        search_params}}}. available=false means the instance predates the
+        /FHIR/R5/metadata endpoint; tools then assume full support.
+        """
+        if auth_msg := await _before():
+            return auth_msg
+        caps = await get_capabilities(base_url)
+        if caps is None:
+            return {"available": False, "reason": "This JHE instance does not expose /FHIR/R5/metadata."}
+        return {
+            "available": True,
+            "fhir_version": caps.fhir_version,
+            "resources": {
+                resource_type: {
+                    "interactions": sorted(capability.interactions),
+                    "search_params": capability.search_params,
+                }
+                for resource_type, capability in sorted(caps.resources.items())
+            },
+        }
 
     @mcp.tool()
     async def get_study_count() -> int | str:

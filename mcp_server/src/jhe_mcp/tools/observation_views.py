@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from jhe_mcp.fhir.capabilities import preflight_observation_dates
 from jhe_mcp.fhir.client import JheClient
 from jhe_mcp.fhir.models import Observation, SlimObservation
 from jhe_mcp.fhir.observation_query import (
@@ -45,6 +46,7 @@ async def summarize_patient_observations(
     fetch server-side. ``truncated`` is True when the bounded fetch could not
     cover every record, meaning the per-type counts are lower bounds.
     """
+    await preflight_observation_dates(base_url, start, end)
     params = build_observation_params(patient_id=patient_id, start=start, end=end)
     async with JheClient(base_url) as client:
         observations, truncated = await collect_observations(client, params)
@@ -119,6 +121,7 @@ async def get_patient_observations(
     sort = _ORDER_TO_SORT.get(order)
     if sort is None:
         raise ValueError(f"order must be 'newest' or 'oldest', got {order!r}")
+    await preflight_observation_dates(base_url, start, end)
     params = build_observation_params(patient_id=patient_id, data_type=data_type, start=start, end=end)
     page_size, page = clamp_paging(limit, page)
     async with JheClient(base_url) as client:

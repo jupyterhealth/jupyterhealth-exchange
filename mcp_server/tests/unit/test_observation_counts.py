@@ -26,6 +26,15 @@ def fake_client(monkeypatch):
     return client
 
 
+@pytest.fixture(autouse=True)
+def no_date_preflight(monkeypatch):
+    # Default: capabilities unknown -> date preflight is a no-op.
+    async def _noop(base_url, start, end):
+        return None
+
+    monkeypatch.setattr("jhe_mcp.tools.observation_counts.preflight_observation_dates", _noop)
+
+
 @pytest.mark.asyncio
 async def test_count_patient_observations(auth, fake_client):
     fake_client.fhir_get.return_value = {"total": 57, "entry": []}

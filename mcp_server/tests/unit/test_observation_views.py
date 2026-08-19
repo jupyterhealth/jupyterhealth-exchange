@@ -28,6 +28,15 @@ def fake_client(monkeypatch):
     return client
 
 
+@pytest.fixture(autouse=True)
+def no_date_preflight(monkeypatch):
+    # Default: capabilities unknown -> date preflight is a no-op.
+    async def _noop(base_url, start, end):
+        return None
+
+    monkeypatch.setattr("jhe_mcp.tools.observation_views.preflight_observation_dates", _noop)
+
+
 def _entry(obs_id: str, code: str, display: str, when: str, value: int) -> dict:
     payload = {
         "body": {
@@ -230,6 +239,17 @@ async def test_get_patient_date_range_empty(auth, fake_client):
     result = await get_patient_date_range(patient_id="40099", base_url="http://jhe")
     assert result == {"earliest": None, "latest": None, "count": 0}
     assert fake_client.fhir_get.await_count == 1  # zero total short-circuits the descending probe
+
+
+@pytest.mark.asyncio
+async def test_dated_query_blocked_when_instance_lacks_date_search(auth, fake_client, monkeypatch):
+    async def _block(base_url, start, end):
+        raise ValueError("This JHE instance does not support Observation search on: date")
+
+    monkeypatch.setattr("jhe_mcp.tools.observation_views.preflight_observation_dates", _block)
+    with pytest.raises(ValueError, match="date"):
+        await get_patient_observations(patient_id="40006", start="2026-04-01", base_url="http://jhe")
+    fake_client.fhir_get.assert_not_awaited()
 
 
 @pytest.mark.asyncio

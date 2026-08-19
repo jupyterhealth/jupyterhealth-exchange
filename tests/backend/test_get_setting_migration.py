@@ -138,8 +138,8 @@ class ContextProcessorTests(TestCase):
         # PR #299 switched to path-only vars; full URLs are built client-side via window.origin
         self.assertEqual(ctx["OIDC_CLIENT_AUTHORITY_PATH"], "/o/")
         self.assertEqual(ctx["OAUTH2_CALLBACK_PATH"], "/auth/callback")
-        # SAML2 should be int from DB
-        self.assertEqual(ctx["SAML2_ENABLED"], 0)
+        # SAML2_ENABLED is the bool from _saml2_enabled(), not the raw DB int
+        self.assertIs(ctx["SAML2_ENABLED"], False)
         # Should NOT contain PATIENT_AUTHORIZATION_CODE_CHALLENGE/VERIFIER
         self.assertNotIn("PATIENT_AUTHORIZATION_CODE_CHALLENGE", ctx)
         self.assertNotIn("PATIENT_AUTHORIZATION_CODE_VERIFIER", ctx)
@@ -407,7 +407,6 @@ class SeedJheSettingsTests(TestCase):
             "site.registration_invite_code",
             "auth.default_orgs",
             "auth.sso.saml2",
-            "auth.sso.idp_metadata_url",
             "auth.sso.valid_domains",
         ]
         for key in expected_keys:

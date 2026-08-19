@@ -6,6 +6,7 @@ import traceback
 import humps
 from django.core.exceptions import BadRequest, PermissionDenied
 from django.db.utils import IntegrityError
+from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from fhir.resources.bundle import Bundle
 from fhir.resources.operationoutcome import OperationOutcome
 from fhir.resources.resource import Resource
@@ -21,8 +22,24 @@ from core.serializers import FHIRBundleSerializer
 logger = logging.getLogger(__name__)
 
 
+class FHIRJSONRenderer(CamelCaseJSONRenderer):
+    """The formal FHIR JSON media type (application/fhir+json).
+
+    Generic FHIR tooling sends ``Accept: application/fhir+json``; without this
+    renderer DRF's content negotiation 406s such requests. Registered alongside
+    CamelCaseJSONRenderer so plain application/json keeps working, and responses
+    negotiated through it carry the FHIR content type.
+    """
+
+    media_type = "application/fhir+json"
+
+
+FHIR_RENDERER_CLASSES = [CamelCaseJSONRenderer, FHIRJSONRenderer]
+
+
 class FHIRBase(viewsets.GenericViewSet):
     serializer_class = FHIRBundleSerializer
+    renderer_classes = FHIR_RENDERER_CLASSES
 
     def create(self, request):
         # first validate the entire bundle

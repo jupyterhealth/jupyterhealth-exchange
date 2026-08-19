@@ -1,0 +1,56 @@
+{
+  "resourceType": "StructureMap",
+  "name": "DocumentReference4to5LocalPatches",
+  "description": "Local rule patches over the official DocumentReference4to5 map (see cross_version_maps._apply_patches). The official map splits authenticator across two rules that each create their own tgt.attester, yielding a mode-only attester plus a party-only attester; R5 requires mode on every attester, so every Epic clinical-note document failed import. Merged here into one rule producing a single attester carrying both mode and party.",
+  "group": [
+    {
+      "name": "DocumentReference",
+      "rule": [
+        {
+          "name": "authenticator",
+          "documentation": "Single attester with mode + party. The literal mode code is wrapped into a CodeableConcept by the engine's copy transform.",
+          "source": [
+            {
+              "context": "src",
+              "type": "Reference",
+              "element": "authenticator",
+              "variable": "s"
+            }
+          ],
+          "target": [
+            {
+              "context": "tgt",
+              "element": "attester",
+              "variable": "t"
+            },
+            {
+              "context": "t",
+              "element": "mode",
+              "transform": "copy",
+              "parameter": [{ "valueString": "professional" }]
+            },
+            {
+              "context": "t",
+              "element": "party",
+              "transform": "copy",
+              "parameter": [{ "valueId": "s" }]
+            }
+          ]
+        },
+        {
+          "name": "authenticatorReference",
+          "documentation": "Neutralized: its work is folded into the 'authenticator' rule above so only one attester is created.",
+          "source": [
+            {
+              "context": "src",
+              "type": "Reference",
+              "element": "authenticator",
+              "variable": "s"
+            }
+          ],
+          "target": []
+        }
+      ]
+    }
+  ]
+}

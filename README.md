@@ -6,7 +6,7 @@ JupyterHealth Exchange is a Django web application that facilitates sharing pati
 </p>
 Features include:
 
-- OAuth 2.0, OIDC using [django-oauth-toolkit](https://github.com/jazzband/django-oauth-toolkit) and [grafana-django-saml2-auth](https://github.com/grafana/django-saml2-auth) for SAML/SSO
+- OAuth 2.0, OIDC using [django-oauth-toolkit](https://github.com/jazzband/django-oauth-toolkit) and [django-allauth](https://github.com/pennersr/django-allauth) for account login and SAML/SSO
 - Simple Role Based Access Control
 - FHIR R5 validation using [fhir.resources](https://github.com/glichtner/fhir.resources)
 - [Open mHealth](https://www.openmhealth.org/) validation using JSON schemas

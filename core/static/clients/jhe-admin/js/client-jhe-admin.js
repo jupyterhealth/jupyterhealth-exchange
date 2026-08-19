@@ -345,12 +345,13 @@ function getCurrentRouteAndParams() {
   };
 }
 
-async function apiRequest(method, resourcePath, query) {
+async function apiRequest(method, resourcePath, query, extraHeaders) {
   console.log(
     `apiRequest: ${method} ${resourcePath} ${JSON.stringify(query)}`
   );
   const headers = {
     "Cache-Control": "no-cache",
+    ...(extraHeaders || {}),
   };
   const user = await userManager.getUser();
   if (user) headers["Authorization"] = `Bearer ${user.access_token}`;
@@ -1889,12 +1890,75 @@ async function renderFhir(queryParams) {
     queryParams.resource = currentFhirResource;
   }
 
-  // The Resource select lists every supported FHIR resource type (from server settings).
+  // Six types are "mapped" (served from native Django models when no _source is sent) and
+  // also accept imported EHR rows into the aux store; a search hits exactly ONE store (see
+  // core/views/fhir.py). Every mapped type is therefore split into per-store views instead
+  // of exposing a source selector — otherwise its imported rows are unreachable from the
+  // browser. The patient-access pull only writes Observation/Patient/Device; the other three
+  // fill via direct /fhir-import calls (pulled resources merely *reference* practitioners
+  // and organizations).
+  // Mirrors JHE_FHIR_SOURCE_BASE (core/models/fhir_aux_resource.py); the server rstrips the slash.
+  const IMPORTED_SOURCE_PREFIX = "https://jupyterhealth.org/fhir/fhir-source/";
+  const RESOURCE_VIEWS = {
+    Observation: {
+      "Observation - Device Data": {},
+      "Observation - Labs": { "_source:below": IMPORTED_SOURCE_PREFIX, category: "laboratory" },
+      "Observation - Vital Signs": { "_source:below": IMPORTED_SOURCE_PREFIX, category: "vital-signs" },
+    },
+    Patient: {
+      "Patient - JHE": {},
+      "Patient - Imported EHR": { "_source:below": IMPORTED_SOURCE_PREFIX },
+    },
+    Device: {
+      "Device - Data Sources": {},
+      "Device - Imported EHR": { "_source:below": IMPORTED_SOURCE_PREFIX },
+    },
+    Group: {
+      "Group - Studies": {},
+      "Group - Imported EHR": { "_source:below": IMPORTED_SOURCE_PREFIX },
+    },
+    Organization: {
+      "Organization - JHE": {},
+      "Organization - Imported EHR": { "_source:below": IMPORTED_SOURCE_PREFIX },
+    },
+    Practitioner: {
+      "Practitioner - JHE": {},
+      "Practitioner - Imported EHR": { "_source:below": IMPORTED_SOURCE_PREFIX },
+    },
+  };
+  // viewName -> {path, query}; and mapped-type name -> its first view (for restores of the
+  // plain path the server remembers, and old ?resource= bookmarks).
+  const viewsByName = {};
+  for (const [path, views] of Object.entries(RESOURCE_VIEWS)) {
+    for (const [name, query] of Object.entries(views)) {
+      viewsByName[name] = { path, query };
+    }
+  }
+  // The server remembers "path?viewParams" (see _remember_resource): resolve it to the view
+  // whose query matches, so "Observation - Labs" survives navigating away and back instead
+  // of landing on the first Observation view. No match -> the bare path, handled below.
+  if (queryParams.resource && queryParams.resource.includes("?")) {
+    const [savedPath, savedQuery] = queryParams.resource.split("?");
+    const savedParams = Object.fromEntries(new URLSearchParams(savedQuery));
+    const match = Object.keys(RESOURCE_VIEWS[savedPath] || {}).find((name) => {
+      const view = RESOURCE_VIEWS[savedPath][name];
+      const keys = Object.keys(view);
+      return keys.length === Object.keys(savedParams).length && keys.every((k) => savedParams[k] === view[k]);
+    });
+    queryParams.resource = match || savedPath;
+  }
+  if (RESOURCE_VIEWS[queryParams.resource]) {
+    queryParams.resource = Object.keys(RESOURCE_VIEWS[queryParams.resource])[0];
+  }
   const selectedResource = queryParams.resource || CONSTANTS.FHIR_RESOURCES[0];
-  const resourceForFhirSelect = CONSTANTS.FHIR_RESOURCES.map((resource) => ({
+  const resourceForFhirSelect = CONSTANTS.FHIR_RESOURCES.flatMap((resource) =>
+    RESOURCE_VIEWS[resource] ? Object.keys(RESOURCE_VIEWS[resource]) : [resource],
+  ).map((resource) => ({
     name: resource,
     selected: resource === selectedResource,
   }));
+  const resourceView = viewsByName[selectedResource];
+  const selectedResourcePath = resourceView ? resourceView.path : selectedResource;
 
   const content = Handlebars.compile(
     document.getElementById("t-fhir").innerHTML,
@@ -1915,10 +1979,17 @@ async function renderFhir(queryParams) {
     fhirQuery["patient._has:Group:member:_id"] = queryParams.studyId;
   }
 
+  if (resourceView) {
+    Object.assign(fhirQuery, resourceView.query);
+  }
+
+  // The header opts this search into the server's sticky-view memory; searches without it
+  // (MCP server, API scripts) never clobber the browser's remembered view.
   const fhirResponse = await apiRequest(
     "GET",
-    `FHIR/R5/${selectedResource}`,
+    `FHIR/R5/${selectedResourcePath}`,
     fhirQuery,
+    { "X-JHE-Remember-View": "1" },
   );
 
   const bundle = await fhirResponse.json();

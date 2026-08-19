@@ -6,6 +6,7 @@ import re
 from datetime import date
 from typing import Any
 
+from jhe_mcp.fhir.capabilities import check_search_support, get_capabilities
 from jhe_mcp.fhir.client import JheClient
 from jhe_mcp.fhir.models import PatientSearchResult
 from jhe_mcp.fhir.paging import bundle_total, clamp_paging, page_envelope
@@ -77,6 +78,7 @@ async def search_patients(
     ``limit`` is clamped to 1..MAX_PAGE_SIZE (the server's page-size cap).
     """
     params = build_patient_params(name=name, family=family, given=given, birthdate=birthdate)
+    check_search_support(await get_capabilities(base_url), "Patient", params.keys())
     page_size, page = clamp_paging(limit, page)
     async with JheClient(base_url) as client:
         bundle = await client.fhir_get("Patient", params={**params, "_count": page_size, "_page": page})

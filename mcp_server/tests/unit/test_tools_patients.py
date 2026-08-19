@@ -23,6 +23,15 @@ def fake_client(monkeypatch):
     return client
 
 
+@pytest.fixture(autouse=True)
+def unknown_capabilities(monkeypatch):
+    # Default: capabilities unknown -> preflight fails open, tools behave as before.
+    async def _none(base_url):
+        return None
+
+    monkeypatch.setattr("jhe_mcp.tools.patients.get_capabilities", _none)
+
+
 def _patient_entry(pid: str, family: str, given: str, birth: str) -> dict:
     return {
         "resource": {
@@ -135,6 +144,29 @@ async def test_search_patients_clamps_limit_and_page(auth, fake_client):
     assert result["page_size"] == 1000 and result["page"] == 1
     assert result["returned"] == 0 and result["patients"] == []
     assert result["has_more"] is False
+
+
+@pytest.mark.asyncio
+async def test_search_patients_blocks_known_unsupported_param(auth, fake_client, monkeypatch):
+    from jhe_mcp.fhir.capabilities import ServerCapabilities
+
+    caps = ServerCapabilities.from_capability_statement(
+        {
+            "resourceType": "CapabilityStatement",
+            "rest": [{"resource": [{"type": "Patient", "searchParam": [{"name": "family", "type": "string"}]}]}],
+        }
+    )
+
+    async def _caps(base_url):
+        return caps
+
+    monkeypatch.setattr("jhe_mcp.tools.patients.get_capabilities", _caps)
+    with pytest.raises(ValueError, match="birthdate"):
+        await search_patients(birthdate="1980-01-01", base_url="http://jhe")
+    fake_client.fhir_get.assert_not_awaited()
+    # A supported param still goes through.
+    fake_client.fhir_get.return_value = {"total": 0}
+    await search_patients(family="ngu", base_url="http://jhe")
 
 
 @pytest.mark.asyncio

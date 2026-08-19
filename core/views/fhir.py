@@ -24,6 +24,7 @@ The FHIR bundle batch endpoint (POST at the base, e.g. ``FHIR/R5/``) remains ser
 
 import logging
 import uuid
+from urllib.parse import urlencode
 
 from django.core.exceptions import BadRequest as DjangoBadRequest
 from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
@@ -31,13 +32,19 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.utils import IntegrityError
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
+from django.views.decorators.cache import cache_control
 from rest_framework import status as http_status
+from rest_framework.decorators import api_view, permission_classes, renderer_classes
 from rest_framework.exceptions import APIException, MethodNotAllowed, NotFound
 from rest_framework.exceptions import PermissionDenied as DRFPermissionDenied
 from rest_framework.exceptions import ValidationError as DRFValidationError
+from rest_framework.permissions import AllowAny
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.auth import authorize_uri, token_uri
+from core.fhir.capability import build_capability_statement
 from core.fhir.config import (
     aux_interactions,
     get_config_errors,
@@ -61,10 +68,11 @@ from core.models import (
     Observation,
     Patient,
     apply_jhe_extensions,
+    fhir_source_uri,
     parse_fhir_source_id,
 )
 from core.serializers import FHIRAuxResourceSerializer, FHIRObservationSerializer
-from core.views.fhir_base import FHIRBase
+from core.views.fhir_base import FHIR_RENDERER_CLASSES, FHIRBase
 
 logger = logging.getLogger(__name__)
 
@@ -282,11 +290,14 @@ class AuxResourceHandler:
 
     def create(self, data):
         # The camel-case parser snake-cases incoming JSON; restore FHIR camelCase before
-        # validating and storing so fhir_data round-trips as valid FHIR.
+        # validating and storing so fhir_data round-trips as valid FHIR. The write context
+        # resolves first so an over-long id can be sanitized (it needs the source) before
+        # validation would reject it.
         data = _camelized(data)
-        validate_fhir_resource(self.resource_type, data)
         _, fhir_source = self._write_context(data)
-        return self.serialize(create_aux_resource(self.resource_type, data, fhir_source))
+        data, long_id = _sanitize_long_id(data, fhir_source)
+        validate_fhir_resource(self.resource_type, data)
+        return self.serialize(create_aux_resource(self.resource_type, data, fhir_source, upstream_id=long_id))
 
     def update(self, fhir_id, data, partial=False):
         camel = _camelized(data)
@@ -364,6 +375,25 @@ def _aux_body(data):
     return {key: value for key, value in dict(data).items() if key != "resourceType"}
 
 
+def _sanitize_long_id(data, fhir_source):
+    """Move a spec-violating over-64-char resource id into an identifier.
+
+    Epic's "Unconstrained FHIR IDs" exceed FHIR's 64-char ``id`` limit, which R5 validation
+    rejects. Provenance is kept as an identifier (system = the source's base URL) and the long
+    id is returned so it still keys the upsert -- ``fhir_resource_id`` has no length limit.
+    Returns ``(possibly-copied data, long_id_or_None)``.
+    """
+    upstream_id = data.get("id")
+    if not (isinstance(upstream_id, str) and len(upstream_id) > 64):
+        return data, None
+    data = dict(data)
+    data["identifier"] = list(data.get("identifier") or []) + [
+        {"system": fhir_source.fhir_base_url or fhir_source_uri(fhir_source.pk), "value": upstream_id}
+    ]
+    del data["id"]
+    return data, upstream_id
+
+
 def _derive_patient_fhir_id(resource_type, body):
     # Best-effort extraction of the resource's referenced Patient id (may be None).
     if resource_type == "Patient":
@@ -376,7 +406,7 @@ def _derive_patient_fhir_id(resource_type, body):
     return None
 
 
-def _persist_aux(instance, resource_type, body, fhir_source):
+def _persist_aux(instance, resource_type, body, fhir_source, upstream_id=None):
     body = apply_jhe_extensions(_aux_body(body), fhir_source)
     instance.resource_type = resource_type
     instance.fhir_source = fhir_source
@@ -385,8 +415,10 @@ def _persist_aux(instance, resource_type, body, fhir_source):
     # matches its JHE-facing id (issue #584). The pk exists pre-save (UUID default at init).
     # On update the incoming id is already this row's JHE UUID (written on create, or merged from
     # the stored body on a PATCH), so only capture it as the upstream id when it differs from the
-    # pk -- otherwise an update would clobber the real upstream id with our own UUID.
-    incoming_id = body.get("id")
+    # pk -- otherwise an update would clobber the real upstream id with our own UUID. An
+    # over-64-char id was already moved out of the body by _sanitize_long_id and arrives as
+    # ``upstream_id``.
+    incoming_id = upstream_id or body.get("id")
     if incoming_id and incoming_id != str(instance.pk):
         instance.fhir_resource_id = incoming_id
     body["id"] = str(instance.pk)
@@ -401,9 +433,23 @@ def _persist_aux(instance, resource_type, body, fhir_source):
     return instance
 
 
-def create_aux_resource(resource_type, data, fhir_source):
-    """Create a FhirAuxResource of ``resource_type`` linked to ``fhir_source`` (and its patient)."""
-    return _persist_aux(FhirAuxResource(), resource_type, _aux_body(data), fhir_source)
+def create_aux_resource(resource_type, data, fhir_source, upstream_id=None):
+    """Create -- or refresh -- the FhirAuxResource for this body under ``fhir_source``.
+
+    Imports are idempotent per upstream record: when the body carries the EHR's own ``id`` and a
+    row for (source, type, that id) already exists, that row is updated in place -- re-running a
+    patient-access Connect refreshes records instead of duplicating them -- keeping its JHE UUID
+    so stored references to it stay valid. A body with no upstream id cannot be recognised across
+    runs and always creates. Backed by the conditional unique constraint on FhirAuxResource.
+    """
+    body = _aux_body(data)
+    upstream_id = upstream_id or body.get("id")
+    instance = None
+    if upstream_id:
+        instance = FhirAuxResource.objects.filter(
+            fhir_source=fhir_source, resource_type=resource_type, fhir_resource_id=upstream_id
+        ).first()
+    return _persist_aux(instance or FhirAuxResource(), resource_type, body, fhir_source, upstream_id=upstream_id)
 
 
 # ---------------------------------------------------------------------------
@@ -421,6 +467,8 @@ class FHIRResourceView(APIView):
     Each request maps to a FHIR interaction (search/read/create/update/delete) and is routed to
     the mapped Django model and/or the FhirAuxResource store per the config (see module docstring).
     """
+
+    renderer_classes = FHIR_RENDERER_CLASSES
 
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
@@ -464,12 +512,41 @@ class FHIRResourceView(APIView):
             return self._search_bundle(resource)
         return Response(self._read(resource, id))
 
+    # Context filters the admin UI sends with every search; everything else (category,
+    # _source:below, ...) is part of the *view* the user is on and must survive a restore —
+    # a bare path would land "Observation - Labs" users back on the first Observation view.
+    # NOTE: keys are matched AFTER CamelCaseMiddleWare underscoreizes them, so the study
+    # filter arrives as `patient._has:_group:member:_id` (see _canonical_search_kwargs); the
+    # client-sent spelling is kept too in case the middleware config changes.
+    _EPHEMERAL_SEARCH_PARAMS = {
+        "_page",
+        "_count",
+        "_summary",
+        "patient.organization",
+        "patient._has:_group:member:_id",
+        "patient._has:Group:member:_id",
+    }
+
+    # Sent only by the jhe-admin browser's FHIR page. Searches from anything else (the MCP
+    # server, API scripts) must not clobber the practitioner's sticky browser view.
+    REMEMBER_VIEW_HEADER = "X-JHE-Remember-View"
+
     def _remember_resource(self, resource):
         # Make the admin UI's Resource select sticky, mirroring how the studies/observations
         # viewsets persist current_organization_id / current_study_id (see core/views/study.py).
+        if not self.request.headers.get(self.REMEMBER_VIEW_HEADER):
+            return
         user = self.request.user
         if hasattr(user, "practitioner_profile"):
-            user.practitioner_profile.save_setting("current_fhir_resource", resource)
+            view_params = urlencode(
+                sorted(
+                    (key, value)
+                    for key, value in self.request.query_params.items()
+                    if key not in self._EPHEMERAL_SEARCH_PARAMS
+                )
+            )
+            remembered = f"{resource}?{view_params}" if view_params else resource
+            user.practitioner_profile.save_setting("current_fhir_resource", remembered)
 
     def post(self, request, resource, id=None):
         self._check_supported(resource)
@@ -640,3 +717,36 @@ def _camelized(data):
     import humps
 
     return humps.camelize(data)
+
+
+@api_view(["GET", "HEAD"])
+@permission_classes([AllowAny])
+@renderer_classes(FHIR_RENDERER_CLASSES)
+@cache_control(public=True, max_age=3600)
+def capability_statement(request):
+    """GET /FHIR/R5/metadata -- the public capabilities interaction (no auth, per FHIR)."""
+    return Response(build_capability_statement(request))
+
+
+@api_view(["GET", "HEAD"])
+@permission_classes([AllowAny])
+@renderer_classes([JSONRenderer])  # NOT the camel-case renderer: SMART keys are snake_case by spec
+@cache_control(public=True, max_age=3600)
+def smart_configuration(request):
+    """GET /FHIR/R5/.well-known/smart-configuration -- SMART App Launch discovery.
+
+    SMART App Launch requires this document at the FHIR base; it is what
+    public (PKCE) browser clients fetch to find the OAuth endpoints. The
+    capability list is deliberately minimal-honest: standalone launch with
+    public or confidential clients over the authorization-code + PKCE flow.
+    """
+    return Response(
+        {
+            "authorization_endpoint": authorize_uri(request),
+            "token_endpoint": token_uri(request),
+            "grant_types_supported": ["authorization_code"],
+            "response_types_supported": ["code"],
+            "code_challenge_methods_supported": ["S256"],
+            "capabilities": ["launch-standalone", "client-public", "client-confidential-symmetric"],
+        }
+    )
