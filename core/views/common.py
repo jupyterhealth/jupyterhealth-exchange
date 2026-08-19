@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.views import LoginView as BaseLoginView
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -37,6 +37,22 @@ AccessToken = get_access_token_model()
 def health(request):
     """Lightweight liveness probe — no DB, no auth."""
     return JsonResponse({"status": "ok", "version": settings.JHE_VERSION})
+
+
+def _well_known_file(filename):
+    """Serve a ``core/data`` file verbatim as JSON — no auth, no redirect."""
+    body = (settings.BASE_DIR / "core" / "data" / filename).read_bytes()
+    return HttpResponse(body, content_type="application/json")
+
+
+def apple_app_site_association(request):
+    """iOS Universal Links association file. Apple requires ``application/json``."""
+    return _well_known_file("apple-app-site-association.json")
+
+
+def assetlinks(request):
+    """Android App Links association file (Digital Asset Links)."""
+    return _well_known_file("assetlinks.json")
 
 
 def home(request):

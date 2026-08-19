@@ -50,6 +50,13 @@ api_router.register(r"invitation", views.PatientInvitationViewSet, basename="Pat
 urlpatterns = [
     # Health check (no auth, no DB)
     path("health", common.health, name="health"),
+    # Mobile app association files — must stay public, unauthenticated and redirect-free
+    path(
+        ".well-known/apple-app-site-association",
+        common.apple_app_site_association,
+        name="apple-app-site-association",
+    ),
+    path(".well-known/assetlinks.json", common.assetlinks, name="assetlinks"),
     # Home
     path("", common.home, name="home"),
     # OW Portal
