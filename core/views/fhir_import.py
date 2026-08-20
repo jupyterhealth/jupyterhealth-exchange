@@ -23,9 +23,25 @@ from rest_framework.response import Response
 
 from core.fhir.cross_version import XVerError, dropped_field_paths, transform_to_r5
 
-from .fhir import FHIRResourceView, _camelized, resolve_fhir_source_context
+from .fhir import (
+    FHIR_SOURCE_ID_HEADER,
+    FHIRResourceView,
+    _camelized,
+    _source_id_from_body,
+    resolve_fhir_source_context,
+)
 
 logger = logging.getLogger(__name__)
+
+
+def _names_a_source(data):
+    """True when the posted body (single resource or Bundle entries) carries a parseable meta.source."""
+    body = data if isinstance(data, dict) else {}
+    if body.get("resourceType") == "Bundle" or "entry" in body:
+        return any(
+            _source_id_from_body(entry.get("resource")) for entry in body.get("entry") or [] if isinstance(entry, dict)
+        )
+    return _source_id_from_body(body) is not None
 
 
 class FHIRImportView(FHIRResourceView):
@@ -48,9 +64,13 @@ class FHIRImportView(FHIRResourceView):
     def post(self, request, resource=None, id=None):
         if resource is not None and id is not None:
             raise MethodNotAllowed("POST")
-        # One source header gates the whole request, so resolve it up front: a missing/unknown/
-        # forbidden source is a request-level 400/403, not a per-entry outcome.
-        resolve_fhir_source_context(request, request.user)
+        # A present source header gates the whole request up front (an unknown/forbidden
+        # source fails fast as a request-level 400/403). Without the header, bodies may name
+        # their own meta.source — resolution then happens per entry in the create path, so
+        # the error text's "or set the resource's meta.source" holds for bundles too. Only
+        # when nothing names a source anywhere is the request-level 400 raised.
+        if request.headers.get(FHIR_SOURCE_ID_HEADER) or not _names_a_source(request.data):
+            resolve_fhir_source_context(request, request.user)
         if resource is None:
             entries = self._process_bundle(request.data)
         else:
@@ -68,13 +88,22 @@ class FHIRImportView(FHIRResourceView):
             raise DRFValidationError("Expected a Bundle at /fhir-import/R4.")
         entries = []
         for entry in bundle.get("entry", []) or []:
-            resource = (entry or {}).get("resource") or {}
+            # A malformed entry (string, list, non-dict resource) must fail as ITS entry, not
+            # abort the bundle -- earlier entries are already committed (no ATOMIC_REQUESTS),
+            # so a whole-request error would misreport what was actually written.
+            resource = entry.get("resource") if isinstance(entry, dict) else None
+            if not isinstance(resource, dict):
+                entries.append(
+                    _error_entry(DRFValidationError("Bundle entry is not an object with a 'resource' object."))
+                )
+                continue
             entries.append(self._process_resource(resource.get("resourceType"), resource, already_camel=True))
         return entries
 
     def _process_resource(self, resource_type, body, already_camel=False):
         """Convert one R4 resource and create it; return a Bundle entry (success or error)."""
         dropped = []
+        enriched = []
         try:
             if not resource_type:
                 raise DRFValidationError("Bundle entry is missing a resource / resourceType.")
@@ -88,12 +117,13 @@ class FHIRImportView(FHIRResourceView):
                     resource_type,
                     ", ".join(dropped),
                 )
+            enriched = _enrich_r5(resource_type, r5)
             created = self._create(resource_type, r5)
-            return _success_entry(created, resource_type, dropped)
+            return _success_entry(created, resource_type, dropped, enriched)
         except Exception as exc:  # per-entry best-effort, mirroring batch semantics.
-            # Include any drops even on failure: a dropped *required* field is usually *why* the
-            # create failed (e.g. "medication field required" alongside "medication was dropped").
-            return _error_entry(exc, resource_type, dropped)
+            # Include any drops and enrichments even on failure: a dropped *required* field is
+            # usually *why* the create failed, and a defaulted field narrows what was tried.
+            return _error_entry(exc, resource_type, dropped, enriched)
 
     def _convert(self, resource_type, camel_body):
         try:
@@ -102,9 +132,58 @@ class FHIRImportView(FHIRResourceView):
             raise DRFValidationError(str(exc))
 
 
-def _success_entry(created, resource_type, dropped):
+def _enrich_r5(resource_type, r5):
+    """Default R5-mandatory fields that are optional in R4 and absent at the source.
+
+    Returns the warning issues describing what was defaulted (empty when nothing was).
+    Today: R4 Condition.clinicalStatus is 0..1 but R5 requires it; Epic emits many
+    encounter-diagnosis/health-concern Conditions without one. Rather than reject the
+    record, default to the value-set's own escape hatch 'unknown' and say so per record.
+    """
+    if resource_type == "Condition" and not r5.get("clinicalStatus"):
+        r5["clinicalStatus"] = {
+            "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "unknown"}]
+        }
+        return [
+            {
+                "severity": "warning",
+                "code": "informational",
+                "diagnostics": (
+                    "clinicalStatus was absent in the R4 source (optional in R4, required in R5); "
+                    "defaulted to 'unknown'."
+                ),
+                "expression": ["Condition.clinicalStatus"],
+            }
+        ]
+    if resource_type == "Device" and r5.get("udiCarrier"):
+        # R4 Device.udiCarrier.issuer is 0..1; R5 requires it (1..1). Epic can emit carriers
+        # with only deviceIdentifier/carrierHRF. No issuer can honestly be invented, so drop
+        # the incomplete carrier entries (per record, with a warning) rather than reject the
+        # whole Device.
+        kept = [carrier for carrier in r5["udiCarrier"] if isinstance(carrier, dict) and carrier.get("issuer")]
+        dropped_count = len(r5["udiCarrier"]) - len(kept)
+        if dropped_count:
+            if kept:
+                r5["udiCarrier"] = kept
+            else:
+                del r5["udiCarrier"]
+            return [
+                {
+                    "severity": "warning",
+                    "code": "informational",
+                    "diagnostics": (
+                        f"{dropped_count} udiCarrier entr{'y' if dropped_count == 1 else 'ies'} had no issuer "
+                        "(optional in R4, required in R5) and were dropped; the Device itself was kept."
+                    ),
+                    "expression": ["Device.udiCarrier"],
+                }
+            ]
+    return []
+
+
+def _success_entry(created, resource_type, dropped, enriched=None):
     return {
-        "response": {"status": "201 Created", "outcome": _outcome(resource_type, dropped)},
+        "response": {"status": "201 Created", "outcome": _outcome(resource_type, dropped, enriched)},
         "resource": created,
     }
 
@@ -121,9 +200,10 @@ def _dropped_issues(resource_type, dropped):
     ]
 
 
-def _outcome(resource_type, dropped):
-    """An OperationOutcome: one warning per dropped R4 path, or an informational "no loss" note."""
-    issues = _dropped_issues(resource_type, dropped) or [
+def _outcome(resource_type, dropped, enriched=None):
+    """An OperationOutcome: enrichment + dropped-field warnings, or an informational "no loss" note."""
+    issues = (enriched or []) + _dropped_issues(resource_type, dropped)
+    issues = issues or [
         {
             "severity": "information",
             "code": "informational",
@@ -133,11 +213,13 @@ def _outcome(resource_type, dropped):
     return {"resourceType": "OperationOutcome", "issue": issues}
 
 
-def _error_entry(exc, resource_type=None, dropped=None):
+def _error_entry(exc, resource_type=None, dropped=None, enriched=None):
     detail = getattr(exc, "detail", None) or str(exc)
     code = getattr(exc, "status_code", http_status.HTTP_400_BAD_REQUEST)
-    # The error first, then any dropped-field warnings (a dropped required field is often the cause).
+    # The error first, then enrichment + dropped-field warnings (a dropped required field is
+    # often the cause, and a defaulted field narrows what was attempted).
     issues = [{"severity": "error", "code": "processing", "diagnostics": str(detail)}]
+    issues += enriched or []
     issues += _dropped_issues(resource_type, dropped)
     return {
         "response": {

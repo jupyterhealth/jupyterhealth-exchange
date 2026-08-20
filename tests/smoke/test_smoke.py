@@ -150,6 +150,32 @@ class TestP1Version:
 
 
 # ===================================================================
+# P1 — Mobile app association files
+# ===================================================================
+
+
+@pytest.mark.smoke
+@pytest.mark.parametrize(
+    "path",
+    ["/.well-known/apple-app-site-association", "/.well-known/assetlinks.json"],
+)
+class TestP1AppAssociationFiles:
+    """iOS/Android link verification fetches these anonymously and never follows a redirect."""
+
+    def test_served_without_auth_or_redirect(self, http, path):
+        """``_get`` sends no credentials and does not follow redirects."""
+        resp = _get(http, path)
+        assert resp.status_code == 200, f"Expected 200, got {resp.status_code}"
+
+    def test_content_type_is_json(self, http, path):
+        resp = _get(http, path)
+        assert "application/json" in resp.headers.get("Content-Type", "")
+
+    def test_body_is_valid_json(self, http, path):
+        _get(http, path).json()
+
+
+# ===================================================================
 # P2 — Authentication enforcement
 # ===================================================================
 

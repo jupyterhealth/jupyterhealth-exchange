@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.urls import include, path, re_path
 from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
@@ -6,7 +7,7 @@ from core.fhir.config import FHIR_VERSION
 
 from . import views
 from .views import common, ow, patient_access
-from .views.fhir import FHIRResourceView
+from .views.fhir import FHIRResourceView, capability_statement, smart_configuration
 from .views.fhir_import import FHIRImportView
 
 
@@ -19,6 +20,9 @@ def fhir_urls(prefix):
     """
     batch = views.FHIRBase.as_view({"post": "create"})
     return [
+        # The discovery documents precede <str:resource> so they can never be shadowed.
+        path(f"{prefix}metadata", capability_statement, name="fhir-metadata"),
+        path(f"{prefix}.well-known/smart-configuration", smart_configuration, name="fhir-smart-configuration"),
         path(prefix, batch, name="fhir-batch"),
         path(prefix.rstrip("/"), batch, name="fhir-batch-no-slash"),
         path(f"{prefix}<str:resource>", FHIRResourceView.as_view(), name="fhir-resource"),
@@ -46,6 +50,13 @@ api_router.register(r"invitation", views.PatientInvitationViewSet, basename="Pat
 urlpatterns = [
     # Health check (no auth, no DB)
     path("health", common.health, name="health"),
+    # Mobile app association files — must stay public, unauthenticated and redirect-free
+    path(
+        ".well-known/apple-app-site-association",
+        common.apple_app_site_association,
+        name="apple-app-site-association",
+    ),
+    path(".well-known/assetlinks.json", common.assetlinks, name="assetlinks"),
     # Home
     path("", common.home, name="home"),
     # OW Portal
@@ -59,7 +70,6 @@ urlpatterns = [
     path("accounts/profile/", common.profile, name="profile"),
     path("accounts/verify_email/", common.verify_email, name="verify_email"),
     path("accounts/verify_email_done", common.verify_email_done, name="verify_email_done"),
-    path(r"sso/acs/", common.acs, name="acs"),
     path(
         "accounts/verify_email_confirm/<user_id_base64>/<token>/",
         common.verify_email_confirm,
@@ -79,7 +89,7 @@ urlpatterns = [
     ),
     path("auth/login/", common.client_auth_login, name="client-auth-login"),
     # oauth token exchange
-    path("o/token-exchange", common.token_exchange, name="token-exchange"),
+    path(f"{settings.OAUTH_MOUNT_PATH.lstrip('/')}token-exchange", common.token_exchange, name="token-exchange"),
     # OW Client pages
     path("clients/ow/launch", common.ow_launch, name="ow-launch"),
     path("clients/ow/complete", common.ow_complete, name="ow-complete"),

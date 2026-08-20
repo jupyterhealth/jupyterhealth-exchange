@@ -23,7 +23,6 @@ from core.models import (
     PatientIdentifier,
     PatientInvitation,
     PatientOrganization,
-    Practitioner,
     PractitionerOrganization,
     Study,
     StudyPatient,
@@ -192,12 +191,18 @@ class PatientViewSet(ModelViewSet):
             StudyPatient.objects.filter(patient=patient, study__organization_id=organization_id).delete()
 
             if not PatientOrganization.objects.filter(patient=patient).exists():
-                Observation.objects.filter(subject_patient=patient).delete()
-                patient.delete()
+                # One transaction for both deletes: JheUser.delete() can still fail (it
+                # raw-deletes the user row) and the patient delete must not survive that,
+                # or the JheUser is left orphaned. Same reasoning as the practitioner
+                # delete path (core/views/practitioner.py).
+                with transaction.atomic():
+                    Observation.objects.filter(subject_patient=patient).delete()
+                    patient.delete()
 
-                if user := patient.jhe_user:
-                    if not Practitioner.objects.filter(jhe_user_id=user.id).exists():
-                        user.delete()
+                    # delete_if_unused() keeps the user if a practitioner profile still
+                    # references it, or if it is a superuser.
+                    if user := patient.jhe_user:
+                        user.delete_if_unused()
 
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({"detail": "organizationId required"}, status=status.HTTP_400_BAD_REQUEST)

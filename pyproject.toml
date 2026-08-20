@@ -1,3 +1,49 @@
+[project]
+name = "jupyterhealth-exchange"
+version = "0.0.0"
+description = "JupyterHealth Exchange - Django web application for sharing patient-consented medical data"
+requires-python = ">=3.11"
+dependencies = [
+    "django==5.2.16",
+    "python-dotenv",
+    "psycopg2-binary",
+    "django-oauth-toolkit",
+    "six",
+    "requests",
+    # >=2.13 is the security floor: GHSA-xgmm-8j9v-c9wx et al. are fixed in 2.13.0
+    "pyjwt[crypto]>=2.13",
+    "djangorestframework",
+    "gunicorn",
+    "whitenoise",
+    "djangorestframework-camel-case",
+    "fhir.resources==7.1.0",
+    "pydantic",
+    "pyhumps",
+    # [saml] pulls python3-saml for allauth.socialaccount.providers.saml (#697)
+    "django-allauth[saml]",
+    "faker",
+    "drf-spectacular",
+    "jsonschema",
+    "ipython",
+    "boto3",
+    "omh-shim==1.4.0",
+]
+
+[dependency-groups]
+dev = [
+    "coverage",
+    "responses",
+    "pre-commit",
+    "pytest",
+    "pytest-django",
+    "pytest-cov",
+    "pyyaml",
+]
+
+[tool.uv]
+# This is a Django application, not an installable package.
+package = false
+
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "jhe.test_settings"
 addopts = "--cov=core --cov=jhe"

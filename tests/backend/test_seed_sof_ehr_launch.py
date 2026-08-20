@@ -1,8 +1,8 @@
 import pytest
 from oauth2_provider.models import get_application_model
 
+from core.auth import JheOAuth2Validator
 from core.management.commands.seed import Command
-from core.oauth2_validators import JheOAuth2Validator
 
 Application = get_application_model()
 

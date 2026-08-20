@@ -6,7 +6,7 @@ JupyterHealth Exchange is a Django web application that facilitates sharing pati
 </p>
 Features include:
 
-- OAuth 2.0, OIDC using [django-oauth-toolkit](https://github.com/jazzband/django-oauth-toolkit) and [grafana-django-saml2-auth](https://github.com/grafana/django-saml2-auth) for SAML/SSO
+- OAuth 2.0, OIDC using [django-oauth-toolkit](https://github.com/jazzband/django-oauth-toolkit) and [django-allauth](https://github.com/pennersr/django-allauth) for account login and SAML/SSO
 - Simple Role Based Access Control
 - FHIR R5 validation using [fhir.resources](https://github.com/glichtner/fhir.resources)
 - [Open mHealth](https://www.openmhealth.org/) validation using JSON schemas
@@ -45,8 +45,8 @@ Users manage the system via the Web UI, and data producers receive invitation cr
 > [!NOTE]
 > Getting started with Docker is in the works!
 
-1. Set up your Python environment and install dependencies from `Pipfile` - this project uses Django **version 5.2** which requires python  **3.12**
-    - NB: If using pipenv it is recommended to run `pipenv sync` against the lock file to match package versions
+1. Set up your Python environment and install dependencies with [uv](https://docs.astral.sh/uv/): `uv sync` - this project uses Django **version 5.2**
+    - `uv sync` installs the exact versions from `uv.lock` into `.venv` (dev dependencies included by default; use `uv sync --no-dev` for a production-only install)
 
 1. Create a new Postgres DB (currently only Postgres is supported)
 
@@ -55,7 +55,7 @@ Users manage the system via the Web UI, and data producers receive invitation cr
    -  Optionally you can add a Django `SECRET_KEY` by running the command below or you can leave this for now to use a randomly generated value at runtime (this will not work with more than one worker)
       `$ openssl rand -base64 32`
 
-1. Ensure the `.env` is loaded into your Python environment, eg for pipenv run `$ pipenv shell`
+1. Ensure the `.env` is loaded into your Python environment, and prefix commands with `uv run` (or activate the venv: `$ source .venv/bin/activate`)
 
 1. Run the Django migration `$ python manage.py migrate` to create the database tables.
 

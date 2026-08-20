@@ -116,3 +116,14 @@ async def test_audit_log_emitted_on_error(auth, caplog):
     assert len(records) == 1
     assert records[0].status == 403
     assert records[0].path == "/api/v1/studies/1"
+
+
+def test_jhe_client_error_truncates_long_bodies():
+    # Proxy pages / tracebacks must not be forwarded wholesale to MCP clients;
+    # both the message and the .body attribute carry the capped form.
+    err = JheClientError(500, "x" * 600)
+    assert err.body.endswith("…[truncated]")
+    assert len(err.body) == JheClientError.MAX_BODY + len("…[truncated]")
+    assert str(err).startswith("JHE 500: xxx")
+    short = JheClientError(400, "short body")
+    assert short.body == "short body"

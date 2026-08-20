@@ -12,8 +12,10 @@ from mcp.server.transport_security import TransportSecuritySettings
 from jhe_mcp.auth.oauth_flow import AuthenticationRequired
 from jhe_mcp.auth.token_verifier import JheTokenVerifier
 from jhe_mcp.config import Settings
+from jhe_mcp.fhir.capabilities import get_capabilities
 from jhe_mcp.omh_registry import all_schema_ids, all_short_names, load_schema, short_name
 from jhe_mcp.tools import observation_counts, observation_views
+from jhe_mcp.tools import patients as patient_tools
 from jhe_mcp.tools import study as study_tools
 
 logger = logging.getLogger(__name__)
@@ -35,28 +37,37 @@ only returns data that user is authorized to see.
 
 Tools by purpose:
 - Studies: get_study_count, list_studies, get_study_metadata, list_study_patients
-- Patients: get_patient_demographics, get_patient_date_range
+- Patients: search_patients, get_patient_demographics, get_patient_date_range
 - Observations: count_patient_observations, count_study_observations,
   summarize_patient_observations, get_patient_observations
 - OMH schemas: get_omh_schema(name); also browsable as resources at omh://schema/<name>
+- Capabilities: get_server_capabilities
 
 Key behaviors:
 - Dates are OPTIONAL on observation tools. Pass start/end as YYYY-MM-DD (inclusive)
   to filter by the observation's effective time; omit them to include everything.
+  Date bounds are compared in the server's timezone (UTC by default), so a
+  reading near midnight in another timezone can fall on the neighboring day.
 - get_patient_observations returns {total, page, page_size, returned, has_more,
   observations}. It defaults to compact "slim" records (type, time, value, unit) and
   omits the raw OMH body. Pass verbosity="full" only when you need raw bodies. Page
   with limit/page and use total/has_more to know when you've read everything.
 
 Efficient workflows — do NOT dump or page through records just to count or find dates:
+- Find a patient: search_patients(name=..., birthdate=...) — prefix match on
+  names — then use the returned patient_id with the other tools.
+- Need newest readings first? get_patient_observations already returns
+  newest-first; pass order="oldest" for chronological order.
 - Counts: use count_patient_observations / count_study_observations
   (count_study_observations(by_patient=true) returns {patient_id: count} in one call).
 - First/last data for a patient: get_patient_date_range(patient_id) ->
   {earliest, latest, count}. Never page to the end to find min/max dates.
 - "Show me everything" for a patient: start with summarize_patient_observations
-  (per-type {count, earliest, latest}) for the overview, then page
+  ({truncated, types: {type: {count, earliest, latest}}}) for the overview, then page
   get_patient_observations (slim); fetch verbosity="full" only for specific records.
 - Need a data type's schema: get_omh_schema("blood-glucose"), etc.
+- Unsure whether this JHE instance supports a resource or search param?
+  get_server_capabilities returns its CapabilityStatement digest.
 """
 
 
@@ -132,6 +143,31 @@ def build_server(
         return {"error": f"Unknown schema name {name!r}", "known": all_short_names()}
 
     @mcp.tool()
+    async def get_server_capabilities() -> dict | str:
+        """What this JHE instance supports, from its FHIR CapabilityStatement.
+
+        Returns {available, fhir_version, resources: {type: {interactions,
+        search_params}}}. available=false means the instance predates the
+        /FHIR/R5/metadata endpoint; tools then assume full support.
+        """
+        if auth_msg := await _before():
+            return auth_msg
+        caps = await get_capabilities(base_url)
+        if caps is None:
+            return {"available": False, "reason": "This JHE instance does not expose /FHIR/R5/metadata."}
+        return {
+            "available": True,
+            "fhir_version": caps.fhir_version,
+            "resources": {
+                resource_type: {
+                    "interactions": sorted(capability.interactions),
+                    "search_params": capability.search_params,
+                }
+                for resource_type, capability in sorted(caps.resources.items())
+            },
+        }
+
+    @mcp.tool()
     async def get_study_count() -> int | str:
         """How many studies the authenticated user can see."""
         if auth_msg := await _before():
@@ -171,12 +207,46 @@ def build_server(
         return d.model_dump() if d else None
 
     @mcp.tool()
+    async def search_patients(
+        name: str | None = None,
+        family: str | None = None,
+        given: str | None = None,
+        birthdate: str | None = None,
+        limit: int = 50,
+        page: int = 1,
+    ) -> dict | str:
+        """Find patients by name and/or birth date; returns a page of matches.
+
+        String params are case-insensitive PREFIX matches ("smi" matches
+        Smith); a comma ORs values ("smith,jones"), so don't pass "Last, First"
+        as one value. `name` matches family or given. `birthdate` is YYYY-MM-DD
+        with an optional ge/le/gt/lt prefix (bare = exact day). At least one
+        criterion is required. Returns {total, page, page_size, returned,
+        has_more, patients}; each patient has patient_id, given_name,
+        family_name, birth_date, phone, email. limit is capped at 1000;
+        requesting a page past the end returns an error — follow has_more.
+        Only patients the caller is authorized to see are returned.
+        """
+        if auth_msg := await _before():
+            return auth_msg
+        return await patient_tools.search_patients(
+            name=name,
+            family=family,
+            given=given,
+            birthdate=birthdate,
+            limit=limit,
+            page=page,
+            base_url=base_url,
+        )
+
+    @mcp.tool()
     async def get_patient_observations(
         patient_id: str,
         data_type: str | None = None,
         start: str | None = None,
         end: str | None = None,
         verbosity: str = "slim",
+        order: str = "newest",
         limit: int = 50,
         page: int = 1,
     ) -> dict | str:
@@ -185,7 +255,10 @@ def build_server(
         Returns {total, page, page_size, returned, has_more, observations}.
         verbosity='slim' (default) returns compact records (type, time,
         value/unit) and omits the raw OMH body; verbosity='full' includes it.
-        Filter by OMH data type short name (e.g. 'blood-glucose') and ISO dates.
+        order='newest' (default) returns most recent first; 'oldest' returns
+        oldest first. Filter by OMH data type short name (e.g. 'blood-glucose')
+        and ISO dates. limit is capped at 1000; requesting a page past the end
+        returns an error — follow has_more instead.
         """
         if auth_msg := await _before():
             return auth_msg
@@ -195,6 +268,7 @@ def build_server(
             start=start,
             end=end,
             verbosity=verbosity,
+            order=order,
             limit=limit,
             page=page,
             base_url=base_url,
@@ -243,9 +317,11 @@ def build_server(
         start: str | None = None,
         end: str | None = None,
     ) -> dict | str:
-        """Compact per-data-type digest for a patient: {type: {count, earliest, latest}}.
+        """Compact digest for a patient: {truncated, types: {type: {count, earliest, latest}}}.
 
         Use this for 'show me everything' overviews instead of dumping records.
+        truncated=true means the underlying fetch hit its bound and the counts
+        are lower bounds — narrow the date window for exact numbers.
         """
         if auth_msg := await _before():
             return auth_msg

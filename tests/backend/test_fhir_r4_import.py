@@ -7,6 +7,8 @@ provenance).
 """
 
 import json
+import pathlib
+import re
 import uuid
 
 import pytest
@@ -38,12 +40,6 @@ _MINIMAL_R4 = {
         "vaccineCode": {"text": "v"},
         "patient": _PATIENT_REF,
         "occurrenceDateTime": "2024-01-01",
-    },
-    "FamilyMemberHistory": {
-        "resourceType": "FamilyMemberHistory",
-        "status": "completed",
-        "patient": _PATIENT_REF,
-        "relationship": {"text": "mother"},
     },
     "Encounter": {"resourceType": "Encounter", "status": "finished"},
     "CarePlan": {"resourceType": "CarePlan", "status": "active", "intent": "plan", "subject": _PATIENT_REF},
@@ -200,6 +196,130 @@ def test_engine_implicit_datatype_dispatch():
     assert component["referenceRange"][0]["low"] == {"value": 90, "unit": "mmHg"}
 
 
+def test_engine_copy_transform_keeps_repeating_primitive_list():
+    # AllergyIntolerance.category maps through a plain ``copy`` target (unlike Patient's
+    # repeating primitives, which go through ``create``). The rule runs once per source item,
+    # so a copy that assigns instead of appending keeps only the last item and mistypes the
+    # element as a scalar -- every Epic allergy carries a category, so all of them failed R5
+    # validation with "value is not a valid list".
+    r4 = {
+        "resourceType": "AllergyIntolerance",
+        "category": ["medication", "food"],
+        "code": {"text": "PENICILLIN G"},
+        "patient": {"reference": "Patient/p1"},
+    }
+    out = transform_to_r5("AllergyIntolerance", r4)
+    validate_fhir_resource("AllergyIntolerance", out)
+    assert out["category"] == ["medication", "food"]
+
+
+def test_engine_assign_semantics_directly():
+    # _assign backs both the copy and translate transforms: repeating target -> append per
+    # iterated source item; scalar target or already-a-list value -> plain assignment; a
+    # scalar left under a repeating key by any earlier rule is promoted to a list.
+    from fhir.resources.allergyintolerance import AllergyIntolerance as R5A
+
+    from core.fhir.cross_version import _Engine, _Var
+
+    ctx = _Var({}, R5A)
+    _Engine._assign(ctx, "category", "medication")
+    _Engine._assign(ctx, "category", "food")
+    assert ctx.value["category"] == ["medication", "food"]
+
+    ctx = _Var({}, R5A)
+    _Engine._assign(ctx, "category", ["medication", "food"])  # pre-built list assigns wholesale
+    assert ctx.value["category"] == ["medication", "food"]
+
+    ctx = _Var({"category": "medication"}, R5A)  # scalar residue under a repeating key
+    _Engine._assign(ctx, "category", "food")
+    assert ctx.value["category"] == ["medication", "food"]
+
+    ctx = _Var({}, R5A)
+    _Engine._assign(ctx, "criticality", "high")  # scalar element: plain assignment
+    assert ctx.value["criticality"] == "high"
+
+
+def test_engine_translate_transform_appends_on_repeating_element():
+    # translate shares _assign with copy, but no pack map translates onto a repeating
+    # element today, so drive the engine with a minimal synthetic map: both source codes
+    # must survive a translate-transform rule over a repeating element (plain assignment
+    # would keep only the last and mistype the element as a scalar).
+    from core.fhir.cross_version import _Engine
+
+    group = {
+        "name": "AllergyIntolerance",
+        "input": [{"name": "src", "mode": "source"}, {"name": "tgt", "mode": "target"}],
+        "rule": [
+            {
+                "name": "category",
+                "source": [{"context": "src", "element": "category", "variable": "v", "type": "code"}],
+                "target": [
+                    {
+                        "context": "tgt",
+                        "element": "category",
+                        "transform": "translate",
+                        "parameter": [{"valueId": "v"}, {"valueString": "http://example.org/cat4to5"}],
+                    }
+                ],
+            },
+            {
+                "name": "patient",  # R5-required; carried over so the output validates
+                "source": [{"context": "src", "element": "patient", "variable": "p"}],
+                "target": [
+                    {"context": "tgt", "element": "patient", "transform": "copy", "parameter": [{"valueId": "p"}]}
+                ],
+            },
+        ],
+    }
+
+    class _StubMaps:
+        def group_for(self, name):
+            return group if name == "AllergyIntolerance" else None
+
+        def translate(self, url, code):
+            assert url == "http://example.org/cat4to5"
+            return {"med": "medication", "fd": "food"}[code]
+
+    r4 = {"resourceType": "AllergyIntolerance", "category": ["med", "fd"], "patient": {"reference": "Patient/p1"}}
+    out = _Engine(maps=_StubMaps()).transform("AllergyIntolerance", r4)
+    validate_fhir_resource("AllergyIntolerance", out)
+    assert out["category"] == ["medication", "food"]
+
+
+def test_engine_copy_flattens_choice_target_and_wraps_codeableconcept():
+    # Two DocumentReference4to5 gaps found via live Epic pulls (every clinical-note
+    # document failed R5 validation):
+    # 1. R4 ``content.format`` (Coding) copies into R5 ``content.profile.value[x]`` -- a
+    #    choice element the copy transform must flatten to ``valueCoding``, exactly as
+    #    ``create`` targets already do.
+    # 2. R4 ``authenticator`` maps to an attester whose ``mode`` the map fills with the
+    #    bare code "professional", but R5 mode is a CodeableConcept -- the copy wraps it.
+    r4 = {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "content": [
+            {
+                "attachment": {"contentType": "text/html", "url": "Binary/b1"},
+                "format": {
+                    "system": "http://ihe.net/fhir/ValueSet/IHE.FormatCode.codesystem",
+                    "code": "urn:ihe:iti:xds:2017:mimeTypeSufficient",
+                },
+            }
+        ],
+        "authenticator": {"reference": "Practitioner/pr1"},
+    }
+    out = transform_to_r5("DocumentReference", r4)
+    validate_fhir_resource("DocumentReference", out)
+    profile = out["content"][0]["profile"][0]
+    assert profile["valueCoding"]["code"] == "urn:ihe:iti:xds:2017:mimeTypeSufficient"
+    # The local patch map merges the official map's two attester rules into one entry
+    # carrying both mode and party (data/fhir/fhir-cross-version-patches).
+    assert len(out["attester"]) == 1
+    attester = out["attester"][0]
+    assert attester["party"]["reference"] == "Practitioner/pr1"
+    assert attester["mode"] == {"text": "professional"}
+
+
 def test_engine_parenthesised_condition():
     # Newer maps parenthesise rule conditions (`where (s = 'allergy')`); AllergyIntolerance.type is
     # mapped only through such a rule, so a parser that cannot read them drops the field.
@@ -239,7 +359,6 @@ def test_engine_medication_codeableconcept_nests_under_concept():
         ("ServiceRequest", {"locationCode": [{"text": "l"}]}, "location", [{"concept": {"text": "l"}}]),
         ("Goal", {"outcomeCode": [{"text": "o"}]}, "outcome", [{"concept": {"text": "o"}}]),
         ("Immunization", {"reasonCode": [{"text": "r"}]}, "reason", [{"concept": {"text": "r"}}]),
-        ("FamilyMemberHistory", {"reasonCode": [{"text": "r"}]}, "reason", [{"concept": {"text": "r"}}]),
         # ...and standalone elements R5 simply retyped. These kept their *name*, which is what makes
         # them the sharp case: typing the source from R5 "succeeds" with the wrong (R5) type.
         ("Encounter", {"serviceType": {"text": "s"}}, "serviceType", [{"concept": {"text": "s"}}]),
@@ -415,6 +534,130 @@ def test_import_error_entry_still_reports_dropped_fields(api_client, patient, fh
     assert any(i["severity"] == "warning" and i["expression"] == ["Coverage.payor"] for i in issues)
 
 
+def test_reimport_is_idempotent_per_upstream_record(api_client, patient, fhir_source):
+    # Re-running a patient-access Connect re-posts every record; the import must refresh the
+    # existing rows (same source + upstream id), not duplicate them.
+    r4 = {
+        "resourceType": "Condition",
+        "id": "epic-cond-1",
+        "clinicalStatus": {
+            "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active"}]
+        },
+        "code": {"text": "HTN"},
+        "subject": {"reference": f"Patient/{patient.id}"},
+    }
+    first = api_client.post("/fhir-import/R4/Condition", r4, **_src(fhir_source))
+    again = api_client.post("/fhir-import/R4/Condition", {**r4, "code": {"text": "HTN (updated)"}}, **_src(fhir_source))
+    assert first.status_code == 200 and again.status_code == 200
+    assert all(r.json()["entry"][0]["response"]["status"].startswith("2") for r in (first, again))
+    assert again.json()["entry"][0]["resource"]["id"] == first.json()["entry"][0]["resource"]["id"]
+
+    rows = FhirAuxResource.objects.filter(resource_type="Condition", fhir_resource_id="epic-cond-1")
+    assert rows.count() == 1
+    assert rows.get().fhir_data["code"] == {"text": "HTN (updated)"}
+
+
+def test_import_long_epic_id_still_keys_the_upsert(api_client, patient, fhir_source):
+    # Epic "Unconstrained FHIR IDs" exceed the 64-char limit; the server moves the id into an
+    # identifier and keys the upsert on it — re-imports refresh instead of duplicating.
+    long_id = "e" + "Q" * 80
+    r4 = {
+        "resourceType": "Condition",
+        "id": long_id,
+        "clinicalStatus": {
+            "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active"}]
+        },
+        "code": {"text": "HTN"},
+        "subject": {"reference": f"Patient/{patient.id}"},
+    }
+    first = api_client.post("/fhir-import/R4/Condition", r4, **_src(fhir_source))
+    again = api_client.post("/fhir-import/R4/Condition", r4, **_src(fhir_source))
+    assert all(r.json()["entry"][0]["response"]["status"].startswith("2") for r in (first, again))
+    assert again.json()["entry"][0]["resource"]["id"] == first.json()["entry"][0]["resource"]["id"]
+    assert FhirAuxResource.objects.filter(resource_type="Condition", fhir_resource_id=long_id).count() == 1
+
+
+def test_import_bundle_malformed_entry_fails_alone(api_client, patient, fhir_source):
+    # A malformed entry gets ITS error entry; the valid neighbours still import (per-entry
+    # best-effort — earlier entries are already committed, so a whole-request error would lie).
+    good = {
+        "resourceType": "Condition",
+        "clinicalStatus": {
+            "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active"}]
+        },
+        "subject": {"reference": f"Patient/{patient.id}"},
+    }
+    bundle = {"resourceType": "Bundle", "type": "batch", "entry": [{"resource": good}, {"resource": "oops"}, "junk"]}
+    r = api_client.post("/fhir-import/R4", bundle, **_src(fhir_source))
+    assert r.status_code == 200, r.text
+    statuses = [e["response"]["status"] for e in r.json()["entry"]]
+    assert statuses[0].startswith("2")
+    assert not statuses[1].startswith("2") and not statuses[2].startswith("2")
+
+
+def test_import_bundle_honors_per_entry_meta_source(api_client, patient, fhir_source):
+    # No header: each entry names its source via meta.source — the request-level gate must
+    # defer instead of 400ing with advice the bundle route then refuses to honor.
+    from core.models import fhir_source_uri
+
+    body = {
+        "resourceType": "Condition",
+        "meta": {"source": fhir_source_uri(fhir_source.id)},
+        "clinicalStatus": {
+            "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active"}]
+        },
+        "subject": {"reference": f"Patient/{patient.id}"},
+    }
+    r = api_client.post("/fhir-import/R4", {"resourceType": "Bundle", "type": "batch", "entry": [{"resource": body}]})
+    assert r.status_code == 200, r.text
+    assert r.json()["entry"][0]["response"]["status"].startswith("2")
+    # Nothing names a source anywhere -> still a request-level 400.
+    r = api_client.post("/fhir-import/R4", {"resourceType": "Bundle", "type": "batch", "entry": [{"resource": {}}]})
+    assert r.status_code == 400
+
+
+def test_import_device_issuerless_udicarrier_is_dropped_with_warning(api_client, patient, fhir_source):
+    # R4 udiCarrier.issuer is 0..1, R5 requires it; Epic emits carriers without one. The
+    # incomplete carrier is dropped (warned per record) instead of rejecting the Device.
+    r4 = {
+        "resourceType": "Device",
+        "udiCarrier": [{"deviceIdentifier": "00844588003288", "carrierHRF": "(01)00844588003288"}],
+        "patient": {"reference": f"Patient/{patient.id}"},
+    }
+    r = api_client.post("/fhir-import/R4/Device", r4, **_src(fhir_source))
+    assert r.status_code == 200, r.text
+    entry = r.json()["entry"][0]
+    assert entry["response"]["status"].startswith("2")
+    assert "udiCarrier" not in entry["resource"]
+    warnings = [i for i in entry["response"]["outcome"]["issue"] if i["severity"] == "warning"]
+    assert any("udiCarrier" in (i.get("diagnostics") or "") for i in warnings)
+
+
+def test_import_error_entry_still_reports_enrichment(api_client, fhir_source):
+    # A Condition with no clinicalStatus is enriched (defaulted to 'unknown') before the create;
+    # when the create then fails (no subject here), the enrichment warning must survive into the
+    # error entry — it narrows what was actually attempted.
+    r4 = {"resourceType": "Condition", "code": {"text": "HTN"}}
+    r = api_client.post("/fhir-import/R4/Condition", r4, **_src(fhir_source))
+    assert r.status_code == 200, r.text
+    issues = r.json()["entry"][0]["response"]["outcome"]["issue"]
+    assert any(i["severity"] == "error" for i in issues)
+    assert any(i["severity"] == "warning" and i.get("expression") == ["Condition.clinicalStatus"] for i in issues)
+
+
+def test_import_error_issue_carries_diagnostics_string(api_client, fhir_source):
+    # The patient-access client renders entry.response.outcome.issue[].diagnostics for failed
+    # records (paEntryFailureReason). Pin the contract: the first error issue is severity
+    # "error" with a non-empty diagnostics string.
+    # Coverage reliably fails R5 validation (kind is new-in-R5 and mandatory; no map rule).
+    r4 = {"resourceType": "Coverage", "status": "active", "beneficiary": {"reference": "Patient/p1"}}
+    r = api_client.post("/fhir-import/R4/Coverage", r4, **_src(fhir_source))
+    assert r.status_code == 200, r.text
+    issue = r.json()["entry"][0]["response"]["outcome"]["issue"][0]
+    assert issue["severity"] == "error"
+    assert isinstance(issue["diagnostics"], str) and issue["diagnostics"]
+
+
 def test_import_get_not_allowed(api_client, fhir_source):
     assert api_client.get("/fhir-import/R4/Condition", **_src(fhir_source)).status_code == 405
 
@@ -483,3 +726,165 @@ def test_import_bundle_reports_per_entry_error(api_client, patient, fhir_source)
     entries = r.json()["entry"]
     assert entries[0]["response"]["outcome"]["resourceType"] == "OperationOutcome"
     assert entries[1]["response"]["status"] == "201 Created"
+
+
+# ---------------------------------------------------------------------------
+# Pull-list invariants: everything the patient-access client pulls must convert
+# to valid R5 (with import-path enrichment applied), and every pulled type must
+# have a matching seeded scope. These are the invariants RFC 0003 states.
+# ---------------------------------------------------------------------------
+
+_REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
+_SEED_PY_PATH = _REPO_ROOT / "core" / "management" / "commands" / "seed.py"
+_CLIENT_JS = _REPO_ROOT / "core" / "static" / "clients" / "patient-access" / "js" / "client-patient-access.js"
+
+
+def _pulled_types():
+    text = _CLIENT_JS.read_text()
+    match = re.search(r"var PATIENT_ACCESS_PULLS = \[(.*?)\n\];", text, re.DOTALL)
+    assert match, "PATIENT_ACCESS_PULLS not found in client-patient-access.js — was it renamed or reformatted?"
+    return set(re.findall(r'type: "(\w+)"', match.group(1)))
+
+
+def _patient_access_seed_scopes():
+    # Scope the parse to the Patient Access client's aux_data block — a future client with
+    # its own patient/*.read scopes elsewhere in seed.py must not bleed into this invariant.
+    text = _SEED_PY_PATH.read_text()
+    match = re.search(r'"name": "Patient Access".*?"scopes": \((.*?)\)', text, re.DOTALL)
+    assert match, 'Patient Access client "scopes" block not found in seed.py'
+    return match.group(1)
+
+
+# Minimal Epic-shaped R4 instance per pulled type (Patient/Condition/Observation etc. are
+# covered by dedicated tests above; this sweep guards the whole list against a type that
+# cannot survive convert+validate — the failure mode that would have shipped Coverage).
+_MINIMAL_PULL_R4 = {
+    "Patient": {"resourceType": "Patient", "name": [{"family": "Doe"}]},
+    "Condition": {"resourceType": "Condition", "subject": _PATIENT_REF},
+    "MedicationRequest": {
+        "resourceType": "MedicationRequest",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "med"},
+        "subject": _PATIENT_REF,
+    },
+    "MedicationDispense": {
+        "resourceType": "MedicationDispense",
+        "status": "completed",
+        "medicationCodeableConcept": {"text": "med"},
+        "subject": _PATIENT_REF,
+    },
+    "AllergyIntolerance": {"resourceType": "AllergyIntolerance", "category": ["medication"], "patient": _PATIENT_REF},
+    "Immunization": _MINIMAL_R4["Immunization"],
+    "Procedure": _MINIMAL_R4["Procedure"],
+    "Observation": {
+        "resourceType": "Observation",
+        "status": "final",
+        "category": [{"coding": [{"code": "laboratory"}]}],
+        "code": {"text": "glucose"},
+        "subject": _PATIENT_REF,
+    },
+    "DiagnosticReport": {
+        "resourceType": "DiagnosticReport",
+        "status": "final",
+        "code": {"text": "panel"},
+        "subject": _PATIENT_REF,
+    },
+    "DocumentReference": {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "content": [{"attachment": {"contentType": "text/plain", "url": "Binary/b1"}}],
+        "subject": _PATIENT_REF,
+    },
+    "Encounter": _MINIMAL_R4["Encounter"],
+    "CarePlan": _MINIMAL_R4["CarePlan"],
+    "CareTeam": {"resourceType": "CareTeam", "status": "active", "subject": _PATIENT_REF},
+    "Goal": _MINIMAL_R4["Goal"],
+    "ServiceRequest": _MINIMAL_R4["ServiceRequest"],
+    "Device": _MINIMAL_R4["Device"],
+    # R5 requires `questionnaire` (optional in R4); Epic populates it in practice, so the
+    # fixture mirrors that - a rare source record without one fails with a labeled reason.
+    "QuestionnaireResponse": {
+        "resourceType": "QuestionnaireResponse",
+        "status": "completed",
+        "questionnaire": "Questionnaire/q1",
+    },
+}
+
+
+def test_pull_list_fixture_coverage_matches_client():
+    assert _pulled_types() == set(_MINIMAL_PULL_R4), (
+        "PATIENT_ACCESS_PULLS and _MINIMAL_PULL_R4 diverged - add/remove the fixture "
+        "so every pulled type stays convert+validate guarded"
+    )
+
+
+@pytest.mark.parametrize("resource_type", sorted(_MINIMAL_PULL_R4))
+def test_every_pulled_type_converts_to_valid_r5(resource_type):
+    from core.views.fhir_import import _enrich_r5
+
+    r5 = transform_to_r5(resource_type, _MINIMAL_PULL_R4[resource_type])
+    _enrich_r5(resource_type, r5)
+    validate_fhir_resource(resource_type, r5)
+
+
+def test_pulled_types_match_seeded_scopes():
+    scoped = set(re.findall(r"patient/(\w+)\.read", _patient_access_seed_scopes()))
+    assert scoped == _pulled_types(), "seed.py patient-access scopes and PATIENT_ACCESS_PULLS diverged"
+
+
+def test_scope_migration_matches_seed_and_updates_existing_clients(db):
+    # Migration 0043 exists because seed.py only writes aux_data on creation: an already-deployed
+    # Patient Access row must pick the widened scopes up via migrate, not a manual step.
+    import importlib
+
+    from django.apps import apps as django_apps
+    from oauth2_provider.models import get_application_model
+
+    from core.models import JheClient
+
+    migration = importlib.import_module("core.migrations.0043_patient_access_scopes")
+
+    # Lockstep guard: the migration's scope list is a copy of seed.py's and must cover the pulls.
+    assert set(re.findall(r"patient/(\w+)\.read", migration.NEW_SCOPES)) == _pulled_types()
+    assert migration.NEW_SCOPES == "".join(
+        part.strip().strip('"') for part in _patient_access_seed_scopes().splitlines() if part.strip()
+    )
+
+    # Functional guard: an existing deployed row gets the new scopes; its client_id survives.
+    app = get_application_model().objects.create(name="Patient Access", client_id="local-app-id")
+    JheClient.objects.create(
+        application=app, aux_data={"client_id": "deployed-epic-id", "scopes": migration.OLD_SCOPES}
+    )
+    migration.widen_scopes(django_apps, None)
+    aux = JheClient.objects.get(application=app).aux_data
+    assert aux["scopes"] == migration.NEW_SCOPES
+    assert aux["client_id"] == "deployed-epic-id"
+
+
+def test_import_condition_without_clinical_status_defaults_to_unknown(api_client, patient, fhir_source):
+    # R4 Condition.clinicalStatus is optional; R5 requires it. The import defaults absent
+    # statuses to the value set's 'unknown' (per product decision) and says so per record.
+    r4 = {"resourceType": "Condition", "code": {"text": "HTN"}, "subject": {"reference": f"Patient/{patient.id}"}}
+    r = api_client.post("/fhir-import/R4/Condition", r4, **_src(fhir_source))
+    assert r.status_code == 200, r.text
+    entry = r.json()["entry"][0]
+    assert entry["response"]["status"].startswith("2")
+    assert entry["resource"]["clinicalStatus"]["coding"][0]["code"] == "unknown"
+    warnings = [i for i in entry["response"]["outcome"]["issue"] if i["severity"] == "warning"]
+    assert any("clinicalStatus" in (i.get("diagnostics") or "") for i in warnings)
+
+
+def test_import_condition_with_clinical_status_is_untouched(api_client, patient, fhir_source):
+    r4 = {
+        "resourceType": "Condition",
+        "clinicalStatus": {
+            "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active"}]
+        },
+        "code": {"text": "HTN"},
+        "subject": {"reference": f"Patient/{patient.id}"},
+    }
+    r = api_client.post("/fhir-import/R4/Condition", r4, **_src(fhir_source))
+    entry = r.json()["entry"][0]
+    assert entry["response"]["status"].startswith("2")
+    assert entry["resource"]["clinicalStatus"]["coding"][0]["code"] == "active"

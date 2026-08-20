@@ -13,7 +13,6 @@ from rest_framework.viewsets import ModelViewSet
 from core.models import (
     JheUser,
     Organization,
-    Patient,
     Practitioner,
     PractitionerOrganization,
 )
@@ -78,12 +77,16 @@ class PractitionerViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         practitioner = self.get_object()
         user = practitioner.jhe_user
-        practitioner.delete()
 
-        # Remove the now-orphaned JheUser so the email is reusable. Mirrors the patient
-        # delete path (core/views/patient.py). Keep the user if another profile still
-        # references it, or if it is a superuser (avoid deleting admin logins).
-        if user and not user.is_superuser and not Patient.objects.filter(jhe_user_id=user.id).exists():
-            user.delete()
+        # One transaction for both deletes. JheUser.delete() can still fail (it raw-deletes
+        # the user row), and without this the practitioner delete would already have
+        # committed in its own autocommit transaction, leaving an orphaned JheUser behind.
+        with transaction.atomic():
+            practitioner.delete()
+            # Remove the now-orphaned JheUser so the email is reusable. Mirrors the patient
+            # delete path (core/views/patient.py). delete_if_unused() keeps the user if
+            # another profile still references it, or if it is a superuser.
+            if user:
+                user.delete_if_unused()
 
         return Response(status=status.HTTP_204_NO_CONTENT)

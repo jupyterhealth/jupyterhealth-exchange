@@ -28,6 +28,22 @@ class FhirSourceViewSet(ModelViewSet):
         patient = self.request.user.get_patient()
         if patient is None:
             raise PermissionDenied("Only patient users can register a FhirSource.")
+        # Idempotent registration: the patient-access Connect flow registers its source on
+        # every run. Reuse the patient's existing source for the same upstream endpoint —
+        # the aux-store upsert is keyed on fhir_source, so a fresh source per run would
+        # re-import the whole chart as duplicates. An empty fhir_base_url identifies
+        # nothing, so those registrations always create.
+        base_url = serializer.validated_data.get("fhir_base_url") or ""
+        if base_url:
+            serializer.instance = (
+                FhirSource.objects.filter(
+                    patient=patient,
+                    data_source=serializer.validated_data.get("data_source"),
+                    fhir_base_url=base_url,
+                )
+                .order_by("-last_updated")
+                .first()
+            )
         serializer.save(patient=patient)
 
     @action(detail=True, methods=["POST"])

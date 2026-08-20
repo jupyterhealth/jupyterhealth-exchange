@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from typing import Any
 
 import httpx
@@ -8,6 +9,8 @@ from mcp.server.auth.middleware.auth_context import get_access_token
 
 from jhe_mcp.audit import log_access
 from jhe_mcp.auth.context import current_auth, current_auth_required
+
+logger = logging.getLogger(__name__)
 
 
 def assert_request_ctx_importable() -> None:
@@ -79,7 +82,16 @@ def _per_request_subject() -> str | None:
 
 
 class JheClientError(Exception):
+    # Cap how much of an upstream body is carried in the error: JHE's own error
+    # payloads are short, so anything longer is a proxy/HTML page or a raw
+    # traceback that shouldn't be forwarded wholesale to the MCP client.
+    MAX_BODY = 500
+
     def __init__(self, status: int, body: str) -> None:
+        if len(body) > self.MAX_BODY:
+            # Keep the full body reachable for operators before it is cut.
+            logger.debug("Full JHE error body (%d chars, status %s): %s", len(body), status, body)
+            body = body[: self.MAX_BODY] + "…[truncated]"
         super().__init__(f"JHE {status}: {body}")
         self.status = status
         self.body = body

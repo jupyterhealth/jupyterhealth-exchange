@@ -6,8 +6,8 @@ import requests
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-from core import oidc_verify
-from core.oidc_verify import IdTokenError, discover_jwks_uri, parse_fhir_user, verify_id_token
+from core import auth
+from core.auth import IdTokenError, discover_jwks_uri, parse_fhir_user, verify_id_token
 
 ISS = "https://ehr.example.org/fhir"
 AUD = "smart-client-id"
@@ -35,8 +35,8 @@ def patch_jwks(monkeypatch, rsa_private_pem):
         def get_signing_key_from_jwt(self, token):
             return _SigningKey()
 
-    monkeypatch.setattr(oidc_verify, "discover_jwks_uri", lambda issuer: "https://ehr.example.org/jwks")
-    monkeypatch.setattr(oidc_verify, "_jwk_client", lambda jwks_uri: _FakeClient())
+    monkeypatch.setattr(auth, "discover_jwks_uri", lambda issuer: "https://ehr.example.org/jwks")
+    monkeypatch.setattr(auth, "_jwk_client", lambda jwks_uri: _FakeClient())
 
 
 def make_token(priv_pem, *, iss=ISS, aud=AUD, fhir_user="Practitioner/abc", exp_delta=3600, alg="RS256", key=None):

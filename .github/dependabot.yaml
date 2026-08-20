@@ -16,7 +16,10 @@ updates:
     cooldown:
       default-days: 7
 
-  - package-ecosystem: pip
+  # Root Django app (uv project since docs/rfcs/0002; formerly pipenv/pip).
+  # Dependabot's uv updater runs `uv lock`, so [tool.uv] override-dependencies
+  # in pyproject.toml is respected on every bot PR.
+  - package-ecosystem: uv
     directory: /
     groups:
       # one big pull request for patch bumps

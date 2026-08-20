@@ -14,14 +14,15 @@ RUN mkdir -p /data
 
 WORKDIR /code
 
-COPY Pipfile Pipfile.lock /code/
+COPY pyproject.toml uv.lock /code/
 ARG XDG_CACHE_DIR=/tmp/cache
+# Export the locked graph (production deps only) and install into the system
+# interpreter, preserving the same site-packages layout pipenv --system used.
 RUN --mount=type=cache,target=${XDG_CACHE_DIR} \
-    export PIP_CACHE_DIR=$XDG_CACHE_DIR/pip \
- && export PIPENV_CACHE_DIR=$XDG_CACHE_DIR/pipenv \
- && pip install pipenv \
- && pipenv install --system \
- && pip uninstall -y pipenv
+    --mount=type=bind,from=ghcr.io/astral-sh/uv:0.11.7,source=/uv,target=/usr/local/bin/uv \
+    export UV_CACHE_DIR=$XDG_CACHE_DIR/uv \
+ && uv export --frozen --no-dev --no-emit-project --format requirements.txt -o /tmp/requirements.txt \
+ && uv pip install --system --no-deps -r /tmp/requirements.txt
 
 # supercronic for the optional jhe_cron sidecar (runs ow_poll on a schedule).
 # TARGETARCH is automatically set by Docker BuildKit / buildx to match the

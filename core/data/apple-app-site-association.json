@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["PLACEHOLDER_TEAM_ID.PLACEHOLDER_BUNDLE_ID"],
+        "components": [
+          {
+            "/": "/clients/ucsf-edge/*",
+            "comment": "PLACEHOLDER - replace with the file supplied by the mobile team before use."
+          }
+        ]
+      }
+    ]
+  }
+}

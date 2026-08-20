@@ -12,10 +12,16 @@ from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
-from oauth2_provider.models import AccessToken, Grant, IDToken, RefreshToken, get_application_model
+from oauth2_provider.models import (
+    AccessToken,
+    Grant,
+    IDToken,
+    RefreshToken,
+    get_application_model,
+    get_device_grant_model,
+)
 
 from core.services.jhe_settings import get_setting
-from core.tokens import account_activation_token
 
 from .organization import Organization
 from .patient import Patient
@@ -82,8 +88,15 @@ class JheUser(AbstractUser):
 
         Custom delete:
         - Avoids hitting removed auth M2M tables.
-        - Proactively deletes Django OAuth Toolkit artifacts that FK to this user.
+        - Proactively deletes every row that FKs to core_jheuser: Django's cascade collector
+          never runs here, so anything missed is left dangling.
         - Finally, raw-DELETE the user row.
+
+        Django declares its foreign keys DEFERRABLE INITIALLY DEFERRED, so a dependent row we
+        forget to clean up does *not* make the raw DELETE fail: it reports success and the
+        violation only surfaces at COMMIT, in the caller's frame. That is how orphaned JheUser
+        rows were being created -- the profile delete had already committed by then. Step 4
+        forces the check inside this transaction so a missed table fails loudly instead.
         """
         # 1) Remove Django OAuth Toolkit artifacts referencing this user
         # (Order chosen to avoid FK surprises across Django OAuth Toolkit versions)
@@ -91,23 +104,66 @@ class JheUser(AbstractUser):
         Grant.objects.filter(user=self).delete()
         RefreshToken.objects.filter(user=self).delete()  # often FK→AccessToken and FK→User
         AccessToken.objects.filter(user=self).delete()
+        get_device_grant_model().objects.filter(user=self).delete()
 
-        # If you allow users to own OAuth applications, also remove those:
+        # 2) Applications this user owns (e.g. a practitioner's client-credentials client).
+        # Deleting an Application cascades to *every* token ever issued for it, including
+        # other users' -- so only delete the ones nobody else is using and merely detach the
+        # rest (Application.user is nullable), leaving them working for their other users.
         Application = get_application_model()
-        Application.objects.filter(user=self).delete()
+        owned_applications = Application.objects.filter(user=self)
+        # This user's own tokens are already gone, so any token left with a user is someone else's.
+        shared_application_ids = set()
+        for token_model in (AccessToken, RefreshToken, Grant, IDToken):
+            shared_application_ids.update(
+                token_model.objects.filter(application__in=owned_applications, user__isnull=False).values_list(
+                    "application_id", flat=True
+                )
+            )
+        Application.objects.filter(id__in=shared_application_ids).update(user=None)
+        owned_applications.exclude(id__in=shared_application_ids).delete()
 
-        # 2) Delete profile rows via ORM so Django cascades (PractitionerOrganization, etc.)
+        # 3) The remaining tables that FK to core_jheuser. Imported here rather than at module
+        # scope: this module is loaded while the app registry is still populating.
+        from allauth.account.models import EmailAddress  # noqa: PLC0415
+        from django.contrib.admin.models import LogEntry  # noqa: PLC0415
+
+        EmailAddress.objects.filter(user=self).delete()  # cascades to EmailConfirmation
+        LogEntry.objects.filter(user=self).delete()
+
+        # 4) Delete profile rows via ORM so Django cascades (PractitionerOrganization, etc.)
         Practitioner.objects.filter(jhe_user=self).delete()
         Patient.objects.filter(jhe_user=self).delete()
 
-        # 3) Now delete the user row itself (bypasses Django's M2M cleanup)
+        # 5) Now delete the user row itself (bypasses Django's M2M cleanup), then force the
+        # deferred FK checks so anything still referencing the user raises here -- rolling
+        # back this atomic block -- instead of at the caller's COMMIT.
         with connection.cursor() as cursor:
             cursor.execute("DELETE FROM core_jheuser WHERE id = %s", [self.id])
             deleted = cursor.rowcount
+            if connection.vendor == "postgresql":
+                cursor.execute("SET CONSTRAINTS ALL IMMEDIATE")
+                cursor.execute("SET CONSTRAINTS ALL DEFERRED")
 
         if deleted:
             return deleted
         raise ObjectDoesNotExist(f"JheUser with id={self.id} did not exist")
+
+    def delete_if_unused(self):
+        """Delete this user if no Patient/Practitioner profile references it any more.
+
+        Called after a profile is deleted so the email address becomes reusable again. The
+        user is kept when another profile still points at it, and superusers are always kept
+        (deleting a profile must never strand an admin login). Returns True if it was deleted.
+        """
+        if self.is_superuser:
+            return False
+        if Practitioner.objects.filter(jhe_user_id=self.id).exists():
+            return False
+        if Patient.objects.filter(jhe_user_id=self.id).exists():
+            return False
+        self.delete()
+        return True
 
     def save(self, *args, **kwargs):
         is_new = (
@@ -193,6 +249,11 @@ class JheUser(AbstractUser):
                                 link.save(update_fields=["role"])
 
     def send_email_verificaion(self):
+        # Deferred: core.auth imports DOT's oauth2_validators, which calls
+        # get_application_model() at module level. Importing it here at
+        # model-definition time would run before the app registry is ready.
+        from core.auth import account_activation_token
+
         message = render_to_string(
             "registration/verify_email_message.html",
             {
