@@ -141,7 +141,7 @@ class JheUser(AbstractUser):
                         # Expected format: "<org_id>:<role>;<org_id>:<role>"
                         parts = [p.strip() for p in mapping_str.split(";") if p.strip()]
                         if not parts:
-                            raise DjangoValidationError("PRACTITIONER_DEFAULT_ORGS must be non-empty when set.")
+                            raise DjangoValidationError("auth.default_orgs must be non-empty when set.")
 
                         valid_roles = set(PractitionerOrganization.ROLE_CHOICES.keys())
                         requested: list[tuple[int, str]] = []
@@ -149,23 +149,20 @@ class JheUser(AbstractUser):
                         for idx, part in enumerate(parts, start=1):
                             if ":" not in part:
                                 raise DjangoValidationError(
-                                    f"PRACTITIONER_DEFAULT_ORGS entry #{idx} is missing ':'. "
-                                    "Expected '<org_id>:<role>'."
+                                    f"auth.default_orgs entry #{idx} is missing ':'. Expected '<org_id>:<role>'."
                                 )
                             org_id_str, role = [s.strip() for s in part.split(":", 1)]
 
                             if not org_id_str or not org_id_str.isdigit():
                                 raise DjangoValidationError(
-                                    f"PRACTITIONER_DEFAULT_ORGS entry #{idx} has invalid org ID "
+                                    f"auth.default_orgs entry #{idx} has invalid org ID "
                                     f"'{org_id_str}'. Must be a numeric ID."
                                 )
                             if not role:
-                                raise DjangoValidationError(
-                                    f"PRACTITIONER_DEFAULT_ORGS entry #{idx} is missing a role."
-                                )
+                                raise DjangoValidationError(f"auth.default_orgs entry #{idx} is missing a role.")
                             if role not in valid_roles:
                                 raise DjangoValidationError(
-                                    f"PRACTITIONER_DEFAULT_ORGS entry #{idx} has invalid role '{role}'. "
+                                    f"auth.default_orgs entry #{idx} has invalid role '{role}'. "
                                     f"Valid roles: {sorted(valid_roles)}"
                                 )
 
@@ -178,7 +175,7 @@ class JheUser(AbstractUser):
                         missing = sorted(set(org_ids) - found_ids)
                         if missing:
                             raise DjangoValidationError(
-                                f"PRACTITIONER_DEFAULT_ORGS references missing Organization ID(s): {missing}"
+                                f"auth.default_orgs references missing Organization ID(s): {missing}"
                             )
 
                         org_by_id = {o.id: o for o in orgs}
