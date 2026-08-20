@@ -114,18 +114,18 @@ class JheUser(AbstractUser):
             self._state.adding
         )  # lives on internal ModelState object; Django's built-in flag for "has this object been added to the
         # database yet?"
-        super().save(*args, **kwargs)
+        with transaction.atomic():
+            super().save(*args, **kwargs)
 
-        if is_new and self.user_type:
-            if self.user_type == "patient" and not hasattr(self, "patient_profile"):
-                Patient.objects.create(
-                    jhe_user=self,
-                    name_family=self.last_name or "",
-                    name_given=self.first_name or "",
-                    birth_date=timezone.now().date(),  # TBD, do we want a default value equivalent to this?
-                )
-            elif self.user_type == "practitioner" and not hasattr(self, "practitioner_profile"):
-                with transaction.atomic():
+            if is_new and self.user_type:
+                if self.user_type == "patient" and not hasattr(self, "patient_profile"):
+                    Patient.objects.create(
+                        jhe_user=self,
+                        name_family=self.last_name or "",
+                        name_given=self.first_name or "",
+                        birth_date=timezone.now().date(),  # TBD, do we want a default value equivalent to this?
+                    )
+                elif self.user_type == "practitioner" and not hasattr(self, "practitioner_profile"):
                     practitioner = Practitioner.objects.create(
                         jhe_user=self,
                         name_family=self.last_name,
