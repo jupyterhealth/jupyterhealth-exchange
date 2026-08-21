@@ -13,8 +13,10 @@ Covers:
 
 from unittest.mock import patch
 
+import pytest
 from django.core import mail
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
 from django.test import RequestFactory, TestCase
 from oauth2_provider.models import get_application_model
 
@@ -316,42 +318,86 @@ class SendEmailVerificationTests(TestCase):
 #         self.assertTrue(code.redirect_uri.startswith("https://db-auth.example.com"))
 
 
-class GetDefaultOrgsTests(TestCase):
-    """Test that practitioner auto-assignment reads orgs from get_setting."""
+@pytest.fixture(autouse=True)
+def clear_cache():
+    cache.clear()
+    yield
+    cache.clear()
 
-    def setUp(self):
-        cache.clear()
-        self.org = Organization.objects.create(name="Default Org", type="prov")
 
-    def tearDown(self):
-        cache.clear()
+@pytest.fixture
+def org():
+    return Organization.objects.create(name="Default Org", type="prov")
 
-    @patch(GET_SETTING_USER)
-    def test_practitioner_assigned_to_default_org(self, mock_gs):
-        # ROLE_CHOICES is a dict; valid_roles = {c[0] for c in dict} gives first char of keys
-        # So valid roles are 'm', 'v' (from 'member', 'manager', 'viewer')
-        mock_gs.return_value = f"{self.org.id}:v"
-        user = JheUser.objects.create_user(
-            email="default-org@example.com",
+
+@pytest.fixture
+def org_2():
+    return Organization.objects.create(name="Other Default Org", type="prov")
+
+
+@pytest.fixture
+def mock_gs(db):
+    with patch(GET_SETTING_USER) as mock_gs:
+        yield mock_gs
+
+
+def test_practitioner_assigned_to_default_org(mock_gs, org, org_2):
+    # valid roles are keys in ROLE_CHOICES
+    mock_gs.return_value = f"{org.id}:viewer;{org_2.id}:member"
+    user = JheUser.objects.create_user(
+        email="default-org@example.com",
+        password="pw",
+        identifier="do1",
+        user_type="practitioner",
+    )
+    practitioner = Practitioner.objects.get(jhe_user=user)
+    assert PractitionerOrganization.objects.filter(
+        practitioner=practitioner, organization=org, role=PractitionerOrganization.ROLE_VIEWER
+    ).exists()
+
+    assert PractitionerOrganization.objects.filter(
+        practitioner=practitioner, organization=org_2, role=PractitionerOrganization.ROLE_MEMBER
+    ).exists()
+
+
+@pytest.mark.parametrize(
+    "default_org",
+    [
+        # bad abbreviation
+        pytest.param("ORG:v", id="bad role (old abbreviation)"),
+        pytest.param("ORG:viewor", id="bad role"),
+        pytest.param("123456:viewer", id="no such org"),
+        pytest.param("notdigit:viewer", id="invalid org"),
+        pytest.param("ORG", id="missing role"),
+        pytest.param("ORG:viewer;ORG2", id="missing role, multiple"),
+    ],
+)
+def test_practitioner_assigned_to_default_org_invalid(mock_gs, default_org, org, org_2):
+    # valid roles are keys in ROLE_CHOICES
+    mock_gs.return_value = default_org.replace("ORG2", str(org_2.id)).replace("ORG", str(org.id))
+    email = "default-org@example.com"
+    with pytest.raises(ValidationError):
+        JheUser.objects.create_user(
+            email=email,
             password="pw",
             identifier="do1",
             user_type="practitioner",
         )
-        practitioner = Practitioner.objects.get(jhe_user=user)
-        self.assertTrue(
-            PractitionerOrganization.objects.filter(practitioner=practitioner, organization=self.org, role="v").exists()
-        )
 
-    @patch(GET_SETTING_USER, return_value="")
-    def test_empty_default_orgs_skips_assignment(self, mock_gs):
-        user = JheUser.objects.create_user(
-            email="no-default-org@example.com",
-            password="pw",
-            identifier="ndo1",
-            user_type="practitioner",
-        )
-        practitioner = Practitioner.objects.get(jhe_user=user)
-        self.assertEqual(PractitionerOrganization.objects.filter(practitioner=practitioner).count(), 0)
+    # make sure user didn't get partially created
+    assert JheUser.objects.filter(email=email).first() is None
+
+
+def test_empty_default_orgs_skips_assignment(mock_gs):
+    mock_gs.return_value = ""
+    user = JheUser.objects.create_user(
+        email="no-default-org@example.com",
+        password="pw",
+        identifier="ndo1",
+        user_type="practitioner",
+    )
+    practitioner = Practitioner.objects.get(jhe_user=user)
+    assert PractitionerOrganization.objects.filter(practitioner=practitioner).count() == 0
 
 
 class FhirSearchGetSettingTests(TestCase):

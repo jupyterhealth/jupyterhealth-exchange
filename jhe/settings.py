@@ -45,7 +45,6 @@ DEBUG = bool(os.getenv("DEBUG"))
 
 SITE_URL = os.getenv("SITE_URL", "http://localhost:8000").rstrip("/")
 OAUTH2_CALLBACK_PATH = "/auth/callback"
-PRACTITIONER_DEFAULT_ORGS = os.getenv("PRACTITIONER_DEFAULT_ORGS", "")
 
 # Open Wearables connection config (OW_API_URL / OW_API_KEY) lives in JheSettings
 # (ow.api_url / ow.api_key), read at runtime via get_setting().
