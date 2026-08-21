@@ -2,11 +2,15 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["PLACEHOLDER_TEAM_ID.PLACEHOLDER_BUNDLE_ID"],
+        "appIDs": [
+          "KZJSZ95597.com.jupyter.health",
+          "KZJSZ95597.com.jupyter.health.staging",
+          "KZJSZ95597.com.jupyter.health.preprod"
+        ],
         "components": [
           {
             "/": "/clients/ucsf-edge/*",
-            "comment": "PLACEHOLDER - replace with the file supplied by the mobile team before use."
+            "comment": "UCSF Edge invitation links"
           }
         ]
       }
