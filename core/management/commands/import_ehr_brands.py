@@ -32,6 +32,18 @@ def _first_endpoint_address(org, endpoints):
     return None
 
 
+def _local_ref_id(reference):
+    """Resolve a FHIR reference to the referenced resource's bare local id.
+
+    Epic's real production bundle links partOf/endpoint via urn:uuid:<id>
+    references; the curated sample and other vendors use Organization/<id>.
+    Both must resolve to the same id used as the resource's own "id" field.
+    """
+    if reference.startswith("urn:uuid:"):
+        return reference[len("urn:uuid:") :]
+    return reference.split("/")[-1]
+
+
 def _npi(org):
     for ident in org.get("identifier", []) or []:
         if "us-npi" in (ident.get("system") or ""):
@@ -95,7 +107,7 @@ def import_brands_bundle(bundle):
     brands_with_locations = set()
     for org in facility_orgs:
         ref = (org.get("partOf") or {}).get("reference", "")
-        brand_entry = brand_by_org_id.get(ref.split("/")[-1])
+        brand_entry = brand_by_org_id.get(_local_ref_id(ref))
         if not brand_entry:
             continue
         brand, _ = brand_entry

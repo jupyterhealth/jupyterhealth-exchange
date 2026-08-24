@@ -116,6 +116,47 @@ def test_call_command_reads_file(db, tmp_path):
     assert EhrBrandLocation.objects.count() == 2
 
 
+def test_imports_facility_with_urn_uuid_partof_reference(db):
+    """Epic's real production Brands Bundle uses urn:uuid: references (not
+    Organization/<id>) for both endpoint and partOf links."""
+    bundle = {
+        "resourceType": "Bundle",
+        "entry": [
+            {
+                "fullUrl": "urn:uuid:ep-1",
+                "resource": {
+                    "resourceType": "Endpoint",
+                    "id": "ep-1",
+                    "address": "https://fhir.example.org/api/FHIR/R4",
+                },
+            },
+            {
+                "fullUrl": "urn:uuid:brand-1",
+                "resource": {
+                    "resourceType": "Organization",
+                    "id": "brand-1",
+                    "name": "Example Health",
+                    "endpoint": [{"reference": "urn:uuid:ep-1"}],
+                },
+            },
+            {
+                "fullUrl": "urn:uuid:loc-1",
+                "resource": {
+                    "resourceType": "Organization",
+                    "id": "loc-1",
+                    "name": "Example Health Downtown Campus",
+                    "partOf": {"reference": "urn:uuid:brand-1"},
+                    "address": [{"text": "1 Example Way", "city": "Springfield", "state": "IL"}],
+                },
+            },
+        ],
+    }
+    counts = import_brands_bundle(bundle)
+    brand = EhrBrand.objects.get(fhir_base_url="https://fhir.example.org/api/FHIR/R4")
+    assert counts["locations"] == 1
+    assert brand.locations.get().name == "Example Health Downtown Campus"
+
+
 def test_shipped_sample_fixture_is_valid_and_imports(db):
     bundle = json.loads(Path(DEFAULT_SAMPLE).read_text(encoding="utf-8"))
     counts = import_brands_bundle(bundle)
