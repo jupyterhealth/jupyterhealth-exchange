@@ -103,6 +103,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # also push sortable semver jhe:1.2.3-dev35-gabcd1234 (replace + with -)
+      - name: Compute git tag
+        id: git_tag
+        run: |
+          pip install setuptools-scm
+          VERSION_TAG=$(python3 -m setuptools_scm | sed s@+@-@g)
+
+          echo "VERSION_TAG=$VERSION_TAG"
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+
       # https://github.com/docker/metadata-action
       - name: Extract metadata (tags, labels) for Docker
         id: meta
@@ -111,7 +121,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=tag
-            type=sha,prefix=
+            type=raw,value=${{ env.VERSION_TAG }}
           images: ${{ env.REGISTRY }}/${{ matrix.image_name }}
 
       # https://github.com/docker/build-push-action
