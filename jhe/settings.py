@@ -238,7 +238,7 @@ LOGGING = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "stream": "ext://sys.stdout",
+            "stream": "ext://sys.stderr",
         },
     },
     "root": {
