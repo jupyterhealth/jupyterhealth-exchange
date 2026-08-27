@@ -2,7 +2,7 @@
 Schema source:
 
 url: https://github.com/openmhealth/schemas
-ref: `c64fca021097febfabfed9fa55489c704d53d57d`
+ref: `df386000a93a35c1d7f33a023f759e41202a7d3d`
 subdirectory: `schema/omh`
 
 Do not edit files in this directory, update with `scripts/pull_schemas.py`

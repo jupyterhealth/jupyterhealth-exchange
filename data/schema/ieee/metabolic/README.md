@@ -2,7 +2,7 @@
 Schema source:
 
 url: https://opensource.ieee.org/omh/1752-2.git
-ref: `f8d93fce1326a899816fcf3c106a5e4a8457105d`
+ref: `d35cf3e622f65a7c7445c206f7bf162214d1e622`
 subdirectory: `schemas/metabolic`
 
 Do not edit files in this directory, update with `scripts/pull_schemas.py`
