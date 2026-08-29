@@ -118,6 +118,8 @@ urlpatterns = [
     # the base (registered with and without a trailing slash). The base is FHIR/<version>/
     # (version from the config).
     *fhir_urls(f"FHIR/{FHIR_VERSION}/"),
+    # backward-compatibility: still accept lowercase /fhir/r5/ prefix
+    *fhir_urls(f"fhir/{FHIR_VERSION.lower()}/"),
     # R4 ingestion: convert an R4 body (or Bundle) to R5, then reuse the normal create routing.
     # The base (with and without trailing slash) takes a Bundle; the collection path takes one
     # resource. See core/views/fhir_import.py.
