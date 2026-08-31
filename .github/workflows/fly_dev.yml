@@ -80,6 +80,6 @@ jobs:
     # inlining a duplicate pytest block here.
     permissions:
       contents: read
-    uses: ./.github/workflows/smoke_test.yml
+    uses: $/.github/workflows/smoke_test.yml
     with:
       smoke_url: https://jhe.fly.dev
