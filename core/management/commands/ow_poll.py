@@ -71,10 +71,6 @@ OW_TYPE_TO_CODE = {
     "heart_rate": HEART_RATE_CODE,
     "blood_glucose": BLOOD_GLUCOSE_CODE,
 }
-OW_TYPE_TO_DATA_SOURCE = {
-    "heart_rate": "Oura",
-    "blood_glucose": "Dexcom",
-}
 NORMALIZED_SYSTEM = "ow:normalized"
 RAW_SYSTEM = "ow:raw"
 RAW_TRACE_ID_HEART_RATE = "/v2/usercollection/heartrate"
@@ -182,10 +178,7 @@ class Command(BaseCommand):
         if not codes:
             return
 
-        data_sources = {
-            ow_type: DataSource.objects.get_or_create(name=name, defaults={"type": "personal_device"})[0]
-            for ow_type, name in OW_TYPE_TO_DATA_SOURCE.items()
-        }
+        oura_ds, _ = DataSource.objects.get_or_create(name="Oura", defaults={"type": "personal_device"})
 
         # Only users linked to an OW account: identifier startswith "ow:".
         users = JheUser.objects.filter(identifier__startswith="ow:")
@@ -207,10 +200,10 @@ class Command(BaseCommand):
                 try:
                     if mode == "normalized":
                         created = self._poll_user_normalized(
-                            user, patient, ow_type, code, data_sources[ow_type], ow_api_url, ow_api_key
+                            user, patient, ow_type, code, oura_ds, ow_api_url, ow_api_key
                         )
                     else:
-                        created = self._poll_user_raw(user, patient, ow_type, code, data_sources[ow_type])
+                        created = self._poll_user_raw(user, patient, ow_type, code, oura_ds)
                     total_created += created
                 except Exception:
                     logger.exception("ow_poll failed for jhe_user_id=%s type=%s", user.id, ow_type)

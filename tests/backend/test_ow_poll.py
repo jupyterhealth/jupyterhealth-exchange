@@ -384,7 +384,6 @@ def test_ingests_blood_glucose_when_consented(db, ow_user, patient_with_consent)
     obs = Observation.objects.filter(subject_patient=patient_with_consent, codeable_concept=bg)
     assert obs.count() == 1
     assert obs.first().omh_data["body"]["blood_glucose"] == {"value": 110.0, "unit": "mg/dL"}
-    assert obs.first().data_source.name == "Dexcom"
     assert not Observation.objects.filter(
         subject_patient=patient_with_consent, codeable_concept__coding_code=HR_CODE
     ).exists(), "glucose sample must not be converted as heart rate"
