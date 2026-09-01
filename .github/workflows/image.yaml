@@ -91,7 +91,7 @@ jobs:
         uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4
       # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
         with:
           # Allows pushing to registry on localhost:5000
           driver-opts: network=host
@@ -99,7 +99,7 @@ jobs:
       # use hash pinning on actions that get access to secrets.GITHUB_TOKEN
       - name: Log in to the Container registry
         if: env.REGISTRY == 'ghcr.io'
-        uses: docker/login-action@17f7c1809f7467d4244b4ff01b0dbe0b8b9e3d43
+        uses: docker/login-action@0a596b2e7a325f0cedf8e9bd21ab002cbd3c9241
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
