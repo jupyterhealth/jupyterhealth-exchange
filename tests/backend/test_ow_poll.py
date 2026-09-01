@@ -3,7 +3,7 @@ Tests for the `ow_poll` management command (normalized + raw modes).
 """
 
 from io import StringIO
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from django.core.management import call_command
@@ -312,3 +312,127 @@ def test_stale_lock_is_force_released(db, ow_user, patient_with_consent, hr_conc
     # Force-reclaim: poll ran, observation persisted, lock cleared on exit.
     assert Observation.objects.count() == 1
     assert not get_setting("ow.sync_in_progress")
+
+
+def test_normalized_mode_follows_pagination(db, ow_user, patient_with_consent, hr_concept):
+    """OW caps a page at 50 samples and returns a cursor; every page must be fetched."""
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    page_1 = {
+        "data": [{"timestamp": "2024-01-01T00:00:00Z", "value": 72}],
+        "pagination": {"next_cursor": "cursor-2", "has_more": True},
+    }
+    page_2 = {
+        "data": [{"timestamp": "2024-01-01T00:01:00Z", "value": 73}],
+        "pagination": {"next_cursor": None, "has_more": False},
+    }
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert") as mock_convert,
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.side_effect = [page_1, page_2]
+        mock_convert.side_effect = [_fake_omh_record("p1"), _fake_omh_record("p2")]
+
+        call_command("ow_poll", stdout=StringIO())
+
+    assert mock_get.call_count == 2, "second page was never requested"
+    assert mock_get.call_args_list[1].kwargs["params"]["cursor"] == "cursor-2"
+
+
+def test_ingests_blood_glucose_when_consented(db, ow_user, patient_with_consent):
+    """Glucose reaches OW through the mobile SDK, so the poller must ask for it too."""
+    from core.models import StudyPatient, StudyPatientScopeConsent, StudyScopeRequest
+
+    bg = CodeableConcept.objects.create(
+        coding_system="https://w3id.org/openmhealth",
+        coding_code="omh:blood-glucose:4.0",
+        text="Blood glucose",
+    )
+    sp = StudyPatient.objects.filter(patient=patient_with_consent).first()
+    StudyScopeRequest.objects.create(study=sp.study, scope_code=bg)
+    StudyPatientScopeConsent.objects.create(
+        study_patient=sp, scope_code=bg, consented=True, consented_time=timezone.now()
+    )
+
+    sample = {
+        "timestamp": "2026-08-31T08:00:00Z",
+        "type": "blood_glucose",
+        "value": 110,
+        "unit": "mg_dl",
+        "source": {"provider": "Stelo", "device": None},
+    }
+
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    def _by_type(*args, **kwargs):
+        resp = MagicMock()
+        resp.status_code = 200
+        wanted = kwargs["params"]["types"]
+        resp.json.return_value = {
+            "data": [sample] if wanted == "blood_glucose" else [],
+            "pagination": {"next_cursor": None, "has_more": False},
+        }
+        return resp
+
+    with patch("core.management.commands.ow_poll.requests.get", side_effect=_by_type):
+        call_command("ow_poll", stdout=StringIO())
+
+    obs = Observation.objects.filter(subject_patient=patient_with_consent, codeable_concept=bg)
+    assert obs.count() == 1
+    assert obs.first().omh_data["body"]["blood_glucose"] == {"value": 110.0, "unit": "mg/dL"}
+    assert obs.first().data_source.name == "Dexcom"
+    assert not Observation.objects.filter(
+        subject_patient=patient_with_consent, codeable_concept__coding_code=HR_CODE
+    ).exists(), "glucose sample must not be converted as heart rate"
+
+
+def test_raw_mode_skips_types_with_no_oura_converter(db, ow_user, patient_with_consent):
+    """Oura exposes no glucose, so raw mode must not walk S3 for it."""
+    from core.models import StudyPatient, StudyPatientScopeConsent, StudyScopeRequest
+
+    bg = CodeableConcept.objects.create(
+        coding_system="https://w3id.org/openmhealth",
+        coding_code="omh:blood-glucose:4.0",
+        text="Blood glucose",
+    )
+    sp = StudyPatient.objects.filter(patient=patient_with_consent).first()
+    StudyScopeRequest.objects.create(study=sp.study, scope_code=bg)
+    StudyPatientScopeConsent.objects.create(
+        study_patient=sp, scope_code=bg, consented=True, consented_time=timezone.now()
+    )
+
+    _set_jhe_setting("module.ow", True)
+    _set_jhe_setting("ow.ingest_mode", "raw", value_type="string")
+    _clear_sync_lock()
+
+    with patch("core.management.commands.ow_poll.list_new_objects") as mock_list:
+        mock_list.return_value = []
+        call_command("ow_poll", stdout=StringIO())
+
+    called_types = [c for c in mock_list.call_args_list]
+    assert len(called_types) == 1, "raw mode should only walk S3 for heart_rate"
+
+
+def test_raw_mode_handles_string_source_field(db, ow_user, patient_with_consent, hr_concept):
+    """Oura raw records carry source as a string ("awake"), not an object."""
+    _set_jhe_setting("module.ow", True)
+    _set_jhe_setting("ow.ingest_mode", "raw", value_type="string")
+    _clear_sync_lock()
+
+    obj = type("Obj", (), {"key": "/v2/usercollection/heartrate/x.json", "last_modified": timezone.now()})()
+
+    with (
+        patch("core.management.commands.ow_poll.list_new_objects") as mock_list,
+        patch("core.management.commands.ow_poll.read_object") as mock_read,
+        patch("core.management.commands.ow_poll.convert") as mock_convert,
+    ):
+        mock_list.return_value = [obj]
+        mock_read.return_value = {"data": [{"bpm": 72, "source": "awake", "timestamp": "2026-01-01T00:00:00+00:00"}]}
+        mock_convert.return_value = _fake_omh_record("raw-str-1")
+        call_command("ow_poll", stdout=StringIO())
+
+    assert Observation.objects.filter(subject_patient=patient_with_consent).count() == 1

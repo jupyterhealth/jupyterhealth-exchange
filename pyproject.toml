@@ -26,7 +26,7 @@ dependencies = [
     "jsonschema",
     "ipython",
     "boto3",
-    "omh-shim==1.4.0",
+    "omh-shim==1.5.0",
 ]
 
 [dependency-groups]

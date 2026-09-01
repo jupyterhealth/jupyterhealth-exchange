@@ -25,6 +25,16 @@ The command no-ops in two situations:
 
 OW connection config (``ow.api_url``, ``ow.api_key``) is read from JheSettings
 via ``get_setting()``, matching ``core/views/ow.py``.
+
+``OW_TYPE_TO_CODE`` maps an OW timeseries type to the CodeableConcept its
+Observations are filed under, and is intersected with the patient's consented
+scopes so a poll can never widen consent. A type only belongs there once
+omh-shim converts it to a schema id JHE can resolve: ``core/utils.py`` resolves
+the ``omh`` and ``ieee`` namespaces only, which is why ``heart_rate_variability``
+is absent (omh-shim targets ``local:heart-rate-variability:1.0``).
+
+``RAW_SUPPORTED_TYPES`` is narrower than ``OW_TYPE_TO_CODE`` because raw mode
+reads Oura API payloads, and Oura exposes no glucose.
 """
 
 import logging
@@ -52,10 +62,23 @@ logger = logging.getLogger(__name__)
 
 POLL_OVERLAP = timedelta(minutes=5)
 POLL_WINDOW = timedelta(days=1)
+PAGE_LIMIT = 100
+MAX_PAGES = 200
 HEART_RATE_CODE = "omh:heart-rate:2.0"
+BLOOD_GLUCOSE_CODE = "omh:blood-glucose:4.0"
+
+OW_TYPE_TO_CODE = {
+    "heart_rate": HEART_RATE_CODE,
+    "blood_glucose": BLOOD_GLUCOSE_CODE,
+}
+OW_TYPE_TO_DATA_SOURCE = {
+    "heart_rate": "Oura",
+    "blood_glucose": "Dexcom",
+}
 NORMALIZED_SYSTEM = "ow:normalized"
 RAW_SYSTEM = "ow:raw"
 RAW_TRACE_ID_HEART_RATE = "/v2/usercollection/heartrate"
+RAW_SUPPORTED_TYPES = {"heart_rate"}
 _SYNC_LOCK_KEY = "ow.sync_in_progress"
 # A lock older than this is considered abandoned (worker crashed mid-poll)
 # and is force-reclaimed by the next tick. Sized at ~2x the default cron
@@ -150,13 +173,19 @@ class Command(BaseCommand):
             self.stderr.write("ow_poll aborted: ow.api_url / ow.api_key not configured")
             return
 
-        try:
-            hr_code = CodeableConcept.objects.get(coding_code=HEART_RATE_CODE)
-        except CodeableConcept.DoesNotExist:
-            self.stderr.write(f"CodeableConcept '{HEART_RATE_CODE}' not found. Run seed first.")
+        codes = {}
+        for ow_type, coding_code in OW_TYPE_TO_CODE.items():
+            try:
+                codes[ow_type] = CodeableConcept.objects.get(coding_code=coding_code)
+            except CodeableConcept.DoesNotExist:
+                self.stderr.write(f"CodeableConcept '{coding_code}' not found. Run seed first.")
+        if not codes:
             return
 
-        oura_ds, _ = DataSource.objects.get_or_create(name="Oura", defaults={"type": "personal_device"})
+        data_sources = {
+            ow_type: DataSource.objects.get_or_create(name=name, defaults={"type": "personal_device"})[0]
+            for ow_type, name in OW_TYPE_TO_DATA_SOURCE.items()
+        }
 
         # Only users linked to an OW account: identifier startswith "ow:".
         users = JheUser.objects.filter(identifier__startswith="ow:")
@@ -170,21 +199,73 @@ class Command(BaseCommand):
             if patient is None:
                 continue
             consented_codes = {s.coding_code for s in patient.consolidated_consented_scopes()}
-            if HEART_RATE_CODE not in consented_codes:
+            polled = {t: c for t, c in codes.items() if c.coding_code in consented_codes}
+            if not polled:
                 continue
 
-            try:
-                if mode == "normalized":
-                    created = self._poll_user_normalized(user, patient, oura_ds, hr_code, ow_api_url, ow_api_key)
-                else:
-                    created = self._poll_user_raw(user, patient, oura_ds, hr_code)
-                total_created += created
-            except Exception:
-                logger.exception("ow_poll failed for jhe_user_id=%s", user.id)
+            for ow_type, code in polled.items():
+                try:
+                    if mode == "normalized":
+                        created = self._poll_user_normalized(
+                            user, patient, ow_type, code, data_sources[ow_type], ow_api_url, ow_api_key
+                        )
+                    else:
+                        created = self._poll_user_raw(user, patient, ow_type, code, data_sources[ow_type])
+                    total_created += created
+                except Exception:
+                    logger.exception("ow_poll failed for jhe_user_id=%s type=%s", user.id, ow_type)
 
         self.stdout.write(self.style.SUCCESS(f"OW poll complete (mode={mode}). Created {total_created} observations."))
 
-    def _poll_user_normalized(self, user, patient, data_source, hr_code, ow_api_url, ow_api_key):
+    def _fetch_timeseries(self, user, ow_api_url, ow_api_key, ow_user_id, data_type, start_time, end_time):
+        """Yield every OW sample across pages. OW caps a page at PAGE_LIMIT and returns a cursor."""
+        cursor = None
+        for _ in range(MAX_PAGES):
+            params = {
+                "types": data_type,
+                "start_time": start_time.isoformat(),
+                "end_time": end_time.isoformat(),
+                "limit": PAGE_LIMIT,
+            }
+            if cursor:
+                params["cursor"] = cursor
+
+            try:
+                resp = requests.get(
+                    f"{ow_api_url}/api/v1/users/{ow_user_id}/timeseries",
+                    params=params,
+                    headers={"X-Open-Wearables-API-Key": ow_api_key},
+                    timeout=30,
+                )
+            except requests.RequestException as e:
+                logger.error("OW timeseries request failed for user=%s: %s", user.id, e)
+                return
+
+            if resp.status_code != 200:
+                logger.error(
+                    "OW timeseries error for user=%s: %s %s",
+                    user.id,
+                    resp.status_code,
+                    resp.text[:300],
+                )
+                return
+
+            data = resp.json()
+            records = data.get("data", data) if isinstance(data, dict) else data
+            if not isinstance(records, list):
+                logger.warning("OW timeseries returned non-list payload for user=%s", user.id)
+                return
+            yield from records
+
+            pagination = data.get("pagination") or {} if isinstance(data, dict) else {}
+            next_cursor = pagination.get("next_cursor")
+            if not pagination.get("has_more") or not next_cursor or next_cursor == cursor:
+                return
+            cursor = next_cursor
+
+        logger.warning("OW timeseries hit MAX_PAGES for user=%s type=%s", user.id, data_type)
+
+    def _poll_user_normalized(self, user, patient, ow_type, code, data_source, ow_api_url, ow_api_key):
         ow_user_id = user.identifier.removeprefix("ow:")
         end_time = timezone.now()
         start_time = end_time - POLL_WINDOW
@@ -194,7 +275,7 @@ class Command(BaseCommand):
         last_obs = (
             Observation.objects.filter(
                 subject_patient=patient,
-                codeable_concept=hr_code,
+                codeable_concept=code,
                 identifiers__system=NORMALIZED_SYSTEM,
             )
             .order_by("-last_updated")
@@ -203,40 +284,12 @@ class Command(BaseCommand):
         if last_obs:
             start_time = max(start_time, last_obs.last_updated - POLL_OVERLAP)
 
-        try:
-            resp = requests.get(
-                f"{ow_api_url}/api/v1/users/{ow_user_id}/timeseries",
-                params={
-                    "types": "heart_rate",
-                    "start_time": start_time.isoformat(),
-                    "end_time": end_time.isoformat(),
-                },
-                headers={"X-Open-Wearables-API-Key": ow_api_key},
-                timeout=30,
-            )
-        except requests.RequestException as e:
-            logger.error("OW timeseries request failed for user=%s: %s", user.id, e)
-            return 0
-
-        if resp.status_code != 200:
-            logger.error(
-                "OW timeseries error for user=%s: %s %s",
-                user.id,
-                resp.status_code,
-                resp.text[:300],
-            )
-            return 0
-
-        data = resp.json()
-        records = data.get("data", data) if isinstance(data, dict) else data
-        if not isinstance(records, list):
-            logger.warning("OW timeseries returned non-list payload for user=%s", user.id)
-            return 0
+        records = self._fetch_timeseries(user, ow_api_url, ow_api_key, ow_user_id, ow_type, start_time, end_time)
 
         created = 0
         for record in records:
             try:
-                omh_record = convert(source="ow_normalized", data_type="heart_rate", sample=record)
+                omh_record = convert(source="ow_normalized", data_type=ow_type, sample=record)
             except Exception:
                 logger.warning("Skipping unconvertible record for user=%s", user.id, exc_info=True)
                 continue
@@ -253,7 +306,7 @@ class Command(BaseCommand):
                 with transaction.atomic():
                     obs = Observation.objects.create(
                         subject_patient=patient,
-                        codeable_concept=hr_code,
+                        codeable_concept=code,
                         data_source=data_source,
                         omh_data=omh_record,
                         status="final",
@@ -278,7 +331,7 @@ class Command(BaseCommand):
         logger.info("Poll completed for jhe_user=%s patient=%s created=%d", user.id, patient.id, created)
         return created
 
-    def _poll_user_raw(self, user, patient, data_source, hr_code):
+    def _poll_user_raw(self, user, patient, ow_type, code, data_source):
         """Raw S3-backed ingest. Walks the OW MinIO bucket for new objects.
 
         Each individual record (not each S3 object) is deduped via
@@ -286,6 +339,9 @@ class Command(BaseCommand):
         mirroring the normalized path so that idempotency is guaranteed even
         if the same payload is re-uploaded under a different S3 key.
         """
+        if ow_type not in RAW_SUPPORTED_TYPES:
+            return 0
+
         ow_user_id = user.identifier.removeprefix("ow:")
         end_time = timezone.now()
         start_time = end_time - POLL_WINDOW
@@ -293,7 +349,7 @@ class Command(BaseCommand):
         last_obs = (
             Observation.objects.filter(
                 subject_patient=patient,
-                codeable_concept=hr_code,
+                codeable_concept=code,
                 identifiers__system=RAW_SYSTEM,
             )
             .order_by("-last_updated")
@@ -322,7 +378,7 @@ class Command(BaseCommand):
 
             for record in payload.get("data", []):
                 try:
-                    omh_record = convert(source="oura_raw", data_type="heart_rate", sample=record)
+                    omh_record = convert(source="oura_raw", data_type=ow_type, sample=record)
                 except Exception:
                     logger.warning("Skipping unconvertible raw record key=%s", obj.key, exc_info=True)
                     continue
@@ -338,7 +394,7 @@ class Command(BaseCommand):
                     with transaction.atomic():
                         obs = Observation.objects.create(
                             subject_patient=patient,
-                            codeable_concept=hr_code,
+                            codeable_concept=code,
                             data_source=data_source,
                             omh_data=omh_record,
                             status="final",
