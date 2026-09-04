@@ -22,6 +22,41 @@ from core.services.jhe_settings import get_setting
 logger = logging.getLogger(__name__)
 
 
+def _sdk_token(ow_api_url, ow_user_id):
+    """Exchange the Application credentials for a token scoped to one OW user.
+
+    Open Wearables rejects a JHE token on its SDK endpoints, and its API key is
+    tenant-wide, so the mobile app is given a short-lived user-scoped token
+    instead. The credentials stay here; the app refreshes against OW directly.
+    """
+    app_id = get_setting("ow.app_id", "")
+    app_secret = get_setting("ow.app_secret", "")
+    if not app_id or not app_secret:
+        logger.warning("ow.app_id / ow.app_secret not configured; returning no SDK token")
+        return {}
+
+    try:
+        response = requests.post(
+            f"{ow_api_url}/api/v1/users/{ow_user_id}/token",
+            json={"app_id": app_id, "app_secret": app_secret},
+            timeout=10,
+        )
+    except requests.RequestException as e:
+        logger.error("Failed to mint OW SDK token for %s: %s", ow_user_id, e)
+        return {}
+
+    if response.status_code != 200:
+        logger.error("OW token error for %s: %s %s", ow_user_id, response.status_code, response.text[:300])
+        return {}
+
+    token = response.json()
+    return {
+        "access_token": token.get("access_token"),
+        "refresh_token": token.get("refresh_token"),
+        "expires_in": token.get("expires_in"),
+    }
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_ow_user(request):
@@ -41,7 +76,8 @@ def create_ow_user(request):
     # Check if user already has an OW user_id stored. The identifier field can also
     # hold non-OW identifiers (e.g. FHIR refs from seed data), so match the prefix.
     if user.identifier and user.identifier.startswith("ow:"):
-        return Response({"ow_user_id": user.identifier.removeprefix("ow:")})
+        ow_user_id = user.identifier.removeprefix("ow:")
+        return Response({"ow_user_id": ow_user_id, **_sdk_token(ow_api_url, ow_user_id)})
 
     # Create user in OW
     payload = {
@@ -74,7 +110,7 @@ def create_ow_user(request):
     user.identifier = f"ow:{ow_user_id}"
     user.save(update_fields=["identifier"])
 
-    return Response({"ow_user_id": ow_user_id})
+    return Response({"ow_user_id": ow_user_id, **_sdk_token(ow_api_url, ow_user_id)})
 
 
 @api_view(["GET"])

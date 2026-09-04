@@ -87,6 +87,13 @@ def ow_settings(db):
 
 
 @pytest.fixture
+def ow_app_settings(db):
+    """Application credentials used to mint user-scoped SDK tokens."""
+    _set_ow_setting("ow.app_id", "app_testappid")
+    _set_ow_setting("ow.app_secret", "secret_testappsecret")
+
+
+@pytest.fixture
 def no_ow_settings(db):
     """Force OW config off regardless of the host environment."""
     _set_ow_setting("ow.api_url", "")
@@ -138,6 +145,45 @@ class TestCreateOwUser:
         assert resp.status_code == 200
         data = resp.json()
         assert data["owUserId"] == "550e8400-e29b-41d4-a716-446655440000"
+
+    @patch("core.views.ow.requests.post")
+    def test_returns_sdk_token_for_new_user(self, mock_post, ow_client, ow_user, ow_settings, ow_app_settings):
+        """The Flutter SDK needs an OW token with scope=sdk; a JHE token is rejected by OW."""
+        create_resp = MagicMock(status_code=201)
+        create_resp.json.return_value = {"id": "new-ow-user-id-123"}
+        token_resp = MagicMock(status_code=200)
+        token_resp.json.return_value = {
+            "access_token": "ow-access-token",
+            "refresh_token": "ow-refresh-token",
+            "token_type": "bearer",
+            "expires_in": 3600,
+        }
+        mock_post.side_effect = [create_resp, token_resp]
+
+        data = ow_client.post(self.URL).json()
+
+        assert data["owUserId"] == "new-ow-user-id-123"
+        assert data["accessToken"] == "ow-access-token"
+        assert data["refreshToken"] == "ow-refresh-token"
+
+        token_call = mock_post.call_args_list[1]
+        assert token_call[0][0].endswith("/api/v1/users/new-ow-user-id-123/token")
+        assert token_call[1]["json"] == {"app_id": "app_testappid", "app_secret": "secret_testappsecret"}
+
+    @patch("core.views.ow.requests.post")
+    def test_returns_fresh_token_for_already_linked_user(
+        self, mock_post, ow_linked_client, ow_user_with_id, ow_settings, ow_app_settings
+    ):
+        """SDK tokens expire after an hour, so a returning user must still get one."""
+        token_resp = MagicMock(status_code=200)
+        token_resp.json.return_value = {"access_token": "fresh-token", "refresh_token": "fresh-refresh"}
+        mock_post.return_value = token_resp
+
+        data = ow_linked_client.post(self.URL).json()
+
+        assert data["owUserId"] == "550e8400-e29b-41d4-a716-446655440000"
+        assert data["accessToken"] == "fresh-token"
+        mock_post.assert_called_once()
 
     @patch("core.views.ow.requests.post")
     def test_passes_through_409_conflict(self, mock_post, ow_client, ow_user, ow_settings):
