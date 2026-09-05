@@ -22,10 +22,10 @@ App = get_application_model()
 app, created = App.objects.get_or_create(
     name="OTP Demo Client",
     defaults=dict(
-        client_type="public",                       # browser client, no secret
+        client_type="public",  # browser client, no secret
         authorization_grant_type="authorization-code",
         redirect_uris="http://localhost:8001/callback.html",
-        skip_authorization=True,                     # skip the consent screen
+        skip_authorization=True,  # skip the consent screen
     ),
 )
 print("client_id:", app.client_id)
@@ -39,9 +39,10 @@ Copy the printed `client_id`.
 from core.models import JheSetting
 
 s, _ = JheSetting.objects.update_or_create(
-    key="auth.patient_access_clients", defaults={"value_type": "json"},
+    key="auth.patient_access_clients",
+    defaults={"value_type": "json"},
 )
-s.set_value("json", [app.client_id])   # `app` from step 1
+s.set_value("json", [app.client_id])  # `app` from step 1
 s.save()
 ```
 
@@ -54,9 +55,12 @@ create one:
 
 ```python
 from core.models import JheUser
+
 JheUser.objects.create_user(
-    email="patient@example.org", password="unused",
-    user_type="patient", identifier="demo-patient",
+    email="patient@example.org",
+    password="unused",
+    user_type="patient",
+    identifier="demo-patient",
 )
 ```
 

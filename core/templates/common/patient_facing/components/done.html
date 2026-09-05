@@ -1,0 +1,18 @@
+{% verbatim %}
+<script id="t-done" type="text/template">
+  <a class="pf-back" href="#" onclick="pfNav('hub'); return false;"><i class="bi bi-arrow-left"></i> Back</a>
+  <div class="pf-check-circle"><i class="bi bi-check-lg"></i></div>
+  <h1 class="pf-h1">You're all set</h1>
+  <p class="pf-lede">{{lede}}</p>
+  <div class="pf-consent-list">
+  {{#each rows}}
+  <div class="pf-consent-row">
+    <span class="pf-consent-row__check"><i class="bi bi-check"></i></span>
+    <span class="pf-consent-row__label">{{name}} · {{detail}}</span>
+  </div>
+  {{/each}}
+  </div>
+  {{#if receipt}}{{> receipt receipt}}{{/if}}
+  <a class="pf-btn" href="#" onclick="pfNav('hub'); return false;">Manage sharing</a>
+</script>
+{% endverbatim %}

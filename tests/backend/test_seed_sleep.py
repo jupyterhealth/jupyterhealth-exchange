@@ -6,13 +6,16 @@ seed still completes.
 """
 
 import pytest
-from django.core.management import call_command
 from oauth2_provider.models import get_application_model
 
+from core.management.commands.seed import SEED_MANAGED_AUX_KEYS
 from core.models import (
     ClientDataSource,
+    CodeableConcept,
     DataSource,
     DataSourceSupportedScope,
+    JheClient,
+    JheSetting,
     Observation,
     Patient,
     Study,
@@ -23,11 +26,6 @@ from core.models import (
 
 SLEEP_CODE = "ieee:sleep-episode:1.0"
 STUDY_NAME = "Lifespan Study on Sleep & BP"
-
-
-@pytest.fixture
-def seeded(db):
-    call_command("seed")
 
 
 def test_oura_supports_sleep_episode_and_heart_rate(seeded):
@@ -60,3 +58,40 @@ def test_patients_have_schema_valid_sleep_observations(seeded, email):
         assert observation.data_source.name == "Oura"
         # sleep-episode requires a time_interval, so both period columns must be populated.
         assert observation.effective_period_start and observation.effective_period_end
+
+
+def test_bp_hr_study_requests_clinical_records_via_ehr_patient_portal(seeded):
+    study = Study.objects.get(name="Lifespan Study on BP & HR")
+    ds = DataSource.objects.get(name="EHR Patient Portal")
+    star = CodeableConcept.objects.get(coding_system="http://hl7.org/fhir/resource-types", coding_code="*")
+    assert star.text == "Clinical records"
+    assert StudyDataSource.objects.filter(study=study, data_source=ds).exists()
+    assert StudyScopeRequest.objects.filter(study=study, scope_code=star).exists()
+
+    pamela = Patient.objects.get(jhe_user__email="ll_patient_pamela@example.com")
+    pending = Study.studies_with_scopes(pamela.id, pending=True)
+    assert any(
+        s.id == study.id and any(c["code"]["coding_code"] == "*" for c in s.pending_scope_consents) for s in pending
+    )
+
+
+@pytest.mark.parametrize(
+    ("name", "path"),
+    [
+        ("EHR Patient Portal", "/clients/ehr-patient-portal/?code=CODE"),
+        ("Open Wearables", "/clients/ow/launch?code=CODE"),
+    ],
+)
+def test_patient_clients_invite_to_their_own_page(seeded, name, path):
+    # One invitation is one client: the link opens that client's page, which lists only its own data sources.
+    jhe_client = JheClient.objects.get(application__name=name)
+    assert jhe_client.invitation_url.endswith(path)
+    assert "patient_facing" not in (jhe_client.aux_data or {})
+    assert SEED_MANAGED_AUX_KEYS == {"scopes"}
+
+
+@pytest.mark.parametrize("key", ["site.ui.logo", "site.ui.theme_css"])
+def test_patient_facing_brand_settings_are_seeded_empty(seeded, key):
+    setting = JheSetting.objects.get(key=key)
+    assert setting.value_type == "string"
+    assert not setting.get_value()

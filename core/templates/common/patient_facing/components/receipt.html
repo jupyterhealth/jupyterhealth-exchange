@@ -1,0 +1,16 @@
+{% verbatim %}
+<script id="t-receipt" type="text/template">
+  <div class="pf-receipt">
+  {{#each synced}}
+  <div class="pf-receipt__row"><span>{{label}}</span><span class="pf-receipt__n">{{n}}</span></div>
+  {{/each}}
+  {{#if notSynced.length}}
+  <div class="pf-receipt__heading">Not synced</div>
+  {{#each notSynced}}
+  <div class="pf-receipt__row pf-receipt__row--pending"><span>{{label}}</span><span class="pf-receipt__n">{{n}}</span></div>
+  {{/each}}
+  {{/if}}
+  <div class="pf-receipt__row pf-receipt__row--total"><span>Total synced</span><span class="pf-receipt__n">{{total}}</span></div>
+  </div>
+</script>
+{% endverbatim %}

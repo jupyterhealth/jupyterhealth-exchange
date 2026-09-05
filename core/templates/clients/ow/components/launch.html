@@ -1,0 +1,22 @@
+{% verbatim %}
+<script id="t-launch" type="text/template">
+  <a class="pf-back" href="#" onclick="pfNav('hub'); return false;"><i class="bi bi-arrow-left"></i> Back</a>
+  <p class="pf-eyebrow">{{sourceName}}</p>
+  <h1 class="pf-h1">Connect your {{sourceName}}</h1>
+  <p class="pf-lede">You'll sign in with {{sourceName}} to authorize sharing. {{siteTitle}} never sees your {{sourceName}} username or password.</p>
+  <div class="pf-callout">After you authorize, your selected data will sync automatically.</div>
+  <div class="pf-card-stack">
+    <div class="pf-card">
+      <div class="pf-card__icon"><i class="bi bi-smartwatch"></i></div>
+      <div class="pf-card__body">
+        <div class="pf-card__title">{{sourceName}}</div>
+        <div class="pf-card__desc">{{sourceLabels}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="pf-actions">
+    <button id="ow_continue" class="pf-btn" type="button" onclick="owContinue()">Continue to {{sourceName}}</button>
+    <a class="pf-btn pf-btn--ghost" href="#" onclick="pfNav('hub'); return false;">Back</a>
+  </div>
+</script>
+{% endverbatim %}

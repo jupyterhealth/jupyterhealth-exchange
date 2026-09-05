@@ -90,25 +90,35 @@ class PatientInvitation(models.Model):
 
         return invitation, link
 
+    @staticmethod
+    def find_by_token(token):
+        """The invitation a raw token names, or None. Never changes its status."""
+        return PatientInvitation.objects.filter(token_hash=PatientInvitation._hash_token(token)).first()
+
+    def _issued_expired(self):
+        expiration_days = get_setting("auth.patient.invitation_expiration_days", 7)
+        return (timezone.now() - self.last_updated).days >= expiration_days
+
+    def _redemption_window_open(self):
+        redemption_window_hours = get_setting("auth.patient.invitation_redemption_window_hours", 12)
+        return (timezone.now() - self.last_updated).total_seconds() / 3600 <= redemption_window_hours
+
     # https://github.com/jazzband/django-oauth-toolkit/blob/102c85141ec44549e17080c676292e79e5eb46cc/oauth2_provider/oauth2_validators.py#L675
     @staticmethod
     def redeem(token):
-        invitation = PatientInvitation.objects.get(
-            token_hash=PatientInvitation._hash_token(token),
-        )
+        invitation = PatientInvitation.find_by_token(token)
+        if invitation is None:
+            raise PatientInvitation.DoesNotExist()
 
         recently_redeemed = False
 
         if invitation.status == PatientInvitation.Status.ISSUED:
-            expiration_days = get_setting("auth.patient.invitation_expiration_days", 7)
-            if (timezone.now() - invitation.last_updated).days >= expiration_days:
+            if invitation._issued_expired():
                 invitation.status = PatientInvitation.Status.EXPIRED
                 invitation.save()
                 raise InvitationExpired()
         elif invitation.status == PatientInvitation.Status.REDEEMED:
-            redemption_window_hours = get_setting("auth.patient.invitation_redemption_window_hours", 12)
-            elapsed_hours = (timezone.now() - invitation.last_updated).total_seconds() / 3600
-            if elapsed_hours <= redemption_window_hours:
+            if invitation._redemption_window_open():
                 recently_redeemed = True
             else:
                 raise InvitationConflict()

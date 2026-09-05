@@ -1,16 +1,4 @@
-{% extends "clients/ehr-patient-portal/base.html" %} {% block title %}Importing records{% endblock %}
-
-{% block body_content %}
-<div class="w-100 text-center mt-5">
-  <h1>Importing your records</h1>
-  <pre id="out" class="text-start ms-5 me-5"></pre>
-</div>
-{% endblock %}
-
-{% block body_footer %}
-<script>
-  var out = document.getElementById("out");
-  // Complete the Epic handshake, store the patient id, pull USCDI records, write to JHE.
-  finishEhrPatientPortalConnect(out, EHR_PATIENT_PORTAL_CONFIG);
-</script>
-{% endblock %}
+{% extends "clients/ehr-patient-portal/base.html" %}
+{% block title %}Importing records{% endblock %}
+{% block pf_components %}{% include "clients/ehr-patient-portal/components/connect.html" %}{% endblock %}
+{% block pf_start %}<script>eppCallback()</script>{% endblock %}

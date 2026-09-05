@@ -80,8 +80,8 @@ def sleep_episode_data_point(start, hours_asleep, awakenings):
 
 # aux_data keys seed owns outright: their value is derived from application code (the
 # scope list must match EHR_PATIENT_PORTAL_PULLS), so a stale deployed value is a bug and seed
-# overwrites it on every run. Every other key -- notably the EHR-registered `client_id`,
-# which differs per deployment -- belongs to whoever set it and is preserved.
+# overwrites it on every run. Every other key -- notably the EHR-registered `client_id`, which
+# differs per deployment -- belongs to whoever set it and is preserved.
 SEED_MANAGED_AUX_KEYS = frozenset({"scopes"})
 
 
@@ -225,6 +225,8 @@ class Command(BaseCommand):
             # wrong server.
             ("site.url", "string", settings.SITE_URL),
             ("site.ui.title", "string", "JupyterHealth Exchange"),
+            ("site.ui.logo", "string", ""),  # static path of a deployment's own logo for patient-facing pages
+            ("site.ui.theme_css", "string", ""),  # static path of a stylesheet overriding the --pf-* tokens/fonts
             ("site.time_zone", "string", "America/Los_Angeles"),
             ("site.registration_invite_code", "string", invite_code),
             ("auth.default_orgs", "string", ""),  # "20001:viewer;20002:member"
@@ -327,7 +329,7 @@ class Command(BaseCommand):
             # wildcard -- a data source scoped to it supplies FHIR resources of any type, which is
             # what an EHR patient-portal pull does (17 types today, all stored as aux rows).
             ("http://hl7.org/fhir/resource-types", "QuestionnaireResponse", "FHIR QuestionnaireResponse"),
-            ("http://hl7.org/fhir/resource-types", "*", "All FHIR Resources"),
+            ("http://hl7.org/fhir/resource-types", "*", "Clinical records"),
         ]
         # bulk create thing
         for system, code, text in codes:
@@ -514,6 +516,9 @@ class Command(BaseCommand):
         code_omh_hr = CodeableConcept.objects.get(coding_code="omh:heart-rate:2.0")
         code_ieee_sleep = CodeableConcept.objects.get(coding_code=SLEEP_EPISODE_CODE)
         code_fhir_qr = CodeableConcept.objects.get(coding_code="QuestionnaireResponse")
+        code_fhir_star = CodeableConcept.objects.get(
+            coding_system="http://hl7.org/fhir/resource-types", coding_code="*"
+        )
 
         StudyScopeRequest.objects.create(study=lifespan_study_bp_hr, scope_code=code_omh_bp)
         StudyScopeRequest.objects.create(study=lifespan_study_bp_hr, scope_code=code_omh_hr)
@@ -541,6 +546,11 @@ class Command(BaseCommand):
         # This makes the EHR patient-portal end-to-end flow (#489) testable out of the box.
         ehr_patient_portal_client = get_application_model().objects.get(name="EHR Patient Portal")
         StudyClient.objects.create(study=lifespan_study_bp_hr, client=ehr_patient_portal_client)
+
+        # Also requests clinical records via the EHR Patient Portal; left pending so the demo starts unconsented.
+        ehr_patient_portal_ds = DataSource.objects.get(name="EHR Patient Portal")
+        StudyDataSource.objects.create(study=lifespan_study_bp_hr, data_source=ehr_patient_portal_ds)
+        StudyScopeRequest.objects.create(study=lifespan_study_bp_hr, scope_code=code_fhir_star)
 
         # Seed EHR hospital brands so the EHR Patient Portal hospital picker (#489) has data to
         # search out of the box. Uses the curated sample bundle; production imports the

@@ -1,5 +1,8 @@
 require("@testing-library/jest-dom");
 
+// jsdom doesn't implement scrollTo; pfRender calls it on every render.
+window.scrollTo = () => {};
+
 // Mock global functions
 global.renderStudies = jest.fn(async (params = {}) => {
   const response = await global.fetch("/api/v1/studies");

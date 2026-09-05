@@ -13,12 +13,16 @@ credential or globally-unique resource name.
 """
 
 import json
+import logging
 from datetime import datetime
 from typing import NamedTuple
 
 import boto3
+import requests
 
 from core.services.jhe_settings import get_setting
+
+logger = logging.getLogger(__name__)
 
 
 class S3ObjectInfo(NamedTuple):
@@ -80,3 +84,35 @@ def read_object(key: str) -> dict:
     bucket = _required_setting("ow.s3.bucket_name")
     response = client.get_object(Bucket=bucket, Key=key)
     return json.loads(response["Body"].read())
+
+
+def revoke_connection_if_fully_unconsented(patient, study_ids):
+    """Best-effort Oura disconnect in OW once a study has no consented scope left for the patient."""
+    from core.models import StudyPatientScopeConsent  # noqa: PLC0415 -- avoids a models<->services import cycle
+
+    jhe_user = patient.jhe_user
+    if not jhe_user.identifier or not jhe_user.identifier.startswith("ow:"):
+        return
+    for study_id in study_ids:
+        if StudyPatientScopeConsent.objects.filter(
+            study_patient__study_id=study_id, study_patient__patient_id=patient.id, consented=True
+        ).exists():
+            continue
+        ow_user_id = jhe_user.identifier.removeprefix("ow:")
+        ow_api_url = get_setting("ow.api_url", "")
+        ow_api_key = get_setting("ow.api_key", "")
+        if not ow_api_url or not ow_api_key:
+            logger.warning("Cannot revoke OW connection: OW integration not configured")
+            return
+        try:
+            resp = requests.delete(
+                f"{ow_api_url}/api/v1/users/{ow_user_id}/connections/oura",
+                headers={"X-Open-Wearables-API-Key": ow_api_key},
+                timeout=10,
+            )
+            if resp.status_code < 300:
+                logger.info("Revoked OW connection for user %s (study %s)", ow_user_id, study_id)
+            else:
+                logger.warning("OW revoke returned %s: %s", resp.status_code, resp.text)
+        except requests.RequestException as e:
+            logger.warning("Failed to revoke OW connection: %s", e)

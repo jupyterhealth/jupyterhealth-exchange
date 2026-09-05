@@ -1,26 +1,17 @@
 // ────────────────────────────────────────────────────
 // EHR Patient Portal Client - SMART on FHIR patient EHR-records flow.
-// Browser-side: invitation -> JHE token -> Epic PKCE -> pull USCDI records -> write to JHE.
-// Uses common.js (parseInvitationCode) and SMART fhir-client.js (FHIR.oauth2.*).
+// Registers the connect step (hospital picker) and the callback entry point for the shared
+// patient-facing app (core/static/common/js/patient-facing.js).
+// Browser-side: JHE token -> Epic PKCE -> pull USCDI records -> write to JHE.
+// Uses SMART fhir-client.js (FHIR.oauth2.*). API_ENDPOINT comes from patient-facing.js.
 // ────────────────────────────────────────────────────
 
-var TOKEN_ENDPOINT = window.location.origin + "/o/token/";
-var API_ENDPOINT = window.location.origin + "/api/v1/";
-// Epic serves R4; JHE validates R5. Writes go through the R4 import endpoint, which converts
-// R4->R5 (cross_version engine) then runs the normal create. It returns a batch-response Bundle.
+// Epic serves R4; JHE validates R5 -- writes go through the R4 import endpoint (cross_version engine, R4->R5) then the normal create, returning a batch-response Bundle.
 var IMPORT_ENDPOINT = window.location.origin + "/fhir-import/R4/";
-var JHE_TOKEN_KEY = "ehr_patient_portal_jhe_access_token";
-// The picked hospital row is chosen before the SMART redirect and needed after it, and the
-// server cannot re-derive it: iss identifies a brand, and a brand has many locations.
+// The picked hospital row is chosen before the SMART redirect and needed after it; the server cannot re-derive it since iss identifies a brand, and a brand has many locations.
 var BRAND_LOCATION_KEY = "ehr_patient_portal_brand_location_id";
-
-function eppStoreToken(token) {
-  sessionStorage.setItem(JHE_TOKEN_KEY, token);
-}
-
-function eppGetToken() {
-  return sessionStorage.getItem(JHE_TOKEN_KEY);
-}
+// Which of this client's data sources the patient is connecting; the callback page has no route params to read it from.
+var SOURCE_ID_KEY = "ehr_patient_portal_source_id";
 
 function eppStoreBrandLocationId(id) {
   if (id === undefined || id === null) return;
@@ -31,56 +22,12 @@ function eppGetBrandLocationId() {
   return sessionStorage.getItem(BRAND_LOCATION_KEY);
 }
 
-// Exchange a JHE invitation auth code for a JHE access token (PKCE verifier = the token).
-async function eppExchangeCodeForToken(clientId, code, codeVerifier, redirectUri) {
-  var payload = {
-    code: code,
-    grant_type: "authorization_code",
-    redirect_uri: redirectUri,
-    client_id: clientId,
-    code_verifier: codeVerifier,
-  };
-  var response = await fetch(TOKEN_ENDPOINT, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded", "Cache-Control": "no-cache" },
-    body: new URLSearchParams(payload).toString(),
-  });
-  if (!response.ok) return null;
-  return await response.json();
+function eppStoreSourceId(id) {
+  sessionStorage.setItem(SOURCE_ID_KEY, String(id));
 }
 
-// Redeem the ?code= invitation and obtain + store a JHE access token. Returns true on success.
-async function eppRedeemInvitation(out) {
-  var params = new URLSearchParams(window.location.search);
-  var code = params.get("code");
-  if (!code) {
-    out.textContent += "\nError: no invitation code in URL";
-    return false;
-  }
-  var link = parseInvitationCode(code);
-  if (!link) {
-    out.textContent += "\nError: invalid invitation code format";
-    return false;
-  }
-  out.textContent += "\nRedeeming invitation...";
-  var invitationResponse = await fetch(
-    window.location.protocol + "//" + link.host + "/api/v1/invitation/" + link.token,
-    { method: "POST", headers: { "Cache-Control": "no-cache" } }
-  );
-  if (!invitationResponse.ok) {
-    out.textContent += "\nError: failed to redeem invitation (" + invitationResponse.status + ")";
-    return false;
-  }
-  var grant = (await invitationResponse.json()).grant;
-  var codeVerifier = btoa(link.token).replace(/=/g, "");
-  var tokens = await eppExchangeCodeForToken(grant.client_id, grant.code, codeVerifier, grant.redirect_uri);
-  if (!tokens || !tokens.access_token) {
-    out.textContent += "\nError: failed to exchange invitation for JHE token";
-    return false;
-  }
-  eppStoreToken(tokens.access_token);
-  out.textContent += "\nJHE access token received";
-  return true;
+function eppGetSourceId() {
+  return sessionStorage.getItem(SOURCE_ID_KEY);
 }
 
 // Attach the Epic patient id to the JHE patient (additive). Returns true on success.
@@ -97,18 +44,10 @@ async function eppSavePatientIdentifier(jheToken, system, value) {
   return response.ok;
 }
 
-// Register a FhirSource for this Epic connection. Returns the source id or null.
-// A FhirSource requires a DataSource. The page config carries its id, resolved server-side
-// from this client's ClientDataSource link (the seeded "EHR Patient Portal" source); the
-// client never names or looks up a data source itself.
-//
-// Every Connect registers a NEW source, by design: a source stores no endpoint and is identified
-// by its pk, so nothing could match a previous run's source and nothing needs to -- each run gets
-// its own identifier namespace. The endpoint goes in the label, the only human-facing handle.
+// The create body for a new FhirSource: dataSourceId comes from the page config (resolved server-side from this client's ClientDataSource link, never looked up here); every Connect registers a NEW source since none stores an endpoint to match against, so the endpoint lives only in the label.
 function eppFhirSourceBody(fhirBaseUrl, dataSourceId) {
-  var body = { label: "Epic / EHR Patient Portal — " + fhirBaseUrl, data_source: dataSourceId };
-  // Only when the patient reached here through the picker; a launch by any other route has no
-  // facility to record, and the field is nullable for exactly that case.
+  var body = { label: "Epic / EHR Patient Portal — " + fhirBaseUrl, data_source: Number(dataSourceId) };
+  // Only set when the patient reached here through the picker; other launch routes have no facility to record, hence the nullable field.
   var locationId = eppGetBrandLocationId();
   if (locationId) body.ehr_brand_location = Number(locationId);
   return body;
@@ -129,8 +68,7 @@ async function eppCreateFhirSource(jheToken, fhirBaseUrl, dataSourceId) {
   return data.id;
 }
 
-// The error text of a failed import entry, from the OperationOutcome the endpoint puts at
-// response.outcome (the first error/fatal issue's diagnostics). Null when there is none.
+// The error text of a failed import entry, from the first error/fatal issue's diagnostics in response.outcome; null when there is none.
 function eppEntryFailureReason(entry) {
   var issues = (entry && entry.response && entry.response.outcome && entry.response.outcome.issue) || [];
   for (var i = 0; i < issues.length; i++) {
@@ -141,8 +79,7 @@ function eppEntryFailureReason(entry) {
   return null;
 }
 
-// Warning texts on an import entry (dropped R4 fields, defaulted required fields).
-// Present on *successful* entries too — that data changed shape must not be silent.
+// Warning texts on an import entry (dropped/defaulted R4 fields); present on *successful* entries too, since a changed shape must not be silent.
 function eppEntryWarnings(entry) {
   var issues = (entry && entry.response && entry.response.outcome && entry.response.outcome.issue) || [];
   var texts = [];
@@ -154,9 +91,7 @@ function eppEntryWarnings(entry) {
   return texts;
 }
 
-// One import entry's {ok, reason, warnings}: success is the entry's own create status (2xx);
-// reason carries its OperationOutcome error on failure; warnings its warning issues (a
-// successful create can still have them, e.g. a defaulted clinicalStatus).
+// One import entry's {ok, reason, warnings}: ok is the entry's own create status (2xx); reason carries its OperationOutcome error on failure; warnings can be present even on success (e.g. a defaulted clinicalStatus).
 function eppEntryWrite(entry) {
   var status = entry && entry.response && entry.response.status;
   var ok = typeof status === "string" && status.charAt(0) === "2";
@@ -188,9 +123,7 @@ function eppImportHeaders(jheToken, sourceId) {
   };
 }
 
-// POST one R4 resource to the JHE R4 import endpoint (converts R4->R5, then creates).
-// The endpoint returns HTTP 200 with a batch-response Bundle even when the single entry
-// failed, so success is judged per entry (see eppEntryWrite).
+// POST one R4 resource to the JHE R4 import endpoint (converts R4->R5, then creates); it returns HTTP 200 with a batch-response Bundle even when the entry failed, so success is judged per entry (see eppEntryWrite).
 async function eppWriteResource(jheToken, sourceId, resourceType, resource) {
   var response = await fetch(IMPORT_ENDPOINT + resourceType, {
     method: "POST",
@@ -202,13 +135,9 @@ async function eppWriteResource(jheToken, sourceId, resourceType, resource) {
   return eppEntryWrite(bundle && bundle.entry && bundle.entry[0]);
 }
 
-// POST a batch of R4 resources as ONE Bundle to the import endpoint — hundreds of labs must
-// not mean hundreds of round trips. Returns one {ok, reason, warnings} per posted resource,
-// order-aligned with the request (a transport failure is replicated across all of them).
+// POST a batch of R4 resources as ONE Bundle so hundreds of labs don't mean hundreds of round trips; returns one order-aligned {ok, reason, warnings} per posted resource (a transport failure is replicated across all of them).
 async function eppWriteBundle(jheToken, sourceId, resources) {
-  // Everything that can reject (network drop, worker timeout, truncated JSON) is caught
-  // here and reported per resource — one failed chunk must not abort the whole multi-type
-  // pull ("failures are isolated per type" is the contract).
+  // Everything that can reject (network drop, worker timeout, truncated JSON) is caught here and reported per resource, since one failed chunk must not abort the whole multi-type pull.
   try {
     var response = await fetch(IMPORT_ENDPOINT, {
       method: "POST",
@@ -240,11 +169,7 @@ async function eppWriteBundle(jheToken, sourceId, resources) {
   });
 }
 
-// Every patient-compartment clinical type JHE can ingest today: each has an R4->R5
-// StructureMap and an aux_resources entry in fhir_config.json (reference/meta types like
-// Practitioner, Location and Provenance are resolved from the resources that cite them, not
-// pulled). `single` reads one instance (Patient), the rest are patient-scoped searches.
-// Order is display order. Failures are isolated per type and reported with reasons.
+// Every patient-compartment clinical type JHE can ingest today (each has an R4->R5 StructureMap and an aux_resources entry in fhir_config.json; reference/meta types like Practitioner, Location and Provenance are resolved from citing resources, not pulled); `single` reads one instance, the rest are patient-scoped searches, in display order, with failures isolated per type.
 var EHR_PATIENT_PORTAL_PULLS = [
   { label: "Demographics", type: "Patient", query: "Patient", single: true },
   { label: "Conditions", type: "Condition", query: "Condition" },
@@ -253,9 +178,7 @@ var EHR_PATIENT_PORTAL_PULLS = [
   { label: "Allergies", type: "AllergyIntolerance", query: "AllergyIntolerance" },
   { label: "Immunizations", type: "Immunization", query: "Immunization" },
   { label: "Procedures", type: "Procedure", query: "Procedure" },
-  // Epic requires a category (or code) filter on Observation searches, so each pulled
-  // category is its own query. These map to the "Observation - ..." views in the JHE
-  // FHIR Resources browser; OMH device data is JHE-native and is never pulled from the EHR.
+  // Epic requires a category (or code) filter on Observation searches, so each pulled category is its own query, mapping to the "Observation - ..." views in the JHE FHIR Resources browser; OMH device data is JHE-native and never pulled from the EHR.
   { label: "Labs", type: "Observation", query: "Observation?category=laboratory" },
   { label: "Vital Signs", type: "Observation", query: "Observation?category=vital-signs" },
   { label: "Diagnostic Reports", type: "DiagnosticReport", query: "DiagnosticReport" },
@@ -265,25 +188,16 @@ var EHR_PATIENT_PORTAL_PULLS = [
   { label: "Care Teams", type: "CareTeam", query: "CareTeam?status=active" },
   { label: "Goals", type: "Goal", query: "Goal" },
   { label: "Service Requests", type: "ServiceRequest", query: "ServiceRequest" },
-  // fhir-client's patient.request cannot scope Device (no compartment param in
-  // its map), so it carries the patient param explicitly through plain
-  // client.request. (Specimen is not pulled: Epic's Specimen API has no
-  // patient-level search -- it 400s on Specimen?patient=.)
+  // fhir-client's patient.request cannot scope Device (no compartment param), so it carries the patient param explicitly through plain client.request; Specimen is not pulled since Epic's Specimen API 400s on a patient-level search.
   { label: "Devices", type: "Device", query: "Device?patient=", explicitPatient: true },
   { label: "Questionnaire Responses", type: "QuestionnaireResponse", query: "QuestionnaireResponse" },
 ];
 
-// Pull one resource type and write each item to JHE. Isolated so one type's failure
-// (fetch error, unsupported type) does not abort the others. Returns {written, failed, error}.
-// seenIds (optional Set): resource ids already written by an earlier pull of the same type
-// in this run — an Epic Observation categorized as both laboratory and vital-signs is
-// returned by both category pulls and must import once, not twice.
+// Pull one resource type and write each item to JHE, isolated so one type's failure doesn't abort the others; seenIds (optional Set) dedupes ids an earlier pull of the same run already wrote, e.g. an Observation categorized as both laboratory and vital-signs.
 async function eppPullResourceType(client, jheToken, sourceId, pull, iss, seenIds) {
   var resources;
   try {
-    // A single instance read (Patient) is a plain read; fhir-client's patient.request injects a
-    // ?patient= filter that Epic rejects for an instance read, so use client.request for it.
-    // Searches stay on patient.request so they are scoped to this patient.
+    // A single instance read (Patient) uses plain client.request, since patient.request's injected ?patient= filter is rejected on an instance read; searches stay on patient.request so they're scoped to this patient.
     var result = pull.single
       ? await client.request(pull.query + "/" + client.patient.id)
       : pull.explicitPatient
@@ -295,8 +209,7 @@ async function eppPullResourceType(client, jheToken, sourceId, pull, iss, seenId
   }
   var written = 0;
   var failed = 0;
-  // Distinct failure/warning text -> count, so 45 identical messages read as one line. Null
-  // prototype: a diagnostics string like "__proto__" or "constructor" must count as a plain key.
+  // Distinct failure/warning text -> count, so 45 identical messages read as one line; null prototype so a diagnostics string like "__proto__" counts as a plain key.
   var reasons = Object.create(null);
   var warnings = Object.create(null);
   var candidates = [];
@@ -304,12 +217,10 @@ async function eppPullResourceType(client, jheToken, sourceId, pull, iss, seenId
     var resource = resources[i];
     if (!resource || resource.resourceType !== pull.type) continue;
     if (seenIds && resource.id && seenIds.has(resource.id)) continue;
-    // Over-64-char Epic ids ("Unconstrained FHIR IDs") are handled server-side: the import
-    // moves them into an identifier and keys the upsert on them, so the id must survive here.
+    // Over-64-char Epic ids ("Unconstrained FHIR IDs") are handled server-side -- the import moves them into an identifier and keys the upsert on them -- so the id must survive here.
     candidates.push(resource);
   }
-  // Chunked Bundle posts, not one POST per record: the import endpoint takes a batch Bundle
-  // and replies per entry, so a few-hundred-lab pull is a handful of round trips.
+  // Chunked Bundle posts, not one POST per record: the import endpoint replies per entry, so a few-hundred-lab pull is a handful of round trips.
   var BUNDLE_CHUNK = 100;
   for (var start = 0; start < candidates.length; start += BUNDLE_CHUNK) {
     var chunk = candidates.slice(start, start + BUNDLE_CHUNK);
@@ -318,8 +229,7 @@ async function eppPullResourceType(client, jheToken, sourceId, pull, iss, seenId
       var write = writes[j];
       if (write.ok) {
         written++;
-        // Mark seen only after a successful write: a record that failed in one pull
-        // (e.g. Labs) must be retried by a later pull that returns it (e.g. Vital Signs).
+        // Mark seen only after a successful write, so a record that failed in one pull (e.g. Labs) is retried by a later pull that returns it (e.g. Vital Signs).
         if (seenIds && chunk[j].id) seenIds.add(chunk[j].id);
         (write.warnings || []).forEach(function (w) {
           warnings[w] = (warnings[w] || 0) + 1;
@@ -345,9 +255,7 @@ async function eppSearchBrands(jheToken, query) {
   return data.results || [];
 }
 
-// Launch the Epic SMART authorize against the selected hospital's FHIR base URL (iss).
-// fhir-client.js discovers the authorize/token endpoints from iss via
-// {iss}/.well-known/smart-configuration, so no per-hospital endpoint config is needed.
+// Launch the Epic SMART authorize against the selected hospital's FHIR base URL (iss); fhir-client.js discovers the authorize/token endpoints from {iss}/.well-known/smart-configuration, so no per-hospital endpoint config is needed.
 function eppAuthorizeWithIss(config, iss) {
   FHIR.oauth2.authorize({
     iss: iss,
@@ -358,8 +266,7 @@ function eppAuthorizeWithIss(config, iss) {
   });
 }
 
-// Render hospital search results as clickable rows (name + address). Clicking a row
-// calls onSelect(row). Returns the number of rows rendered (0 => shows a message).
+// Render hospital search results as clickable rows (name + address); clicking a row calls onSelect(row). Returns the number of rows rendered (0 => shows a message).
 function eppRenderBrandResults(container, results, onSelect) {
   container.innerHTML = "";
   if (!results || results.length === 0) {
@@ -394,28 +301,23 @@ function eppRenderBrandResults(container, results, onSelect) {
   return results.length;
 }
 
-// Connect page entry point: redeem the invitation, then show the hospital picker.
-// Selecting a hospital launches the Epic SMART authorize against that hospital's iss.
-// `picker` = { input, results } DOM elements from the connect page.
-async function startEhrPatientPortalConnect(out, config, picker) {
-  out.textContent = "Processing your invitation...";
-  var ok = await eppRedeemInvitation(out);
-  if (!ok) return;
-  out.textContent += "\n\nChoose your hospital to continue.";
-
-  var jheToken = eppGetToken();
+// Connect step: the hospital picker; picking a row launches the SMART authorize against that hospital.
+pfClient.connect = async function (source) {
+  eppStoreSourceId(source.id);
+  pfRender("t-connect", { rail: pfRail(1) });
+  var picker = {
+    container: document.getElementById("hospital-picker"),
+    input: document.getElementById("hospital-search"),
+    results: document.getElementById("hospital-results"),
+  };
+  var jheToken = getStoredToken();
   var onSelect = function (row) {
-    out.textContent += "\n\nRedirecting to " + row.brandName + " login...";
     eppStoreBrandLocationId(row.id);
-    eppAuthorizeWithIss(config, row.fhirBaseUrl);
+    eppAuthorizeWithIss(PATIENT_PORTAL_CONFIG, row.fhirBaseUrl);
   };
-
   var runSearch = async function () {
-    var results = await eppSearchBrands(jheToken, picker.input.value);
-    eppRenderBrandResults(picker.results, results, onSelect);
+    eppRenderBrandResults(picker.results, await eppSearchBrands(jheToken, picker.input.value), onSelect);
   };
-
-  // Debounced live search as the patient types; initial call lists everything.
   var timer = null;
   picker.input.addEventListener("input", function () {
     if (timer) clearTimeout(timer);
@@ -423,12 +325,45 @@ async function startEhrPatientPortalConnect(out, config, picker) {
   });
   picker.container.hidden = false;
   await runSearch();
+};
+
+// The failure text of an import log: every type failed to fetch, or the last "Error:" line; null on success.
+function eppImportFailure(log) {
+  if (log.indexOf("could not fetch") !== -1 && log.indexOf("saved ") === -1) return "none of your record types could be fetched";
+  var lines = log.split("\n");
+  for (var i = lines.length - 1; i >= 0; i--) {
+    if (lines[i].indexOf("Error:") === 0) return lines[i].slice("Error:".length).trim();
+  }
+  return null;
+}
+
+// Callback page entry: importing screen, run the import, then the done screen (or the error callout).
+async function eppCallback() {
+  pfRegisterPartials();
+  await renderImporting();
+  var out = document.getElementById("out");
+  var config = PATIENT_PORTAL_CONFIG;
+  try {
+    await finishEhrPatientPortalConnect(out, config);
+  } catch (e) {
+    out.textContent += "\nError: " + (e && e.message ? e.message : e);
+  }
+  var failure = eppImportFailure(out.textContent);
+  var sourceParam = "&source=" + (eppGetSourceId() || config.dataSourceIds[0]);
+  if (failure) {
+    showFlowError("We couldn't reach your healthcare organization", failure, {
+      retryLabel: "Choose a different organization",
+      retryHref: config.pageUrl + "?route=connect" + sourceParam,
+    });
+    return;
+  }
+  window.location.replace(config.pageUrl + "?route=done" + sourceParam);
 }
 
 // Callback page entry point: finish Epic handshake, store id, pull USCDI records, write to JHE.
 async function finishEhrPatientPortalConnect(out, config) {
   out.textContent = "Completing connection...";
-  var jheToken = eppGetToken();
+  var jheToken = getStoredToken();
   if (!jheToken) {
     out.textContent += "\nError: no JHE session. Restart from your invitation link.";
     return;
@@ -442,8 +377,7 @@ async function finishEhrPatientPortalConnect(out, config) {
     return;
   }
 
-  // The token must carry patient context (the launch/patient scope). Without it
-  // we cannot attribute or scope the data, so stop with a clear message.
+  // The token must carry patient context (the launch/patient scope), or we cannot attribute or scope the data -- stop with a clear message.
   var epicPatientId = client.patient && client.patient.id;
   if (!epicPatientId) {
     out.textContent += "\nError: no patient context from EHR Patient Portal (missing launch/patient scope)";
@@ -451,8 +385,7 @@ async function finishEhrPatientPortalConnect(out, config) {
   }
   out.textContent += "\nEHR patient id: " + epicPatientId;
 
-  // Provenance must be the hospital the patient actually picked and authorized against,
-  // which fhir-client records as state.serverUrl - not any single configured default.
+  // Provenance must be the hospital the patient actually picked and authorized against, which fhir-client records as state.serverUrl -- not any single configured default.
   var iss = client.state && client.state.serverUrl;
   if (!iss) {
     out.textContent += "\nError: no FHIR server URL from EHR Patient Portal authorization";
@@ -466,14 +399,13 @@ async function finishEhrPatientPortalConnect(out, config) {
   }
   out.textContent += "\nStored EHR Patient Portal patient id in JHE";
 
-  var sourceId = await eppCreateFhirSource(jheToken, iss, config.dataSourceId);
+  var sourceId = await eppCreateFhirSource(jheToken, iss, eppGetSourceId() || config.dataSourceIds[0]);
   if (!sourceId) {
     out.textContent += "\nError: failed to register data source";
     return;
   }
 
-  // Pull each USCDI type independently. pageLimit:0 + flat:true makes fhir-client.js
-  // follow every `next` link so patients with more records than one page are not truncated.
+  // Pull each USCDI type independently; pageLimit:0 + flat:true makes fhir-client.js follow every `next` link so patients with more than one page of records aren't truncated.
   var summary = [];
   var observationSeen = new Set(); // dedupe across the per-category Observation pulls
   for (var p = 0; p < EHR_PATIENT_PORTAL_PULLS.length; p++) {
@@ -486,8 +418,7 @@ async function finishEhrPatientPortalConnect(out, config) {
         pull.type === "Observation" ? observationSeen : undefined
       );
     } catch (e) {
-      // Belt over eppPullResourceType's own isolation: nothing may abort the loop and
-      // freeze the page mid-connect with the remaining types silently skipped.
+      // Belt over eppPullResourceType's own isolation: nothing may abort the loop and freeze the page mid-connect with the remaining types silently skipped.
       result = { written: 0, failed: 0, error: e && e.message ? e.message : String(e), reasons: {}, warnings: {} };
     }
     if (result.error) {
@@ -498,8 +429,7 @@ async function finishEhrPatientPortalConnect(out, config) {
     out.textContent += "\n  saved " + result.written + " record(s)";
     var warningList = Object.keys(result.warnings || {});
     if (warningList.length) {
-      // Saved-with-changes must be visible (RFC 0003): e.g. Conditions whose missing
-      // clinicalStatus was defaulted to 'unknown'. Same cap + console pattern as failures.
+      // Saved-with-changes must be visible (RFC 0003), e.g. Conditions whose missing clinicalStatus was defaulted to 'unknown' -- same cap + console pattern as failures.
       console.warn("EHR Patient Portal import warnings for " + pull.label + ":", result.warnings);
       out.textContent += "\n  some saved record(s) were adjusted during import:";
       warningList
@@ -516,11 +446,9 @@ async function finishEhrPatientPortalConnect(out, config) {
     }
     if (result.failed) {
       out.textContent += "\n  " + result.failed + " record(s) could not be saved:";
-      // The on-screen list below is capped; log the complete map so a console capture
-      // keeps every distinct reason.
+      // The on-screen list below is capped; log the complete map so a console capture keeps every distinct reason.
       console.error("EHR Patient Portal import failures for " + pull.label + ":", result.reasons);
-      // Validation messages can embed record values, making every reason distinct — cap the
-      // list at the 5 most frequent so one bad type cannot flood the page.
+      // Validation messages can embed record values, making every reason distinct -- cap the list at the 5 most frequent so one bad type cannot flood the page.
       var reasonList = Object.keys(result.reasons).sort(function (a, b) {
         return result.reasons[b] - result.reasons[a];
       });
@@ -548,5 +476,9 @@ if (typeof window !== "undefined") {
   window.eppRenderBrandResults = eppRenderBrandResults;
   window.eppSavePatientIdentifier = eppSavePatientIdentifier;
   window.eppStoreBrandLocationId = eppStoreBrandLocationId;
+  window.eppStoreSourceId = eppStoreSourceId;
+  window.eppGetSourceId = eppGetSourceId;
   window.finishEhrPatientPortalConnect = finishEhrPatientPortalConnect;
+  window.eppImportFailure = eppImportFailure;
+  window.eppCallback = eppCallback;
 }

@@ -2,7 +2,10 @@
 pytest configuration and fixtures
 """
 
+import io
+
 import pytest
+from django.core.management import call_command
 from rest_framework.test import APIClient
 
 from core.models import (
@@ -17,6 +20,11 @@ from .utils import (
     add_patient_to_study,
     create_study,
 )
+
+
+@pytest.fixture
+def seeded(db):
+    call_command("seed", stdout=io.StringIO())
 
 
 @pytest.fixture

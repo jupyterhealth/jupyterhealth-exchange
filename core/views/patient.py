@@ -40,6 +40,7 @@ from core.serializers import (
     StudyPendingConsentsSerializer,
 )
 from core.services.jhe_settings import get_setting
+from core.services.ow_ingest import revoke_connection_if_fully_unconsented
 
 
 class PatientViewSet(ModelViewSet):
@@ -395,7 +396,9 @@ class PatientViewSet(ModelViewSet):
             # ALL scopes revoked. If so, disconnect the OW vendor connection
             # (best-effort - don't block the response on OW failures).
             if request.method in ("PATCH", "DELETE"):
-                self._revoke_ow_connection_if_fully_unconsented(patient, request.data["study_scope_consents"])
+                revoke_connection_if_fully_unconsented(
+                    patient, [entry["study_id"] for entry in request.data["study_scope_consents"]]
+                )
 
             if request.method == "POST":
                 return Response(
@@ -405,48 +408,3 @@ class PatientViewSet(ModelViewSet):
             if request.method == "DELETE":
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response({"study_scope_consents": StudyPatientScopeConsentSerializer(responses, many=True).data})
-
-    def _revoke_ow_connection_if_fully_unconsented(self, patient, study_scope_consents):
-        """
-        After a PATCH/DELETE, check whether ALL scopes for a given study are
-        now consented=false. If so, revoke the OW vendor connection (best-effort).
-        """
-        logger = logging.getLogger(__name__)
-        jhe_user = patient.jhe_user
-        if not jhe_user.identifier or not jhe_user.identifier.startswith("ow:"):
-            return
-
-        for entry in study_scope_consents:
-            study_id = entry["study_id"]
-            study_patient = StudyPatient.objects.filter(study_id=study_id, patient_id=patient.id).first()
-            if not study_patient:
-                continue
-            # Check if ANY scope in this study is still consented
-            still_consented = StudyPatientScopeConsent.objects.filter(
-                study_patient_id=study_patient.id, consented=True
-            ).exists()
-            if still_consented:
-                continue
-
-            # All scopes revoked for this study - disconnect OW vendor connection
-            ow_user_id = jhe_user.identifier.removeprefix("ow:")
-            ow_api_url = get_setting("ow.api_url", "")
-            ow_api_key = get_setting("ow.api_key", "")
-            if not ow_api_url or not ow_api_key:
-                logger.warning("Cannot revoke OW connection: OW integration not configured")
-                return
-
-            import requests as http_requests
-
-            try:
-                resp = http_requests.delete(
-                    f"{ow_api_url}/api/v1/users/{ow_user_id}/connections/oura",
-                    headers={"X-Open-Wearables-API-Key": ow_api_key},
-                    timeout=10,
-                )
-                if resp.status_code < 300:
-                    logger.info("Revoked OW connection for user %s (study %s)", ow_user_id, study_id)
-                else:
-                    logger.warning("OW revoke returned %s: %s", resp.status_code, resp.text)
-            except http_requests.RequestException as e:
-                logger.warning("Failed to revoke OW connection: %s", e)
