@@ -147,7 +147,7 @@ class TestCreateOwUser:
         assert data["owUserId"] == "550e8400-e29b-41d4-a716-446655440000"
 
     @patch("core.views.ow.requests.post")
-    def test_returns_sdk_token_for_new_user(self, mock_post, ow_client, ow_user, ow_settings, ow_app_settings):
+    def test_returns_sdk_token_when_requested(self, mock_post, ow_client, ow_user, ow_settings, ow_app_settings):
         """The Flutter SDK needs an OW token with scope=sdk; a JHE token is rejected by OW."""
         create_resp = MagicMock(status_code=201)
         create_resp.json.return_value = {"id": "new-ow-user-id-123"}
@@ -160,15 +160,29 @@ class TestCreateOwUser:
         }
         mock_post.side_effect = [create_resp, token_resp]
 
-        data = ow_client.post(self.URL).json()
+        data = ow_client.post(self.URL, {"include_ow_tokens": True}, format="json").json()
 
         assert data["owUserId"] == "new-ow-user-id-123"
-        assert data["accessToken"] == "ow-access-token"
-        assert data["refreshToken"] == "ow-refresh-token"
+        assert data["owAccessToken"] == "ow-access-token"
+        assert data["owRefreshToken"] == "ow-refresh-token"
+        assert data["owExpiresIn"] == 3600
+        assert data["owTokenEndpoint"] == "https://ow.example.com/api/v1/token/refresh"
 
         token_call = mock_post.call_args_list[1]
         assert token_call[0][0].endswith("/api/v1/users/new-ow-user-id-123/token")
         assert token_call[1]["json"] == {"app_id": "app_testappid", "app_secret": "secret_testappsecret"}
+
+    @patch("core.views.ow.requests.post")
+    def test_omits_sdk_token_by_default(self, mock_post, ow_client, ow_user, ow_settings, ow_app_settings):
+        """The browser client calls this endpoint too and must not receive an OW credential."""
+        create_resp = MagicMock(status_code=201)
+        create_resp.json.return_value = {"id": "new-ow-user-id-123"}
+        mock_post.return_value = create_resp
+
+        data = ow_client.post(self.URL).json()
+
+        assert data == {"owUserId": "new-ow-user-id-123"}
+        mock_post.assert_called_once()
 
     @patch("core.views.ow.requests.post")
     def test_returns_fresh_token_for_already_linked_user(
@@ -179,10 +193,10 @@ class TestCreateOwUser:
         token_resp.json.return_value = {"access_token": "fresh-token", "refresh_token": "fresh-refresh"}
         mock_post.return_value = token_resp
 
-        data = ow_linked_client.post(self.URL).json()
+        data = ow_linked_client.post(self.URL, {"include_ow_tokens": True}, format="json").json()
 
         assert data["owUserId"] == "550e8400-e29b-41d4-a716-446655440000"
-        assert data["accessToken"] == "fresh-token"
+        assert data["owAccessToken"] == "fresh-token"
         mock_post.assert_called_once()
 
     @patch("core.views.ow.requests.post")

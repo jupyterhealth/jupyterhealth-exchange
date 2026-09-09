@@ -27,7 +27,9 @@ def _sdk_token(ow_api_url, ow_user_id):
 
     Open Wearables rejects a JHE token on its SDK endpoints, and its API key is
     tenant-wide, so the mobile app is given a short-lived user-scoped token
-    instead. The credentials stay here; the app refreshes against OW directly.
+    instead. The credentials stay here; the app refreshes against OW directly at
+    the returned endpoint. Callers that only need the linked id, such as the
+    browser client, should leave ``include_ow_tokens`` unset.
     """
     app_id = get_setting("ow.app_id", "")
     app_secret = get_setting("ow.app_secret", "")
@@ -51,9 +53,10 @@ def _sdk_token(ow_api_url, ow_user_id):
 
     token = response.json()
     return {
-        "access_token": token.get("access_token"),
-        "refresh_token": token.get("refresh_token"),
-        "expires_in": token.get("expires_in"),
+        "ow_access_token": token.get("access_token"),
+        "ow_refresh_token": token.get("refresh_token"),
+        "ow_expires_in": token.get("expires_in"),
+        "ow_token_endpoint": f"{ow_api_url}/api/v1/token/refresh",
     }
 
 
@@ -75,9 +78,12 @@ def create_ow_user(request):
 
     # Check if user already has an OW user_id stored. The identifier field can also
     # hold non-OW identifiers (e.g. FHIR refs from seed data), so match the prefix.
+    include_tokens = bool(request.data.get("include_ow_tokens"))
+
     if user.identifier and user.identifier.startswith("ow:"):
         ow_user_id = user.identifier.removeprefix("ow:")
-        return Response({"ow_user_id": ow_user_id, **_sdk_token(ow_api_url, ow_user_id)})
+        tokens = _sdk_token(ow_api_url, ow_user_id) if include_tokens else {}
+        return Response({"ow_user_id": ow_user_id, **tokens})
 
     # Create user in OW
     payload = {
@@ -110,7 +116,8 @@ def create_ow_user(request):
     user.identifier = f"ow:{ow_user_id}"
     user.save(update_fields=["identifier"])
 
-    return Response({"ow_user_id": ow_user_id, **_sdk_token(ow_api_url, ow_user_id)})
+    tokens = _sdk_token(ow_api_url, ow_user_id) if include_tokens else {}
+    return Response({"ow_user_id": ow_user_id, **tokens})
 
 
 @api_view(["GET"])
