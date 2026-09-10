@@ -260,6 +260,7 @@ class Command(BaseCommand):
             # patient.py / ow_poll.
             ("ow.api_url", "string", "http://localhost:8001"),
             ("ow.api_key", "string", ""),
+            ("ow.poll_window_days", "int", 1),
         ]
         for key, value_type, value in jhe_settings:
             setting, _ = JheSetting.objects.update_or_create(

@@ -35,6 +35,12 @@ is absent (omh-shim targets ``local:heart-rate-variability:1.0``).
 
 ``RAW_SUPPORTED_TYPES`` is narrower than ``OW_TYPE_TO_CODE`` because raw mode
 reads Oura API payloads, and Oura exposes no glucose.
+
+``ow.poll_window_days`` (default 1) sets how far back OW is asked for samples.
+It only bounds a patient's first poll: once they have an Observation the resume
+watermark is the later bound, so a wide window costs nothing afterwards. Raise
+it when patients link with device history already recorded, or pass ``--days``
+for a one-off backfill.
 """
 
 import logging
@@ -61,7 +67,7 @@ from core.services.ow_ingest import list_new_objects, read_object
 logger = logging.getLogger(__name__)
 
 POLL_OVERLAP = timedelta(minutes=5)
-POLL_WINDOW = timedelta(days=1)
+DEFAULT_POLL_WINDOW_DAYS = 1
 PAGE_LIMIT = 100
 MAX_PAGES = 200
 HEART_RATE_CODE = "omh:heart-rate:2.0"
@@ -103,6 +109,12 @@ class Command(BaseCommand):
             type=int,
             default=None,
             help="Poll only the specified patient (by Patient.id). For debugging/backfill.",
+        )
+        parser.add_argument(
+            "--days",
+            type=int,
+            default=None,
+            help="Override the ow.poll_window_days setting for this run. For backfill.",
         )
 
     def handle(self, *args, **options):
@@ -157,6 +169,23 @@ class Command(BaseCommand):
         except ValueError:
             return None
 
+    @staticmethod
+    def _poll_window(options):
+        """How far back to ask OW for samples when a patient has nothing to resume from.
+
+        A patient who links after already wearing a device has no prior Observation,
+        so this window is the only thing deciding whether their history is reachable.
+        Once they have one, the resume watermark is always the later bound, which is
+        why widening this costs nothing on subsequent polls.
+        """
+        days = options.get("days")
+        if days is None:
+            try:
+                days = int(get_setting("ow.poll_window_days", DEFAULT_POLL_WINDOW_DAYS))
+            except (TypeError, ValueError):
+                days = DEFAULT_POLL_WINDOW_DAYS
+        return timedelta(days=max(days, 1))
+
     def _run_poll(self, options):
         mode = str(get_setting("ow.ingest_mode", "normalized") or "normalized").lower()
         if mode not in ("normalized", "raw"):
@@ -179,6 +208,7 @@ class Command(BaseCommand):
             return
 
         oura_ds, _ = DataSource.objects.get_or_create(name="Oura", defaults={"type": "personal_device"})
+        poll_window = self._poll_window(options)
 
         # Only users linked to an OW account: identifier startswith "ow:".
         users = JheUser.objects.filter(identifier__startswith="ow:")
@@ -200,10 +230,10 @@ class Command(BaseCommand):
                 try:
                     if mode == "normalized":
                         created = self._poll_user_normalized(
-                            user, patient, ow_type, code, oura_ds, ow_api_url, ow_api_key
+                            user, patient, ow_type, code, oura_ds, ow_api_url, ow_api_key, poll_window
                         )
                     else:
-                        created = self._poll_user_raw(user, patient, ow_type, code, oura_ds)
+                        created = self._poll_user_raw(user, patient, ow_type, code, oura_ds, poll_window)
                     total_created += created
                 except Exception:
                     logger.exception("ow_poll failed for jhe_user_id=%s type=%s", user.id, ow_type)
@@ -258,10 +288,10 @@ class Command(BaseCommand):
 
         logger.warning("OW timeseries hit MAX_PAGES for user=%s type=%s", user.id, data_type)
 
-    def _poll_user_normalized(self, user, patient, ow_type, code, data_source, ow_api_url, ow_api_key):
+    def _poll_user_normalized(self, user, patient, ow_type, code, data_source, ow_api_url, ow_api_key, poll_window):
         ow_user_id = user.identifier.removeprefix("ow:")
         end_time = timezone.now()
-        start_time = end_time - POLL_WINDOW
+        start_time = end_time - poll_window
 
         # Resume from the most recent successfully ingested record so we
         # don't refetch the entire window every tick.
@@ -324,7 +354,7 @@ class Command(BaseCommand):
         logger.info("Poll completed for jhe_user=%s patient=%s created=%d", user.id, patient.id, created)
         return created
 
-    def _poll_user_raw(self, user, patient, ow_type, code, data_source):
+    def _poll_user_raw(self, user, patient, ow_type, code, data_source, poll_window):
         """Raw S3-backed ingest. Walks the OW MinIO bucket for new objects.
 
         Each individual record (not each S3 object) is deduped via
@@ -337,7 +367,7 @@ class Command(BaseCommand):
 
         ow_user_id = user.identifier.removeprefix("ow:")
         end_time = timezone.now()
-        start_time = end_time - POLL_WINDOW
+        start_time = end_time - poll_window
 
         last_obs = (
             Observation.objects.filter(

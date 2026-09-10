@@ -435,3 +435,52 @@ def test_raw_mode_handles_string_source_field(db, ow_user, patient_with_consent,
         call_command("ow_poll", stdout=StringIO())
 
     assert Observation.objects.filter(subject_patient=patient_with_consent).count() == 1
+
+
+def _requested_start(mock_get):
+    from datetime import datetime
+
+    return datetime.fromisoformat(mock_get.call_args[1]["params"]["start_time"])
+
+
+def test_poll_window_days_setting_widens_the_first_fetch(db, ow_user, patient_with_consent, hr_concept):
+    """A patient linking with existing history has nothing to resume from, so the
+    window alone decides how far back OW is asked to look."""
+    _set_jhe_setting("module.ow", True)
+    _set_jhe_setting("ow.poll_window_days", 30, value_type="int")
+    _clear_sync_lock()
+
+    with patch("core.management.commands.ow_poll.requests.get") as mock_get:
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": [], "pagination": {"has_more": False}}
+        call_command("ow_poll", stdout=StringIO())
+
+    age = timezone.now() - _requested_start(mock_get)
+    assert 29 <= age.days <= 30, f"expected a 30 day window, asked for {age.days}"
+
+
+def test_days_flag_overrides_the_setting(db, ow_user, patient_with_consent, hr_concept):
+    _set_jhe_setting("module.ow", True)
+    _set_jhe_setting("ow.poll_window_days", 30, value_type="int")
+    _clear_sync_lock()
+
+    with patch("core.management.commands.ow_poll.requests.get") as mock_get:
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": [], "pagination": {"has_more": False}}
+        call_command("ow_poll", "--days", "2", stdout=StringIO())
+
+    age = timezone.now() - _requested_start(mock_get)
+    assert 1 <= age.days <= 2, f"expected a 2 day window, asked for {age.days}"
+
+
+def test_poll_window_defaults_to_one_day(db, ow_user, patient_with_consent, hr_concept):
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    with patch("core.management.commands.ow_poll.requests.get") as mock_get:
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": [], "pagination": {"has_more": False}}
+        call_command("ow_poll", stdout=StringIO())
+
+    age = timezone.now() - _requested_start(mock_get)
+    assert age.days == 1, f"expected the 1 day default, asked for {age.days}"
