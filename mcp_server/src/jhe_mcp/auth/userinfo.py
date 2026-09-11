@@ -7,6 +7,8 @@ pattern for opaque-token validation.
 
 We cache results for `cache_ttl` seconds so repeated MCP requests from the
 same client don't hammer JHE.
+
+Only a 401 is a verdict on the token; every other outcome is an `UpstreamAuthError`.
 """
 
 from __future__ import annotations
@@ -15,6 +17,8 @@ import time
 from dataclasses import dataclass
 
 import httpx
+
+from jhe_mcp.auth.upstream import UpstreamAuthError, upstream_status
 
 
 class TokenValidationError(Exception):
@@ -60,16 +64,23 @@ class UserinfoValidator:
                 return cached.subject
             # Expired entry — evict immediately.
             del self._cache[token]
-        async with httpx.AsyncClient(timeout=self._timeout) as client:
-            resp = await client.get(self._endpoint, headers={"Authorization": f"Bearer {token}"})
+        try:
+            async with httpx.AsyncClient(timeout=self._timeout) as client:
+                resp = await client.get(self._endpoint, headers={"Authorization": f"Bearer {token}"})
+        except httpx.HTTPError as exc:
+            raise UpstreamAuthError(f"userinfo unreachable ({type(exc).__name__})") from exc
         if resp.status_code == 401:
             self._cache.pop(token, None)
             raise TokenValidationError("token rejected by userinfo endpoint")
         if resp.status_code != 200:
-            raise TokenValidationError(f"userinfo returned {resp.status_code}")
-        sub = resp.json().get("sub")
-        if not sub:
-            raise TokenValidationError("userinfo response missing 'sub' claim")
+            raise UpstreamAuthError(f"userinfo returned {resp.status_code}", upstream_status(resp.status_code))
+        try:
+            body = resp.json()
+        except ValueError as exc:
+            raise UpstreamAuthError("userinfo returned a non-JSON body", 500) from exc
+        sub = body.get("sub") if isinstance(body, dict) else None
+        if not isinstance(sub, str) or not sub:
+            raise UpstreamAuthError("userinfo response missing a usable 'sub' claim", 500)
         if len(self._cache) >= self._max_entries:
             self._evict(now)
         self._cache[token] = _CachedSub(subject=sub, cached_at=now)

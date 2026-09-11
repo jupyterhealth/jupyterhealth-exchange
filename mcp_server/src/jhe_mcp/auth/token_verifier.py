@@ -12,7 +12,10 @@ Validation has two layers:
 2. (Best-effort) JHE token introspection confirms the token was issued to *our*
    JHE client, rejecting foreign-audience tokens. If JHE does not expose
    introspection (404 / 403 / connection error) we fall back to userinfo-only
-   and warn once, rather than hard-failing.
+   and warn once, rather than hard-failing — unless MCP_REQUIRE_AUDIENCE is set.
+
+Either layer failing to reach a verdict raises ``UpstreamAuthError`` (a 5xx); only
+a token JHE actually rejects returns None (a 401).
 """
 
 from __future__ import annotations
@@ -22,6 +25,7 @@ import logging
 import httpx
 from mcp.server.auth.provider import AccessToken, TokenVerifier
 
+from jhe_mcp.auth.upstream import UpstreamAuthError, upstream_status
 from jhe_mcp.auth.userinfo import TokenValidationError, UserinfoValidator
 from jhe_mcp.config import JHE_SCOPES, Settings
 
@@ -53,29 +57,17 @@ class JheTokenVerifier(TokenVerifier):
         self._audience_warning_emitted = False
 
     async def verify_token(self, token: str) -> AccessToken | None:
-        # Layer 1: userinfo validation -> subject. Failure means reject.
-        # A transport-level failure (httpx.HTTPError) must fail closed as a clean
-        # 401 reject, not surface as a 500.
+        # Layer 1: userinfo validation -> subject. UpstreamAuthError propagates: unchecked != bad.
         try:
             subject = await self._validator.verify(token)
         except TokenValidationError:
             logger.warning("Userinfo rejected the token; rejecting request")
             return None
-        except httpx.HTTPError as exc:
-            # Fail closed, but this is an infra problem (JHE unreachable/timeout),
-            # not a bad token — log at error with the cause so "auth server down"
-            # is distinguishable from "unauthorized" in the logs.
-            logger.error("Userinfo transport error (%s); rejecting token", type(exc).__name__)
-            return None
 
         # Layer 2: best-effort audience check via introspection.
         client_id = await self._introspect_client_id(token)
         if client_id is None:
-            # Introspection unavailable. Fail closed when MCP_REQUIRE_AUDIENCE is
-            # set (production), else fall back to userinfo-only (dev default).
-            if self._settings.require_audience:
-                logger.warning("Audience required but introspection unavailable; rejecting token")
-                return None
+            # Introspection unavailable and audience not required -> userinfo-only (dev default).
             client_id = self._settings.jhe_client_id
         elif client_id != self._settings.jhe_client_id:
             # Token was issued to a different client -> wrong audience. Reject.
@@ -94,7 +86,7 @@ class JheTokenVerifier(TokenVerifier):
 
         Returns the (possibly foreign) client_id when JHE reports the token as
         active; returns None when introspection cannot be performed so the caller
-        can fall back to userinfo-only validation.
+        can fall back to userinfo-only validation, or raises when MCP_REQUIRE_AUDIENCE is set.
         """
         auth: tuple[str, str] | None = None
         if self._settings.jhe_client_secret:
@@ -106,31 +98,33 @@ class JheTokenVerifier(TokenVerifier):
                     data={"token": token},
                     auth=auth,
                 )
-        except httpx.HTTPError:
-            self._warn_audience_unenforced()
-            return None
-        if resp.status_code in (403, 404):
-            # JHE does not expose introspection to us; audience can't be enforced.
-            self._warn_audience_unenforced()
+        except httpx.HTTPError as exc:
+            self._introspection_unavailable(503, f"introspection unreachable ({type(exc).__name__})")
             return None
         if resp.status_code != 200:
-            self._warn_audience_unenforced()
+            status = upstream_status(resp.status_code)
+            self._introspection_unavailable(status, f"introspection returned {resp.status_code}")
             return None
         try:
             body = resp.json()
         except ValueError:
-            self._warn_audience_unenforced()
+            body = None
+        if not isinstance(body, dict):
+            self._introspection_unavailable(500, "introspection returned a non-JSON object")
             return None
         if not body.get("active"):
             # Introspection says token is not active for us -> treat as foreign.
             return ""
         introspected = body.get("client_id")
         if not isinstance(introspected, str) or not introspected:
-            self._warn_audience_unenforced()
+            self._introspection_unavailable(500, "introspection omitted client_id")
             return None
         return introspected
 
-    def _warn_audience_unenforced(self) -> None:
+    def _introspection_unavailable(self, status_code: int, detail: str) -> None:
+        """Raise when the audience must be enforced; otherwise warn once and fall back."""
+        if self._settings.require_audience:
+            raise UpstreamAuthError(detail, status_code=status_code)
         if not self._audience_warning_emitted:
             self._audience_warning_emitted = True
             logger.warning(

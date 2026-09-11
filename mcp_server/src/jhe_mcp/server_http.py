@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from jhe_mcp.auth.broker import build_broker_router
+from jhe_mcp.auth.upstream import UpstreamAuthErrorMiddleware
 from jhe_mcp.config import Settings
 from jhe_mcp.core import build_server
 from jhe_mcp.fhir.client import assert_request_ctx_importable
@@ -27,6 +28,9 @@ def build_app(settings: Settings) -> FastAPI:
     # snapshot the initialize-time token into a contextvar (the original isolation
     # bug). The broker routes and /health were never gated and remain open.
     streamable_app = mcp.streamable_http_app()
+
+    # Bearer auth runs outside ExceptionMiddleware, so only this layer can catch what it raises.
+    streamable_app.add_middleware(UpstreamAuthErrorMiddleware)
 
     @asynccontextmanager
     async def lifespan(_app):
