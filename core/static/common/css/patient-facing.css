@@ -1,0 +1,127 @@
+/* patient-facing.css — themeable layer for the patient journey.
+   Every color/type/radius the UI renders comes from a token here; nothing visual is hardcoded.
+   To rebrand a deployment without editing this file, drop in files and set three JHE Settings:
+     1. a stylesheet that redeclares the :root tokens below (and, for another typeface, its own @font-face rules
+        plus --pf-font), e.g. common/css/themes/acme.css with its woff2 files beside it;
+     2. site.ui.theme_css = that stylesheet's static path (it loads after this one, so its tokens win);
+     3. site.ui.logo = the static path of your logo; site.ui.title = your product name — every patient page
+        and the invitation email read them;
+     4. run collectstatic. */
+
+/* Inter, vendored locally so it works under strict CSP (no font CDN). */
+@font-face { font-family: "Inter"; font-weight: 400; font-style: normal; font-display: swap; src: url("fonts/inter/inter-400.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 500; font-style: normal; font-display: swap; src: url("fonts/inter/inter-500.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 600; font-style: normal; font-display: swap; src: url("fonts/inter/inter-600.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 700; font-style: normal; font-display: swap; src: url("fonts/inter/inter-700.woff2") format("woff2"); }
+
+:root {
+  --pf-bg: #f4f2ee;          /* page background — warm off-white behind every screen */
+  --pf-surface: #ffffff;     /* cards/inputs — white surface lifted off the page */
+  --pf-ink: #1c1a17;         /* primary text — near-black headings and body */
+  --pf-muted: #6b655d;       /* secondary text — ledes, captions, meta */
+  --pf-accent: #e5642c;      /* brand accent — primary buttons, eyebrow, progress */
+  --pf-accent-ink: #ffffff;  /* text on accent — label color inside accent buttons */
+  --pf-line: #e6e1d8;        /* hairlines — card borders and row dividers */
+  --pf-radius: 10px;         /* default corner radius — inputs, rows */
+  --pf-radius-lg: 16px;      /* large corner radius — cards, primary buttons */
+  --pf-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; /* type family — Inter with system fallback */
+  --pf-maxw: 620px;          /* content measure — max width of the centered column */
+  --pf-accent-soft: #fbe4d5;      /* light accent tint — done bars, callout/avatar backgrounds */
+  --pf-accent-ink-soft: #9a3412;  /* accent-dark text — readable on the soft accent tint */
+  --pf-badge-on-bg: #dcefdf;      /* connected pill background — soft green tint */
+  --pf-badge-on-ink: #1f7a3c;     /* connected pill text — readable green on the soft tint */
+  --pf-success: #1f7a3c;          /* success green — done-screen check circle icon */
+  --pf-danger: #c0392b;           /* danger red — destructive "Stop sharing" button fill */
+  --pf-danger-soft: #fbe4e1;      /* soft danger tint — error callout background, red analog of accent-soft */
+}
+
+.pf-page { min-height: 100%; background: var(--pf-bg); color: var(--pf-ink); font-family: var(--pf-font); } /* base canvas — brand bg + ink + Inter on the whole page */
+.pf-page__inner { max-width: var(--pf-maxw); margin: 0 auto; padding: 40px 20px 64px; } /* content column — centered, constrained measure */
+.pf-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid var(--pf-line); } /* brand bar — logo left, secure marker right, hairline under */
+.pf-header__brand { display: flex; align-items: center; gap: 10px; font-weight: 700; } /* brand lockup — logo + product name, bold */
+.pf-header__logo { height: 32px; width: auto; object-fit: contain; } /* logo mark — fixed legible height, natural width, no box/border/background */
+.pf-header__secure { color: var(--pf-muted); font-size: 14px; } /* secure marker — muted lock + label, reassurance not emphasis */
+.pf-eyebrow { margin-top: 40px; color: var(--pf-accent); font-weight: 600; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; } /* eyebrow — accent-colored context label above the H1 */
+.pf-eyebrow--tight { margin-top: 0; } /* eyebrow as a field label — no gap above when it sits inside a section */
+.pf-h1 { margin: 8px 0 12px; font-weight: 700; font-size: 34px; line-height: 1.1; letter-spacing: -.01em; } /* page title — large tight Inter bold */
+.pf-lede { margin: 0 0 28px; color: var(--pf-muted); font-size: 17px; line-height: 1.5; } /* lede — muted supporting paragraph under the title */
+.pf-card { background: var(--pf-surface); border: 1px solid var(--pf-line); border-radius: var(--pf-radius-lg); padding: 18px 20px; display: flex; align-items: center; gap: 16px; } /* card — white rounded source/summary row */
+.pf-card + .pf-card { margin-top: 14px; } /* card stack — even vertical rhythm between cards */
+.pf-card__body { flex: 1; } /* card body — takes remaining width so the badge slot sits right */
+.pf-card__title { font-weight: 600; font-size: 17px; } /* card title — source name, semibold */
+.pf-card__desc { color: var(--pf-muted); font-size: 14px; line-height: 1.4; } /* card description — muted one-liner about the source */
+.pf-card__badge { display: inline-block; padding: 6px 12px; border-radius: 999px; background: var(--pf-line); color: var(--pf-muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; } /* badge pill — neutral fill for "Not consented" */
+.pf-card__badge--on { background: var(--pf-badge-on-bg); color: var(--pf-badge-on-ink); } /* badge pill — green tint for "Consented" */
+.pf-card-link { display: block; color: inherit; text-decoration: none; position: relative; } /* card link — full-card tap target, no underline, inherits card ink */
+.pf-card-link .pf-card { padding-right: 44px; } /* card link — clears room for the trailing chevron */
+.pf-card-link::after { content: "\f285"; font-family: "bootstrap-icons"; font-weight: 400; font-style: normal; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--pf-muted); } /* chevron — trailing affordance, matches #hospital-results rows */
+.pf-btn, .pf-btn--ghost, .pf-btn--danger { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; border: 0; border-radius: var(--pf-radius-lg); font-weight: 600; font-size: 15px; line-height: 1.2; letter-spacing: .03em; text-transform: uppercase; padding: 14px 22px; min-height: 48px; text-decoration: none; cursor: pointer; } /* button base — shared sizing so accent/ghost/danger buttons render at the same height */
+.pf-btn { background: var(--pf-accent); color: var(--pf-accent-ink); } /* primary button — accent fill, uppercase label */
+.pf-input { width: 100%; box-sizing: border-box; border: 1px solid var(--pf-line); border-radius: var(--pf-radius); background: var(--pf-surface); font: inherit; padding: 13px 14px; } /* text input — white field matching card radius */
+.pf-back { display: inline-flex; align-items: center; gap: 6px; margin-top: 20px; margin-bottom: 20px; border: 1px solid var(--pf-line); border-radius: var(--pf-radius-lg); padding: 10px 16px; color: var(--pf-muted); font-size: 13px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; text-decoration: none; } /* back button — outlined ghost button, arrow + label, wayfinding under the header */
+.pf-back:hover { color: var(--pf-ink); } /* back button — darkens to ink on hover */
+
+.pf-rail { display: flex; list-style: none; gap: 20px; margin: 24px 0 0; padding: 0; } /* rail — three steps laid out side by side */
+.pf-rail__step { flex: 1; position: relative; padding-top: 14px; } /* step slot — room above the label row for the top bar */
+.pf-rail__step::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 2px; background: var(--pf-line); } /* pending bar — hairline until the step is active or done */
+.pf-rail__step.is-active::before { background: var(--pf-accent); } /* active bar — full accent color */
+.pf-rail__step.is-done::before { background: var(--pf-accent-soft); } /* done bar — light accent tint */
+.pf-rail__num { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--pf-line); color: var(--pf-muted); font-size: 12px; font-weight: 700; margin-right: 8px; } /* step badge — muted fill while pending */
+.pf-rail__step.is-active .pf-rail__num, .pf-rail__step.is-done .pf-rail__num { background: var(--pf-accent); color: var(--pf-accent-ink); } /* step badge — filled accent once active or done */
+.pf-rail__label { font-size: 13px; font-weight: 600; color: var(--pf-muted); } /* label — muted while pending */
+.pf-rail__step.is-active .pf-rail__label, .pf-rail__step.is-done .pf-rail__label { color: var(--pf-ink); } /* label — ink once active or done */
+
+.pf-callout { margin: 0 0 28px; padding: 16px 18px; background: var(--pf-accent-soft); border-left: 3px solid var(--pf-accent); border-radius: var(--pf-radius); color: var(--pf-accent-ink-soft); font-size: 15px; line-height: 1.5; } /* info callout — soft accent panel with left accent rule */
+
+#pf_error_wrap { margin: 0 0 28px; } /* error wrap — hidden/shown as a unit, same spacing footprint as the info callout it replaces */
+.pf-error { display: flex; align-items: flex-start; gap: 12px; padding: 16px 18px; background: var(--pf-danger-soft); border-left: 3px solid var(--pf-danger); border-radius: var(--pf-radius); } /* error callout — soft red panel with left danger rule; icon, title and message only */
+.pf-error__icon { flex: none; color: var(--pf-danger); font-size: 18px; line-height: 1.4; } /* error icon — exclamation glyph, danger red */
+.pf-error__title { font-weight: 700; color: var(--pf-danger); margin-bottom: 4px; } /* error title — bold red headline inside the callout */
+.pf-error__msg { margin: 0; color: var(--pf-danger); font-size: 15px; line-height: 1.5; } /* error message — the flow JS's last Error: line, human readable */
+#pf_error_wrap .pf-actions { margin-top: 16px; } /* error actions — buttons sit below the red box, not inside it */
+
+.pf-search { position: relative; } /* search wrapper — lets the leading icon sit over the input, and frames the results dropdown */
+.pf-search::before { content: "\f52a"; font-family: "bootstrap-icons"; font-weight: 400; font-style: normal; position: absolute; left: 14px; top: 13px; color: var(--pf-muted); pointer-events: none; } /* search icon — pinned to the input's padding line, so it stays put when the results list grows the wrapper */
+#hospital-search.pf-input { padding-left: 40px; } /* search input — indent so text clears the leading icon */
+#hospital-search:placeholder-shown ~ #hospital-results { display: none; } /* results — hidden until the patient types */
+
+#hospital-results .list-group { border: 1px solid var(--pf-line); border-radius: var(--pf-radius-lg); overflow: hidden; background: var(--pf-surface); } /* row group — rounded card wrapping all result rows */
+#hospital-results .list-group-item { display: grid; grid-template-columns: 44px 1fr 20px; grid-template-rows: auto auto; align-items: center; column-gap: 12px; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--pf-line); background: var(--pf-surface); padding: 12px 16px; cursor: pointer; } /* row — grid keeps avatar/text/chevron aligned without extra markup */
+#hospital-results .list-group-item:last-child { border-bottom: 0; } /* last row — no trailing divider */
+#hospital-results .list-group-item::before { content: "\f1dd"; font-family: "bootstrap-icons"; font-weight: 400; font-style: normal; grid-column: 1; grid-row: 1 / 3; width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--pf-line); border-radius: var(--pf-radius); color: var(--pf-accent); background: var(--pf-accent-soft); } /* avatar — building glyph stand-in for a brand letter, no JS needed */
+#hospital-results .list-group-item::after { content: "\f285"; font-family: "bootstrap-icons"; font-weight: 400; font-style: normal; grid-column: 3; grid-row: 1 / 3; color: var(--pf-muted); justify-self: end; } /* chevron — trailing affordance */
+#hospital-results .fw-bold { grid-column: 2; grid-row: 1; font-weight: 600; color: var(--pf-ink); font-size: 15px; } /* row title — ink semibold */
+#hospital-results .small.text-muted { grid-column: 2; grid-row: 2; font-size: 13px; color: var(--pf-muted); } /* row address — muted caption under the title */
+
+.pf-consent-list { background: var(--pf-surface); border: 1px solid var(--pf-line); border-radius: var(--pf-radius-lg); margin-bottom: 28px; overflow: hidden; } /* consent list — white rounded frame around the scope rows */
+.pf-consent-row { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--pf-line); } /* consent row — accent check + label, hairline under */
+.pf-consent-row:last-child { border-bottom: 0; } /* consent row — last row drops the trailing divider */
+.pf-consent-row__check { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--pf-accent-soft); color: var(--pf-accent); } /* check circle — soft accent tint */
+.pf-consent-row__label { font-weight: 600; font-size: 15px; color: var(--pf-ink); } /* row label — the scope's display text */
+.pf-btn--wide { display: block; width: 100%; box-sizing: border-box; text-align: center; } /* wide button — full-width, centered label */
+
+
+.pf-check-circle { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; border-radius: 50%; background: var(--pf-badge-on-bg); color: var(--pf-success); font-size: 26px; } /* success circle — block-level so it starts its own line below the back button; soft green ring around the check */
+.pf-btn--danger { background: var(--pf-danger); color: var(--pf-accent-ink); } /* danger button — red fill for the destructive "Stop sharing" action */
+.pf-btn--ghost { background: transparent; border: 1px solid var(--pf-line); color: var(--pf-ink); } /* ghost button — outline style for a secondary action */
+
+.pf-card-stack { margin-bottom: 28px; } /* card stack — spacing from the icon-card list down to the action row */
+.pf-card__icon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--pf-radius); background: var(--pf-accent-soft); color: var(--pf-accent); font-size: 20px; } /* icon box — soft accent tint square framing the source-type glyph */
+.pf-actions { display: flex; gap: 12px; align-items: stretch; flex-wrap: wrap; margin-top: 8px; } /* action row — primary + secondary buttons side by side, same height, wrapping on narrow screens */
+
+.pf-import #out { display: none; } /* import log — hidden behind the branded progress card; the flow JS still writes to it */
+.pf-import-card { background: var(--pf-surface); border: 1px solid var(--pf-line); border-radius: var(--pf-radius-lg); padding: 28px 24px; margin-bottom: 20px; text-align: center; } /* import card — branded frame standing in for the raw log while syncing */
+.pf-import-card__title { margin-bottom: 16px; font-weight: 700; font-size: 18px; } /* import card title — bold status heading */
+.pf-import-card__copy { margin: 16px 0 0; color: var(--pf-muted); font-size: 14px; line-height: 1.5; } /* import card copy — reassurance text under the progress bar */
+.pf-progress { position: relative; height: 6px; border-radius: 999px; background: var(--pf-line); overflow: hidden; } /* progress track — neutral base bar, clips the animated segment */
+.pf-progress__bar { position: absolute; top: 0; left: 0; height: 100%; width: 40%; border-radius: 999px; background: var(--pf-accent); animation: pf-progress-indeterminate 1.4s ease-in-out infinite; } /* progress fill — animated accent segment sweeping the track, CSS-only */
+@keyframes pf-progress-indeterminate { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } } /* progress sweep — indeterminate left-to-right loop */
+
+.pf-receipt { background: var(--pf-surface); border: 1px solid var(--pf-line); border-radius: var(--pf-radius-lg); margin-bottom: 28px; overflow: hidden; } /* receipt — white rounded frame around the per-type sync rows */
+.pf-receipt__row { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--pf-line); font-size: 15px; } /* receipt row — label left, count right-aligned, hairline under */
+.pf-receipt__row:last-child { border-bottom: 0; } /* receipt row — last row drops the trailing divider */
+.pf-receipt__n { font-weight: 600; color: var(--pf-ink); } /* receipt count — right-aligned, semibold */
+.pf-receipt__heading { padding: 12px 20px 4px; color: var(--pf-muted); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; } /* receipt heading — muted "Not synced" section label */
+.pf-receipt__row--pending .pf-receipt__n { color: var(--pf-muted); } /* pending row — zero count reads muted, not emphasized */
+.pf-receipt__row--total { background: var(--pf-bg); font-weight: 700; } /* total row — emphasized closing line */
+.pf-receipt__row--total .pf-receipt__n { color: var(--pf-accent); } /* total row — count in accent */

@@ -14,6 +14,9 @@ from core.services.jhe_settings import DEFAULT_CACHE_TTL, get_setting
 
 logger = logging.getLogger(__name__)
 
+# Patient-facing pages show this lockup unless site.ui.logo names a deployment's own mark.
+DEFAULT_LOGO = "common/images/jupyterhealth-logo.png"
+
 # The "exactly one SAML SocialApp" gate cached by _saml2_enabled(). A
 # post_save/post_delete receiver on SocialApp (core/signals.py) clears it so
 # adding or removing an IdP row takes effect at once, not after the TTL.
@@ -53,11 +56,15 @@ def _saml2_enabled():
 
 def constants(request):
     site_url = get_setting("site.url", settings.SITE_URL)
+    site_logo = get_setting("site.ui.logo", "")
 
     return {
         "JHE_VERSION": settings.JHE_VERSION,
         "SITE_TITLE": get_setting("site.ui.title"),
         "SITE_URL": site_url,
+        "SITE_LOGO": site_logo or DEFAULT_LOGO,
+        "SITE_LOGO_IS_CUSTOM": bool(site_logo),
+        "SITE_THEME_CSS": get_setting("site.ui.theme_css", ""),  # static path of a token-override stylesheet
         "OIDC_CLIENT_AUTHORITY_PATH": settings.OIDC_CLIENT_AUTHORITY_PATH,
         "OAUTH2_CALLBACK_PATH": settings.OAUTH2_CALLBACK_PATH,
         "OIDC_CLIENT_ID": _get_oidc_client_id(),

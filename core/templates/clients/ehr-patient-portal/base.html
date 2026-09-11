@@ -1,28 +1,7 @@
+{% extends "common/patient_facing/base.html" %}
 {% load static %}
 
-<!DOCTYPE html>
-<html class="h-100">
-  <head>
-    <title>{% block title %}{% endblock %}</title>
-    <script src="{% static 'common/js/common.js' %}"></script>
-    <script src="{% static 'clients/ehr-patient-portal/js/fhir-client.min.js' %}"></script>
-    <script src="{% static 'clients/ehr-patient-portal/js/client-ehr-patient-portal.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'common/css/bootstrap.min.css' %}" />
-    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}" />
-    {% block head %}{% endblock %}
-  </head>
-  <body class="h-100">
-    <!-- EHR config from JheClient.aux_data, injected by the view. No iss here: the
-         hospital the patient picks supplies it (connect), as does the authorized
-         server (callback). -->
-    <script>
-      var EHR_PATIENT_PORTAL_CONFIG = {
-        clientId: "{{ ehr_patient_portal_client_id|escapejs }}",
-        scope: "{{ ehr_patient_portal_scopes|escapejs }}",
-        dataSourceId: "{{ ehr_patient_portal_data_source_id|escapejs }}",
-      };
-    </script>
-    {% block body_content %}{% endblock %}
-    {% block body_footer %}{% endblock %}
-  </body>
-</html>
+{% block pf_head %}
+  <script src="{% static 'clients/ehr-patient-portal/js/fhir-client.min.js' %}?v={{ JHE_VERSION }}"></script>
+  <script src="{% static 'clients/ehr-patient-portal/js/client-ehr-patient-portal.js' %}?v={{ JHE_VERSION }}"></script>
+{% endblock %}

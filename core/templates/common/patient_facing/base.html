@@ -1,0 +1,33 @@
+{% extends "common/partials/base.html" %}
+{% load static %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'common/css/patient-facing.css' %}?v={{ JHE_VERSION }}" />
+  {% if SITE_THEME_CSS %}<link rel="stylesheet" href="{% static SITE_THEME_CSS %}?v={{ JHE_VERSION }}" />{% endif %}
+  <script src="{% static 'common/js/patient-facing.js' %}?v={{ JHE_VERSION }}"></script>
+  {{ config|json_script:"pf_config" }}
+  <script>var PATIENT_PORTAL_CONFIG = JSON.parse(document.getElementById("pf_config").textContent);</script>
+  {% block pf_head %}{% endblock %}
+{% endblock %}
+
+{% block body_content %}
+  <div class="pf-page">
+    <div class="pf-page__inner">
+      {% include "common/patient_facing/components/header.html" %}
+      <div id="pf_main"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block body_footer %}
+{% include "common/patient_facing/components/hub.html" %}
+{% include "common/patient_facing/components/consent.html" %}
+{% include "common/patient_facing/components/importing.html" %}
+{% include "common/patient_facing/components/done.html" %}
+{% include "common/patient_facing/components/manage.html" %}
+{% include "common/patient_facing/components/receipt.html" %}
+{% include "common/patient_facing/components/rail.html" %}
+{% include "common/patient_facing/components/error.html" %}
+{% block pf_components %}{% endblock %}
+{% block pf_start %}<script>patientApp()</script>{% endblock %}
+{% endblock %}

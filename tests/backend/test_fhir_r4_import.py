@@ -756,7 +756,7 @@ _CLIENT_JS = _REPO_ROOT / "core" / "static" / "clients" / "ehr-patient-portal" /
 
 def _pulled_types():
     text = _CLIENT_JS.read_text()
-    match = re.search(r"var EHR_PATIENT_PORTAL_PULLS = \[(.*?)\n\];", text, re.DOTALL)
+    match = re.search(r"const EHR_PATIENT_PORTAL_PULLS = \[(.*?)\n\];", text, re.DOTALL)
     assert match, "EHR_PATIENT_PORTAL_PULLS not found in client-ehr-patient-portal.js — was it renamed or reformatted?"
     return set(re.findall(r'type: "(\w+)"', match.group(1)))
 

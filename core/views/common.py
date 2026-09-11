@@ -25,6 +25,7 @@ from oauthlib.common import Request
 from core.auth import IdTokenError, JheOAuth2Validator, account_activation_token, parse_fhir_user, verify_id_token
 from core.models import JheUser
 from core.services.jhe_settings import get_setting
+from core.views.patient_facing import patient_portal_config
 
 from ..forms import UserRegistrationForm
 
@@ -57,14 +58,6 @@ def assetlinks(request):
 
 def home(request):
     return render(request, "home/home.html")
-
-
-def ow_client(request):
-    return render(request, "clients/ow/launch.html")
-
-
-def ow_client_complete(request):
-    return render(request, "clients/ow/complete.html")
 
 
 class LoginView(BaseLoginView):
@@ -221,15 +214,17 @@ def portal(request, path):
 
 
 def ow_launch(request):
-    return render(request, "clients/ow/launch.html")
+    config = patient_portal_config("Open Wearables", "ow", reverse("ow-launch"))
+    return render(request, "clients/ow/launch.html", {"config": config})
 
 
 def ow_complete(request):
-    return render(request, "clients/ow/complete.html")
-
-
-def ow_manage(request):
-    return render(request, "clients/ow/manage.html")
+    """Open Wearables OAuth return: the client page shows the done screen, or the error callout on ?error=."""
+    error = request.GET.get("error")
+    if error:
+        query = urlencode({"route": "error", "title": "We couldn't connect your wearable", "message": error})
+        return redirect(reverse("ow-launch") + "?" + query)
+    return redirect(reverse("ow-launch") + "?route=done")
 
 
 def json_error(msg, status_code=400):

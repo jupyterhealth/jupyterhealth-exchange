@@ -1,0 +1,22 @@
+{% verbatim %}
+<script id="t-consent" type="text/template">
+  <a class="pf-back" href="#" onclick="pfNav('hub'); return false;"><i class="bi bi-arrow-left"></i> Back</a>
+  <p class="pf-eyebrow">{{eyebrow}}</p>
+  <h1 class="pf-h1">What you'll share</h1>
+  <p class="pf-lede">To take part, the study will collect the following from your {{sourceName}} while you're enrolled.</p>
+  <div class="pf-card-stack">
+  {{#each rows}}
+  <div class="pf-card">
+    <div class="pf-card__icon"><i class="bi bi-check-lg"></i></div>
+    <div class="pf-card__body">
+      <div class="pf-card__title">{{this}}</div>
+      {{#if ../scopeDetail}}<div class="pf-card__desc">{{../scopeDetail}}</div>{{/if}}
+    </div>
+  </div>
+  {{/each}}
+  </div>
+  <div class="pf-actions">
+    <button class="pf-btn pf-btn--wide" type="button" onclick="pfAgree('{{sourceId}}')">Agree and share</button>
+  </div>
+</script>
+{% endverbatim %}

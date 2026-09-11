@@ -1,0 +1,32 @@
+{% verbatim %}
+<script id="t-manage" type="text/template">
+  <a class="pf-back" href="#" onclick="pfNav('hub'); return false;"><i class="bi bi-arrow-left"></i> Back</a>
+  <p class="pf-eyebrow">{{sourceName}}</p>
+  <h1 class="pf-h1">You're sharing</h1>
+  <p class="pf-lede">The study may collect the following from your {{sourceName}}. Stop sharing to revoke your consent.</p>
+  <div class="pf-card-stack">
+  {{#if detail}}
+  <div class="pf-card">
+    <div class="pf-card__icon"><i class="bi {{icon}}"></i></div>
+    <div class="pf-card__body">
+      <div class="pf-card__title">{{sourceName}}</div>
+      <div class="pf-card__desc">{{detail}}</div>
+    </div>
+  </div>
+  {{else}}
+  {{#each rows}}
+  <div class="pf-card">
+    <div class="pf-card__icon"><i class="bi bi-check-lg"></i></div>
+    <div class="pf-card__body">
+      <div class="pf-card__title">{{this}}</div>
+    </div>
+  </div>
+  {{/each}}
+  {{/if}}
+  </div>
+  {{#if receipt}}{{> receipt receipt}}{{/if}}
+  <div class="pf-actions">
+    <button class="pf-btn pf-btn--danger" type="button" onclick="pfStopSharing('{{sourceId}}')">Stop sharing</button>
+  </div>
+</script>
+{% endverbatim %}
