@@ -1,7 +1,15 @@
 import { describe, test, expect, beforeAll, beforeEach, jest } from "@jest/globals";
+const fs = require("fs");
+const path = require("path");
 
-// client-ehr-patient-portal.js exposes eppPullResourceType + eppWriteResource on window.
+const STATIC = path.resolve(__dirname, "../../../core/static");
+
+// client-ehr-patient-portal.js references getStoredToken/pfRender from patient-facing.js, and
+// exposes eppPullResourceType + eppWriteResource on window.
 beforeAll(() => {
+  global.Handlebars = require(path.join(STATIC, "common/js/handlebars.min.js"));
+  require(path.join(STATIC, "common/js/common.js"));
+  require(path.join(STATIC, "common/js/patient-facing.js"));
   require("../../../core/static/clients/ehr-patient-portal/js/client-ehr-patient-portal.js");
 });
 
@@ -264,17 +272,16 @@ describe("eppSavePatientIdentifier", () => {
 
 describe("finishEhrPatientPortalConnect", () => {
   const PICKED = "https://mercy.example.org/FHIR/R4";
-  // A configured default that is NOT the hospital the patient picked; provenance must
-  // never fall back to it, otherwise multi-hospital records are labelled with the wrong iss.
-  const CONFIG = { iss: "https://seeded-default.example.org/FHIR/R4", dataSourceId: 3 };
+  const CONFIG = { dataSourceIds: [3] };
 
   function jsonOk(body) {
     return Promise.resolve({ ok: true, json: () => Promise.resolve(body) });
   }
 
   beforeEach(() => {
-    sessionStorage.setItem("ehr_patient_portal_jhe_access_token", "tok");
+    window.storeToken("tok");
     sessionStorage.removeItem("ehr_patient_portal_brand_location_id");
+    sessionStorage.removeItem("ehr_patient_portal_source_id");
     // No records to pull, so the run stops after identifier + FhirSource registration.
     const client = {
       state: { serverUrl: PICKED },
@@ -294,7 +301,7 @@ describe("finishEhrPatientPortalConnect", () => {
     await window.finishEhrPatientPortalConnect(out, CONFIG);
 
     const source = global.fetch.mock.calls.find(([url]) => String(url).includes("fhir_sources"));
-    expect(JSON.parse(source[1].body).ehr_brand_location).toBe(4242);
+    expect(JSON.parse(source[1].body)).toEqual({ label: "Epic / EHR Patient Portal — " + PICKED, data_source: 3, ehr_brand_location: 4242 });
   });
 
   test("omits the location when the patient did not come through the picker", async () => {
@@ -306,7 +313,7 @@ describe("finishEhrPatientPortalConnect", () => {
     expect(JSON.parse(source[1].body)).not.toHaveProperty("ehr_brand_location");
   });
 
-  test("stamps the authorized server URL - not the configured default - on the identifier and source label", async () => {
+  test("stamps the authorized server URL on the identifier and source label", async () => {
     const out = { textContent: "" };
 
     await window.finishEhrPatientPortalConnect(out, CONFIG);
@@ -318,10 +325,17 @@ describe("finishEhrPatientPortalConnect", () => {
     expect(JSON.parse(identifier[1].body).system).toBe(PICKED);
     // A FhirSource holds no endpoint; the label is its only human-facing handle, so the
     // authorized server URL goes there.
-    const sourceBody = JSON.parse(source[1].body);
-    expect(sourceBody.fhir_base_url).toBeUndefined();
-    expect(sourceBody.label).toContain(PICKED);
-    expect(JSON.stringify(calls)).not.toContain(CONFIG.iss);
+    expect(JSON.parse(source[1].body)).toEqual({ label: "Epic / EHR Patient Portal — " + PICKED, data_source: 3 });
+  });
+
+  test("registers the data source the patient chose to connect", async () => {
+    window.eppStoreSourceId(6);
+    const out = { textContent: "" };
+
+    await window.finishEhrPatientPortalConnect(out, CONFIG);
+
+    const source = global.fetch.mock.calls.find(([url]) => String(url).includes("fhir_sources"));
+    expect(JSON.parse(source[1].body).data_source).toBe(6);
   });
 
   test("stops with an error when the authorization carries no server URL", async () => {
@@ -332,5 +346,49 @@ describe("finishEhrPatientPortalConnect", () => {
 
     expect(out.textContent).toContain("no FHIR server URL");
     expect(global.fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe("eppCallback", () => {
+  const TEMPLATES = path.resolve(__dirname, "../../../core/templates");
+
+  // A Django component file is a {% verbatim %}-wrapped <script type="text/template">; strip the tags to get the HTML.
+  function componentHtml(file) {
+    return fs.readFileSync(file, "utf8").replace(/{% ?verbatim ?%}|{% ?endverbatim ?%}/g, "");
+  }
+
+  beforeEach(() => {
+    document.body.innerHTML =
+      `<div id="pf_main"></div>` +
+      ["common/patient_facing/components/importing.html", "common/patient_facing/components/rail.html", "common/patient_facing/components/error.html"]
+        .map((file) => componentHtml(path.join(TEMPLATES, file)))
+        .join("");
+    global.PATIENT_PORTAL_CONFIG = { dataSourceIds: [5], pageUrl: "/clients/ehr-patient-portal/", siteTitle: "T", expectedResourceTypes: [] };
+    window.storeToken("tok");
+    sessionStorage.removeItem("ehr_patient_portal_source_id");
+  });
+
+  test("a failed Epic handshake ends on the callout, with a retry that restarts the picker", async () => {
+    global.FHIR = { oauth2: { ready: jest.fn(() => Promise.reject(new Error("state parameter not found"))) } };
+
+    await window.eppCallback();
+
+    expect(document.querySelector(".pf-error__title").textContent).toBe("We couldn't reach your healthcare organization");
+    expect(document.querySelector("#pf_main .pf-btn").getAttribute("href")).toBe("/clients/ehr-patient-portal/?route=connect&source=5");
+  });
+
+  test("a run where every record type failed to fetch ends on the callout", async () => {
+    const refuse = jest.fn(() => Promise.reject(new Error("HTTP 403")));
+    global.FHIR = {
+      oauth2: { ready: jest.fn(() => Promise.resolve({ state: { serverUrl: "https://mercy.example.org/FHIR/R4" }, patient: { id: "epic-1", request: refuse }, request: refuse })) },
+    };
+    global.fetch = jest.fn((url) =>
+      Promise.resolve({ ok: true, json: () => Promise.resolve(String(url).includes("fhir_sources") ? { id: 9 } : {}) }),
+    );
+
+    await window.eppCallback();
+
+    expect(document.querySelector(".pf-error__title").textContent).toBe("We couldn't reach your healthcare organization");
+    expect(document.querySelector(".pf-error__msg").textContent).toBe("none of your record types could be fetched");
   });
 });

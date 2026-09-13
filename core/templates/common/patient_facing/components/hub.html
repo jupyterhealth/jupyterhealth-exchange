@@ -1,0 +1,21 @@
+{% verbatim %}
+<script id="t-hub" type="text/template">
+  <p class="pf-eyebrow">{{eyebrow}}</p>
+  <h1 class="pf-h1">Choose how to share your data</h1>
+  <p class="pf-lede">Connect any of these sources. You decide what each study can see, and you can change it or disconnect anytime.</p>
+  {{#each cards}}
+  <a class="pf-card-link" href="#" onclick="pfNav('{{route}}', { source: '{{id}}' }); return false;">
+    <div class="pf-card">
+      <div class="pf-card__icon"><i class="bi {{icon}}"></i></div>
+      <div class="pf-card__body">
+        <div class="pf-card__title">{{title}}</div>
+        <div class="pf-card__desc">{{desc}}</div>
+      </div>
+      <span class="pf-card__badge{{#if on}} pf-card__badge--on{{/if}}">{{badge}}</span>
+    </div>
+  </a>
+  {{else}}
+  <div class="pf-callout">Your study team hasn't asked for any data yet. Check back once you hear from them.</div>
+  {{/each}}
+</script>
+{% endverbatim %}

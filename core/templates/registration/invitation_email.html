@@ -1,17 +1,26 @@
 <!DOCTYPE html>
 <html>
-  <body>
-    <p>Hi {{ patient_name }},</p>
-
-    <p>
-      Welcome to JupyterHeath Exchange
-      To get started, please use the link below to complete your account setup.
-    </p>
-
-    <p>
-      <a href="{{ invitation_link }}">{{ invitation_link }}</a>
-    </p>
-
-    <p>JHE</p>
+  <body style="margin:0; background:#f4f2ee; font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif; color:#1c1a17;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f2ee; padding:24px 0;">
+      <tr><td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; background:#ffffff; border:1px solid #e6e1d8; border-radius:16px; padding:32px;">
+          <tr><td style="font-weight:700; font-size:18px; padding-bottom:16px; border-bottom:1px solid #e6e1d8;"><img src="{{ site_url }}/static/{{ site_logo }}" height="32" alt="{{ site_title }}" style="height:32px; width:auto; vertical-align:middle;"></td></tr>
+          <tr><td style="padding-top:24px;">
+            <p style="margin:0 0 16px;">Hi {{ patient_name }},</p>
+            {% if study_name %}
+            <p style="margin:0 0 16px; line-height:1.5;">You've been invited to take part in the <strong>{{ study_name }}</strong>. {{ site_title }} lets you securely share your health data with the study team.</p>
+            {% else %}
+            <p style="margin:0 0 16px; line-height:1.5;">You've been invited to securely share your health data with your study team. {{ site_title }} lets you choose exactly what to share, and with whom.</p>
+            {% endif %}
+            <p style="margin:0 0 24px; line-height:1.5;">It only takes a few minutes to get started.</p>
+            <p style="margin:0 0 24px;">
+              <a href="{{ invitation_link }}" style="display:inline-block; background:#e5642c; color:#ffffff; font-weight:600; text-transform:uppercase; letter-spacing:.03em; text-decoration:none; padding:14px 22px; border-radius:16px;">Get started</a>
+            </p>
+            <p style="margin:0 0 0; color:#6b655d; font-size:13px;">If you weren't expecting this invitation, you can safely ignore this email.</p>
+            <p style="margin:16px 0 0;border-top:1px solid #e6e1d8;color:#6b655d;font-size:12px;padding-top:16px;">{{ site_title }} · You received this because a study team invited you.</p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
   </body>
 </html>

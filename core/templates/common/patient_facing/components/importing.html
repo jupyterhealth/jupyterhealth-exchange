@@ -1,0 +1,16 @@
+{% verbatim %}
+<script id="t-importing" type="text/template">
+  {{> rail rail}}
+  <p class="pf-eyebrow">Clinical records</p>
+  <h1 class="pf-h1">Importing your records</h1>
+  <p class="pf-lede">Securely syncing your records into your study. Keep this page open while we finish.</p>
+  <div class="pf-import" aria-live="polite">
+    <pre id="out"></pre>
+    <div class="pf-import-card">
+      <div class="pf-import-card__title">Syncing your records…</div>
+      <div class="pf-progress"><div class="pf-progress__bar"></div></div>
+      <p class="pf-import-card__copy">This usually takes under a minute. Keep this page open; your summary opens when it finishes.</p>
+    </div>
+  </div>
+</script>
+{% endverbatim %}

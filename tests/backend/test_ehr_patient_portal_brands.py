@@ -101,3 +101,29 @@ def test_search_returns_the_location_id(patient_client, seeded_brands):
     assert results
     ids = {row["id"] for row in results}
     assert ids == set(EhrBrandLocation.objects.filter(brand__name="Mount Sinai").values_list("id", flat=True))
+
+
+@pytest.fixture
+def epic_sandbox_location(db):
+    # Epic's real sandbox address (Verona, WI) -- a facility a patient would plausibly search
+    # for by state name/abbreviation or ZIP, none of which the free-text `q` matched before.
+    epic = EhrBrand.objects.create(name="Epic Sandbox", fhir_base_url="https://epic.example.org/FHIR/R4")
+    return EhrBrandLocation.objects.create(
+        brand=epic,
+        name="Epic Sandbox - Madison Campus",
+        address_text="1979 Milky Way, Verona, WI",
+        city="Verona",
+        state="WI",
+        postal_code="53593",
+    )
+
+
+@pytest.mark.parametrize("q", ["WI", "Wisconsin", "wisconsin", "53593", "Verona"])
+def test_brands_free_text_query_matches_state_name_abbreviation_and_zip(q, epic_sandbox_location, patient_client):
+    results = patient_client.get(URL, {"q": q}).json()["results"]
+    assert [row["facilityName"] for row in results] == ["Epic Sandbox - Madison Campus"]
+
+
+def test_brands_free_text_query_matches_no_unrelated_state(epic_sandbox_location, patient_client):
+    results = patient_client.get(URL, {"q": "ZZ"}).json()["results"]
+    assert results == []

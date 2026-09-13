@@ -9,7 +9,7 @@ import pytest
 from oauth2_provider.models import get_application_model
 from rest_framework.test import APIClient
 
-from core.models import ClientDataSource, DataSource, JheClient, JheUser, PatientIdentifier
+from core.models import ClientDataSource, DataSource, JheUser, PatientIdentifier
 
 
 @pytest.fixture
@@ -87,41 +87,6 @@ def test_connect_page_renders(db, client):
 def test_callback_page_renders(db, client):
     resp = client.get("/clients/ehr-patient-portal/callback")
     assert resp.status_code == 200
-
-
-def test_connect_page_includes_hospital_picker(db, client):
-    # The connect page must render the picker input and pass it to startEhrPatientPortalConnect,
-    # otherwise the patient can never choose a hospital.
-    html = client.get("/clients/ehr-patient-portal/").content.decode()
-    assert 'id="hospital-search"' in html
-    assert 'id="hospital-results"' in html
-    assert "startEhrPatientPortalConnect(out, EHR_PATIENT_PORTAL_CONFIG, picker)" in html
-
-
-def test_connect_page_data_source_comes_from_the_client_data_source_link(db, client):
-    # The view must read the data source off the client's ClientDataSource row. It used to
-    # match DataSource by a hardcoded name at request time, which let the client name and the
-    # data source name drift apart unnoticed.
-    app = get_application_model().objects.create(name="EHR Patient Portal", client_id="local-app-id")
-    JheClient.objects.create(application=app, aux_data={"client_id": "epic-id", "scopes": "openid"})
-    linked = DataSource.objects.create(name="EHR Patient Portal", type="patient_app")
-    ClientDataSource.objects.create(client=app, data_source=linked)
-
-    html = client.get("/clients/ehr-patient-portal/").content.decode()
-
-    assert f'dataSourceId: "{linked.id}"' in html
-
-
-def test_connect_page_has_no_data_source_when_the_link_is_missing(db, client):
-    # An unlinked client yields an empty id rather than silently latching onto some other
-    # row that happens to share the name -- linking is an explicit seed/admin action.
-    app = get_application_model().objects.create(name="EHR Patient Portal", client_id="local-app-id")
-    JheClient.objects.create(application=app, aux_data={"client_id": "epic-id", "scopes": "openid"})
-    DataSource.objects.create(name="EHR Patient Portal", type="patient_app")
-
-    html = client.get("/clients/ehr-patient-portal/").content.decode()
-
-    assert 'dataSourceId: ""' in html
 
 
 def test_rename_migration_renames_both_rows_and_links_them(db):

@@ -1,0 +1,21 @@
+{% verbatim %}
+<script id="t-error" type="text/template">
+  <div id="pf_error_wrap" aria-live="polite">
+    <div class="pf-error">
+      <div class="pf-error__icon"><i class="bi bi-exclamation-circle"></i></div>
+      <div class="pf-error__body">
+        <div class="pf-error__title">{{title}}</div>
+        <p class="pf-error__msg">{{message}}</p>
+      </div>
+    </div>
+    <div class="pf-actions">
+      {{#if retryHref}}
+      <a class="pf-btn" href="{{retryHref}}">{{retryLabel}}</a>
+      {{else}}
+      <a class="pf-btn" href="#" onclick="pfRetry(); return false;">{{retryLabel}}</a>
+      {{/if}}
+      <a class="pf-btn pf-btn--ghost" href="{{backHref}}">Back</a>
+    </div>
+  </div>
+</script>
+{% endverbatim %}

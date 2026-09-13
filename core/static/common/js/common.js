@@ -42,8 +42,7 @@ function base64UrlEncode(bytes) {
     .replace(/=+$/, "");
 }
 
-// Parse invitation link code parameter into its components.
-// Format: host_token
+// Parse invitation link code parameter into its components: format is host_token.
 function parseInvitationCode(code) {
   var parts = code.split("_");
   if (parts.length !== 2) {
@@ -53,4 +52,9 @@ function parseInvitationCode(code) {
     host: decodeURIComponent(parts[0]),
     token: parts[1],
   };
+}
+
+// Exposed for unit tests; browser runs load this as a plain <script> and ignore it.
+if (typeof window !== "undefined") {
+  window.parseInvitationCode = parseInvitationCode;
 }

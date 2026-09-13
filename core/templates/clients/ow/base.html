@@ -1,21 +1,6 @@
+{% extends "common/patient_facing/base.html" %}
 {% load static %}
 
-<!DOCTYPE html>
-<html class="h-100">
-  <head>
-    <title>{% block title %}{% endblock %}</title>
-    <script src="{% static 'common/js/common.js' %}"></script>
-    <script src="{% static 'clients/ow/js/client-ow.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'common/css/bootstrap.min.css' %}" />
-    <link
-      rel="shortcut icon"
-      type="image/png"
-      href="{% static 'favicon.ico' %}"
-    />
-    {% block head %} {% endblock %}
-  </head>
-  <body class="h-100">
-    {% block body_content %} {% endblock %}
-    {% block body_footer %}{% endblock %}
-  </body>
-</html>
+{% block pf_head %}
+  <script src="{% static 'clients/ow/js/client-ow.js' %}?v={{ JHE_VERSION }}"></script>
+{% endblock %}

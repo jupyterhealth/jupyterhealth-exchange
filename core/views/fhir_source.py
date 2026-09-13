@@ -22,7 +22,7 @@ class FhirSourceViewSet(ModelViewSet):
         patient = self.request.user.get_patient()
         if patient is None:
             return FhirSource.objects.none()
-        return FhirSource.objects.filter(patient=patient).order_by("-last_updated")
+        return FhirSource.objects.filter(patient=patient).select_related("ehr_brand_location").order_by("-last_updated")
 
     def perform_create(self, serializer):
         patient = self.request.user.get_patient()
