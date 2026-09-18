@@ -73,6 +73,23 @@ jobs:
     - name: Deploy
       run: flyctl deploy -a jhe --remote-only --dockerfile ./Dockerfile
 
+  deploy-mcp:
+    name: Jhe MCP app
+    needs: gate
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # 1.6
+    - name: Deploy
+      # mcp_server/fly.toml names the app and Dockerfile.
+      working-directory: mcp_server
+      run: flyctl deploy --remote-only
+    - name: Health check
+      # min_machines_running is 0, so the first request cold-starts the machine.
+      run: curl --fail --silent --show-error --retry 6 --retry-delay 5 --retry-all-errors https://jhe-mcp.fly.dev/health
+
   smoke-test:
     name: Post-deploy smoke tests
     needs: deploy
