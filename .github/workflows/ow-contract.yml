@@ -68,9 +68,14 @@ jobs:
       # Must match the omh-shim pin in JHE's pyproject.toml.
       OMH_SHIM_VERSION: "1.5.0"
     steps:
+      # When called from another repo, a bare checkout would fetch the CALLER,
+      # not JHE, and tests/contract/ would be missing. job.workflow_repository /
+      # job.workflow_sha always point at this workflow's own repo and commit.
       - name: Checkout JHE (contract harness)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
           persist-credentials: false
 
       - name: Checkout candidate OW
