@@ -55,7 +55,9 @@ def main() -> None:
     session.commit()
 
     print(f"OW_USER_ID={user.id}")
-    print(f"OW_API_KEY={api_key.id}")
+    # OW >= 0.8.0 stores only a hash and exposes the raw key as ``plain_key``;
+    # before that the row id was the key itself.
+    print(f"OW_API_KEY={getattr(api_key, 'plain_key', api_key.id)}")
 
 
 if __name__ == "__main__":
