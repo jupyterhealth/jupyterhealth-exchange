@@ -34,6 +34,21 @@ the ``omh`` and ``ieee`` namespaces only, which is why ``heart_rate_variability`
 is absent (omh-shim 2.0 dropped the ``local:heart-rate-variability:1.0`` schema
 it used to target).
 
+``OW_TYPE_TO_ROUTE`` names the OW route each type is fetched from; a type absent
+from it is served by ``timeseries``. The three sleep event types each fetch
+``events/sleep`` independently, which keeps one data type mapping to one code.
+
+``OW_TYPE_TO_SHIM_TYPE`` covers the one key that is not an omh-shim data type:
+``workout`` converts as ``physical_activity`` and files under the same code as the
+daily activity summary, but needs its own key for its own route and dedupe key.
+
+``OW_TYPE_TO_SERIES`` exists because the keys of ``OW_TYPE_TO_CODE`` are omh-shim
+data types, not OW series names, and the two namespaces are not the same. They
+happen to agree for most types, which is what makes the disagreement easy to miss:
+omh-shim calls them ``body_weight`` and ``body_height`` while OW's SeriesType enum
+calls them ``weight`` and ``height``. Only the ``types`` query parameter is
+translated; the dedupe key and the ``convert()`` call both keep the omh-shim name.
+
 ``RAW_SUPPORTED_TYPES`` is narrower than ``OW_TYPE_TO_CODE`` because raw mode
 reads Oura API payloads, and Oura exposes no glucose.
 
@@ -42,6 +57,9 @@ It only bounds a patient's first poll: once they have an Observation the resume
 watermark is the later bound, so a wide window costs nothing afterwards. Raise
 it when patients link with device history already recorded, or pass ``--days``
 for a one-off backfill.
+
+``ow.sleep_lookback_days`` (default 7) sets how far back the sleep and workout
+routes are refetched on every poll. See ``Fetcher.lookback``.
 """
 
 import logging
@@ -71,6 +89,7 @@ logger = logging.getLogger(__name__)
 
 POLL_OVERLAP = timedelta(minutes=5)
 DEFAULT_POLL_WINDOW_DAYS = 1
+DEFAULT_SLEEP_LOOKBACK_DAYS = 7
 PAGE_LIMIT = 100
 MAX_PAGES = 200
 HEART_RATE_CODE = "omh:heart-rate:2.0"
@@ -79,7 +98,34 @@ BLOOD_GLUCOSE_CODE = "omh:blood-glucose:4.0"
 OW_TYPE_TO_CODE = {
     "heart_rate": HEART_RATE_CODE,
     "blood_glucose": BLOOD_GLUCOSE_CODE,
+    "oxygen_saturation": "omh:oxygen-saturation:2.0",
+    "respiratory_rate": "omh:respiratory-rate:2.0",
+    "body_weight": "omh:body-weight:3.0",
+    "body_height": "omh:body-height:2.0",
+    "sleep_episode": "ieee:sleep-episode:1.0",
+    "sleep_stage_summary": "ieee:sleep-stage-summary:1.0",
+    "time_in_bed": "ieee:time-in-bed:1.0",
+    "sleep_duration": "ieee:total-sleep-time:1.0",
+    "physical_activity": "ieee:physical-activity:1.0",
+    "workout": "ieee:physical-activity:1.0",
 }
+
+OW_TYPE_TO_ROUTE = {
+    "sleep_episode": "events/sleep",
+    "sleep_stage_summary": "events/sleep",
+    "time_in_bed": "events/sleep",
+    "sleep_duration": "summaries/sleep",
+    "physical_activity": "summaries/activity",
+    "workout": "events/workouts",
+}
+OW_TYPE_TO_SERIES = {
+    "body_weight": "weight",
+    "body_height": "height",
+}
+OW_TYPE_TO_SHIM_TYPE = {
+    "workout": "physical_activity",
+}
+LOOKBACK_TYPES = {"sleep_episode", "sleep_stage_summary", "time_in_bed", "sleep_duration", "workout"}
 NORMALIZED_SYSTEM = "ow:normalized"
 RAW_SYSTEM = "ow:raw"
 RAW_TRACE_ID_HEART_RATE = "/v2/usercollection/heartrate"
@@ -90,7 +136,7 @@ _SYNC_LOCK_KEY = "ow.sync_in_progress"
 # interval (15 min) so a healthy long-running poll is never preempted.
 LOCK_STALE_AFTER = timedelta(minutes=30)
 
-Fetcher = namedtuple("Fetcher", "system shim_source records dedupe_key")
+Fetcher = namedtuple("Fetcher", "system shim_source records dedupe_key lookback", defaults=(None,))
 """One source of samples.
 
 ``system`` is the ObservationIdentifier system its rows are filed under,
@@ -98,6 +144,14 @@ Fetcher = namedtuple("Fetcher", "system shim_source records dedupe_key")
 (start_time, end_time) and yielding raw sample dicts, and ``dedupe_key`` a
 callable taking one record and returning the string that identifies it, or
 None when the record cannot be identified and must be skipped.
+
+``lookback`` replaces the resume watermark with a fixed window when a source
+revises records after first publishing them. Oura can update a sleep record
+after it is first created, and the watermark would already have advanced past
+it, so it would never be fetched again and the upsert would never fire.
+Workouts use it too: they sync as late as sleep, and they share a code with the
+daily activity summary, whose rows would push the watermark past a late workout.
+A source that only ever appends leaves this None and resumes from the watermark.
 """
 
 
@@ -199,6 +253,15 @@ class Command(BaseCommand):
                 days = DEFAULT_POLL_WINDOW_DAYS
         return timedelta(days=max(days, 1))
 
+    @staticmethod
+    def _sleep_lookback():
+        """How far back the sleep and workout routes are refetched, from ``ow.sleep_lookback_days``."""
+        try:
+            days = int(get_setting("ow.sleep_lookback_days", DEFAULT_SLEEP_LOOKBACK_DAYS))
+        except (TypeError, ValueError):
+            days = DEFAULT_SLEEP_LOOKBACK_DAYS
+        return timedelta(days=max(days, 1))
+
     def _run_poll(self, options):
         mode = str(get_setting("ow.ingest_mode", "normalized") or "normalized").lower()
         if mode not in ("normalized", "raw"):
@@ -254,34 +317,36 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"OW poll complete (mode={mode}). Created {total_created} observations."))
 
-    def _fetch_timeseries(self, user, ow_api_url, ow_api_key, ow_user_id, data_type, start_time, end_time):
-        """Yield every OW sample across pages. OW caps a page at PAGE_LIMIT and returns a cursor."""
+    def _fetch_page(self, user, ow_api_url, ow_api_key, ow_user_id, path, params):
+        """Yield every OW record across pages.
+
+        Every OW list route returns the same envelope, so one loop serves them
+        all. ``params`` carries whatever that route needs, because the timeseries
+        route windows on ``start_time``/``end_time`` while the events and
+        summaries routes window on ``start_date``/``end_date``.
+        """
         cursor = None
         for _ in range(MAX_PAGES):
-            params = {
-                "types": data_type,
-                "start_time": start_time.isoformat(),
-                "end_time": end_time.isoformat(),
-                "limit": PAGE_LIMIT,
-            }
+            page_params = dict(params, limit=PAGE_LIMIT)
             if cursor:
-                params["cursor"] = cursor
+                page_params["cursor"] = cursor
 
             try:
                 resp = requests.get(
-                    f"{ow_api_url}/api/v1/users/{ow_user_id}/timeseries",
-                    params=params,
+                    f"{ow_api_url}/api/v1/users/{ow_user_id}/{path}",
+                    params=page_params,
                     headers={"X-Open-Wearables-API-Key": ow_api_key},
                     timeout=30,
                 )
             except requests.RequestException as e:
-                logger.error("OW timeseries request failed for user=%s: %s", user.id, e)
+                logger.error("OW request failed for user=%s path=%s: %s", user.id, path, e)
                 return
 
             if resp.status_code != 200:
                 logger.error(
-                    "OW timeseries error for user=%s: %s %s",
+                    "OW error for user=%s path=%s: %s %s",
                     user.id,
+                    path,
                     resp.status_code,
                     resp.text[:300],
                 )
@@ -290,7 +355,7 @@ class Command(BaseCommand):
             data = resp.json()
             records = data.get("data", data) if isinstance(data, dict) else data
             if not isinstance(records, list):
-                logger.warning("OW timeseries returned non-list payload for user=%s", user.id)
+                logger.warning("OW returned non-list payload for user=%s path=%s", user.id, path)
                 return
             yield from records
 
@@ -300,7 +365,7 @@ class Command(BaseCommand):
                 return
             cursor = next_cursor
 
-        logger.warning("OW timeseries hit MAX_PAGES for user=%s type=%s", user.id, data_type)
+        logger.warning("OW hit MAX_PAGES for user=%s path=%s", user.id, path)
 
     def _timeseries_dedupe_key(self, ow_user_id, ow_type, record):
         """Identify one timeseries sample.
@@ -310,21 +375,73 @@ class Command(BaseCommand):
         because ObservationIdentifier is unique on (system, value) globally, not
         per patient, so two patients reporting the same value at the same instant
         would otherwise collide and the second row would be dropped.
+
+        The series comes off the sample rather than from the data type, because
+        several OW series can share one data type: ``resting_heart_rate`` and
+        ``heart_rate`` both convert as ``heart_rate`` and both file under
+        ``omh:heart-rate:2.0``, so keying on the data type would collide them.
         """
         timestamp = record.get("timestamp")
         if not timestamp:
             return None
-        return f"{ow_user_id}:{ow_type}:{timestamp}"
+        series = record.get("type") or OW_TYPE_TO_SERIES.get(ow_type, ow_type)
+        return f"{ow_user_id}:{series}:{timestamp}"
+
+    def _event_dedupe_key(self, ow_user_id, ow_type, record):
+        """Identify one OW event record.
+
+        Events carry their own id, so it is the natural key. The OW user id is
+        prefixed for the same reason as the timeseries key: ObservationIdentifier
+        is unique on (system, value) globally rather than per patient. The data
+        type is part of the key because one OW record feeds several data types --
+        a SleepSession is read as both a sleep episode and a sleep stage summary --
+        so the id alone cannot tell those Observations apart.
+        """
+        record_id = record.get("id")
+        if not record_id:
+            return None
+        return f"{ow_user_id}:{ow_type}:{record_id}"
+
+    def _summary_dedupe_key(self, ow_user_id, ow_type, record):
+        """Identify one OW daily summary.
+
+        Summaries carry no id, only the day they summarise, and a patient has one
+        summary of a given kind per day.
+        """
+        day = record.get("date")
+        if not day:
+            return None
+        return f"{ow_user_id}:{ow_type}:{day}"
 
     def _normalized_fetcher(self, user, ow_user_id, ow_api_url, ow_api_key, ow_type):
-        """Samples from OW's timeseries endpoint."""
+        """Samples from whichever OW route serves this data type."""
+        path = OW_TYPE_TO_ROUTE.get(ow_type, "timeseries")
+        if path == "timeseries":
+            series = OW_TYPE_TO_SERIES.get(ow_type, ow_type)
+            params = lambda start_time, end_time: {
+                "types": series,
+                "start_time": start_time.isoformat(),
+                "end_time": end_time.isoformat(),
+            }
+            dedupe_key = lambda record: self._timeseries_dedupe_key(ow_user_id, ow_type, record)
+        else:
+            params = lambda start_time, end_time: {
+                "start_date": start_time.isoformat(),
+                "end_date": end_time.isoformat(),
+            }
+            if path.startswith("events/"):
+                dedupe_key = lambda record: self._event_dedupe_key(ow_user_id, ow_type, record)
+            else:
+                dedupe_key = lambda record: self._summary_dedupe_key(ow_user_id, ow_type, record)
+
         return Fetcher(
             system=NORMALIZED_SYSTEM,
             shim_source="ow_normalized",
-            records=lambda start_time, end_time: self._fetch_timeseries(
-                user, ow_api_url, ow_api_key, ow_user_id, ow_type, start_time, end_time
+            records=lambda start_time, end_time: self._fetch_page(
+                user, ow_api_url, ow_api_key, ow_user_id, path, params(start_time, end_time)
             ),
-            dedupe_key=lambda record: self._timeseries_dedupe_key(ow_user_id, ow_type, record),
+            dedupe_key=dedupe_key,
+            lookback=self._sleep_lookback() if ow_type in LOOKBACK_TYPES else None,
         )
 
     def _raw_fetcher(self, user, ow_user_id, ow_type):
@@ -363,12 +480,16 @@ class Command(BaseCommand):
     def _poll_user(self, user, patient, ow_type, code, data_source, fetcher, poll_window):
         """Ingest one data type for one patient from one source."""
         end_time = timezone.now()
-        start_time = self._resume_start_time(patient, code, fetcher.system, end_time - poll_window)
+        if fetcher.lookback is None:
+            start_time = self._resume_start_time(patient, code, fetcher.system, end_time - poll_window)
+        else:
+            start_time = end_time - max(fetcher.lookback, poll_window)
 
         created = 0
         for record in fetcher.records(start_time, end_time):
             try:
-                omh_record = convert(source=fetcher.shim_source, data_type=ow_type, sample=record, tz=UTC)
+                shim_type = OW_TYPE_TO_SHIM_TYPE.get(ow_type, ow_type)
+                omh_record = convert(source=fetcher.shim_source, data_type=shim_type, sample=record, tz=UTC)
             except Exception:
                 logger.warning("Skipping unconvertible record for user=%s", user.id, exc_info=True)
                 continue
@@ -418,9 +539,11 @@ class Command(BaseCommand):
     def _save_observation(self, patient, code, data_source, omh_record, system, value):
         """Create one Observation and its dedupe identifier, or overwrite the existing one.
 
-        Last write wins: Oura revises a night's data after the first sync, so a
-        record whose key is already stored replaces the stored body rather than
-        being skipped.
+        Last write wins: Oura can update a sleep record after it is first created,
+        so a record whose key is already stored replaces the stored body rather
+        than being skipped. An unchanged body is left alone: the header's uuid and
+        creation time are regenerated on every convert, so rewriting it would bump
+        ``last_updated`` on every tick of the lookback window.
 
         Returns True only when a row was created. A concurrent tick can win the
         race between the lookup and the insert, so IntegrityError is treated as
@@ -441,6 +564,8 @@ class Command(BaseCommand):
                     .first()
                 )
                 if existing is not None:
+                    if existing.omh_data.get("body") == omh_record.get("body"):
+                        return False
                     existing.omh_data = omh_record
                     existing.save()
                     return False

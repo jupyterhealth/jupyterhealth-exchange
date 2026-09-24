@@ -157,7 +157,7 @@ Entities are based on the [HL7 FHIR model](https://build.fhir.org/), a widely us
 | **Dexcom Stelo**<br>`omh:blood-glucose:4.0`<br><br>**iHealth**<br>`omh:body-temperature:4.0`<br>`omh:heart-rate:2.0` | **CommonHealth** | Invitation Link |
 | **EHR Patient Portal**<br>`*` (all FHIR resources) | **EHR Patient Portal** | Invitation Link |
 | – | **JHE Admin** | User Credentials<br/>(Username/Password) |
-| **Oura**<br>`ieee:sleep-episode:1.0`<br>`omh:heart-rate:2.0` | **Open Wearables** | Invitation Link |
+| **Oura**<br>`ieee:physical-activity:1.0`<br>`ieee:sleep-episode:1.0`<br>`ieee:sleep-stage-summary:1.0`<br>`ieee:time-in-bed:1.0`<br>`ieee:total-sleep-time:1.0`<br>`omh:body-height:2.0`<br>`omh:body-weight:3.0`<br>`omh:heart-rate:2.0`<br>`omh:oxygen-saturation:2.0`<br>`omh:respiratory-rate:2.0` | **Open Wearables** | Invitation Link |
 | – | – | Patient Access<br/>(E-mail one-time code) |
 
 ## Contributing

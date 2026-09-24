@@ -32,7 +32,7 @@ def test_oura_supports_sleep_episode_and_heart_rate(seeded):
     scopes = set(
         DataSourceSupportedScope.objects.filter(data_source=oura).values_list("scope_code__coding_code", flat=True)
     )
-    assert scopes == {"omh:heart-rate:2.0", SLEEP_CODE}
+    assert {"omh:heart-rate:2.0", SLEEP_CODE} <= scopes
 
 
 def test_sleep_study_requests_sleep_from_oura_via_ow_client(seeded):

@@ -93,6 +93,57 @@ def _fake_omh_record(uuid_value="rec-1"):
     return record
 
 
+def _physical_activity_data_point(day):
+    """A schema-valid ieee:physical-activity:1.0 data point for one whole day.
+
+    Built by hand for the same reason as seed.sleep_episode_data_point: the schema
+    requires activity_name and an effective_time_frame restricted to a time_interval,
+    which generate_observation_value_attachment_data does not produce.
+    """
+    return {
+        "header": {
+            "uuid": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            "schema_id": {"namespace": "ieee", "name": "physical-activity", "version": "1.0"},
+            "source_creation_date_time": f"{day}T23:59:59Z",
+            "modality": "sensed",
+            "acquisition_provenance": {"source_name": "Oura"},
+        },
+        "body": {
+            "activity_name": "Total Daily Physical Activity",
+            "effective_time_frame": {
+                "time_interval": {
+                    "start_date_time": f"{day}T00:00:00Z",
+                    "end_date_time": f"{day}T23:59:59Z",
+                }
+            },
+            "base_movement_quantity": {"value": 8000, "unit": "steps"},
+            "kcal_burned": {"value": 400, "unit": "kcal"},
+        },
+    }
+
+
+def _sleep_stage_summary_data_point(start, end):
+    """A schema-valid ieee:sleep-stage-summary:1.0 data point for one night.
+
+    Built by hand for the same reason as _physical_activity_data_point: the schema
+    requires a sleep_stage_summary holding a total_sleep_time, and an
+    effective_time_frame restricted to a time_interval.
+    """
+    return {
+        "header": {
+            "uuid": "bbbbbbbb-cccc-dddd-eeee-ffffffffffff",
+            "schema_id": {"namespace": "ieee", "name": "sleep-stage-summary", "version": "1.0"},
+            "source_creation_date_time": end,
+            "modality": "sensed",
+            "acquisition_provenance": {"source_name": "Oura"},
+        },
+        "body": {
+            "sleep_stage_summary": {"total_sleep_time": {"value": 27000, "unit": "sec"}},
+            "effective_time_frame": {"time_interval": {"start_date_time": start, "end_date_time": end}},
+        },
+    }
+
+
 def test_skipped_when_module_disabled(db, ow_user, hr_concept):
     _set_jhe_setting("module.ow", False)
     out = StringIO()
@@ -224,7 +275,7 @@ def test_two_patients_with_identical_samples_both_ingest(db, hr_study, hr_concep
 
 
 def test_revised_record_updates_the_existing_observation(db, ow_user, patient_with_consent, hr_concept):
-    """Oura revises a night after first sync, so the same key must overwrite, not skip."""
+    """Oura can update a record after first sync, so the same key must overwrite, not skip."""
     _set_jhe_setting("module.ow", True)
     _clear_sync_lock()
 
@@ -249,6 +300,35 @@ def test_revised_record_updates_the_existing_observation(db, ow_user, patient_wi
 
     assert Observation.objects.count() == 1
     assert Observation.objects.get().omh_data["body"]["heart_rate"]["value"] == 99
+
+
+def test_unchanged_record_is_not_rewritten(db, ow_user, patient_with_consent, hr_concept):
+    """Re-polling an unchanged record leaves the stored row alone, header and last_updated included."""
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    sample = {"timestamp": "2026-09-20T10:00:00+00:00", "type": "heart_rate", "value": 61}
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert") as mock_convert,
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": [sample]}
+
+        mock_convert.return_value = _fake_omh_record(uuid_value="first-uuid")
+        call_command("ow_poll", stdout=StringIO())
+        stored = Observation.objects.get()
+        first_updated = stored.last_updated
+
+        repolled = _fake_omh_record(uuid_value="second-uuid")
+        repolled["body"] = stored.omh_data["body"]
+        mock_convert.return_value = repolled
+        call_command("ow_poll", stdout=StringIO())
+
+    stored.refresh_from_db()
+    assert stored.omh_data["header"]["uuid"] == "first-uuid"
+    assert stored.last_updated == first_updated
 
 
 def test_persist_failure_does_not_abort_the_run(db, ow_user, patient_with_consent, hr_concept):
@@ -793,3 +873,241 @@ def test_interval_row_does_not_pin_the_watermark(db, ow_user, patient_with_conse
 
     assert Observation.objects.count() == 2
     assert _requested_start(mock_get).year == 2026
+
+
+def test_sleep_events_are_fetched_from_the_events_route(db, ow_user, patient_with_consent, organization):
+    """Sleep episode comes from /events/sleep, keyed on the session id."""
+    from datetime import UTC, datetime
+
+    from core.management.commands.seed import sleep_episode_data_point
+
+    from .utils import add_patient_to_study, create_study
+
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    sleep_study = create_study(name="sleep study", organization=organization, codes=["ieee:sleep-episode:1.0"])
+    add_patient_to_study(patient=patient_with_consent, study=sleep_study)
+
+    session = {
+        "id": "11111111-2222-3333-4444-555555555555",
+        "start_time": "2026-09-20T23:00:00+00:00",
+        "end_time": "2026-09-21T07:00:00+00:00",
+        "duration_seconds": 28800,
+        "sleep_duration_seconds": 27000,
+        "is_nap": False,
+    }
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert") as mock_convert,
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": [session], "pagination": {"has_more": False}}
+        mock_convert.return_value = sleep_episode_data_point(datetime(2026, 9, 20, 23, 0, tzinfo=UTC), 8, 1)
+
+        call_command("ow_poll", stdout=StringIO())
+
+    requested_urls = [call.args[0] for call in mock_get.call_args_list]
+    assert any(url.endswith("/events/sleep") for url in requested_urls), requested_urls
+    assert ObservationIdentifier.objects.filter(
+        value="user-123:sleep_episode:11111111-2222-3333-4444-555555555555"
+    ).exists()
+
+
+def test_one_sleep_session_fans_out_to_every_sleep_code(db, ow_user, patient_with_consent, organization):
+    """One OW SleepSession is read as three data types, so it must land as three Observations."""
+    from datetime import UTC, datetime
+
+    from omh_shim import convert as real_convert
+
+    from core.management.commands.seed import sleep_episode_data_point
+
+    from .utils import add_patient_to_study, create_study
+
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    sleep_study = create_study(
+        name="sleep fan-out study",
+        organization=organization,
+        codes=["ieee:sleep-episode:1.0", "ieee:sleep-stage-summary:1.0", "ieee:time-in-bed:1.0"],
+    )
+    add_patient_to_study(patient=patient_with_consent, study=sleep_study)
+
+    session = {
+        "id": "99999999-8888-7777-6666-555555555555",
+        "start_time": "2026-09-20T23:00:00+00:00",
+        "end_time": "2026-09-21T07:00:00+00:00",
+        "duration_seconds": 28800,
+        "sleep_duration_seconds": 27000,
+        "time_in_bed_seconds": 28200,
+        "is_nap": False,
+    }
+
+    def _convert(*, source, data_type, sample, tz):
+        if data_type == "sleep_episode":
+            return sleep_episode_data_point(datetime(2026, 9, 20, 23, 0, tzinfo=UTC), 8, 1)
+        if data_type == "time_in_bed":
+            return real_convert(source=source, data_type=data_type, sample=sample, tz=tz)
+        return _sleep_stage_summary_data_point("2026-09-20T23:00:00Z", "2026-09-21T07:00:00Z")
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert", side_effect=_convert),
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": [session], "pagination": {"has_more": False}}
+
+        call_command("ow_poll", stdout=StringIO())
+
+    stored_codes = set(
+        Observation.objects.filter(subject_patient=patient_with_consent).values_list(
+            "codeable_concept__coding_code", flat=True
+        )
+    )
+    assert {
+        "ieee:sleep-episode:1.0",
+        "ieee:sleep-stage-summary:1.0",
+        "ieee:time-in-bed:1.0",
+    } <= stored_codes, sorted(stored_codes)
+    assert ObservationIdentifier.objects.filter(
+        value="user-123:sleep_episode:99999999-8888-7777-6666-555555555555"
+    ).exists()
+    assert ObservationIdentifier.objects.filter(
+        value="user-123:sleep_stage_summary:99999999-8888-7777-6666-555555555555"
+    ).exists()
+    assert ObservationIdentifier.objects.filter(
+        value="user-123:time_in_bed:99999999-8888-7777-6666-555555555555"
+    ).exists()
+
+
+def test_activity_summaries_are_fetched_from_the_summaries_route(db, ow_user, patient_with_consent, organization):
+    """Physical activity comes from /summaries/activity, keyed on the day it summarises."""
+    from .utils import add_patient_to_study, create_study
+
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    activity_study = create_study(
+        name="activity study", organization=organization, codes=["ieee:physical-activity:1.0"]
+    )
+    add_patient_to_study(patient=patient_with_consent, study=activity_study)
+
+    summary = {"date": "2026-09-20", "source": {"provider": "oura"}, "steps": 8000, "active_energy_kcal": 400}
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert") as mock_convert,
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": [summary], "pagination": {"has_more": False}}
+        mock_convert.return_value = _physical_activity_data_point("2026-09-20")
+
+        call_command("ow_poll", stdout=StringIO())
+
+    requested_urls = [call.args[0] for call in mock_get.call_args_list]
+    assert any(url.endswith("/summaries/activity") for url in requested_urls), requested_urls
+    assert ObservationIdentifier.objects.filter(value="user-123:physical_activity:2026-09-20").exists()
+
+
+def test_workouts_are_fetched_from_the_events_route(db, ow_user, patient_with_consent, organization):
+    """Workouts file under the physical-activity code alongside the daily summary, keyed apart from it."""
+    from .utils import add_patient_to_study, create_study
+
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    activity_study = create_study(name="workout study", organization=organization, codes=["ieee:physical-activity:1.0"])
+    add_patient_to_study(patient=patient_with_consent, study=activity_study)
+
+    workout = {
+        "id": "77777777-6666-5555-4444-333333333333",
+        "type": "running",
+        "start_time": "2026-09-20T07:00:00+00:00",
+        "end_time": "2026-09-20T07:45:00+00:00",
+        "duration_seconds": 2700,
+        "calories_kcal": 350,
+    }
+
+    def _get(url, **kwargs):
+        response = MagicMock(status_code=200)
+        data = [workout] if url.endswith("/events/workouts") else []
+        response.json.return_value = {"data": data, "pagination": {"has_more": False}}
+        return response
+
+    with patch("core.management.commands.ow_poll.requests.get", side_effect=_get) as mock_get:
+        call_command("ow_poll", stdout=StringIO())
+
+    requested_urls = [call.args[0] for call in mock_get.call_args_list]
+    assert any(url.endswith("/events/workouts") for url in requested_urls), requested_urls
+    assert ObservationIdentifier.objects.filter(value="user-123:workout:77777777-6666-5555-4444-333333333333").exists()
+
+
+def test_seed_gives_oura_every_supported_scope(seeded):
+    """The Oura data source must offer every code ow_poll can fill."""
+    from core.management.commands.ow_poll import OW_TYPE_TO_CODE
+    from core.models import DataSource, DataSourceSupportedScope
+
+    oura = DataSource.objects.get(name="Oura")
+    scopes = set(
+        DataSourceSupportedScope.objects.filter(data_source=oura).values_list("scope_code__coding_code", flat=True)
+    )
+    expected = set(OW_TYPE_TO_CODE.values()) - {"omh:blood-glucose:4.0"}
+    assert expected <= scopes, f"missing from the Oura data source: {sorted(expected - scopes)}"
+
+
+def test_every_polled_timeseries_type_is_a_real_ow_series():
+    """The poll map is keyed by omh-shim data type; OW's timeseries names differ for two."""
+    from core.management.commands.ow_poll import OW_TYPE_TO_CODE, OW_TYPE_TO_ROUTE, OW_TYPE_TO_SERIES
+
+    ow_series_names = {
+        "heart_rate",
+        "blood_glucose",
+        "oxygen_saturation",
+        "respiratory_rate",
+        "weight",
+        "height",
+    }
+    timeseries_types = [t for t in OW_TYPE_TO_CODE if t not in OW_TYPE_TO_ROUTE]
+    requested = {OW_TYPE_TO_SERIES.get(t, t) for t in timeseries_types}
+    assert requested <= ow_series_names, f"not OW series names: {sorted(requested - ow_series_names)}"
+
+
+def test_sleep_routes_look_back_past_the_watermark(db):
+    """Oura can update a sleep record after first sync, so sleep must refetch rather than resume."""
+    from core.management.commands.ow_poll import LOOKBACK_TYPES, Command
+
+    command = Command()
+    sleep = command._normalized_fetcher(None, "user-1", "http://ow.test", "key", "sleep_episode")
+    heart = command._normalized_fetcher(None, "user-1", "http://ow.test", "key", "heart_rate")
+
+    assert sleep.lookback == timedelta(days=7)
+    assert heart.lookback is None
+    assert LOOKBACK_TYPES == {"sleep_episode", "sleep_stage_summary", "time_in_bed", "sleep_duration", "workout"}
+
+
+def test_sleep_lookback_days_setting_widens_the_lookback(db):
+    from core.management.commands.ow_poll import Command
+
+    _set_jhe_setting("ow.sleep_lookback_days", 14, value_type="int")
+
+    sleep = Command()._normalized_fetcher(None, "user-1", "http://ow.test", "key", "sleep_episode")
+
+    assert sleep.lookback == timedelta(days=14)
+
+
+def test_seed_sets_sleep_lookback_days(seeded):
+    assert JheSetting.objects.get(key="ow.sleep_lookback_days").get_value() == 7
+
+
+def test_resting_heart_rate_does_not_collide_with_heart_rate(db):
+    """Both convert as heart_rate and file under one code, so the key must use the series."""
+    from core.management.commands.ow_poll import Command
+
+    command = Command()
+    at = "2026-09-20T10:00:00+00:00"
+    plain = command._timeseries_dedupe_key("user-1", "heart_rate", {"timestamp": at, "type": "heart_rate"})
+    resting = command._timeseries_dedupe_key("user-1", "heart_rate", {"timestamp": at, "type": "resting_heart_rate"})
+
+    assert plain != resting

@@ -13,7 +13,7 @@ on:
       ow_repo:
         description: "Open Wearables repo to test"
         required: false
-        default: "the-commons-project/open-wearables"
+        default: "the-momentum/open-wearables"
         type: string
       ow_ref:
         description: "OW git ref (branch/sha) to boot and test"
@@ -24,12 +24,12 @@ on:
       ow_repo:
         description: "Open Wearables repo to test"
         required: false
-        default: "the-commons-project/open-wearables"
+        default: "the-momentum/open-wearables"
         type: string
       ow_ref:
         description: "OW git ref (branch/sha) to boot and test"
         required: false
-        default: "main"
+        default: "0.9.0"
         type: string
 
 permissions:

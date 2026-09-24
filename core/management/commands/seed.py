@@ -245,6 +245,7 @@ class Command(BaseCommand):
             ("ow.api_url", "string", "http://localhost:8001"),
             ("ow.api_key", "string", ""),
             ("ow.poll_window_days", "int", 1),
+            ("ow.sleep_lookback_days", "int", 7),
         ]
         for key, value_type, value in jhe_settings:
             setting, _ = JheSetting.objects.update_or_create(
@@ -297,6 +298,7 @@ class Command(BaseCommand):
             (omh, "omh:respiratory-rate:2.0", "Respiratory rate (OMH)"),
             (omh, "omh:rr-interval:1.0", "RR Interval (OMH)"),
             (omh, "omh:body-weight:3.0", "Body weight (OMH)"),
+            (omh, "omh:body-height:2.0", "Body height (OMH)"),
             (omh, "omh:forced-vital-capacity:1.0", "Forced vital capacity (OMH)"),
             (omh, "omh:forced-expiratory-volume-1-second:1.0", "Forced expiratory volume 1 second (OMH)"),
             (omh, "omh:physical-activity:1.2", "Physical activity (OMH)"),
@@ -327,7 +329,22 @@ class Command(BaseCommand):
             ("CareX", "personal_device", ["omh:blood-pressure:4.0", "omh:heart-rate:2.0"]),
             ("Dexcom Stelo", "personal_device", ["omh:blood-glucose:4.0"]),
             ("iHealth", "personal_device", ["omh:body-temperature:4.0", "omh:heart-rate:2.0"]),
-            ("Oura", "personal_device", ["omh:heart-rate:2.0", "ieee:sleep-episode:1.0"]),
+            (
+                "Oura",
+                "personal_device",
+                [
+                    "omh:heart-rate:2.0",
+                    "omh:oxygen-saturation:2.0",
+                    "omh:respiratory-rate:2.0",
+                    "omh:body-weight:3.0",
+                    "omh:body-height:2.0",
+                    "ieee:sleep-episode:1.0",
+                    "ieee:sleep-stage-summary:1.0",
+                    "ieee:time-in-bed:1.0",
+                    "ieee:total-sleep-time:1.0",
+                    "ieee:physical-activity:1.0",
+                ],
+            ),
             ("Questionnaire", "patient_app", ["QuestionnaireResponse"]),
             # Source for clinical records pulled from an EHR's patient-access FHIR API
             # (#489). Shares its name with the client of the same name -- one product, one
