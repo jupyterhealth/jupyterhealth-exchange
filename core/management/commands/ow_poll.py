@@ -10,7 +10,7 @@ Modes (selected via the ``ow.ingest_mode`` JheSetting):
   endpoint, convert each sample with ``omh_shim.convert(source="ow_normalized")``
   and persist as Observations. Dedup is enforced by a paired
   ``ObservationIdentifier`` row with ``system="ow:normalized"`` and
-  ``value=<omh-uuid>``.
+  ``value=<the fetcher's dedupe key>``.
 
 * ``raw``: walks the OW S3/MinIO bucket and converts via
   ``omh_shim.convert(source="oura_raw")``. Dedup uses the same pattern with
@@ -46,12 +46,13 @@ for a one-off backfill.
 
 import logging
 from collections import namedtuple
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import requests
 from django.core.cache import cache
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError, transaction
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from omh_shim import convert
 
@@ -89,12 +90,14 @@ _SYNC_LOCK_KEY = "ow.sync_in_progress"
 # interval (15 min) so a healthy long-running poll is never preempted.
 LOCK_STALE_AFTER = timedelta(minutes=30)
 
-Fetcher = namedtuple("Fetcher", "system shim_source records")
+Fetcher = namedtuple("Fetcher", "system shim_source records dedupe_key")
 """One source of samples.
 
 ``system`` is the ObservationIdentifier system its rows are filed under,
-``shim_source`` the omh-shim source name, and ``records`` a callable taking
-(start_time, end_time) and yielding raw sample dicts.
+``shim_source`` the omh-shim source name, ``records`` a callable taking
+(start_time, end_time) and yielding raw sample dicts, and ``dedupe_key`` a
+callable taking one record and returning the string that identifies it, or
+None when the record cannot be identified and must be skipped.
 """
 
 
@@ -299,6 +302,20 @@ class Command(BaseCommand):
 
         logger.warning("OW timeseries hit MAX_PAGES for user=%s type=%s", user.id, data_type)
 
+    def _timeseries_dedupe_key(self, ow_user_id, ow_type, record):
+        """Identify one timeseries sample.
+
+        OW timeseries samples carry no id of their own, so the natural key is the
+        patient, the series and the instant. The OW user id is part of the key
+        because ObservationIdentifier is unique on (system, value) globally, not
+        per patient, so two patients reporting the same value at the same instant
+        would otherwise collide and the second row would be dropped.
+        """
+        timestamp = record.get("timestamp")
+        if not timestamp:
+            return None
+        return f"{ow_user_id}:{ow_type}:{timestamp}"
+
     def _normalized_fetcher(self, user, ow_user_id, ow_api_url, ow_api_key, ow_type):
         """Samples from OW's timeseries endpoint."""
         return Fetcher(
@@ -307,6 +324,7 @@ class Command(BaseCommand):
             records=lambda start_time, end_time: self._fetch_timeseries(
                 user, ow_api_url, ow_api_key, ow_user_id, ow_type, start_time, end_time
             ),
+            dedupe_key=lambda record: self._timeseries_dedupe_key(ow_user_id, ow_type, record),
         )
 
     def _raw_fetcher(self, user, ow_user_id, ow_type):
@@ -321,6 +339,7 @@ class Command(BaseCommand):
             system=RAW_SYSTEM,
             shim_source="oura_raw",
             records=lambda start_time, end_time: self._fetch_raw_objects(user, ow_user_id, start_time),
+            dedupe_key=lambda record: self._timeseries_dedupe_key(ow_user_id, ow_type, record),
         )
 
     def _fetch_raw_objects(self, user, ow_user_id, start_time):
@@ -349,16 +368,16 @@ class Command(BaseCommand):
         created = 0
         for record in fetcher.records(start_time, end_time):
             try:
-                omh_record = convert(source=fetcher.shim_source, data_type=ow_type, sample=record)
+                omh_record = convert(source=fetcher.shim_source, data_type=ow_type, sample=record, tz=UTC)
             except Exception:
                 logger.warning("Skipping unconvertible record for user=%s", user.id, exc_info=True)
                 continue
 
-            uuid_value = omh_record.get("header", {}).get("uuid")
-            if not uuid_value:
+            identifier = fetcher.dedupe_key(record)
+            if not identifier:
                 continue
 
-            if self._save_observation(patient, code, data_source, omh_record, fetcher.system, uuid_value):
+            if self._save_observation(patient, code, data_source, omh_record, fetcher.system, identifier):
                 created += 1
 
         logger.info("Poll completed for jhe_user=%s patient=%s created=%d", user.id, patient.id, created)
@@ -370,28 +389,49 @@ class Command(BaseCommand):
         Resuming from the most recent ingested row avoids refetching the whole
         window every tick. POLL_OVERLAP is subtracted so a sample written on the
         boundary of the previous run is not missed.
+
+        Sample time, not write time: Oura sleep only syncs when the patient opens
+        the app, so a night can arrive after rows measured later were already
+        written. Resuming from the write time would skip it permanently.
+
+        An interval-shaped body populates ``effective_period_start`` and leaves
+        ``effective_date_time`` null, so the two are coalesced. Ordering on the
+        raw column instead would sort nulls first under a descending Postgres
+        sort, pinning the watermark to whichever interval row happened to exist.
         """
+        sample_time = Coalesce("effective_date_time", "effective_period_start")
         last_obs = (
             Observation.objects.filter(
                 subject_patient=patient,
                 codeable_concept=code,
                 identifiers__system=system,
             )
-            .order_by("-last_updated")
+            .annotate(sample_time=sample_time)
+            .exclude(sample_time=None)
+            .order_by("-sample_time")
             .first()
         )
         if not last_obs:
             return window_start
-        return max(window_start, last_obs.last_updated - POLL_OVERLAP)
+        return max(window_start, last_obs.sample_time - POLL_OVERLAP)
 
     def _save_observation(self, patient, code, data_source, omh_record, system, value):
-        """Create one Observation and its dedupe identifier, or skip if already present.
+        """Create one Observation and its dedupe identifier, or overwrite the existing one.
+
+        Last write wins: Oura revises a night's data after the first sync, so a
+        record whose key is already stored replaces the stored body rather than
+        being skipped.
 
         Returns True only when a row was created. A concurrent tick can win the
-        race between the exists() check and the insert, so IntegrityError is
-        treated as already-ingested rather than an error.
+        race between the lookup and the insert, so IntegrityError is treated as
+        already-ingested rather than an error.
         """
-        if ObservationIdentifier.objects.filter(system=system, value=value).exists():
+        existing = (
+            Observation.objects.filter(identifiers__system=system, identifiers__value=value).order_by("id").first()
+        )
+        if existing is not None:
+            existing.omh_data = omh_record
+            existing.save()
             return False
 
         try:
@@ -413,7 +453,7 @@ class Command(BaseCommand):
             return False
         except Exception:
             logger.warning(
-                "Failed to persist observation for patient=%s uuid=%s",
+                "Failed to persist observation for patient=%s identifier=%s",
                 patient.id,
                 value,
                 exc_info=True,

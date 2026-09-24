@@ -131,7 +131,7 @@ def test_creates_observation_for_consented_patient(db, ow_user, patient_with_con
     assert obs.count() == 1
     assert obs.first().codeable_concept == hr_concept
     assert ObservationIdentifier.objects.filter(
-        observation=obs.first(), system=NORMALIZED_SYSTEM, value="abc-123"
+        observation=obs.first(), system=NORMALIZED_SYSTEM, value="user-123:heart_rate:2024-01-01T00:00:00Z"
     ).exists()
     # Lock cleared after run
     assert not get_setting("ow.sync_in_progress")
@@ -146,14 +146,109 @@ def test_dedupes_via_observation_identifier(db, ow_user, patient_with_consent, h
         patch("core.management.commands.ow_poll.convert") as mock_convert,
     ):
         mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = {"data": [{"x": 1}]}
+        mock_get.return_value.json.return_value = {"data": [{"timestamp": "2024-01-01T00:00:00Z", "x": 1}]}
         mock_convert.return_value = _fake_omh_record(uuid_value="same-uuid")
 
         call_command("ow_poll", stdout=StringIO())
         call_command("ow_poll", stdout=StringIO())
 
-    assert ObservationIdentifier.objects.filter(system=NORMALIZED_SYSTEM, value="same-uuid").count() == 1
+    assert (
+        ObservationIdentifier.objects.filter(
+            system=NORMALIZED_SYSTEM, value="user-123:heart_rate:2024-01-01T00:00:00Z"
+        ).count()
+        == 1
+    )
     assert Observation.objects.count() == 1
+
+
+def test_dedupes_when_convert_returns_a_fresh_uuid_each_time(db, ow_user, patient_with_consent, hr_concept):
+    """Real omh-shim stamps a random uuid per convert, so the key cannot come from the header."""
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    sample = {"timestamp": "2026-09-20T10:00:00+00:00", "type": "heart_rate", "value": 61}
+    counter = {"n": 0}
+
+    def fresh_uuid(*args, **kwargs):
+        counter["n"] += 1
+        return _fake_omh_record(uuid_value=f"random-{counter['n']}")
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert", side_effect=fresh_uuid),
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": [sample]}
+
+        call_command("ow_poll", stdout=StringIO())
+        call_command("ow_poll", stdout=StringIO())
+
+    assert Observation.objects.count() == 1
+
+
+def test_two_patients_with_identical_samples_both_ingest(db, hr_study, hr_concept, organization):
+    """The dedupe key is scoped per patient; ObservationIdentifier is unique globally."""
+    from core.models import JheUser
+
+    from .utils import add_patient_to_study
+
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    patients = []
+    for suffix in ("aaa", "bbb"):
+        user = JheUser.objects.create_user(
+            email=f"collide-{suffix}@example.test",
+            password="x",
+            identifier=f"ow:collide-{suffix}",
+            user_type="patient",
+        )
+        patient = user.patient
+        add_patient_to_study(patient=patient, study=hr_study)
+        patients.append(patient)
+
+    sample = {"timestamp": "2026-09-20T10:00:00+00:00", "type": "heart_rate", "value": 61}
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert") as mock_convert,
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": [sample]}
+        mock_convert.return_value = _fake_omh_record()
+
+        call_command("ow_poll", stdout=StringIO())
+
+    assert Observation.objects.filter(subject_patient=patients[0]).count() == 1
+    assert Observation.objects.filter(subject_patient=patients[1]).count() == 1
+
+
+def test_revised_record_updates_the_existing_observation(db, ow_user, patient_with_consent, hr_concept):
+    """Oura revises a night after first sync, so the same key must overwrite, not skip."""
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    sample = {"timestamp": "2026-09-20T10:00:00+00:00", "type": "heart_rate", "value": 61}
+
+    first = _fake_omh_record(uuid_value="ignored-1")
+    first["body"]["heart_rate"]["value"] = 61
+    second = _fake_omh_record(uuid_value="ignored-2")
+    second["body"]["heart_rate"]["value"] = 99
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert") as mock_convert,
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": [sample]}
+
+        mock_convert.return_value = first
+        call_command("ow_poll", stdout=StringIO())
+        mock_convert.return_value = second
+        call_command("ow_poll", stdout=StringIO())
+
+    assert Observation.objects.count() == 1
+    assert Observation.objects.get().omh_data["body"]["heart_rate"]["value"] == 99
 
 
 def test_persist_failure_does_not_abort_the_run(db, ow_user, patient_with_consent, hr_concept):
@@ -166,7 +261,12 @@ def test_persist_failure_does_not_abort_the_run(db, ow_user, patient_with_consen
         patch("core.management.commands.ow_poll.convert") as mock_convert,
     ):
         mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = {"data": [{"x": 1}, {"x": 2}]}
+        mock_get.return_value.json.return_value = {
+            "data": [
+                {"timestamp": "2024-01-01T00:00:00Z", "x": 1},
+                {"timestamp": "2024-01-01T00:01:00Z", "x": 2},
+            ]
+        }
         mock_convert.side_effect = [
             _fake_omh_record(uuid_value="bad-1"),
             _fake_omh_record(uuid_value="good-1"),
@@ -183,7 +283,9 @@ def test_persist_failure_does_not_abort_the_run(db, ow_user, patient_with_consen
             call_command("ow_poll", stdout=StringIO())
 
     assert Observation.objects.count() == 1
-    assert ObservationIdentifier.objects.filter(system=NORMALIZED_SYSTEM, value="good-1").exists()
+    assert ObservationIdentifier.objects.filter(
+        system=NORMALIZED_SYSTEM, value="user-123:heart_rate:2024-01-01T00:01:00Z"
+    ).exists()
 
 
 def test_second_poll_resumes_from_the_last_observation(db, ow_user, patient_with_consent, hr_concept):
@@ -196,7 +298,7 @@ def test_second_poll_resumes_from_the_last_observation(db, ow_user, patient_with
         patch("core.management.commands.ow_poll.convert") as mock_convert,
     ):
         mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = {"data": [{"x": 1}]}
+        mock_get.return_value.json.return_value = {"data": [{"timestamp": "2024-01-01T00:00:00Z", "x": 1}]}
         mock_convert.return_value = _fake_omh_record(uuid_value="first-1")
         call_command("ow_poll", stdout=StringIO())
 
@@ -206,7 +308,34 @@ def test_second_poll_resumes_from_the_last_observation(db, ow_user, patient_with
         call_command("ow_poll", stdout=StringIO())
 
     requested = _requested_start(mock_get)
-    assert requested == obs.last_updated - timedelta(minutes=5)
+    assert requested == obs.effective_date_time - timedelta(minutes=5)
+
+
+def test_late_arriving_sample_is_not_skipped(db, ow_user, patient_with_consent, hr_concept):
+    """A sample measured before the newest row was written must still be fetched."""
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    recent = {"timestamp": "2026-09-20T10:00:00+00:00", "type": "heart_rate", "value": 61}
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert") as mock_convert,
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": [recent]}
+        record = _fake_omh_record()
+        record["body"]["effective_time_frame"] = {"date_time": "2026-09-20T10:00:00+00:00"}
+        mock_convert.return_value = record
+        call_command("ow_poll", "--days", "30", stdout=StringIO())
+
+        obs = Observation.objects.get()
+        mock_get.reset_mock()
+        call_command("ow_poll", "--days", "30", stdout=StringIO())
+
+    requested = _requested_start(mock_get)
+    assert requested < obs.last_updated
+    assert requested == obs.effective_date_time - timedelta(minutes=5)
 
 
 def test_skips_user_without_ow_identifier(db, patient_with_consent, hr_concept):
@@ -288,7 +417,7 @@ def test_raw_mode_creates_observation_and_dedupes(db, ow_user, patient_with_cons
         patch("core.management.commands.ow_poll.list_new_objects", return_value=[fake_obj]) as mock_list,
         patch(
             "core.management.commands.ow_poll.read_object",
-            return_value={"data": [{"x": 1}]},
+            return_value={"data": [{"timestamp": "2024-01-01T00:00:00Z", "x": 1}]},
         ),
         patch(
             "core.management.commands.ow_poll.convert",
@@ -296,11 +425,14 @@ def test_raw_mode_creates_observation_and_dedupes(db, ow_user, patient_with_cons
         ),
     ):
         call_command("ow_poll", stdout=StringIO())
-        # Second tick should be a no-op (dedup via ow:raw + uuid).
+        # Second tick should be a no-op (dedup via ow:raw + dedupe key).
         call_command("ow_poll", stdout=StringIO())
 
     assert mock_list.called
-    assert ObservationIdentifier.objects.filter(system="ow:raw", value="raw-uuid-1").count() == 1
+    assert (
+        ObservationIdentifier.objects.filter(system="ow:raw", value="user-123:heart_rate:2024-01-01T00:00:00Z").count()
+        == 1
+    )
     assert Observation.objects.count() == 1
 
 
@@ -358,7 +490,7 @@ def test_stale_lock_is_force_released(db, ow_user, patient_with_consent, hr_conc
         patch("core.management.commands.ow_poll.convert") as mock_convert,
     ):
         mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = {"data": [{"x": 1}]}
+        mock_get.return_value.json.return_value = {"data": [{"timestamp": "2024-01-01T00:00:00Z", "x": 1}]}
         mock_convert.return_value = _fake_omh_record(uuid_value="stale-recover")
 
         call_command("ow_poll", stdout=StringIO())
@@ -491,6 +623,28 @@ def test_raw_mode_handles_string_source_field(db, ow_user, patient_with_consent,
     assert Observation.objects.filter(subject_patient=patient_with_consent).count() == 1
 
 
+def test_convert_is_called_with_a_timezone(db, ow_user, patient_with_consent, hr_concept):
+    """Daily shapes raise ConversionError without tz, and the error is swallowed as a skip."""
+    from datetime import UTC
+
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert") as mock_convert,
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {
+            "data": [{"timestamp": "2026-09-20T10:00:00+00:00", "type": "heart_rate", "value": 61}]
+        }
+        mock_convert.return_value = _fake_omh_record()
+
+        call_command("ow_poll", stdout=StringIO())
+
+    assert mock_convert.call_args.kwargs["tz"] is UTC
+
+
 def _requested_start(mock_get):
     from datetime import datetime
 
@@ -538,3 +692,44 @@ def test_poll_window_defaults_to_one_day(db, ow_user, patient_with_consent, hr_c
 
     age = timezone.now() - _requested_start(mock_get)
     assert age.days == 1, f"expected the 1 day default, asked for {age.days}"
+
+
+def test_interval_row_does_not_pin_the_watermark(db, ow_user, patient_with_consent, hr_concept):
+    """An interval body leaves effective_date_time null, which sorts first on a Postgres DESC."""
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    interval = _fake_omh_record()
+    interval["body"]["effective_time_frame"] = {
+        "time_interval": {
+            "start_date_time": "2020-01-01T00:00:00+00:00",
+            "end_date_time": "2020-01-01T08:00:00+00:00",
+        }
+    }
+    instant = _fake_omh_record()
+    instant["body"]["effective_time_frame"] = {"date_time": "2026-09-20T10:00:00+00:00"}
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert") as mock_convert,
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {
+            "data": [{"timestamp": "2020-01-01T00:00:00Z", "type": "heart_rate", "value": 61}]
+        }
+        mock_convert.return_value = interval
+        call_command("ow_poll", "--days", "3000", stdout=StringIO())
+
+        _clear_sync_lock()
+        mock_get.return_value.json.return_value = {
+            "data": [{"timestamp": "2026-09-20T10:00:00Z", "type": "heart_rate", "value": 62}]
+        }
+        mock_convert.return_value = instant
+        call_command("ow_poll", "--days", "3000", stdout=StringIO())
+
+        _clear_sync_lock()
+        mock_get.reset_mock()
+        call_command("ow_poll", "--days", "3000", stdout=StringIO())
+
+    assert Observation.objects.count() == 2
+    assert _requested_start(mock_get).year == 2026
