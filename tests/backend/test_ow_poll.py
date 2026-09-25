@@ -93,6 +93,17 @@ def _fake_omh_record(uuid_value="rec-1"):
     return record
 
 
+def _serve_heart_rate_only(mock_get):
+    """Serve the mocked OW page to the heart_rate request and an empty page to every other series.
+
+    A heart-rate-consented patient is also polled for resting_heart_rate, which shares the code.
+    """
+    page = mock_get.return_value
+    empty = MagicMock(status_code=200)
+    empty.json.return_value = {"data": [], "pagination": {"has_more": False}}
+    mock_get.side_effect = lambda url, **kwargs: page if kwargs["params"]["types"] == "heart_rate" else empty
+
+
 def _physical_activity_data_point(day):
     """A schema-valid ieee:physical-activity:1.0 data point for one whole day.
 
@@ -173,6 +184,7 @@ def test_creates_observation_for_consented_patient(db, ow_user, patient_with_con
         patch("core.management.commands.ow_poll.convert") as mock_convert,
     ):
         mock_get.return_value.status_code = 200
+        _serve_heart_rate_only(mock_get)
         mock_get.return_value.json.return_value = {"data": [fake_record]}
         mock_convert.return_value = _fake_omh_record(uuid_value="abc-123")
 
@@ -197,6 +209,7 @@ def test_dedupes_via_observation_identifier(db, ow_user, patient_with_consent, h
         patch("core.management.commands.ow_poll.convert") as mock_convert,
     ):
         mock_get.return_value.status_code = 200
+        _serve_heart_rate_only(mock_get)
         mock_get.return_value.json.return_value = {"data": [{"timestamp": "2024-01-01T00:00:00Z", "x": 1}]}
         mock_convert.return_value = _fake_omh_record(uuid_value="same-uuid")
 
@@ -341,6 +354,7 @@ def test_persist_failure_does_not_abort_the_run(db, ow_user, patient_with_consen
         patch("core.management.commands.ow_poll.convert") as mock_convert,
     ):
         mock_get.return_value.status_code = 200
+        _serve_heart_rate_only(mock_get)
         mock_get.return_value.json.return_value = {
             "data": [
                 {"timestamp": "2024-01-01T00:00:00Z", "x": 1},
@@ -383,6 +397,7 @@ def test_invalid_revision_does_not_drop_later_records(db, ow_user, patient_with_
         patch("core.management.commands.ow_poll.convert") as mock_convert,
     ):
         mock_get.return_value.status_code = 200
+        _serve_heart_rate_only(mock_get)
         mock_get.return_value.json.return_value = {"data": [revised]}
         mock_convert.return_value = _fake_omh_record()
         call_command("ow_poll", stdout=StringIO())
@@ -438,6 +453,7 @@ def test_second_poll_resumes_from_the_last_observation(db, ow_user, patient_with
         patch("core.management.commands.ow_poll.convert") as mock_convert,
     ):
         mock_get.return_value.status_code = 200
+        _serve_heart_rate_only(mock_get)
         mock_get.return_value.json.return_value = {"data": [{"timestamp": "2024-01-01T00:00:00Z", "x": 1}]}
         mock_convert.return_value = _fake_omh_record(uuid_value="first-1")
         call_command("ow_poll", stdout=StringIO())
@@ -463,6 +479,7 @@ def test_late_arriving_sample_is_not_skipped(db, ow_user, patient_with_consent, 
         patch("core.management.commands.ow_poll.convert") as mock_convert,
     ):
         mock_get.return_value.status_code = 200
+        _serve_heart_rate_only(mock_get)
         mock_get.return_value.json.return_value = {"data": [recent]}
         record = _fake_omh_record()
         record["body"]["effective_time_frame"] = {"date_time": "2026-09-20T10:00:00+00:00"}
@@ -630,6 +647,7 @@ def test_stale_lock_is_force_released(db, ow_user, patient_with_consent, hr_conc
         patch("core.management.commands.ow_poll.convert") as mock_convert,
     ):
         mock_get.return_value.status_code = 200
+        _serve_heart_rate_only(mock_get)
         mock_get.return_value.json.return_value = {"data": [{"timestamp": "2024-01-01T00:00:00Z", "x": 1}]}
         mock_convert.return_value = _fake_omh_record(uuid_value="stale-recover")
 
@@ -659,13 +677,15 @@ def test_normalized_mode_follows_pagination(db, ow_user, patient_with_consent, h
         patch("core.management.commands.ow_poll.convert") as mock_convert,
     ):
         mock_get.return_value.status_code = 200
+        _serve_heart_rate_only(mock_get)
         mock_get.return_value.json.side_effect = [page_1, page_2]
         mock_convert.side_effect = [_fake_omh_record("p1"), _fake_omh_record("p2")]
 
         call_command("ow_poll", stdout=StringIO())
 
-    assert mock_get.call_count == 2, "second page was never requested"
-    assert mock_get.call_args_list[1].kwargs["params"]["cursor"] == "cursor-2"
+    heart_rate_calls = [c for c in mock_get.call_args_list if c.kwargs["params"]["types"] == "heart_rate"]
+    assert len(heart_rate_calls) == 2, "second page was never requested"
+    assert heart_rate_calls[1].kwargs["params"]["cursor"] == "cursor-2"
 
 
 def test_ingests_blood_glucose_when_consented(db, ow_user, patient_with_consent):
@@ -786,9 +806,11 @@ def test_convert_is_called_with_a_timezone(db, ow_user, patient_with_consent, hr
 
 
 def _requested_start(mock_get):
+    """The start_time of the last heart_rate request; resting_heart_rate is requested after it."""
     from datetime import datetime
 
-    return datetime.fromisoformat(mock_get.call_args[1]["params"]["start_time"])
+    heart_rate = [c for c in mock_get.call_args_list if c.kwargs["params"].get("types") == "heart_rate"]
+    return datetime.fromisoformat(heart_rate[-1].kwargs["params"]["start_time"])
 
 
 def test_poll_window_days_setting_widens_the_first_fetch(db, ow_user, patient_with_consent, hr_concept):
@@ -854,6 +876,7 @@ def test_interval_row_does_not_pin_the_watermark(db, ow_user, patient_with_conse
         patch("core.management.commands.ow_poll.convert") as mock_convert,
     ):
         mock_get.return_value.status_code = 200
+        _serve_heart_rate_only(mock_get)
         mock_get.return_value.json.return_value = {
             "data": [{"timestamp": "2020-01-01T00:00:00Z", "type": "heart_rate", "value": 61}]
         }
@@ -1058,11 +1081,12 @@ def test_seed_gives_oura_every_supported_scope(seeded):
 
 
 def test_every_polled_timeseries_type_is_a_real_ow_series():
-    """The poll map is keyed by omh-shim data type; OW's timeseries names differ for two."""
+    """The poll map is mostly keyed by omh-shim data type; OW's timeseries names differ for two."""
     from core.management.commands.ow_poll import OW_TYPE_TO_CODE, OW_TYPE_TO_ROUTE, OW_TYPE_TO_SERIES
 
     ow_series_names = {
         "heart_rate",
+        "resting_heart_rate",
         "blood_glucose",
         "oxygen_saturation",
         "respiratory_rate",
@@ -1084,7 +1108,14 @@ def test_sleep_routes_look_back_past_the_watermark(db):
 
     assert sleep.lookback == timedelta(days=7)
     assert heart.lookback is None
-    assert LOOKBACK_TYPES == {"sleep_episode", "sleep_stage_summary", "time_in_bed", "sleep_duration", "workout"}
+    assert LOOKBACK_TYPES == {
+        "sleep_episode",
+        "sleep_stage_summary",
+        "time_in_bed",
+        "sleep_duration",
+        "workout",
+        "resting_heart_rate",
+    }
 
 
 def test_sleep_lookback_days_setting_widens_the_lookback(db):
@@ -1108,6 +1139,50 @@ def test_resting_heart_rate_does_not_collide_with_heart_rate(db):
     command = Command()
     at = "2026-09-20T10:00:00+00:00"
     plain = command._timeseries_dedupe_key("user-1", "heart_rate", {"timestamp": at, "type": "heart_rate"})
-    resting = command._timeseries_dedupe_key("user-1", "heart_rate", {"timestamp": at, "type": "resting_heart_rate"})
+    resting = command._timeseries_dedupe_key(
+        "user-1", "resting_heart_rate", {"timestamp": at, "type": "resting_heart_rate"}
+    )
 
     assert plain != resting
+
+
+def test_resting_heart_rate_is_polled_under_the_heart_rate_code(db, ow_user, patient_with_consent, hr_concept):
+    """OW serves Oura's resting heart rate as its own series, filed under heart rate and tagged as during sleep."""
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    resting = {"timestamp": "2026-09-19T23:30:00+00:00", "type": "resting_heart_rate", "value": 48, "unit": "bpm"}
+
+    def _get(url, **kwargs):
+        response = MagicMock(status_code=200)
+        data = [resting] if kwargs["params"].get("types") == "resting_heart_rate" else []
+        response.json.return_value = {"data": data, "pagination": {"has_more": False}}
+        return response
+
+    with patch("core.management.commands.ow_poll.requests.get", side_effect=_get):
+        call_command("ow_poll", stdout=StringIO())
+
+    obs = Observation.objects.get(subject_patient=patient_with_consent, codeable_concept=hr_concept)
+    assert obs.omh_data["body"]["temporal_relationship_to_sleep"] == "during sleep"
+    assert ObservationIdentifier.objects.filter(
+        observation=obs, value="user-123:resting_heart_rate:2026-09-19T23:30:00+00:00"
+    ).exists()
+
+
+def test_unconvertible_record_warning_names_the_type(db, ow_user, patient_with_consent, hr_concept, caplog):
+    """One sleep session runs through several converters, so the warning must say which one failed."""
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert", side_effect=ValueError("bad sample")),
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {
+            "data": [{"timestamp": "2026-09-20T10:00:00+00:00", "type": "heart_rate", "value": 61}]
+        }
+        call_command("ow_poll", stdout=StringIO())
+
+    assert "Skipping unconvertible record for user=" in caplog.text
+    assert "type=resting_heart_rate" in caplog.text

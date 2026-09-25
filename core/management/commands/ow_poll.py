@@ -6,8 +6,8 @@ ingests them as JHE Observations.
 
 Modes (selected via the ``ow.ingest_mode`` JheSetting):
 
-* ``normalized`` (default): query OW's ``/api/v1/users/<id>/timeseries``
-  endpoint, convert each sample with ``omh_shim.convert(source="ow_normalized")``
+* ``normalized`` (default): query the OW route each type is served from
+  (see ``OW_TYPE_TO_ROUTE``), convert each sample with ``omh_shim.convert(source="ow_normalized")``
   and persist as Observations. Dedup is enforced by a paired
   ``ObservationIdentifier`` row with ``system="ow:normalized"`` and
   ``value=<the fetcher's dedupe key>``.
@@ -26,7 +26,7 @@ The command no-ops in two situations:
 OW connection config (``ow.api_url``, ``ow.api_key``) is read from JheSettings
 via ``get_setting()``, matching ``core/views/ow.py``.
 
-``OW_TYPE_TO_CODE`` maps an OW timeseries type to the CodeableConcept its
+``OW_TYPE_TO_CODE`` maps each polled type to the CodeableConcept its
 Observations are filed under, and is intersected with the patient's consented
 scopes so a poll can never widen consent. A type only belongs there once
 omh-shim converts it to a schema id JHE can resolve: ``core/utils.py`` resolves
@@ -38,19 +38,20 @@ it used to target).
 from it is served by ``timeseries``. The three sleep event types each fetch
 ``events/sleep`` independently, which keeps one data type mapping to one code.
 
-``OW_TYPE_TO_SHIM_TYPE`` covers the one key that is not an omh-shim data type:
+``OW_TYPE_TO_SHIM_TYPE`` covers the keys that are not omh-shim data types:
 ``workout`` converts as ``physical_activity`` and files under the same code as the
-daily activity summary, but needs its own key for its own route and dedupe key.
+daily activity summary, and ``resting_heart_rate`` converts as ``heart_rate``. Each
+needs its own key for its own OW request and dedupe key.
 
-``OW_TYPE_TO_SERIES`` exists because the keys of ``OW_TYPE_TO_CODE`` are omh-shim
+``OW_TYPE_TO_SERIES`` exists because most keys of ``OW_TYPE_TO_CODE`` are omh-shim
 data types, not OW series names, and the two namespaces are not the same. They
 happen to agree for most types, which is what makes the disagreement easy to miss:
 omh-shim calls them ``body_weight`` and ``body_height`` while OW's SeriesType enum
-calls them ``weight`` and ``height``. Only the ``types`` query parameter is
-translated; the dedupe key and the ``convert()`` call both keep the omh-shim name.
+calls them ``weight`` and ``height``. The ``types`` query parameter and the
+timeseries dedupe key use the OW name; the ``convert()`` call keeps the omh-shim name.
 
-``RAW_SUPPORTED_TYPES`` is narrower than ``OW_TYPE_TO_CODE`` because raw mode
-reads Oura API payloads, and Oura exposes no glucose.
+``RAW_SUPPORTED_TYPES`` stays heart rate only. Raw mode has never ingested
+anything (#746), so it is not widened alongside the normalized types.
 
 ``ow.poll_window_days`` (default 1) sets how far back OW is asked for samples.
 It only bounds a patient's first poll: once they have an Observation the resume
@@ -58,8 +59,8 @@ watermark is the later bound, so a wide window costs nothing afterwards. Raise
 it when patients link with device history already recorded, or pass ``--days``
 for a one-off backfill.
 
-``ow.sleep_lookback_days`` (default 7) sets how far back the sleep and workout
-routes are refetched on every poll. See ``Fetcher.lookback``.
+``ow.sleep_lookback_days`` (default 7) sets how far back the ``LOOKBACK_TYPES``
+are refetched on every poll. See ``Fetcher.lookback``.
 """
 
 import logging
@@ -97,6 +98,7 @@ BLOOD_GLUCOSE_CODE = "omh:blood-glucose:4.0"
 
 OW_TYPE_TO_CODE = {
     "heart_rate": HEART_RATE_CODE,
+    "resting_heart_rate": HEART_RATE_CODE,
     "blood_glucose": BLOOD_GLUCOSE_CODE,
     "oxygen_saturation": "omh:oxygen-saturation:2.0",
     "respiratory_rate": "omh:respiratory-rate:2.0",
@@ -124,8 +126,16 @@ OW_TYPE_TO_SERIES = {
 }
 OW_TYPE_TO_SHIM_TYPE = {
     "workout": "physical_activity",
+    "resting_heart_rate": "heart_rate",
 }
-LOOKBACK_TYPES = {"sleep_episode", "sleep_stage_summary", "time_in_bed", "sleep_duration", "workout"}
+LOOKBACK_TYPES = {
+    "sleep_episode",
+    "sleep_stage_summary",
+    "time_in_bed",
+    "sleep_duration",
+    "workout",
+    "resting_heart_rate",
+}
 NORMALIZED_SYSTEM = "ow:normalized"
 RAW_SYSTEM = "ow:raw"
 RAW_TRACE_ID_HEART_RATE = "/v2/usercollection/heartrate"
@@ -151,6 +161,8 @@ after it is first created, and the watermark would already have advanced past
 it, so it would never be fetched again and the upsert would never fire.
 Workouts use it too: they sync as late as sleep, and they share a code with the
 daily activity summary, whose rows would push the watermark past a late workout.
+Resting heart rate does for the same reason: OW stamps it at the start of the
+night's sleep, hours behind the heart rate rows that share its code.
 A source that only ever appends leaves this None and resumes from the watermark.
 """
 
@@ -255,7 +267,7 @@ class Command(BaseCommand):
 
     @staticmethod
     def _sleep_lookback():
-        """How far back the sleep and workout routes are refetched, from ``ow.sleep_lookback_days``."""
+        """How far back the ``LOOKBACK_TYPES`` are refetched, from ``ow.sleep_lookback_days``."""
         try:
             days = int(get_setting("ow.sleep_lookback_days", DEFAULT_SLEEP_LOOKBACK_DAYS))
         except (TypeError, ValueError):
@@ -491,7 +503,7 @@ class Command(BaseCommand):
                 shim_type = OW_TYPE_TO_SHIM_TYPE.get(ow_type, ow_type)
                 omh_record = convert(source=fetcher.shim_source, data_type=shim_type, sample=record, tz=UTC)
             except Exception:
-                logger.warning("Skipping unconvertible record for user=%s", user.id, exc_info=True)
+                logger.warning("Skipping unconvertible record for user=%s type=%s", user.id, ow_type, exc_info=True)
                 continue
 
             identifier = fetcher.dedupe_key(record)
