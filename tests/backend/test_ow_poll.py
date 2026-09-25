@@ -1115,6 +1115,7 @@ def test_sleep_routes_look_back_past_the_watermark(db):
         "sleep_duration",
         "workout",
         "resting_heart_rate",
+        "respiratory_rate",
     }
 
 

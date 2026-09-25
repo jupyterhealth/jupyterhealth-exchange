@@ -135,6 +135,7 @@ LOOKBACK_TYPES = {
     "sleep_duration",
     "workout",
     "resting_heart_rate",
+    "respiratory_rate",
 }
 NORMALIZED_SYSTEM = "ow:normalized"
 RAW_SYSTEM = "ow:raw"
@@ -163,6 +164,8 @@ Workouts use it too: they sync as late as sleep, and they share a code with the
 daily activity summary, whose rows would push the watermark past a late workout.
 Resting heart rate does for the same reason: OW stamps it at the start of the
 night's sleep, hours behind the heart rate rows that share its code.
+Respiratory rate does because OW files it once per night at the start of sleep
+and rewrites that sample in place when Oura revises the night.
 A source that only ever appends leaves this None and resumes from the watermark.
 """
 
