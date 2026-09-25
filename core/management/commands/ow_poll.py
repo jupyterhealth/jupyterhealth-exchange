@@ -424,18 +424,27 @@ class Command(BaseCommand):
 
         Returns True only when a row was created. A concurrent tick can win the
         race between the lookup and the insert, so IntegrityError is treated as
-        already-ingested rather than an error.
-        """
-        existing = (
-            Observation.objects.filter(identifiers__system=system, identifiers__value=value).order_by("id").first()
-        )
-        if existing is not None:
-            existing.omh_data = omh_record
-            existing.save()
-            return False
+        already-ingested rather than an error. Any other failure, on create or
+        update, is logged and the record skipped, so the rest of the poll still lands.
 
+        The lookup is scoped to the patient because JheUser.identifier is not
+        unique. When two patients share a dedupe key, the second one's insert hits
+        the unique constraint and is skipped rather than overwriting the first's row.
+        """
         try:
             with transaction.atomic():
+                existing = (
+                    Observation.objects.filter(
+                        subject_patient=patient, identifiers__system=system, identifiers__value=value
+                    )
+                    .order_by("id")
+                    .first()
+                )
+                if existing is not None:
+                    existing.omh_data = omh_record
+                    existing.save()
+                    return False
+
                 obs = Observation.objects.create(
                     subject_patient=patient,
                     codeable_concept=code,

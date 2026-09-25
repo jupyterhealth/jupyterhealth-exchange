@@ -288,6 +288,66 @@ def test_persist_failure_does_not_abort_the_run(db, ow_user, patient_with_consen
     ).exists()
 
 
+def test_invalid_revision_does_not_drop_later_records(db, ow_user, patient_with_consent, hr_concept):
+    """A revised body the schema rejects is skipped like a failed create; later records still land."""
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    revised = {"timestamp": "2026-09-20T10:00:00+00:00", "type": "heart_rate", "value": 61}
+    new = {"timestamp": "2026-09-20T10:05:00+00:00", "type": "heart_rate", "value": 62}
+    invalid = _fake_omh_record()
+    del invalid["body"]["heart_rate"]
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert") as mock_convert,
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": [revised]}
+        mock_convert.return_value = _fake_omh_record()
+        call_command("ow_poll", stdout=StringIO())
+
+        mock_get.return_value.json.return_value = {"data": [revised, new]}
+        mock_convert.side_effect = [invalid, _fake_omh_record()]
+        call_command("ow_poll", stdout=StringIO())
+
+    assert Observation.objects.count() == 2
+
+
+def test_revision_never_overwrites_another_patients_row(db, ow_user, hr_concept):
+    """JheUser.identifier is not unique, so a matching key on another patient's row is left alone."""
+    from core.models import JheUser
+
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    other = JheUser.objects.create_user(email="other@example.test", password="x", user_type="patient").patient
+    stored = _fake_omh_record()
+    stored["body"]["heart_rate"]["value"] = 61
+    theirs = Observation.objects.create(
+        subject_patient=other, codeable_concept=hr_concept, omh_data=stored, status="final"
+    )
+    ObservationIdentifier.objects.create(
+        observation=theirs, system=NORMALIZED_SYSTEM, value="user-123:heart_rate:2026-09-20T10:00:00+00:00"
+    )
+    revised = _fake_omh_record()
+    revised["body"]["heart_rate"]["value"] = 99
+
+    with (
+        patch("core.management.commands.ow_poll.requests.get") as mock_get,
+        patch("core.management.commands.ow_poll.convert") as mock_convert,
+    ):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {
+            "data": [{"timestamp": "2026-09-20T10:00:00+00:00", "type": "heart_rate", "value": 99}]
+        }
+        mock_convert.return_value = revised
+        call_command("ow_poll", stdout=StringIO())
+
+    theirs.refresh_from_db()
+    assert theirs.omh_data["body"]["heart_rate"]["value"] == 61
+
+
 def test_second_poll_resumes_from_the_last_observation(db, ow_user, patient_with_consent, hr_concept):
     """Once a row exists, the next poll asks OW from that row's time minus the overlap."""
     _set_jhe_setting("module.ow", True)
