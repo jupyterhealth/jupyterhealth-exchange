@@ -11,41 +11,71 @@
 </div>
 
 <div class="form-floating mb-3">
-  <input name="joincode" type="text" class="form-control" id="joincodeInput" placeholder="name@example.com">
-  <label for="floatingInput">Invite Code</label>
+  <input name="joincode" type="text" class="form-control" id="joincodeInput" placeholder="from your JHE admin" required>
+  <label for="joincodeInput">Invite Code</label>
 </div>
 
 <div class="form-floating">
-  <input name="email" type="email" class="form-control" id="emailInput" placeholder="name@example.com">
-  <label for="floatingInput">E-mail address</label>
+  <input name="email" type="email" class="form-control" id="emailInput" placeholder="name@example.com" required>
+  <label for="emailInput">E-mail address</label>
 </div>
+<div id="password-inputs">
 <div class="form-floating">
-  <input name="password" type="password" class="form-control" id="passwordInput" placeholder="Re-enter Password">
+  <input name="password" type="password" class="form-control" id="passwordInput" placeholder="Password"  minlength=8 onkeyup="checkPasswords()" required>
   <label for="passwordInput">Password</label>
 </div>
 <div class="form-floating">
-  <input name="password2" type="password" class="form-control" id="passwordInput2" placeholder="Password">
+  <input name="password2" type="password" class="form-control" id="passwordInput2" placeholder="Re-enter Password" onkeyup="checkPasswords()" required>
   <label for="passwordInput2">Re-enter Password</label>
+</div>
 </div>
 
 <script>
+  function checkPasswords() {
+    const passwordInput = document.getElementById('passwordInput');
+    const passwordInput2 = document.getElementById('passwordInput2');
+    passwordInput2.setCustomValidity("");
+    if (passwordInput.value !== passwordInput2.value){
+      passwordInput2.setCustomValidity("Passwords must match");
+    }
+    // report validity if focused
+    // don't if not because reportValidity focuses the element,
+    // so you can't edit one field while the other is invalid
+    [passwordInput, passwordInput2].forEach(
+      (el) => {
+        if (document.activeElement == el) {
+          el.reportValidity();
+        }
+      }
+    );
+
+    document.getElementById("password-inputs").classList.add("was-validated");
+  }
+
   function validateAndSubmit(form){
     document.getElementById("clientErrors").replaceChildren();
+    checkPasswords();
     const errors = [];
-    if(!validateEmail(document.getElementById('emailInput').value)){
-      errors.push("Check your E-mail address.");
-    } else if(!validatePassword(document.getElementById('passwordInput2').value)){
-      errors.push("Password must be at least: 8 characters long, contain a number, an upper case letter and a special character (#?!@$%^&*-).");
-    } else if(document.getElementById("passwordInput").value !== document.getElementById("passwordInput2").value){
-      errors.push("Passwords do not match, try re-entering again.");
+    // report in reverse order because the last one reported will be displayed
+    for (const el of Array.from(document.querySelectorAll("form input")).reverse()) {
+      const invalidMessage = el.reportValidity();
+      if (!el.checkValidity()) {
+        const label = el.labels[0].innerText;
+        errors.unshift(`${label}: ${el.validationMessage}`);
+      }
     }
-    if(errors.length>0){
-      document.getElementById("clientErrors").insertAdjacentHTML('afterbegin', // match Django error messages
-      `
-        <ul class="errorlist">
-          <li>${errors.join("</li><li>")}</li>
-        </ul>
-      `);
+    // set was-validated to activate :invalid css
+    form.classList.add("was-validated");
+    if (errors.length > 0) {
+      // match Django error messages
+      const ul = document.createElement("ul");
+      ul.classList.add("errorlist");
+      errors.forEach((error) => {
+        const li = document.createElement("li");
+        li.innerText = error;
+        ul.appendChild(li);
+      });
+      document.getElementById("clientErrors").appendChild(ul);
     } else {
       form.submit();
     }
