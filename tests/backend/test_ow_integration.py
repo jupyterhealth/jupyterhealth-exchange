@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from rest_framework.test import APIClient
 
-from core.models import JheUser
+from core.models import OW_USER_ID_SYSTEM, JheUser, Patient, PatientIdentifier, PractitionerIdentifier
 
 
 @pytest.fixture(autouse=True)
@@ -30,20 +30,22 @@ def ow_user(db):
     return JheUser.objects.create_user(
         email="ow-test@example.org",
         password="testpass123",
-        identifier="",
         user_type="patient",
     )
 
 
 @pytest.fixture
 def ow_user_with_id(db):
-    """A user who already has an OW identifier stored."""
-    return JheUser.objects.create_user(
+    """A patient who already has an OW link stored."""
+    user = JheUser.objects.create_user(
         email="ow-linked@example.org",
         password="testpass123",
-        identifier="ow:550e8400-e29b-41d4-a716-446655440000",
         user_type="patient",
     )
+    PatientIdentifier.objects.create(
+        patient=user.patient, system=OW_USER_ID_SYSTEM, value="550e8400-e29b-41d4-a716-446655440000"
+    )
+    return user
 
 
 @pytest.fixture
@@ -136,15 +138,52 @@ class TestCreateOwUser:
         assert call_args[1]["json"]["email"] == "ow-test@example.org"
         assert "X-Open-Wearables-API-Key" in call_args[1]["headers"]
 
-        # Verify user's identifier was updated
-        ow_user.refresh_from_db()
-        assert ow_user.identifier == "ow:new-ow-user-id-123"
+        # Verify the OW link was stored on the patient
+        assert Patient.objects.get(jhe_user=ow_user).get_ow_user_id() == "new-ow-user-id-123"
 
     def test_returns_existing_ow_id_if_already_linked(self, ow_linked_client, ow_user_with_id, ow_settings):
         resp = ow_linked_client.post("/api/v1/ow/users")
         assert resp.status_code == 200
         data = resp.json()
         assert data["owUserId"] == "550e8400-e29b-41d4-a716-446655440000"
+
+    @patch("core.views.ow.requests.post")
+    def test_linking_keeps_the_practitioner_identifiers(self, mock_post, ow_settings):
+        """A user who is both practitioner and patient links OW on the patient side only."""
+        user = JheUser.objects.create_user(email="dual@example.org", password="testpass123", user_type="practitioner")
+        Patient.objects.create(jhe_user=user)
+        PractitionerIdentifier.objects.create(
+            practitioner=user.practitioner, system="https://ehr.example.org", value="Practitioner-123"
+        )
+        mock_resp = MagicMock()
+        mock_resp.status_code = 201
+        mock_resp.json.return_value = {"id": "new-ow-user-id-123"}
+        mock_post.return_value = mock_resp
+        client = APIClient()
+        client.force_authenticate(user)
+
+        resp = client.post(self.URL)
+
+        assert resp.status_code == 200
+        assert list(user.practitioner.identifiers.values_list("value", flat=True)) == ["Practitioner-123"]
+        assert Patient.objects.get(jhe_user=user).get_ow_user_id() == "new-ow-user-id-123"
+
+    @patch("core.views.ow.requests.post")
+    def test_non_patient_returns_400(self, mock_post, api_client, ow_settings):
+        resp = api_client.post(self.URL)
+
+        assert resp.status_code == 400
+        assert resp.json()["error"] == "Authenticated user is not a patient"
+        mock_post.assert_not_called()
+
+    @patch("core.views.ow.requests.post")
+    def test_returns_the_oldest_link_when_two_exist(self, mock_post, ow_linked_client, ow_user_with_id, ow_settings):
+        PatientIdentifier.objects.create(patient=ow_user_with_id.patient, system=OW_USER_ID_SYSTEM, value="second-link")
+
+        resp = ow_linked_client.post(self.URL)
+
+        assert resp.json()["owUserId"] == "550e8400-e29b-41d4-a716-446655440000"
+        mock_post.assert_not_called()
 
     @patch("core.views.ow.requests.post")
     def test_returns_sdk_token_when_requested(self, mock_post, ow_client, ow_user, ow_settings, ow_app_settings):
@@ -247,6 +286,14 @@ class TestOuraAuthorize:
         resp = ow_client.get(self.URL)
         assert resp.status_code == 400
         assert "does not have an ow user_id" in resp.json()["error"].lower()
+
+    @patch("core.views.ow.requests.get")
+    def test_non_patient_returns_400(self, mock_get, api_client, ow_settings):
+        resp = api_client.get(self.URL)
+
+        assert resp.status_code == 400
+        assert "does not have an ow user_id" in resp.json()["error"].lower()
+        mock_get.assert_not_called()
 
     def test_missing_ow_settings_returns_500(self, ow_linked_client, no_ow_settings):
         resp = ow_linked_client.get(self.URL)

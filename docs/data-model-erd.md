@@ -7,7 +7,6 @@ erDiagram
     int id PK
     string email UK
     boolean email_is_verified
-    string identifier
     string user_type
   }
 
@@ -21,7 +20,6 @@ erDiagram
   "Practitioner (FHIR Practitioner)" {
     int id PK
     int jhe_user_id FK
-    string identifier
     string name_family
     string name_given
     string telecom_phone

@@ -56,7 +56,7 @@ create one:
 from core.models import JheUser
 JheUser.objects.create_user(
     email="patient@example.org", password="unused",
-    user_type="patient", identifier="demo-patient",
+    user_type="patient",
 )
 ```
 

@@ -21,7 +21,6 @@ def _make_patient(email="pc-patient@example.org"):
     return JheUser.objects.create_user(
         email=email,
         password="testpass123",
-        identifier=email,
         user_type="patient",
     )
 
@@ -81,9 +80,7 @@ def test_list_and_read_only_own_clients(user):
     created = api_client.post("/api/v1/practitioner_clients", {"label": "a"}, format="json").json()
 
     # a second practitioner with their own client
-    other = JheUser.objects.create_user(
-        email="pc-other@example.org", password="x", identifier="pc-other", user_type="practitioner"
-    )
+    other = JheUser.objects.create_user(email="pc-other@example.org", password="x", user_type="practitioner")
     _practitioner_client(other).post("/api/v1/practitioner_clients", {"label": "b"}, format="json")
 
     listed = fetch_paginated(api_client, "/api/v1/practitioner_clients")
@@ -97,9 +94,7 @@ def test_list_and_read_only_own_clients(user):
 
 
 def test_cannot_read_another_practitioners_client(user):
-    other = JheUser.objects.create_user(
-        email="pc-other2@example.org", password="x", identifier="pc-other2", user_type="practitioner"
-    )
+    other = JheUser.objects.create_user(email="pc-other2@example.org", password="x", user_type="practitioner")
     other_client = (
         _practitioner_client(other).post("/api/v1/practitioner_clients", {"label": "b"}, format="json").json()
     )
@@ -154,9 +149,7 @@ def test_practitioner_client_excluded_from_admin_clients(user, superuser):
 
 
 def test_cannot_delete_another_practitioners_client(user):
-    other = JheUser.objects.create_user(
-        email="pc-other3@example.org", password="x", identifier="pc-other3", user_type="practitioner"
-    )
+    other = JheUser.objects.create_user(email="pc-other3@example.org", password="x", user_type="practitioner")
     other_client = (
         _practitioner_client(other).post("/api/v1/practitioner_clients", {"label": "b"}, format="json").json()
     )

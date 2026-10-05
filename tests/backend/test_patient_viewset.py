@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
 from django.db import connection
 from django.db.utils import IntegrityError
@@ -5,6 +7,7 @@ from django.test.utils import CaptureQueriesContext
 from rest_framework.test import APIClient
 
 from core.models import (
+    OW_USER_ID_SYSTEM,
     FhirSource,
     Organization,
     Patient,
@@ -428,3 +431,46 @@ def test_patient_fhir_sources_is_denied_to_another_patient(patient, device):
     client.force_authenticate(other.jhe_user)
 
     assert client.get(f"/api/v1/patients/{patient.id}/fhir_sources").status_code == 403
+
+
+def _ow_setting(key, default=None):
+    return {"ow.api_url": "http://ow.test", "ow.api_key": "key"}.get(key, default)
+
+
+@patch("requests.get")
+@patch("core.views.patient.get_setting", side_effect=_ow_setting)
+def test_wearable_status_asks_ow_about_the_linked_user(_get_setting, mock_get, patient):
+    PatientIdentifier.objects.create(patient=patient, system=OW_USER_ID_SYSTEM, value="abc")
+    mock_get.return_value = MagicMock(status_code=200)
+    mock_get.return_value.json.return_value = [{"provider": "oura"}]
+    client = APIClient()
+    client.force_authenticate(patient.jhe_user)
+
+    response = client.get(f"/api/v1/patients/{patient.id}/wearable-status")
+
+    assert response.json() == {"connections": [{"provider": "oura"}], "connected": True}
+    assert mock_get.call_args[0][0] == "http://ow.test/api/v1/users/abc/connections"
+
+
+def test_patient_form_save_keeps_the_ow_link(api_client, organization, patient):
+    """A form opened before the patient linked OW must not unlink them on save."""
+    PatientIdentifier.objects.create(patient=patient, system=OW_USER_ID_SYSTEM, value="abc")
+
+    r = api_client.patch(
+        f"/api/v1/patients/{patient.id}?organizationId={organization.id}", {"identifiers": []}, format="json"
+    )
+
+    assert r.status_code == 200, r.text
+    assert patient.get_ow_user_id() == "abc"
+
+
+def test_patient_form_cannot_write_an_ow_link(api_client, organization, patient):
+    """Only connecting OW sets the link; a typed-in value could point at another patient's OW user."""
+    r = api_client.patch(
+        f"/api/v1/patients/{patient.id}?organizationId={organization.id}",
+        {"identifiers": [{"system": OW_USER_ID_SYSTEM, "value": "someone-elses-uuid"}]},
+        format="json",
+    )
+
+    assert r.status_code == 200, r.text
+    assert patient.get_ow_user_id() is None

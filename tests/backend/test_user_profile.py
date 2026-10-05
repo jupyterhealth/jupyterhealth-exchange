@@ -92,7 +92,6 @@ def patient_with_details(organization):
         password="testpass123",
         first_name="Alice",
         last_name="Smith",
-        identifier="phi-test-patient",
         user_type="patient",
     )
     pat = user.patient_profile
@@ -375,7 +374,6 @@ class TestProfileRegressions:
         user = JheUser.objects.create_user(
             email="lonely-patient@example.org",
             password="testpass123",
-            identifier="lonely-patient",
             user_type="patient",
         )
         client = APIClient()
@@ -396,7 +394,6 @@ class TestProfileRegressions:
             password="testpass123",
             first_name="SensitiveFirst",
             last_name="SensitiveLast",
-            identifier="phi-leak-patient",
             user_type="patient",
         )
         pat = user.patient_profile

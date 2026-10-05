@@ -37,7 +37,6 @@ def practitioner(org):
     user = JheUser.objects.create_user(
         email="scope-practitioner@example.org",
         password="testpass123",
-        identifier="scope-practitioner",
         user_type="practitioner",
     )
     PractitionerOrganization.objects.create(
@@ -53,7 +52,6 @@ def patient_a(org):
     user = JheUser.objects.create_user(
         email="patient-a@example.org",
         password="testpass123",
-        identifier="patient-a",
         user_type="patient",
     )
     user.patient.organizations.add(org)
@@ -65,7 +63,6 @@ def patient_b(org):
     user = JheUser.objects.create_user(
         email="patient-b@example.org",
         password="testpass123",
-        identifier="patient-b",
         user_type="patient",
     )
     user.patient.organizations.add(org)

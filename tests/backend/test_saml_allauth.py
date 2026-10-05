@@ -114,7 +114,6 @@ class JheSocialAccountAdapterTests(TestCase):
         sociallogin = self._sociallogin("doc@example.org")
         user = self.adapter.populate_user(self.request, sociallogin, {"email": "doc@example.org"})
         self.assertEqual(user.user_type, "practitioner")
-        self.assertEqual(user.identifier, "idp-uid-1")
 
     def test_saved_signup_creates_practitioner_profile(self):
         """The composition the adapter relies on: save_user persists the user

@@ -53,15 +53,11 @@ class JheUserManager(BaseUserManager):
             raise ValueError(_("Superuser must have is_superuser=True."))
         return self.create_user(email, password, **extra_fields)
 
-    def get_by_ehr_id(self, ehr_id):
-        return JheUser.objects.filter(identifier=ehr_id)
-
 
 class JheUser(AbstractUser):
     username = None
     email = models.EmailField(_("Email Address"), max_length=254, unique=True)
     email_is_verified = models.BooleanField(default=False)
-    identifier = models.CharField()
     USER_TYPES = {
         "patient": "Patient",
         "practitioner": "Practitioner",
@@ -186,7 +182,6 @@ class JheUser(AbstractUser):
                         jhe_user=self,
                         name_family=self.last_name,
                         name_given=self.first_name,
-                        identifier=self.identifier,
                     )
 
                     # --- parse multi-org:role string from db ---

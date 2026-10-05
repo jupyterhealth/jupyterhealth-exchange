@@ -32,9 +32,9 @@ class JheSocialAccountAdapter(DefaultSocialAccountAdapter):
     JheSetting (comma-separated; empty allows any). The domain gate applies to
     first-time provisioning only — existing accounts reached via
     email-authentication, and already-linked SocialAccounts, never pass through
-    it; deactivate the user to revoke access. `user_type`/`identifier` are
-    likewise set at first-time provisioning only. Rejections render allauth's
-    "Sign Up Closed" page.
+    it; deactivate the user to revoke access. `user_type` is likewise set at
+    first-time provisioning only. Rejections render allauth's "Sign Up Closed"
+    page.
     """
 
     def pre_social_login(self, request, sociallogin):
@@ -87,7 +87,6 @@ class JheSocialAccountAdapter(DefaultSocialAccountAdapter):
     def populate_user(self, request, sociallogin, data):
         user = super().populate_user(request, sociallogin, data)
         user.user_type = "practitioner"
-        user.identifier = sociallogin.account.uid
         # Mirrors the verified allauth EmailAddress row this login records —
         # the IdP asserted the email, so JHE's own flag agrees with it.
         user.email_is_verified = True

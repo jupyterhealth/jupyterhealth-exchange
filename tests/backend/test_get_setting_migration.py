@@ -109,7 +109,7 @@ class ContextProcessorTests(TestCase):
     def setUp(self):
         cache.clear()
         # Create the OAuth application so _get_oidc_client_id works
-        self.user = JheUser.objects.create_user(email="ctx-test@example.com", password="pass", identifier="ctx")
+        self.user = JheUser.objects.create_user(email="ctx-test@example.com", password="pass")
         Application.objects.create(
             name="JHE Portal",
             user=self.user,
@@ -288,7 +288,7 @@ class SendEmailVerificationTests(TestCase):
     """Regression: send_email_verificaion must use get_setting for site_url."""
 
     def setUp(self):
-        self.user = JheUser.objects.create_user(email="email-test@example.com", password="pw", identifier="em1")
+        self.user = JheUser.objects.create_user(email="email-test@example.com", password="pw")
 
     @patch(GET_SETTING_USER, return_value="https://db-email.example.com")
     def test_email_contains_db_site_url(self, mock_gs):
@@ -347,7 +347,6 @@ def test_practitioner_assigned_to_default_org(mock_gs, org, org_2):
     user = JheUser.objects.create_user(
         email="default-org@example.com",
         password="pw",
-        identifier="do1",
         user_type="practitioner",
     )
     practitioner = Practitioner.objects.get(jhe_user=user)
@@ -380,7 +379,6 @@ def test_practitioner_assigned_to_default_org_invalid(mock_gs, default_org, org,
         JheUser.objects.create_user(
             email=email,
             password="pw",
-            identifier="do1",
             user_type="practitioner",
         )
 
@@ -393,7 +391,6 @@ def test_empty_default_orgs_skips_assignment(mock_gs):
     user = JheUser.objects.create_user(
         email="no-default-org@example.com",
         password="pw",
-        identifier="ndo1",
         user_type="practitioner",
     )
     practitioner = Practitioner.objects.get(jhe_user=user)
@@ -412,7 +409,6 @@ class FhirSearchGetSettingTests(TestCase):
         self.user = JheUser.objects.create_user(
             email="fhir-search@example.com",
             password="pw",
-            identifier="fs1",
             user_type="practitioner",
         )
         self.user.practitioner.organizations.add(self.org)

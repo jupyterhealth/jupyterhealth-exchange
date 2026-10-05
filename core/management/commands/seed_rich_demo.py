@@ -489,7 +489,6 @@ class Command(BaseCommand):
                     first_name=mp["name_given"],
                     last_name=mp["name_family"],
                     user_type="patient",
-                    identifier=mp["email"],
                 )
                 patient = user.patient_profile
                 patient.birth_date = mp["birth_date"]

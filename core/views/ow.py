@@ -16,7 +16,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from core.models import CodeableConcept, DataSource, JheUser, Observation
+from core.models import OW_USER_ID_SYSTEM, CodeableConcept, DataSource, Observation, PatientIdentifier
 from core.services.jhe_settings import get_setting
 
 logger = logging.getLogger(__name__)
@@ -66,8 +66,8 @@ def create_ow_user(request):
     """
     POST /api/v1/ow/users
     Finds or creates a user in Open Wearables.
-    Uses the bearer token to identify the JHE user,
-    then stores the returned OW user_id in the JHE user's identifier field.
+    Uses the bearer token to identify the JHE patient,
+    then stores the returned OW user_id as a PatientIdentifier on that patient.
     """
     user = request.user
     ow_api_url = get_setting("ow.api_url", "")
@@ -76,12 +76,14 @@ def create_ow_user(request):
     if not ow_api_url or not ow_api_key:
         return Response({"error": "OW integration not configured"}, status=500)
 
-    # Check if user already has an OW user_id stored. The identifier field can also
-    # hold non-OW identifiers (e.g. FHIR refs from seed data), so match the prefix.
+    patient = user.get_patient()
+    if patient is None:
+        return Response({"error": "Authenticated user is not a patient"}, status=400)
+
     include_tokens = bool(request.data.get("include_ow_tokens"))
 
-    if user.identifier and user.identifier.startswith("ow:"):
-        ow_user_id = user.identifier.removeprefix("ow:")
+    ow_user_id = patient.get_ow_user_id()
+    if ow_user_id:
         tokens = _sdk_token(ow_api_url, ow_user_id) if include_tokens else {}
         return Response({"ow_user_id": ow_user_id, **tokens})
 
@@ -111,10 +113,7 @@ def create_ow_user(request):
     ow_data = ow_response.json()
     ow_user_id = str(ow_data.get("id", ""))
 
-    # Store OW user_id in JHE user's identifier field with the "ow:" prefix
-    # used by ow_poll's filter (identifier__startswith="ow:").
-    user.identifier = f"ow:{ow_user_id}"
-    user.save(update_fields=["identifier"])
+    PatientIdentifier.objects.create(patient=patient, system=OW_USER_ID_SYSTEM, value=ow_user_id)
 
     tokens = _sdk_token(ow_api_url, ow_user_id) if include_tokens else {}
     return Response({"ow_user_id": ow_user_id, **tokens})
@@ -126,7 +125,7 @@ def get_oura_auth_url(request):
     """
     GET /api/v1/ow/oauth/oura/authorize
     Passes through to the OW OAuth authorize endpoint.
-    Populates user_id from the bearer token (looked up from identifier field).
+    Populates user_id from the bearer token (the patient's OW PatientIdentifier).
     """
     user = request.user
     ow_api_url = get_setting("ow.api_url", "")
@@ -135,12 +134,10 @@ def get_oura_auth_url(request):
     if not ow_api_url or not ow_api_key:
         return Response({"error": "OW integration not configured"}, status=500)
 
-    ow_user_id = user.identifier
-    if not ow_user_id or not ow_user_id.startswith("ow:"):
+    patient = user.get_patient()
+    ow_user_id = patient.get_ow_user_id() if patient else None
+    if not ow_user_id:
         return Response({"error": "User does not have an OW user_id"}, status=400)
-    # JHE stores the identifier with an "ow:" prefix (used by ow_poll filter);
-    # OW expects the bare UUID.
-    ow_user_id = ow_user_id.removeprefix("ow:")
 
     redirect_uri = request.query_params.get("redirect_uri", "")
 
@@ -306,17 +303,12 @@ def sync_ow_data(request):
 
             # Resolve patient
             try:
-                jhe_user = JheUser.objects.get(identifier=ow_user_uuid)
-                patient = jhe_user.patient_profile
-            except JheUser.DoesNotExist:
+                patient = PatientIdentifier.objects.get(system=OW_USER_ID_SYSTEM, value=ow_user_uuid).patient
+            except PatientIdentifier.DoesNotExist:
                 total_skipped += 1
-                logger.debug("No JHE user with identifier=%s, skipping %s", ow_user_uuid, key)
+                logger.debug("No patient with OW user id %s, skipping %s", ow_user_uuid, key)
                 continue
             except Exception:
-                total_skipped += 1
-                continue
-
-            if patient is None:
                 total_skipped += 1
                 continue
 

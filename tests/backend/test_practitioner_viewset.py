@@ -16,7 +16,6 @@ def _make_practitioner(email, **user_kwargs):
     user = JheUser.objects.create_user(
         email=email,
         password="testpass123",
-        identifier=email,
         user_type="practitioner",
         **user_kwargs,
     )

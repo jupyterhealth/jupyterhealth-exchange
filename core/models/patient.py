@@ -9,6 +9,8 @@ from core.services.jhe_settings import get_setting
 
 from .codeable_concept import CodeableConcept
 
+OW_USER_ID_SYSTEM = "https://jupyterhealth.org/fhir/identifier/ow-user-id"
+
 
 class Patient(models.Model):
     jhe_user = models.OneToOneField(
@@ -40,6 +42,14 @@ class Patient(models.Model):
             studypatientscopeconsent__consented=True,
             studypatientscopeconsent__study_patient__patient=self,
         ).distinct()
+
+    def get_ow_user_id(self):
+        """The patient's Open Wearables user id, or None when they have not linked OW.
+
+        A patient normally has one OW row. If an admin adds a second, the oldest wins
+        everywhere, so every caller talks to the same OW user.
+        """
+        return self.identifiers.filter(system=OW_USER_ID_SYSTEM).order_by("id").values_list("value", flat=True).first()
 
     @staticmethod
     def for_practitioner_organization_study(

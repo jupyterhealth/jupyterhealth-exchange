@@ -9,7 +9,7 @@ import pytest
 from oauth2_provider.models import get_application_model
 from rest_framework.test import APIClient
 
-from core.models import ClientDataSource, DataSource, JheUser, PatientIdentifier
+from core.models import OW_USER_ID_SYSTEM, ClientDataSource, DataSource, JheUser, PatientIdentifier
 
 
 @pytest.fixture
@@ -50,7 +50,6 @@ def test_save_identifier_conflicts_when_owned_by_another_patient(organization, p
     other = JheUser.objects.create_user(
         email="other-patient@example.org",
         password="testpass123",
-        identifier="other-patient",
         user_type="patient",
     ).patient
     other.organizations.add(organization)
@@ -75,6 +74,17 @@ def test_save_identifier_requires_patient(db, user):
 def test_save_identifier_validates_body(patient, patient_client):
     resp = patient_client.post("/api/v1/ehr-patient-portal/identifier", {"system": "sys"})
     assert resp.status_code == 400
+
+
+def test_save_identifier_rejects_the_ow_link(patient, patient_client):
+    """Only connecting OW sets the link; a typed-in value could point at another patient's OW user."""
+    resp = patient_client.post(
+        "/api/v1/ehr-patient-portal/identifier",
+        {"system": OW_USER_ID_SYSTEM, "value": "550E8400-E29B-41D4-A716-446655440000"},
+    )
+
+    assert resp.status_code == 400
+    assert not PatientIdentifier.objects.filter(system=OW_USER_ID_SYSTEM).exists()
 
 
 def test_connect_page_renders(db, client):

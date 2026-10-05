@@ -76,6 +76,7 @@ from django.utils import timezone
 from omh_shim import convert
 
 from core.models import (
+    OW_USER_ID_SYSTEM,
     CodeableConcept,
     DataSource,
     JheSetting,
@@ -301,8 +302,7 @@ class Command(BaseCommand):
         oura_ds, _ = DataSource.objects.get_or_create(name="Oura", defaults={"type": "personal_device"})
         poll_window = self._poll_window(options)
 
-        # Only users linked to an OW account: identifier startswith "ow:".
-        users = JheUser.objects.filter(identifier__startswith="ow:")
+        users = JheUser.objects.filter(patient_profile__identifiers__system=OW_USER_ID_SYSTEM).distinct()
         patient_id = options.get("patient_id")
         if patient_id is not None:
             users = users.filter(patient_profile__id=patient_id)
@@ -316,10 +316,10 @@ class Command(BaseCommand):
             polled = {t: c for t, c in codes.items() if c.coding_code in consented_codes}
             if not polled:
                 continue
+            ow_user_id = patient.get_ow_user_id()
 
             for ow_type, code in polled.items():
                 try:
-                    ow_user_id = user.identifier.removeprefix("ow:")
                     if mode == "normalized":
                         fetcher = self._normalized_fetcher(user, ow_user_id, ow_api_url, ow_api_key, ow_type)
                     else:
@@ -565,9 +565,9 @@ class Command(BaseCommand):
         already-ingested rather than an error. Any other failure, on create or
         update, is logged and the record skipped, so the rest of the poll still lands.
 
-        The lookup is scoped to the patient because JheUser.identifier is not
-        unique. When two patients share a dedupe key, the second one's insert hits
-        the unique constraint and is skipped rather than overwriting the first's row.
+        The lookup is scoped to the patient so a key already stored on another
+        patient's row, for example after an OW link moved between patients, is never
+        overwritten: the second insert hits the unique constraint and is skipped.
         """
         try:
             with transaction.atomic():

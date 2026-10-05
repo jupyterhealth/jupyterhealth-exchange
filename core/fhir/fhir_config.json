@@ -196,7 +196,7 @@
       "__search": {
         "identifier": {
           "type": "token",
-          "path": "identifier"
+          "path": "identifiers__value"
         },
         "name": {
           "type": "string",

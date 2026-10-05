@@ -42,7 +42,7 @@ from core.utils import generate_observation_value_attachment_data
 # -----------------------------------------------------
 class JheUserMethodTests(TestCase):
     def setUp(self):
-        self.user = JheUser.objects.create_user(email="test@example.com", password="password", identifier="test123")
+        self.user = JheUser.objects.create_user(email="test@example.com", password="password")
 
         # Create an OAuth2 application for testing
         Application = get_application_model()
@@ -88,7 +88,6 @@ class OrganizationMethodTests(TestCase):
         self.user = JheUser.objects.create_user(
             email="user@example.com",
             password="password",
-            identifier="user123",
             user_type="practitioner",
         )
 
@@ -122,7 +121,7 @@ class OrganizationMethodTests(TestCase):
 
     def test_for_practitioner_excludes_unauthorized_practitioner(self):
         other_user = JheUser.objects.create_user(
-            email="other@example.com", password="password", identifier="other123", user_type="practitioner"
+            email="other@example.com", password="password", user_type="practitioner"
         )
         PractitionerOrganization.objects.create(practitioner=self.practitioner, organization=self.parent_org)
 
@@ -131,9 +130,7 @@ class OrganizationMethodTests(TestCase):
         self.assertNotIn(self.parent_org.id, org_ids)
 
     def test_for_patient(self):
-        patient_user = JheUser.objects.create_user(
-            email="patient@example.com", password="password", identifier="patient123"
-        )
+        patient_user = JheUser.objects.create_user(email="patient@example.com", password="password")
 
         patient = Patient.objects.create(
             jhe_user=patient_user,
@@ -151,9 +148,7 @@ class OrganizationMethodTests(TestCase):
 
     def test_for_patient_excludes_unrelated_org(self):
         other_org = Organization.objects.create(name="Other Org", type="prov")
-        patient_user = JheUser.objects.create_user(
-            email="patient2@example.com", password="password", identifier="patient456"
-        )
+        patient_user = JheUser.objects.create_user(email="patient2@example.com", password="password")
         patient = Patient.objects.create(
             jhe_user=patient_user,
             name_family="Smith",
@@ -177,7 +172,6 @@ class PatientMethodTests(TestCase):
         self.user = JheUser.objects.create_user(
             email="patient@example.com",
             password="password",
-            identifier="patient123",
             user_type="practitioner",
         )
         self.org = Organization.objects.create(name="Hospital", type="prov")
@@ -269,9 +263,7 @@ class PatientMethodTests(TestCase):
         )
         study = Study.objects.create(name="Study A", description="", organization=self.org)
 
-        other_user = JheUser.objects.create_user(
-            email="other@example.com", password="password", identifier="other123", user_type="patient"
-        )
+        other_user = JheUser.objects.create_user(email="other@example.com", password="password", user_type="patient")
         other_patient = other_user.patient
         other_patient.organizations.add(self.org)
         other_sp = StudyPatient.objects.create(study=study, patient=other_patient)
@@ -290,7 +282,6 @@ class PatientMethodTests(TestCase):
         practitioner_user = JheUser.objects.create_user(
             email="doctor@example.com",
             password="password",
-            identifier="doc123",
             user_type="practitioner",
         )
         practitioner = Practitioner.objects.get(jhe_user=practitioner_user)
@@ -308,7 +299,7 @@ class PatientMethodTests(TestCase):
         other_org = Organization.objects.create(name="Other Hospital", type="prov")
         self.user.practitioner.organizations.add(other_org)
         other_patient_user = JheUser.objects.create_user(
-            email="other_patient@example.com", password="password", identifier="POTHER", user_type="patient"
+            email="other_patient@example.com", password="password", user_type="patient"
         )
         other_patient = other_patient_user.patient
         PatientOrganization.objects.create(patient=other_patient, organization=other_org)
@@ -332,7 +323,7 @@ class PatientMethodTests(TestCase):
 
     def test_for_practitioner_organization_study_filtered_by_patient_id(self):
         other_patient_user = JheUser.objects.create_user(
-            email="other_patient@example.com", password="password", identifier="POTHER", user_type="patient"
+            email="other_patient@example.com", password="password", user_type="patient"
         )
         other_patient = other_patient_user.patient
         PatientOrganization.objects.create(patient=other_patient, organization=self.org)
@@ -349,7 +340,7 @@ class PatientMethodTests(TestCase):
     def test_for_practitioner_organization_study_excludes_unauthorized_practitioner(self):
         other_org = Organization.objects.create(name="Other Hospital", type="prov")
         unauthorized_user = JheUser.objects.create_user(
-            email="unauthorized@example.com", password="password", identifier="unauth", user_type="practitioner"
+            email="unauthorized@example.com", password="password", user_type="practitioner"
         )
         unauthorized_user.practitioner.organizations.add(other_org)
 
@@ -374,7 +365,7 @@ class PatientMethodTests(TestCase):
     def test_for_study_excludes_unauthorized_practitioner(self):
         other_org = Organization.objects.create(name="Other Hospital", type="prov")
         unauthorized_user = JheUser.objects.create_user(
-            email="unauthorized@example.com", password="password", identifier="unauth", user_type="practitioner"
+            email="unauthorized@example.com", password="password", user_type="practitioner"
         )
         unauthorized_user.practitioner.organizations.add(other_org)
 
@@ -388,7 +379,6 @@ class PatientMethodTests(TestCase):
         practitioner_user = JheUser.objects.create_user(
             email="doctor3@example.com",
             password="password",
-            identifier="doc789",
             user_type="practitioner",
         )
         practitioner = Practitioner.objects.get(jhe_user=practitioner_user)
@@ -428,7 +418,6 @@ class PatientFhirSearchTests(TestCase):
         self.practitioner_user = JheUser.objects.create_user(
             email="doctor@example.com",
             password="password",
-            identifier="doc001",
             user_type="practitioner",
         )
         self.practitioner = self.practitioner_user.practitioner
@@ -504,7 +493,6 @@ class PatientFhirSearchTests(TestCase):
         other_user = JheUser.objects.create_user(
             email="other_doc@example.com",
             password="password",
-            identifier="doc999",
             user_type="practitioner",
         )
         results = list(Patient.fhir_search(other_user.id))
@@ -597,7 +585,6 @@ class ObservationFhirSearchTests(TestCase):
         self.practitioner_user = JheUser.objects.create_user(
             email="doctor@example.com",
             password="password",
-            identifier="doc001",
             user_type="practitioner",
         )
         PractitionerOrganization.objects.create(practitioner=self.practitioner_user.practitioner, organization=self.org)
@@ -683,7 +670,6 @@ class ObservationFhirSearchTests(TestCase):
         other_user = JheUser.objects.create_user(
             email="other_doc@example.com",
             password="password",
-            identifier="doc999",
             user_type="practitioner",
         )
         results = list(Observation.fhir_search(other_user.id))
@@ -771,7 +757,6 @@ class StudyMethodTests(TestCase):
         self.user = JheUser.objects.create_user(
             email="doc@example.com",
             password="password",
-            identifier="doc123",
             user_type="practitioner",
         )
         self.practitioner = Practitioner.objects.get(jhe_user=self.user)
@@ -806,7 +791,7 @@ class StudyMethodTests(TestCase):
     def test_for_practitioner_organization_excludes_unauthorized_practitioner(self):
         other_org = Organization.objects.create(name="Other Org", type="prov")
         unauthorized_user = JheUser.objects.create_user(
-            email="unauth@example.com", password="password", identifier="unauth", user_type="practitioner"
+            email="unauth@example.com", password="password", user_type="practitioner"
         )
         unauthorized_user.practitioner.organizations.add(other_org)
 
@@ -825,9 +810,7 @@ class StudyMethodTests(TestCase):
         self.assertTrue(authorized)
 
     def test_has_patient(self):
-        patient_user = JheUser.objects.create_user(
-            email="patient2@example.com", password="password", identifier="patient456"
-        )
+        patient_user = JheUser.objects.create_user(email="patient2@example.com", password="password")
 
         patient = Patient.objects.create(
             jhe_user=patient_user,
@@ -855,9 +838,7 @@ class StudyMethodTests(TestCase):
 class StudyPatientScopeConsentMethodTests(TestCase):
     def setUp(self):
         self.org = Organization.objects.create(name="Hospital", type="prov")
-        self.user = JheUser.objects.create_user(
-            email="patient3@example.com", password="password", identifier="patient789"
-        )
+        self.user = JheUser.objects.create_user(email="patient3@example.com", password="password")
 
         self.patient = Patient.objects.create(
             jhe_user=self.user,
@@ -984,7 +965,6 @@ class ObservationMethodTests(TestCase):
         self.user = JheUser.objects.create_user(
             email="patient4@example.com",
             password="password",
-            identifier="patient000",
             user_type="practitioner",
         )
         self.user.practitioner.organizations.add(self.org)
@@ -1014,26 +994,22 @@ class ObservationMethodTests(TestCase):
         )
         cache.set("jhe_setting:site.url", settings.SITE_URL)
 
-    def _make_practitioner(self, email, identifier):
-        user = JheUser.objects.create_user(
-            email=email, password="password", identifier=identifier, user_type="practitioner"
-        )
+    def _make_practitioner(self, email):
+        user = JheUser.objects.create_user(email=email, password="password", user_type="practitioner")
         PractitionerOrganization.objects.create(practitioner=user.practitioner_profile, organization=self.org)
         return user
 
     def test_for_practitioner_organization_study_patient(self):
-        practitioner_user = self._make_practitioner("doctor4@example.com", "doc999")
+        practitioner_user = self._make_practitioner("doctor4@example.com")
 
         results = list(Observation.for_practitioner_organization_study_patient(practitioner_user.id))
         result_ids = [r.id for r in results]
         self.assertIn(self.observation.id, result_ids)
 
     def test_for_practitioner_organization_study_patient_filtered_by_organization(self):
-        practitioner_user = self._make_practitioner("doctor_org@example.com", "doc_org")
+        practitioner_user = self._make_practitioner("doctor_org@example.com")
         other_org = Organization.objects.create(name="Other Org", type="prov")
-        other_patient_user = JheUser.objects.create_user(
-            email="other_patient@example.com", password="password", identifier="POTHER2"
-        )
+        other_patient_user = JheUser.objects.create_user(email="other_patient@example.com", password="password")
         other_patient = Patient.objects.create(
             jhe_user=other_patient_user,
             name_family="Other",
@@ -1058,7 +1034,7 @@ class ObservationMethodTests(TestCase):
         self.assertNotIn(other_obs.id, result_ids)
 
     def test_for_practitioner_organization_study_patient_filtered_by_study_id(self):
-        practitioner_user = self._make_practitioner("doctor_study@example.com", "doc_study")
+        practitioner_user = self._make_practitioner("doctor_study@example.com")
         study = Study.objects.create(name="Study", description="", organization=self.org)
         StudyPatient.objects.create(study=study, patient=self.patient)
         StudyScopeRequest.objects.create(study=study, scope_code=self.code)
@@ -1068,7 +1044,7 @@ class ObservationMethodTests(TestCase):
         self.assertIn(self.observation.id, result_ids)
 
     def test_for_practitioner_organization_study_patient_filtered_by_patient_id(self):
-        practitioner_user = self._make_practitioner("doctor_pat@example.com", "doc_pat")
+        practitioner_user = self._make_practitioner("doctor_pat@example.com")
 
         results = list(
             Observation.for_practitioner_organization_study_patient(practitioner_user.id, patient_id=self.patient.id)
@@ -1077,7 +1053,7 @@ class ObservationMethodTests(TestCase):
         self.assertIn(self.observation.id, result_ids)
 
     def test_for_practitioner_organization_study_patient_filtered_by_observation_id(self):
-        practitioner_user = self._make_practitioner("doctor_obs@example.com", "doc_obs")
+        practitioner_user = self._make_practitioner("doctor_obs@example.com")
         other_obs = Observation.objects.create(
             subject_patient=self.patient,
             codeable_concept=self.code,
@@ -1098,7 +1074,7 @@ class ObservationMethodTests(TestCase):
     def test_for_practitioner_organization_study_patient_excludes_unauthorized(self):
         other_org = Organization.objects.create(name="Other Org", type="prov")
         unauthorized_user = JheUser.objects.create_user(
-            email="unauth@example.com", password="password", identifier="unauth2", user_type="practitioner"
+            email="unauth@example.com", password="password", user_type="practitioner"
         )
         unauthorized_user.practitioner_profile.organizations.add(other_org)
 
@@ -1116,7 +1092,6 @@ class ObservationMethodTests(TestCase):
         practitioner_user = JheUser.objects.create_user(
             email="doctor5@example.com",
             password="password",
-            identifier="doc888",
             user_type="practitioner",
         )
         practitioner = Practitioner.objects.get(jhe_user=practitioner_user)
@@ -1195,9 +1170,7 @@ class ObservationMethodTests(TestCase):
 class PatientOrganizationTests(TestCase):
     def setUp(self):
         self.org = Organization.objects.create(name="Hospital", type="prov")
-        self.user = JheUser.objects.create_user(
-            email="patient5@example.com", password="password", identifier="patient555"
-        )
+        self.user = JheUser.objects.create_user(email="patient5@example.com", password="password")
         self.patient = Patient.objects.create(
             jhe_user=self.user,
             name_family="Green",
@@ -1226,7 +1199,6 @@ class PractitionerOrganizationTests(TestCase):
         self.user = JheUser.objects.create_user(
             email="doctor7@example.com",
             password="password",
-            identifier="doc666",
             user_type="practitioner",
         )
         self.practitioner = Practitioner.objects.get(jhe_user=self.user)
@@ -1245,9 +1217,7 @@ class PractitionerOrganizationTests(TestCase):
         self.assertEqual(practitioners.first(), self.practitioner)
 
     def test_organization_users_property(self):
-        patient_user = JheUser.objects.create_user(
-            email="patient6@example.com", password="password", identifier="patient666"
-        )
+        patient_user = JheUser.objects.create_user(email="patient6@example.com", password="password")
         patient = Patient.objects.create(
             jhe_user=patient_user,
             name_family="Black",

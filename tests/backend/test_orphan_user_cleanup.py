@@ -39,7 +39,7 @@ def _superuser_client(superuser):
 
 
 def _make_practitioner(email="orphan-prac@example.org"):
-    user = JheUser.objects.create_user(email=email, password="testpass123", identifier=email, user_type="practitioner")
+    user = JheUser.objects.create_user(email=email, password="testpass123", user_type="practitioner")
     return user, user.practitioner
 
 

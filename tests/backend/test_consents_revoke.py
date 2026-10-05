@@ -5,21 +5,21 @@ from unittest.mock import MagicMock, patch
 import pytest
 from rest_framework.test import APIClient
 
-from core.models import JheUser
+from core.models import OW_USER_ID_SYSTEM, JheUser, PatientIdentifier
 
 from .utils import Code, add_patient_to_study, create_study
 
 
 @pytest.fixture
 def ow_patient(organization):
-    """A patient whose JheUser carries the ``ow:<id>`` identifier the disconnect is keyed on."""
+    """A patient with the OW link the disconnect is keyed on."""
     user = JheUser.objects.create_user(
         email="ow-consent@example.org",
         password="testpass123",
-        identifier="ow:abc",
         user_type="patient",
     )
     user.patient.organizations.add(organization)
+    PatientIdentifier.objects.create(patient=user.patient, system=OW_USER_ID_SYSTEM, value="abc")
     return user.patient
 
 

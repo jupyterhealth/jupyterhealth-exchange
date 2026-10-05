@@ -925,8 +925,6 @@ class Command(BaseCommand):
             last_name=fake.last_name(),
             user_type=user_type,
         )
-        user.identifier = f"fhir-{str(user.id)[-1] * 3}"
-        user.save()
         if user_type == "practitioner":
             practitioner = user.practitioner_profile
             practitioner.birth_date = fake.date_of_birth(minimum_age=25, maximum_age=45)

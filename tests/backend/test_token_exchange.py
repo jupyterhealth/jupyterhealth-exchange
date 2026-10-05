@@ -1,4 +1,5 @@
 import time
+from unittest.mock import MagicMock, patch
 
 import jwt
 import pytest
@@ -6,6 +7,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 from core import auth
+from core.models import PractitionerIdentifier
 
 ISS = "https://ehr.example.org/fhir"
 AUD = "smart-client-id"
@@ -111,7 +113,13 @@ def post(client, token, *, client_id=CLIENT_ID, client_secret=CLIENT_SECRET, htt
     return client.post("/o/token-exchange", data=data, **extra)
 
 
-# `user` fixture (conftest) is a practitioner with identifier="test-practitioner".
+@pytest.fixture
+def user(user):
+    """The conftest practitioner, mapped to the fhirUser id the tokens below carry."""
+    PractitionerIdentifier.objects.create(practitioner=user.practitioner, system=ISS, value="test-practitioner")
+    return user
+
+
 def test_valid_id_token_issues_jhe_token(client, user, rsa_private_pem):
     priv, _ = rsa_private_pem
     r = post(client, make_token(priv))
@@ -222,14 +230,77 @@ def test_non_practitioner_fhir_user_forbidden(client, user, rsa_private_pem):
     assert r.status_code == 403
 
 
-def test_duplicate_identifier_not_found(client, user, rsa_private_pem):
-    # identifier is not unique -> a duplicate row must 404, not 500
+def test_same_id_from_another_trusted_issuer_not_found(client, user, rsa_private_pem):
+    """Ids are scoped by issuer: another EHR asserting the same Practitioner id is someone else."""
+    from django.core.cache import cache
+
+    from core.models import JheSetting
+
+    other_issuer = "https://other-ehr.example.org/fhir"
+    setting = JheSetting.objects.get(key="auth.sof.trusted_issuers")
+    setting.set_value("json", [ISS, other_issuer])
+    setting.save()
+    cache.delete("jhe_setting:auth.sof.trusted_issuers")
+    priv, _ = rsa_private_pem
+
+    r = post(client, make_token(priv, iss=other_issuer))
+
+    assert r.status_code == 404
+
+
+def test_identifier_stored_with_trailing_slash_matches(client, user, rsa_private_pem):
+    user.practitioner.identifiers.update(system=ISS + "/")
+    priv, _ = rsa_private_pem
+
+    r = post(client, make_token(priv))
+
+    assert r.status_code == 200, r.content
+
+
+def test_absolute_fhir_user_url_matches_on_the_bare_id(client, user, rsa_private_pem):
+    priv, _ = rsa_private_pem
+
+    r = post(client, make_token(priv, fhir_user=f"{ISS}/Practitioner/test-practitioner"))
+
+    assert r.status_code == 200, r.content
+
+
+def test_ambiguous_identifier_not_found(client, user, rsa_private_pem, caplog):
+    """Two practitioners whose rows differ only by a trailing slash cannot both be the caller."""
     from core.models import JheUser
 
-    JheUser.objects.create_user(email="dupe@example.org", identifier="test-practitioner")
+    other = JheUser.objects.create_user(email="dupe@example.org", user_type="practitioner")
+    PractitionerIdentifier.objects.create(practitioner=other.practitioner, system=ISS + "/", value="test-practitioner")
     priv, _ = rsa_private_pem
+
     r = post(client, make_token(priv))
+
     assert r.status_code == 404
+    assert "Multiple practitioners hold identifier 'test-practitioner'" in caplog.text
+
+
+@patch("core.views.ow.requests.post")
+def test_linking_open_wearables_keeps_token_exchange_working(mock_post, client, user, rsa_private_pem):
+    """Regression: linking OW used to overwrite the EHR id that token exchange matches on."""
+    from django.core.cache import cache
+    from rest_framework.test import APIClient
+
+    from core.models import JheSetting, Patient
+
+    for key, value in (("ow.api_url", "https://ow.example.com"), ("ow.api_key", "test-key")):
+        JheSetting.objects.update_or_create(key=key, defaults={"value_type": "string", "value_string": value})
+        cache.delete(f"jhe_setting:{key}")
+    Patient.objects.create(jhe_user=user)
+    mock_post.return_value = MagicMock(status_code=201)
+    mock_post.return_value.json.return_value = {"id": "new-ow-user-id-123"}
+    ow_client = APIClient()
+    ow_client.force_authenticate(user)
+    assert ow_client.post("/api/v1/ow/users").status_code == 200
+    priv, _ = rsa_private_pem
+
+    r = post(client, make_token(priv))
+
+    assert r.status_code == 200, r.content
 
 
 def test_audience_mismatch_bad_request(client, user, rsa_private_pem):
@@ -237,3 +308,14 @@ def test_audience_mismatch_bad_request(client, user, rsa_private_pem):
     priv, _ = rsa_private_pem
     r = post(client, make_token(priv), audience="https://wrong.example.org")
     assert r.status_code == 400
+
+
+def test_same_practitioner_under_both_slash_forms_matches(client, user, rsa_private_pem):
+    """One practitioner may hold the id under both spellings of the issuer (the copy strips the slash,
+    the Medplum docs keep it); that is still one practitioner, not an ambiguous match."""
+    PractitionerIdentifier.objects.create(practitioner=user.practitioner, system=ISS + "/", value="test-practitioner")
+    priv, _ = rsa_private_pem
+
+    r = post(client, make_token(priv))
+
+    assert r.status_code == 200, r.content

@@ -11,10 +11,12 @@ from django.core.management import call_command
 from django.utils import timezone
 
 from core.models import (
+    OW_USER_ID_SYSTEM,
     CodeableConcept,
     JheSetting,
     Observation,
     ObservationIdentifier,
+    PatientIdentifier,
 )
 from core.services.jhe_settings import get_setting
 from core.utils import generate_observation_value_attachment_data
@@ -81,10 +83,8 @@ def patient_with_consent(hr_study, patient, hr_concept):
 
 @pytest.fixture
 def ow_user(patient_with_consent):
-    user = patient_with_consent.jhe_user
-    user.identifier = "ow:user-123"
-    user.save(update_fields=["identifier"])
-    return user
+    PatientIdentifier.objects.create(patient=patient_with_consent, system=OW_USER_ID_SYSTEM, value="user-123")
+    return patient_with_consent.jhe_user
 
 
 def _fake_omh_record(uuid_value="rec-1"):
@@ -264,10 +264,10 @@ def test_two_patients_with_identical_samples_both_ingest(db, hr_study, hr_concep
         user = JheUser.objects.create_user(
             email=f"collide-{suffix}@example.test",
             password="x",
-            identifier=f"ow:collide-{suffix}",
             user_type="patient",
         )
         patient = user.patient
+        PatientIdentifier.objects.create(patient=patient, system=OW_USER_ID_SYSTEM, value=f"collide-{suffix}")
         add_patient_to_study(patient=patient, study=hr_study)
         patients.append(patient)
 
@@ -410,7 +410,7 @@ def test_invalid_revision_does_not_drop_later_records(db, ow_user, patient_with_
 
 
 def test_revision_never_overwrites_another_patients_row(db, ow_user, hr_concept):
-    """JheUser.identifier is not unique, so a matching key on another patient's row is left alone."""
+    """A matching key on another patient's row (e.g. after an OW link moved between patients) is left alone."""
     from core.models import JheUser
 
     _set_jhe_setting("module.ow", True)
@@ -496,11 +496,9 @@ def test_late_arriving_sample_is_not_skipped(db, ow_user, patient_with_consent, 
 
 
 def test_skips_user_without_ow_identifier(db, patient_with_consent, hr_concept):
-    """JheUser whose identifier doesn't start with 'ow:' must not trigger any OW API call."""
+    """A patient without an OW link must not trigger any OW API call."""
     _set_jhe_setting("module.ow", True)
     _clear_sync_lock()
-    patient_with_consent.jhe_user.identifier = ""
-    patient_with_consent.jhe_user.save(update_fields=["identifier"])
 
     with patch("core.management.commands.ow_poll.requests.get") as mock_get:
         call_command("ow_poll", stdout=StringIO())
@@ -510,7 +508,7 @@ def test_skips_user_without_ow_identifier(db, patient_with_consent, hr_concept):
 
 
 def test_skips_patient_without_hr_consent(db, organization, hr_concept):
-    """A JheUser with an OW identifier but no HR scope consent must be skipped."""
+    """A patient with an OW link but no HR scope consent must be skipped."""
     from core.models import JheUser
 
     _set_jhe_setting("module.ow", True)
@@ -519,10 +517,10 @@ def test_skips_patient_without_hr_consent(db, organization, hr_concept):
     user = JheUser.objects.create_user(
         email="no-consent@example.org",
         password="x",
-        identifier="ow:user-no-consent",
         user_type="patient",
     )
     user.patient.organizations.add(organization)
+    PatientIdentifier.objects.create(patient=user.patient, system=OW_USER_ID_SYSTEM, value="user-no-consent")
 
     with patch("core.management.commands.ow_poll.requests.get") as mock_get:
         call_command("ow_poll", stdout=StringIO())
@@ -1187,3 +1185,19 @@ def test_unconvertible_record_warning_names_the_type(db, ow_user, patient_with_c
 
     assert "Skipping unconvertible record for user=" in caplog.text
     assert "type=resting_heart_rate" in caplog.text
+
+
+def test_polls_only_the_oldest_ow_link(db, ow_user, patient_with_consent, hr_concept):
+    """A second OW row (added by hand) is ignored, so a patient is never polled as two OW users."""
+    PatientIdentifier.objects.create(patient=patient_with_consent, system=OW_USER_ID_SYSTEM, value="second-link")
+    _set_jhe_setting("module.ow", True)
+    _clear_sync_lock()
+
+    with patch("core.management.commands.ow_poll.requests.get") as mock_get:
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"data": []}
+        call_command("ow_poll", stdout=StringIO())
+
+    requested_urls = [call.args[0] for call in mock_get.call_args_list]
+    assert requested_urls
+    assert all("/api/v1/users/user-123/" in url for url in requested_urls)

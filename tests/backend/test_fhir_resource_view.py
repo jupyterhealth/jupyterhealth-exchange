@@ -26,6 +26,7 @@ from core.models import (
     JheUser,
     Observation,
     Organization,
+    PractitionerIdentifier,
     fhir_source_uri,
 )
 from core.utils import generate_observation_value_attachment_data
@@ -1134,7 +1135,7 @@ def test_fhir_source_registration_never_returns_another_patients_source(patient,
     brand, stl, _ = _brand_with_locations()
     FhirSource.objects.create(patient=patient, data_source=device, label="Epic", ehr_brand_location=stl)
     other = JheUser.objects.create_user(
-        email="other-patient@example.org", password="testpass123", identifier="other-patient", user_type="patient"
+        email="other-patient@example.org", password="testpass123", user_type="patient"
     ).patient
     created = _patient_client(other).post(
         "/api/v1/fhir_sources", {"label": "Epic", "data_source": device.id, "ehr_brand_location": stl.id}
@@ -1228,3 +1229,13 @@ def test_fhir_source_list_reports_resource_counts_and_ehr_brand_location_name(pa
     assert rows[fhir_source.id]["ehrBrandLocationName"] is None
     assert rows[located.id]["resourceCounts"] == {}
     assert rows[located.id]["ehrBrandLocationName"] == "Epic Sandbox - Madison Campus"
+
+
+def test_practitioner_identifier_search_matches_identifier_rows(api_client, user):
+    PractitionerIdentifier.objects.create(
+        practitioner=user.practitioner, system="https://ehr.example.org", value="Practitioner-123"
+    )
+
+    bundle = api_client.get("/FHIR/R5/Practitioner?identifier=https://ehr.example.org|Practitioner-123").json()
+
+    assert _ids(bundle) == {str(user.practitioner.id)}

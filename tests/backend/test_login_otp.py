@@ -42,7 +42,6 @@ def patient_user(db):
     return JheUser.objects.create_user(
         email="otp-patient@example.org",
         password="testpass123",
-        identifier="otp-patient",
         user_type="patient",
     )
 
