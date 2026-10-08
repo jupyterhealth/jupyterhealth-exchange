@@ -97,6 +97,34 @@ def test_consent_post_stores_timezone_aware_time(hr_study, recwarn):
     assert not naive, [str(w.message) for w in naive]
 
 
+def test_consent_post_updates_an_existing_consent(patient, hr_study):
+    """The patient already consented to heart rate in hr_study; a second POST must update that row, not error."""
+    client = APIClient()
+    client.force_authenticate(patient.jhe_user)
+    payload = {
+        "study_scope_consents": [
+            {
+                "study_id": hr_study.id,
+                "scope_consents": [
+                    {
+                        "coding_system": Code.OpenMHealth.value,
+                        "coding_code": Code.HeartRate.value,
+                        "consented": False,
+                    }
+                ],
+            }
+        ]
+    }
+    response = client.post(f"/api/v1/patients/{patient.id}/consents", data=payload, format="json")
+    assert response.status_code == 201, response.text
+    assert response.json()["studyScopeConsents"][0]["consented"] is False
+    consent = StudyPatientScopeConsent.objects.get(
+        study_patient__patient=patient,
+        scope_code__coding_code=Code.HeartRate.value,
+    )
+    assert consent.consented is False
+
+
 def test_list_patients_pagination_is_ordered(api_client, organization, recwarn):
     # The practitioner patient list is paginated, so its queryset must have a stable order;
     # otherwise DRF emits an UnorderedObjectListWarning and pages can skip/repeat rows (issue #560).

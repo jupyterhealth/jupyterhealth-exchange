@@ -386,14 +386,12 @@ class PatientViewSet(ModelViewSet):
                     ).id
 
                     if request.method == "POST":
-                        responses.append(
-                            StudyPatientScopeConsent.objects.create(
-                                study_patient_id=study_patient.id,
-                                scope_code_id=scope_code_id,
-                                consented=scope_consent["consented"],
-                                consented_time=consented_time,
-                            )
+                        spsc, _ = StudyPatientScopeConsent.objects.update_or_create(
+                            study_patient_id=study_patient.id,
+                            scope_code_id=scope_code_id,
+                            defaults={"consented": scope_consent["consented"], "consented_time": consented_time},
                         )
+                        responses.append(spsc)
                     elif request.method == "PATCH":
                         spsc = StudyPatientScopeConsent.objects.get(
                             study_patient_id=study_patient.id,
