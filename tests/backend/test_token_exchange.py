@@ -46,8 +46,8 @@ def trust_settings(settings, db):
         s.save()
         cache.delete(f"jhe_setting:{key}")
 
-    _set("auth.sof.trusted_issuers", "json", [ISS])
-    _set("auth.sof.trusted_audience", "string", AUD)
+    _set("auth.sof.trusted_issuers", "json", [ISS, "not-used"])
+    _set("auth.sof.trusted_audience", "json", ["not-used", AUD])
     cache.delete("jhe_setting:site.url")
 
 

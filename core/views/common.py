@@ -317,6 +317,9 @@ def token_exchange(request: HttpRequest):
     expected_audience = get_setting("auth.sof.trusted_audience", None)
     if not trusted_issuers or not expected_audience:
         return json_error("Token exchange is not configured.", status_code=500)
+    if isinstance(expected_audience, str):
+        # backward-compat: previously single string setting
+        expected_audience = [expected_audience]
 
     # Derive the issuer from the token's own `iss` so the exact value -- including
     # any trailing slash (e.g. MedPlum's) -- is what we verify against.
