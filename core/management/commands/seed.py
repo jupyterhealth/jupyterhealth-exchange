@@ -234,7 +234,7 @@ class Command(BaseCommand):
                 "json",
                 ["https://fhir.epic.com/interconnect-fhir-oauth/oauth2"],
             ),
-            ("auth.sof.trusted_audience", "string", "77849e74-8e2a-4c2f-826c-bdbef6da3357"),
+            ("auth.sof.trusted_audience", "json", ["77849e74-8e2a-4c2f-826c-bdbef6da3357"]),
             # Open Wearables polling pipeline (see ow_poll management command).
             ("module.ow", "bool", False),
             ("ow.sync_in_progress", "string", ""),
