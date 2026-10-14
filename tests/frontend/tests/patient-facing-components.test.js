@@ -103,3 +103,30 @@ test("importing renders the rail at step 3, the hidden log and the progress card
   expect(main.querySelector(".pf-back")).toBeNull();
   expect(main.textContent).not.toContain("View summary");
 });
+
+test("the rail marks the active step with aria-current and nothing else", () => {
+  const main = render("t-importing", { rail: window.pfRail(3) });
+  const current = Array.from(main.querySelectorAll(".pf-rail__step")).map((li) => li.getAttribute("aria-current"));
+  expect(current).toEqual([null, null, "step"]);
+});
+
+test("the error callout's title is the screen's h1", () => {
+  const main = render("t-error", { title: "We couldn't connect", message: "boom", retryLabel: "Try again", backHref: "/" });
+  expect(main.querySelector("h1.pf-error__title").textContent).toBe("We couldn't connect");
+});
+
+test("icon glyphs are hidden from assistive technology on every screen", () => {
+  const card = { id: 1, title: "Oura", desc: "d", icon: "bi-smartwatch", on: true, badge: "Consented", route: "manage" };
+  render("t-hub", { eyebrow: "e", cards: [card] });
+  let icons = Array.from(document.querySelectorAll("#pf_main i.bi"));
+  render("t-consent", { sourceId: 1, eyebrow: "e", sourceName: "Oura", rows: ["Heart Rate"] });
+  icons = icons.concat(Array.from(document.querySelectorAll("#pf_main i.bi")));
+  render("t-done", { lede: "l", rows: [{ name: "Oura", detail: "d" }], receipt: RECEIPT });
+  icons = icons.concat(Array.from(document.querySelectorAll("#pf_main i.bi")));
+  render("t-manage", { sourceId: 1, sourceName: "Oura", icon: "bi-smartwatch", detail: "d", rows: [], receipt: null });
+  icons = icons.concat(Array.from(document.querySelectorAll("#pf_main i.bi")));
+  render("t-error", { title: "t", message: "m", retryLabel: "r", backHref: "/" });
+  icons = icons.concat(Array.from(document.querySelectorAll("#pf_main i.bi")));
+  expect(icons.length).toBeGreaterThan(6);
+  icons.forEach((icon) => expect(icon.getAttribute("aria-hidden")).toBe("true"));
+});

@@ -37,6 +37,8 @@
     max-width: 400px;
     padding: 15px;
     margin: auto;
+    /* Bootstrap's default input border is under 3:1 on white; the variable keeps its focus and validation colors */
+    --bs-border-color: var(--bs-gray-600);
   }
 
   .form-signin .checkbox {
@@ -91,10 +93,10 @@
         src="{% static 'common/images/jupyterhealth-logo.jpg' %}"
         width="160"
         class="mb-4"
-        alt="Common Health Logo"
+        alt="{{ SITE_TITLE }}"
       />
     <h1 class="h3 mb-3 fw-normal">{% block prompt %}{% endblock %}</h1>
-    <div id="clientErrors"></div>
+    <div id="clientErrors" role="alert"></div>
 
     {% for key, value in form.errors.items %}
       {{ value }}

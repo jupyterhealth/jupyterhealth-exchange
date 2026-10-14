@@ -93,11 +93,16 @@ function pfUrl(route, params) {
   return `${window.location.pathname}?${query}`;
 }
 
-// Compile the component <script id="templateId"> and render it into #pf_main.
+// Compile the component <script id="templateId"> and render it into #pf_main, then focus its h1 so screen readers announce the new screen.
 function pfRender(templateId, context) {
   const template = Handlebars.compile(document.getElementById(templateId).innerHTML);
   document.getElementById("pf_main").innerHTML = template(context || {});
   window.scrollTo(0, 0);
+  const heading = document.querySelector("#pf_main h1");
+  if (heading) {
+    heading.setAttribute("tabindex", "-1");
+    heading.focus();
+  }
 }
 
 // Register the components other components include ({{> receipt}}, {{> rail}}) when the page carries them.
@@ -409,7 +414,7 @@ function pfRail(activeStep) {
   return {
     steps: PF_RAIL_STEPS.map((label, i) => {
       const num = i + 1;
-      return { num: num, label: label, cls: num === activeStep ? " is-active" : num < activeStep ? " is-done" : "" };
+      return { num: num, label: label, current: num === activeStep, cls: num === activeStep ? " is-active" : num < activeStep ? " is-done" : "" };
     }),
   };
 }

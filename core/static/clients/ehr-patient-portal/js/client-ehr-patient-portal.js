@@ -307,13 +307,15 @@ function eppRenderScopePicker(container, continueButton, row, onContinue) {
   };
 }
 
+const EPP_NO_RESULTS = "No hospitals found. Try a different name, city, or state.";
+
 // Render hospital search results as clickable rows (name + address); clicking a row calls onSelect(row). Returns the number of rows rendered (0 => shows a message).
 function eppRenderBrandResults(container, results, onSelect) {
   container.innerHTML = "";
   if (!results || results.length === 0) {
     const empty = document.createElement("div");
     empty.className = "text-muted p-2";
-    empty.textContent = "No hospitals found. Try a different name, city, or state.";
+    empty.textContent = EPP_NO_RESULTS;
     container.appendChild(empty);
     return 0;
   }
@@ -350,6 +352,7 @@ pfClient.connect = async (source) => {
     container: document.getElementById("hospital-picker"),
     input: document.getElementById("hospital-search"),
     results: document.getElementById("hospital-results"),
+    status: document.getElementById("hospital-results-status"),
   };
   const jheToken = getStoredToken();
   const onSelect = (row) => {
@@ -367,9 +370,19 @@ pfClient.connect = async (source) => {
         eppAuthorizeWithIss(row.ehrClientId, scope, row.fhirBaseUrl);
       }
     );
+    // The clicked row is now hidden, so move focus into the checklist that replaced it.
+    (scopePicker.querySelector("input[type=checkbox]") || document.getElementById("scope-picker-continue")).focus();
   };
+  // A slower earlier response must not overwrite the current query's results or count.
+  let searchSeq = 0;
+  // The results list is hidden until the patient types, so only announce a count once there is a query.
   const runSearch = async () => {
-    eppRenderBrandResults(picker.results, await eppSearchBrands(jheToken, picker.input.value), onSelect);
+    const query = picker.input.value;
+    const seq = ++searchSeq;
+    const rows = await eppSearchBrands(jheToken, query);
+    if (seq !== searchSeq) return;
+    const count = eppRenderBrandResults(picker.results, rows, onSelect);
+    picker.status.textContent = !query ? "" : count ? `${count} result${count === 1 ? "" : "s"}` : EPP_NO_RESULTS;
   };
   let timer = null;
   picker.input.addEventListener("input", () => {

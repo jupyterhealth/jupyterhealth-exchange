@@ -16,16 +16,16 @@
 </div>
 
 <div class="form-floating">
-  <input name="email" type="email" class="form-control" id="emailInput" placeholder="name@example.com" required>
+  <input name="email" type="email" class="form-control" id="emailInput" placeholder="name@example.com" autocomplete="email" required>
   <label for="emailInput">E-mail address</label>
 </div>
 <div id="password-inputs">
 <div class="form-floating">
-  <input name="password" type="password" class="form-control" id="passwordInput" placeholder="Password"  minlength=8 onkeyup="checkPasswords()" required>
+  <input name="password" type="password" class="form-control" id="passwordInput" placeholder="Password" autocomplete="new-password" minlength=8 onkeyup="checkPasswords()" required>
   <label for="passwordInput">Password</label>
 </div>
 <div class="form-floating">
-  <input name="password2" type="password" class="form-control" id="passwordInput2" placeholder="Re-enter Password" onkeyup="checkPasswords()" required>
+  <input name="password2" type="password" class="form-control" id="passwordInput2" placeholder="Re-enter Password" autocomplete="new-password" onkeyup="checkPasswords()" required>
   <label for="passwordInput2">Re-enter Password</label>
 </div>
 </div>
