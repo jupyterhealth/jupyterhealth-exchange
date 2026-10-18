@@ -23,6 +23,19 @@ from .practitioner import Practitioner
 logger = logging.getLogger(__name__)
 
 
+def _coding_filter(coding_pairs):
+    # OR the (system, code) pairs; an empty system or code in a pair leaves that side unfiltered.
+    condition = Q()
+    for system, code in coding_pairs:
+        pair = Q()
+        if system:
+            pair &= Q(codeable_concept__coding_system=system)
+        if code:
+            pair &= Q(codeable_concept__coding_code=code)
+        condition |= pair
+    return condition
+
+
 # Observation per record: https://stackoverflow.com/a/61484800 (author worked at ONC)
 class Observation(models.Model):
     subject_patient = models.ForeignKey("Patient", on_delete=models.CASCADE)
@@ -144,13 +157,15 @@ class Observation(models.Model):
         # observations and the organization/study/patient filters are ignored; a practitioner
         # sees observations whose patient shares one of their organizations -- narrowed by the
         # explicit organization/study/patient filters (each authorized up front, 403 on
-        # mismatch) and, via **params, by patient identifier and coding system|code. When a
+        # mismatch) and, via **params, by patient identifier and coding system|code pairs
+        # (coding_pairs; several pairs OR together per the FHIR search spec). When a
         # study is given the patient must be enrolled in it AND the observation's code must be
         # one of that study's requested scopes. resource_id selects a single observation.
         # Related rows are selected/prefetched to avoid N+1; distinct() collapses the duplicate
         # rows produced by spanning these many-to-many relationships.
-        coding_system = params.get("coding_system")
-        coding_code = params.get("coding_code")
+        coding_pairs = list(params.get("coding_pairs") or [])
+        if params.get("coding_system") or params.get("coding_code"):
+            coding_pairs.append((params.get("coding_system"), params.get("coding_code")))
         patient_identifier_value = params.get("patient_identifier_value")
 
         user = resolve_fhir_user(jhe_user_id)
@@ -178,10 +193,8 @@ class Observation(models.Model):
             qs = qs.filter(id=resource_id)
         if patient_identifier_value:
             qs = qs.filter(subject_patient__identifiers__value=patient_identifier_value)
-        if coding_system:
-            qs = qs.filter(codeable_concept__coding_system=coding_system)
-        if coding_code:
-            qs = qs.filter(codeable_concept__coding_code=coding_code)
+        if coding_pairs:
+            qs = qs.filter(_coding_filter(coding_pairs))
 
         return (
             qs.select_related("subject_patient", "codeable_concept")
