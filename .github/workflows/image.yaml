@@ -99,7 +99,7 @@ jobs:
       # use hash pinning on actions that get access to secrets.GITHUB_TOKEN
       - name: Log in to the Container registry
         if: env.REGISTRY == 'ghcr.io'
-        uses: docker/login-action@783ae9cac559640a24c9212dfa6cd9e998252f9a
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
