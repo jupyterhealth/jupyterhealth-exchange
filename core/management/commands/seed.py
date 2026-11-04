@@ -25,6 +25,7 @@ from core.models import (
     EhrVendor,
     FhirAuxResource,
     FhirSource,
+    InviteCode,
     JheClient,
     JheSetting,
     JheUser,
@@ -182,6 +183,7 @@ class Command(BaseCommand):
             self._step("admin UI client", (Application,), self.seed_oauth_application)
             self._step("MCP broker client", (Application,), self.seed_mcp_broker_application)
             self._step("SMART EHR launch client", (Application,), self.seed_sof_ehr_launch_application)
+            self._step("invite code", (InviteCode,), self.seed_invite_code)
 
         if options.get("with_rich_demo"):
             # Its own summary line (the CGM/wearable split) is suppressed here so the seed
@@ -196,9 +198,15 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Seeding complete."))
 
-    def seed_jhe_settings(self):
-        invite_code = "jhe"
+    def seed_invite_code(self):
+        # seed a default invite code
+        # doesn't grant any permissions yet
+        InviteCode.objects.get_or_create(
+            code="jhe",
+            label="Seeded",
+        )
 
+    def seed_jhe_settings(self):
         jhe_settings = [
             # Honor the SITE_URL env so the seeded host matches where JHE is actually
             # served (e.g. http://localhost:8001 when running JHE itself on a non-default
@@ -210,8 +218,6 @@ class Command(BaseCommand):
             ("site.ui.logo", "string", ""),  # static path of a deployment's own logo for patient-facing pages
             ("site.ui.theme_css", "string", ""),  # static path of a stylesheet overriding the --pf-* tokens/fonts
             ("site.time_zone", "string", "America/Los_Angeles"),
-            ("site.registration_invite_code", "string", invite_code),
-            ("auth.default_orgs", "string", ""),  # "20001:viewer;20002:member"
             # IdP config is a SocialApp row (Django admin); these only gate the
             # login button and restrict signup domains.
             ("auth.sso.saml2", "int", 0),

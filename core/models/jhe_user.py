@@ -4,7 +4,6 @@ from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import BadRequest, ObjectDoesNotExist
-from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import EmailMessage
 from django.db import connection, models, transaction
 from django.template.loader import render_to_string
@@ -23,9 +22,8 @@ from oauth2_provider.models import (
 
 from core.services.jhe_settings import get_setting
 
-from .organization import Organization
 from .patient import Patient
-from .practitioner import Practitioner, PractitionerOrganization
+from .practitioner import Practitioner
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +61,7 @@ class JheUser(AbstractUser):
         "practitioner": "Practitioner",
     }
     user_type = models.TextField(choices=list(USER_TYPES.items()), null=True, blank=True)
+    invite_code = models.ForeignKey("InviteCode", null=True, on_delete=models.SET_NULL)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -178,70 +177,11 @@ class JheUser(AbstractUser):
                         birth_date=timezone.now().date(),  # TBD, do we want a default value equivalent to this?
                     )
                 elif self.user_type == "practitioner" and not hasattr(self, "practitioner_profile"):
-                    practitioner = Practitioner.objects.create(
+                    Practitioner.objects.create(
                         jhe_user=self,
                         name_family=self.last_name,
                         name_given=self.first_name,
                     )
-
-                    # --- parse multi-org:role string from db ---
-                    mapping_str = get_setting("auth.default_orgs", "")
-                    mapping_str = (mapping_str or "").strip()
-
-                    if mapping_str:
-                        # Expected format: "<org_id>:<role>;<org_id>:<role>"
-                        parts = [p.strip() for p in mapping_str.split(";") if p.strip()]
-                        if not parts:
-                            raise DjangoValidationError("auth.default_orgs must be non-empty when set.")
-
-                        valid_roles = set(PractitionerOrganization.ROLE_CHOICES.keys())
-                        requested: list[tuple[int, str]] = []
-
-                        for idx, part in enumerate(parts, start=1):
-                            if ":" not in part:
-                                raise DjangoValidationError(
-                                    f"auth.default_orgs entry #{idx} is missing ':'. Expected '<org_id>:<role>'."
-                                )
-                            org_id_str, role = [s.strip() for s in part.split(":", 1)]
-
-                            if not org_id_str or not org_id_str.isdigit():
-                                raise DjangoValidationError(
-                                    f"auth.default_orgs entry #{idx} has invalid org ID "
-                                    f"'{org_id_str}'. Must be a numeric ID."
-                                )
-                            if not role:
-                                raise DjangoValidationError(f"auth.default_orgs entry #{idx} is missing a role.")
-                            if role not in valid_roles:
-                                raise DjangoValidationError(
-                                    f"auth.default_orgs entry #{idx} has invalid role '{role}'. "
-                                    f"Valid roles: {sorted(valid_roles)}"
-                                )
-
-                            requested.append((int(org_id_str), role))
-
-                        # Ensure all org IDs exist
-                        org_ids = [oid for oid, _ in requested]
-                        orgs = Organization.objects.filter(id__in=org_ids)
-                        found_ids = {o.id for o in orgs}
-                        missing = sorted(set(org_ids) - found_ids)
-                        if missing:
-                            raise DjangoValidationError(
-                                f"auth.default_orgs references missing Organization ID(s): {missing}"
-                            )
-
-                        org_by_id = {o.id: o for o in orgs}
-
-                        # Create/update links idempotently
-                        for org_id, role in requested:
-                            org = org_by_id[org_id]
-                            link, created = PractitionerOrganization.objects.get_or_create(
-                                practitioner=practitioner,
-                                organization=org,
-                                defaults={"role": role},
-                            )
-                            if not created and link.role != role:
-                                link.role = role
-                                link.save(update_fields=["role"])
 
     def send_email_verificaion(self):
         # Deferred: core.auth imports DOT's oauth2_validators, which calls

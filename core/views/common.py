@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.views import LoginView as BaseLoginView
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -23,7 +24,7 @@ from oauth2_provider.views import TokenView
 from oauthlib.common import Request
 
 from core.auth import IdTokenError, JheOAuth2Validator, account_activation_token, parse_fhir_user, verify_id_token
-from core.models import Practitioner
+from core.models import InviteCode, Practitioner, PractitionerOrganization
 from core.services.jhe_settings import get_setting
 from core.views.patient_facing import patient_facing_config
 
@@ -150,7 +151,10 @@ def signup(request):
         next = request.GET.get("next")
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
+            invite_code = InviteCode.objects.get(code=form.cleaned_data.get("joincode"))
             user = form.save(commit=False)
+            # record invite code relationship
+            user.invite_code = invite_code
             password = form.cleaned_data.get("password")
             # Get user type from form, default to 'practitioner' if not set
             user_type = form.cleaned_data.get("user_type") or "practitioner"
@@ -158,7 +162,17 @@ def signup(request):
             user.first_name = "NONE"
             user.last_name = "NONE"
             user.user_type = user_type  # Set user type (patient or practitioner)
-            user.save()
+            with transaction.atomic():
+                # user.save populates practitioner
+                user.save()
+                if user_type == "practitioner":
+                    practitioner = user.practitioner
+                    for link in invite_code.organization_links.all():
+                        PractitionerOrganization.objects.create(
+                            practitioner=practitioner,
+                            organization=link.organization,
+                            role=link.role,
+                        )
             new_user = authenticate(email=user.email, password=password)
             login(request, new_user)
             if new_user.email_is_verified is not True:
