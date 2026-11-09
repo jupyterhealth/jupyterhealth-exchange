@@ -5,18 +5,22 @@ from core.models import FhirSource
 
 
 class FhirSourceSerializer(serializers.ModelSerializer):
-    """A patient-registered upstream FHIR source; ``patient`` is set server-side from the requesting user, never the request body."""
+    """A registered upstream FHIR source; ``patient`` is set server-side -- the requesting patient user, or the ``patient_id`` a practitioner names after an access check -- never directly from the body."""
 
     resource_counts = serializers.SerializerMethodField()
     ehr_brand_location_name = serializers.SerializerMethodField()
     # A lookup hint for FhirSourceViewSet.create, never stored: the SMART ``iss`` the patient authorized against, used to find the brand when no facility was picked.
     ehr_base_url = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    # Write-only: the patient a practitioner registers the source for. FhirSourceViewSet.create checks
+    # the practitioner's access before setting ``patient`` from it, and rejects it from a patient user.
+    patient_id = serializers.IntegerField(write_only=True, required=False)
 
     class Meta:
         model = FhirSource
         fields = [
             "id",
             "patient",
+            "patient_id",
             "data_source",
             "label",
             "ehr_brand_location",

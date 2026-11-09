@@ -110,12 +110,13 @@ function eppEntryWarnings(entry) {
   return texts;
 }
 
-// One import entry's {ok, reason, warnings}: ok is the entry's own create status (2xx); reason carries its OperationOutcome error on failure; warnings can be present even on success (e.g. a defaulted clinicalStatus).
+// One import entry's {ok, created, reason, warnings}: ok is the entry's own write status (2xx); created is true for a new record (201) and false for one already stored under this source (200: overwritten, or left alone when unchanged); reason carries its OperationOutcome error on failure; warnings can be present even on success (e.g. a defaulted clinicalStatus).
 function eppEntryWrite(entry) {
   const status = entry && entry.response && entry.response.status;
   const ok = typeof status === "string" && status.charAt(0) === "2";
   return {
     ok: ok,
+    created: ok && status.indexOf("201") === 0,
     reason: ok ? null : eppEntryFailureReason(entry) || status || "unknown error",
     warnings: eppEntryWarnings(entry),
   };
@@ -130,7 +131,7 @@ async function eppTransportFailure(response) {
   } catch (e) {
     /* body unreadable; status alone will have to do */
   }
-  return { ok: false, reason: `HTTP ${response.status}${detail ? `: ${detail}` : ""}`, warnings: [] };
+  return { ok: false, created: false, reason: `HTTP ${response.status}${detail ? `: ${detail}` : ""}`, warnings: [] };
 }
 
 function eppImportHeaders(jheToken, sourceId) {
@@ -142,7 +143,7 @@ function eppImportHeaders(jheToken, sourceId) {
   };
 }
 
-// POST one R4 resource to the JHE R4 import endpoint (converts R4->R5, then creates); it returns HTTP 200 with a batch-response Bundle even when the entry failed, so success is judged per entry (see eppEntryWrite).
+// POST one R4 resource to the JHE R4 import endpoint (converts R4->R5, then creates it, or overwrites the record already stored for it under this source); it returns HTTP 200 with a batch-response Bundle even when the entry failed, so success is judged per entry (see eppEntryWrite).
 async function eppWriteResource(jheToken, sourceId, resourceType, resource) {
   const response = await fetch(IMPORT_ENDPOINT + resourceType, {
     method: "POST",
@@ -175,7 +176,7 @@ async function eppWriteBundle(jheToken, sourceId, resources) {
     bundle = await response.json();
   } catch (e) {
     const reason = `network error: ${e && e.message ? e.message : String(e)}`;
-    return resources.map(() => ({ ok: false, reason: reason, warnings: [] }));
+    return resources.map(() => ({ ok: false, created: false, reason: reason, warnings: [] }));
   }
   const entries = (bundle && bundle.entry) || [];
   return resources.map((resource, i) => eppEntryWrite(entries[i]));
@@ -217,9 +218,11 @@ async function eppPullResourceType(client, jheToken, sourceId, pull, iss, seenId
         : await client.patient.request(pull.query, { pageLimit: 0, flat: true });
     resources = pull.single ? (result ? [result] : []) : result || [];
   } catch (e) {
-    return { written: 0, failed: 0, error: e && e.message ? e.message : String(e), reasons: {}, warnings: {} };
+    return { created: 0, updated: 0, failed: 0, error: e && e.message ? e.message : String(e), reasons: {}, warnings: {} };
   }
-  let written = 0;
+  // created = new records (201); updated = records already stored under this source from an earlier connect (200), overwritten when the EHR copy changed.
+  let created = 0;
+  let updated = 0;
   let failed = 0;
   // Distinct failure/warning text -> count, so 45 identical messages read as one line; null prototype so a diagnostics string like "__proto__" counts as a plain key.
   const reasons = Object.create(null);
@@ -229,7 +232,7 @@ async function eppPullResourceType(client, jheToken, sourceId, pull, iss, seenId
     const resource = resources[i];
     if (!resource || resource.resourceType !== pull.type) continue;
     if (seenIds && resource.id && seenIds.has(resource.id)) continue;
-    // Over-64-char Epic ids ("Unconstrained FHIR IDs") are handled server-side -- the import moves them into an identifier and keys the upsert on them -- so the id must survive here.
+    // The id must survive here: the import matches it to the record an earlier connect stored, and overwrites that record instead of adding a second. Over-64-char Epic ids ("Unconstrained FHIR IDs") are handled server-side -- the import moves them into an identifier.
     candidates.push(resource);
   }
   // Chunked Bundle posts, not one POST per record: the import endpoint replies per entry, so a few-hundred-lab pull is a handful of round trips.
@@ -240,7 +243,8 @@ async function eppPullResourceType(client, jheToken, sourceId, pull, iss, seenId
     for (let j = 0; j < chunk.length; j++) {
       const write = writes[j];
       if (write.ok) {
-        written++;
+        if (write.created) created++;
+        else updated++;
         // Mark seen only after a successful write, so a record that failed in one pull (e.g. Labs) is retried by a later pull that returns it (e.g. Vital Signs).
         if (seenIds && chunk[j].id) seenIds.add(chunk[j].id);
         (write.warnings || []).forEach((w) => {
@@ -253,7 +257,7 @@ async function eppPullResourceType(client, jheToken, sourceId, pull, iss, seenId
       }
     }
   }
-  return { written: written, failed: failed, error: null, reasons: reasons, warnings: warnings };
+  return { created: created, updated: updated, failed: failed, error: null, reasons: reasons, warnings: warnings };
 }
 
 // Search hospital brands for the picker. Returns an array of facility rows (or []).
@@ -474,14 +478,14 @@ async function finishEhrPatientPortalConnect(out, config) {
       );
     } catch (e) {
       // Belt over eppPullResourceType's own isolation: nothing may abort the loop and freeze the page mid-connect with the remaining types silently skipped.
-      result = { written: 0, failed: 0, error: e && e.message ? e.message : String(e), reasons: {}, warnings: {} };
+      result = { created: 0, updated: 0, failed: 0, error: e && e.message ? e.message : String(e), reasons: {}, warnings: {} };
     }
     if (result.error) {
       out.textContent += `\n  could not fetch ${pull.label}: ${result.error}`;
       summary.push(`${pull.label}: fetch failed`);
       continue;
     }
-    out.textContent += `\n  saved ${result.written} record(s)`;
+    out.textContent += `\n  saved ${result.created + result.updated} record(s): ${result.created} new, ${result.updated} already in JupyterHealth (updated if changed)`;
     const warningList = Object.keys(result.warnings || {});
     if (warningList.length) {
       // Saved-with-changes must be visible (RFC 0003), e.g. Conditions whose missing clinicalStatus was defaulted to 'unknown' -- same cap + console pattern as failures.
@@ -510,10 +514,10 @@ async function finishEhrPatientPortalConnect(out, config) {
         out.textContent += `\n    ... and ${reasonList.length - 5} more distinct error(s)`;
       }
     }
-    summary.push(`${pull.label}: ${result.written}${result.failed ? ` (${result.failed} failed)` : ""}`);
+    summary.push(`${pull.label}: ${result.created} new, ${result.updated} existing${result.failed ? ` (${result.failed} failed)` : ""}`);
   }
 
-  out.textContent += `\n\nThe following information was added to JupyterHealth:\n\n${summary.join("\n")}`;
+  out.textContent += `\n\nThe following information is now in JupyterHealth:\n\n${summary.join("\n")}`;
 }
 
 // Exposed for unit tests; browser runs load this as a plain <script> and ignore it.

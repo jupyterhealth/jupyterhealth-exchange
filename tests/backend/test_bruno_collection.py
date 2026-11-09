@@ -1132,6 +1132,36 @@ class TestEdgeCases:
         assert r.status_code == 201, r.content
         assert r.json()["resourceType"] == "QuestionnaireResponse"
 
+    def test_register_fhir_source_for_patient(self, manager_client, patient, device):
+        """FHIR/Register FHIR Source for Patient.yml -- a practitioner registers a source for a patient via patient_id."""
+        r = manager_client.post(
+            "/api/v1/fhir_sources",
+            {"patient_id": patient.id, "label": "Practitioner upload", "data_source": device.id},
+        )
+        assert r.status_code == 201, r.content
+        assert r.json()["patient"] == patient.id
+
+    def test_import_r4_condition(self, manager_client, patient, device):
+        """FHIR/Import R4 Condition.yml -- R4 upload under a source: 201 Created first, 200 OK on re-post."""
+        from core.models import FhirSource
+
+        source = FhirSource.objects.create(patient=patient, data_source=device, label="Practitioner upload")
+        body = {
+            "resourceType": "Condition",
+            "id": "example-condition-1",
+            "clinicalStatus": {
+                "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active"}]
+            },
+            "code": {"text": "Essential hypertension"},
+            "subject": {"reference": f"Patient/{patient.id}"},
+        }
+        statuses = []
+        for _ in range(2):
+            r = manager_client.post("/fhir-import/R4/Condition", body, HTTP_X_JHE_FHIR_SOURCE_ID=str(source.id))
+            assert r.status_code == 200, r.content
+            statuses.append(r.json()["entry"][0]["response"]["status"])
+        assert statuses == ["201 Created", "200 OK"]
+
 
 # ===================================================================
 # STRESS TESTS: Burst of requests

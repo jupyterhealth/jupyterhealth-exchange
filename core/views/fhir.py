@@ -329,6 +329,19 @@ class AuxResourceHandler:
         validate_fhir_resource(self.resource_type, data)
         return self.serialize(create_aux_resource(self.resource_type, data, fhir_source, upstream_id=upstream_id))
 
+    def import_resource(self, data):
+        """Create ``data``, or overwrite the record already stored for its upstream id under this source.
+
+        Only the R4 import calls this; a plain FHIR create goes through ``create`` and is refused
+        with 409 for a record already stored. Returns ``(serialized resource, created)``.
+        """
+        data = _camelized(data)
+        _, fhir_source = self._write_context(data)
+        data, upstream_id = _extract_upstream_id(self.resource_type, data, fhir_source)
+        validate_fhir_resource(self.resource_type, data)
+        instance, created = import_aux_resource(self.resource_type, data, fhir_source, upstream_id=upstream_id)
+        return self.serialize(instance), created
+
     def update(self, fhir_id, data, partial=False):
         camel = _camelized(data)
         patient, fhir_source = self._write_context(camel)
@@ -469,6 +482,13 @@ def _derive_patient_fhir_id(resource_type, body, upstream_id=None):
     return None
 
 
+def _stored_body(instance, body, fhir_source):
+    """The ``fhir_data`` that writing ``body`` onto ``instance`` would store: JHE-stamped, with the JHE UUID as its id."""
+    body = apply_jhe_extensions(_aux_body(body), fhir_source)
+    body["id"] = str(instance.pk)
+    return body
+
+
 def _persist_aux(instance, resource_type, body, fhir_source, upstream_id=None):
     body = apply_jhe_extensions(_aux_body(body), fhir_source)
     instance.resource_type = resource_type
@@ -563,6 +583,40 @@ def create_aux_resource(resource_type, data, fhir_source, upstream_id=None):
         "A create never replaces an existing record: update that record instead, or register a separate FhirSource."
     )
     return _save_aux(FhirAuxResource(), resource_type, _aux_body(data), fhir_source, upstream_id, remedy)
+
+
+def import_aux_resource(resource_type, data, fhir_source, upstream_id=None):
+    """Create a FhirAuxResource, or overwrite the one already stored for ``upstream_id`` under ``fhir_source``.
+
+    This is the R4 import's write. Reconnecting an EHR reuses the patient's FhirSource for that
+    brand (FhirSourceViewSet.create), so a re-import posts the same records to the same source,
+    and the EHR's latest copy should replace the stored one. The overwritten row keeps its JHE
+    UUID, so references to it stay valid. A body identical to what is stored is not saved again,
+    so ``last_updated`` only moves when the record changed. A body with no upstream id cannot be
+    matched and always creates.
+
+    Returns ``(instance, created)``.
+    """
+    body = _aux_body(data)
+    if not upstream_id:
+        return create_aux_resource(resource_type, body, fhir_source), True
+    for attempt in range(2):
+        existing = FhirAuxResource.objects.filter(
+            fhir_source=fhir_source, resource_type=resource_type, fhir_resource_id=upstream_id
+        ).first()
+        if existing is None:
+            try:
+                return create_aux_resource(resource_type, body, fhir_source, upstream_id=upstream_id), True
+            except DuplicateAuxResource:
+                # A parallel import created the row between the lookup and the insert: go round
+                # once more and overwrite it. A second collision is not a race and is raised.
+                if attempt:
+                    raise
+                continue
+        if existing.fhir_data == _stored_body(existing, body, fhir_source):
+            return existing, False
+        remedy = "Another write changed this record during the import; retry it."
+        return _save_aux(existing, resource_type, body, fhir_source, upstream_id, remedy), False
 
 
 # ---------------------------------------------------------------------------
@@ -689,16 +743,22 @@ class FHIRResourceView(APIView):
         handler = self._mapped_handler(resource)
         return handler.serialize(handler.read(fhir_id))
 
-    def _create(self, resource, data):
+    def _create_store(self, resource, data):
+        """The store a create of ``data`` lands in: ``"mapped"`` or ``"aux"`` (refused otherwise)."""
         criteria = mapped_criteria(resource)
-        mapped = mapped_interactions(resource)
-        aux = aux_interactions(resource)
         # The code criteria routes a writable mapped resource between the model and aux.
-        if "create" in mapped and (criteria is None or matches_criteria(_camelized(data), criteria)):
-            return self._mapped_handler(resource).create(data)
-        if "create" in aux:
-            return self._aux_handler(resource).create(data)
+        if "create" in mapped_interactions(resource) and (
+            criteria is None or matches_criteria(_camelized(data), criteria)
+        ):
+            return "mapped"
+        if "create" in aux_interactions(resource):
+            return "aux"
         self._refuse(resource, "create")
+
+    def _create(self, resource, data):
+        if self._create_store(resource, data) == "mapped":
+            return self._mapped_handler(resource).create(data)
+        return self._aux_handler(resource).create(data)
 
     def _update(self, resource, fhir_id, data, partial):
         if self._is_aux_id(fhir_id):

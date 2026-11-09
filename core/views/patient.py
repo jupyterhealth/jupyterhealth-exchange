@@ -268,7 +268,7 @@ class PatientViewSet(ModelViewSet):
     def fhir_sources(self, request, pk):
         """GET /api/v1/patients/{id}/fhir_sources - the patient's FhirSources, for the admin patient page.
 
-        FhirSourceViewSet only serves the signed-in patient their own sources, so a practitioner needs this to see them. get_object() applies the same access rule as the patient detail it sits beside.
+        Lists one patient's sources with their data source name, shaped for the admin patient page; FhirSourceViewSet lists every source a practitioner can see, across patients. get_object() applies the same access rule as the patient detail it sits beside.
         """
         patient = self.get_object()
         sources = FhirSource.objects.filter(patient=patient).select_related("data_source").order_by("id")
