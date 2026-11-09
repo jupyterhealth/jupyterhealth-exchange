@@ -14,7 +14,6 @@ http:
     data: |-
       {
         "label": "Momentum App",
-        "fhir_base_url": "https://momentum.example/app",
         "data_source": {{DATA_SOURCE_ID}}
       }
   auth: inherit

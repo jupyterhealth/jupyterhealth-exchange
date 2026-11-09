@@ -1,0 +1,26 @@
+info:
+  name: Register FHIR Source for Patient
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/api/v1/fhir_sources"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "patient_id": {{PATIENT_ID}},
+        "label": "Practitioner upload",
+        "data_source": {{DATA_SOURCE_ID}}
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

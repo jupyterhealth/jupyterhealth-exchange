@@ -12,6 +12,12 @@ endpoints always return a ``batch-response`` **Bundle**, and every entry carries
 an "informational, no loss" note when nothing was dropped, or the error when an entry failed. The
 conversion is best-effort and lossy; R5 validation on the create path is the gate that rejects
 anything the transform could not produce cleanly.
+
+Re-posting a record already stored under the same FhirSource (same type and upstream ``id``)
+**overwrites** it instead of failing with 409, because reconnecting an EHR reuses the patient's
+source for that brand and should refresh what is stored. The entry status says which happened:
+``201 Created`` for a new record, ``200 OK`` for one already stored. A plain FHIR create on
+``FHIR/R5/<resource>`` still refuses a stored record with 409.
 """
 
 import logging
@@ -118,12 +124,23 @@ class FHIRImportView(FHIRResourceView):
                     ", ".join(dropped),
                 )
             enriched = _enrich_r5(resource_type, r5)
-            created = self._create(resource_type, r5)
-            return _success_entry(created, resource_type, dropped, enriched)
+            resource, created = self._import(resource_type, r5)
+            return _success_entry(resource, created, resource_type, dropped, enriched)
         except Exception as exc:  # per-entry best-effort, mirroring batch semantics.
             # Include any drops and enrichments even on failure: a dropped *required* field is
             # usually *why* the create failed, and a defaulted field narrows what was tried.
             return _error_entry(exc, resource_type, dropped, enriched)
+
+    def _import(self, resource_type, r5):
+        """Write one converted resource; return ``(resource, created)``.
+
+        Unlike a plain FHIR create, an aux record already stored under this source is overwritten
+        (``created`` False) rather than refused, so reconnecting an EHR refreshes its records. The
+        mapped (OMH / IEEE 1752 Observation) path is a plain create.
+        """
+        if self._create_store(resource_type, r5) == "mapped":
+            return self._mapped_handler(resource_type).create(r5), True
+        return self._aux_handler(resource_type).import_resource(r5)
 
     def _convert(self, resource_type, camel_body):
         try:
@@ -181,10 +198,15 @@ def _enrich_r5(resource_type, r5):
     return []
 
 
-def _success_entry(created, resource_type, dropped, enriched=None):
+def _success_entry(resource, created, resource_type, dropped, enriched=None):
+    # 201 for a new record, 200 for one already stored under this source (overwritten, or left
+    # alone when unchanged), so the client can tell new records from refreshed ones.
     return {
-        "response": {"status": "201 Created", "outcome": _outcome(resource_type, dropped, enriched)},
-        "resource": created,
+        "response": {
+            "status": "201 Created" if created else "200 OK",
+            "outcome": _outcome(resource_type, dropped, enriched),
+        },
+        "resource": resource,
     }
 
 
