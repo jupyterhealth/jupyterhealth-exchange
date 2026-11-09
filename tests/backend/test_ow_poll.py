@@ -472,7 +472,11 @@ def test_late_arriving_sample_is_not_skipped(db, ow_user, patient_with_consent, 
     _set_jhe_setting("module.ow", True)
     _clear_sync_lock()
 
-    recent = {"timestamp": "2026-09-20T10:00:00+00:00", "type": "heart_rate", "value": 61}
+    # Measured two days ago, so the resume watermark (this row's time minus the overlap) is
+    # later than the 30-day window start whatever today's date is. A fixed date here stopped
+    # working once it fell outside the window.
+    measured_at = (timezone.now() - timedelta(days=2)).replace(microsecond=0).isoformat()
+    recent = {"timestamp": measured_at, "type": "heart_rate", "value": 61}
 
     with (
         patch("core.management.commands.ow_poll.requests.get") as mock_get,
@@ -482,7 +486,7 @@ def test_late_arriving_sample_is_not_skipped(db, ow_user, patient_with_consent, 
         _serve_heart_rate_only(mock_get)
         mock_get.return_value.json.return_value = {"data": [recent]}
         record = _fake_omh_record()
-        record["body"]["effective_time_frame"] = {"date_time": "2026-09-20T10:00:00+00:00"}
+        record["body"]["effective_time_frame"] = {"date_time": measured_at}
         mock_convert.return_value = record
         call_command("ow_poll", "--days", "30", stdout=StringIO())
 
