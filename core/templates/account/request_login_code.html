@@ -17,7 +17,7 @@ password login/signup pages (registration/login.html, registration/signup.html).
 
 <div class="form-floating mb-3">
   <input name="email" type="email" class="form-control" id="emailInput"
-         placeholder="name@example.com" value="{{ form.email.value|default:'' }}"
+         placeholder="name@example.com" autocomplete="email" value="{{ form.email.value|default:'' }}"
          style="border-radius:.375rem;margin-bottom:0;" autofocus required>
   <label for="emailInput">Email address</label>
 </div>

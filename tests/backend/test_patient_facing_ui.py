@@ -81,6 +81,30 @@ def test_patient_facing_css_layout_rules():
     assert "padding" not in ghost and "margin-top" not in ghost  # shares .pf-btn sizing inside a .pf-actions row
 
 
+def test_text_and_fills_use_the_strong_accent_and_aa_token_values():
+    # WCAG 1.4.3: #e5642c is 3.03:1 on the page and 3.39:1 under white, so text and fills use the darker shade.
+    assert "--pf-accent: #e5642c;" in CSS and "--pf-accent-strong: #b8491a;" in CSS
+    for selector in (".pf-eyebrow", ".pf-btn", ".pf-receipt__row--total .pf-receipt__n"):
+        assert "var(--pf-accent-strong)" in _rule(selector), selector
+    assert "var(--pf-accent)" in _rule(".pf-progress__bar")  # decorative bars keep the brand shade
+    for token in (
+        "--pf-muted: #5f5950;",
+        "--pf-badge-on-ink: #176332;",
+        "--pf-danger: #a93226;",
+        "--pf-line-strong: #8f887d;",
+    ):
+        assert token in CSS, token
+    assert "var(--pf-line-strong)" in _rule(".pf-input")  # WCAG 1.4.11: field borders reach 3:1 on white
+    assert "opacity" not in _rule(".pf-callout__note")  # translucent ink drops the admin note under 4.5:1
+    focus_ring = _rule("#hospital-results .list-group-item:focus-visible")
+    assert "outline-offset: -2px" in focus_ring  # drawn inside the row, so the list's overflow cannot clip it
+
+
+def test_rail_steps_differ_by_more_than_color():
+    assert "height: 5px" in _rule(".pf-rail__step.is-active::before")
+    assert 'content: "\\f26e"' in _rule(".pf-rail__step.is-done .pf-rail__num::before")
+
+
 def test_patient_pages_link_the_versioned_stylesheet(db, client):
     html = client.get("/clients/ehr-patient-portal/").content.decode()
     assert f"common/css/patient-facing.css?v={settings.JHE_VERSION}" in html

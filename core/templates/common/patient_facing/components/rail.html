@@ -2,7 +2,7 @@
 <script id="t-rail" type="text/template">
   <ol class="pf-rail">
   {{#each steps}}
-    <li class="pf-rail__step{{cls}}">
+    <li class="pf-rail__step{{cls}}"{{#if current}} aria-current="step"{{/if}}>
       <span class="pf-rail__num">{{num}}</span>
       <span class="pf-rail__label">{{label}}</span>
     </li>

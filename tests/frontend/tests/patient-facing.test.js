@@ -136,6 +136,13 @@ describe("showFlowError and pfRender", () => {
     expect(retry.getAttribute("href")).toBe("/clients/ehr-patient-portal/?route=connect&source=5");
   });
 
+  test("moves focus to the new screen's h1 so screen readers announce it", () => {
+    window.showFlowError("We couldn't connect", "boom");
+    const heading = document.querySelector("#pf_main h1");
+    expect(document.activeElement).toBe(heading);
+    expect(heading.getAttribute("tabindex")).toBe("-1");
+  });
+
   test("escapes context values", () => {
     window.pfRender("t-error", { title: "<b>x</b>", message: "" });
     expect(document.getElementById("pf_main").innerHTML).toContain("&lt;b&gt;x&lt;/b&gt;");

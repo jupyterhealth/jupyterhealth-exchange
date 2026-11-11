@@ -1,1 +1,13 @@
-<h3>An email has been sent with instructions to verify your email</h3>
+{% extends "common/partials/base_accounts.html" %}
+
+{% block title %}Verify Email{% endblock %}
+
+{% block prompt %}Check Your Email{% endblock %}
+
+{% block main %}
+
+<div class="alert alert-info">
+    An email has been sent with instructions to verify your email
+</div>
+
+{% endblock %}

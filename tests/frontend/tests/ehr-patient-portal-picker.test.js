@@ -157,6 +157,11 @@ describe("pfClient.connect on the EHR page", () => {
     expect(checkboxes).toHaveLength(2);
     expect([...checkboxes].every((c) => c.checked)).toBe(true);
     expect(authorize).not.toHaveBeenCalled();
+    // The focused row was hidden, so focus moves into the newly shown checklist, which is labelled as a group.
+    expect(document.activeElement).toBe(checkboxes[0]);
+    const group = main.querySelector("#scope-picker-list");
+    expect(group.getAttribute("role")).toBe("group");
+    expect(document.getElementById(group.getAttribute("aria-labelledby")).textContent).toBe("Choose what to share");
 
     document.getElementById("scope-picker-continue").click();
 
@@ -170,6 +175,60 @@ describe("pfClient.connect on the EHR page", () => {
       "patient/Patient.read",
       "patient/Condition.read",
     ]);
+  });
+
+  test("announces the result count while typing, and nothing before the patient types", async () => {
+    renderPickerPage();
+    window.storeToken("tok");
+    const rows = [{ id: 1, brandName: "A" }, { id: 2, brandName: "B" }];
+    global.fetch = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ results: rows }) }));
+    await window.pfClient.connect({ id: 5, name: "EHR Patient Portal" });
+    const status = document.getElementById("hospital-results-status");
+    expect(status.getAttribute("role")).toBe("status");
+    expect(status.textContent).toBe("");
+
+    const input = document.getElementById("hospital-search");
+    input.value = "mad";
+    input.dispatchEvent(new Event("input"));
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    expect(status.textContent).toBe("2 results");
+
+    rows.splice(1);
+    input.dispatchEvent(new Event("input"));
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    expect(status.textContent).toBe("1 result");
+
+    rows.splice(0);
+    input.dispatchEvent(new Event("input"));
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    expect(status.textContent).toBe("No hospitals found. Try a different name, city, or state.");
+  });
+
+  test("ignores a slower earlier search response so the list and count match the current query", async () => {
+    renderPickerPage();
+    window.storeToken("tok");
+    const pending = {};
+    global.fetch = jest.fn((url) => new Promise((resolve) => {
+      const q = new URL(url).searchParams.get("q");
+      pending[q] = (rows) => resolve({ ok: true, json: () => Promise.resolve({ results: rows }) });
+      if (q === "") pending[q]([]);
+    }));
+    await window.pfClient.connect({ id: 5, name: "EHR Patient Portal" });
+    const input = document.getElementById("hospital-search");
+    input.value = "ma";
+    input.dispatchEvent(new Event("input"));
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    input.value = "mad";
+    input.dispatchEvent(new Event("input"));
+    await new Promise((resolve) => setTimeout(resolve, 250));
+
+    pending.mad([{ id: 1, brandName: "Madison" }]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    pending.ma([{ id: 2, brandName: "A" }, { id: 3, brandName: "B" }]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(document.querySelectorAll("#hospital-results [data-brand-result]")).toHaveLength(1);
+    expect(document.getElementById("hospital-results-status").textContent).toBe("1 result");
   });
 
   test("unchecking a scope before continuing excludes it from the authorize request", async () => {

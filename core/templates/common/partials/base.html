@@ -1,8 +1,9 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html class="h-100">
+<html lang="en" class="h-100">
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{ SITE_TITLE }} - {% block title %}{% endblock %}</title>
     <script src="/common/server-settings.js"></script> <!-- dynamically rendered by Django view, not static file --->
     <script src="{% static 'common/js/oidc.js' %}"></script>
@@ -25,10 +26,8 @@
     <!-- Global Navigation Loading Overlay -->
     <div id="navLoadingOverlay"
          style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; opacity: 0.75; z-index: 9999; flex-direction: column; justify-content: center; align-items: center;"
-         role="dialog"
-         aria-modal="true"
-         aria-labelledby="loadingHeading"
-         tabindex="-1">
+         role="status"
+         aria-live="polite">
 
       <!-- Close button (top-left) - Initially hidden -->
       <button
@@ -43,7 +42,7 @@
 
       <div class="text-center">
         <h5 id="loadingHeading" class="mb-3">Loading...</h5>
-        <div class="spinner-border text-primary" role="status">
+        <div class="spinner-border text-primary" aria-hidden="true">
         </div>
       </div>
     </div>
