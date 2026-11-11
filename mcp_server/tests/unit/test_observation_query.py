@@ -24,7 +24,7 @@ def test_build_params_patient_and_code():
 
 
 def test_build_params_ambiguous_code_uses_preferred_first_candidate():
-    # A single code, never comma-joined: JHE partitions `code` on "|" only
+    # One code, not a comma-joined OR: an ambiguous name resolves to a single system, IEEE first
     params = build_observation_params(patient_id="7", data_type="sleep-episode")
     assert params["code"] == _IEEE_SLEEP
 
