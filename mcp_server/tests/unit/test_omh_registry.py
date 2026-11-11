@@ -96,7 +96,7 @@ def test_ambiguous_short_name_is_ieee_first_and_never_comma_joined(name, ieee_id
         f"https://w3id.org/ieee1752|{ieee_id}",
         f"https://w3id.org/openmhealth|{omh_id}",
     ]
-    assert lookup_code(name) == f"https://w3id.org/ieee1752|{ieee_id}"  # JHE does not OR comma-joined codes
+    assert lookup_code(name) == f"https://w3id.org/ieee1752|{ieee_id}"  # the probe picks one system, not both
 
 
 def test_full_schema_id_resolves_to_exactly_that_code():

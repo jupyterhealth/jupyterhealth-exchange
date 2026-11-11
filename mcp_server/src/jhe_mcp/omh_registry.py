@@ -43,7 +43,8 @@ def schema_ids_for(data_type: str) -> list[str]:
 
 
 def candidate_codes(data_type: str) -> list[str]:
-    # One code per schema, tried in order: JHE partitions `code` on "|" and does not OR comma-separated values
+    # One code per schema, IEEE-first, for the count probe in resolve_observation_params:
+    # an ambiguous short name resolves to the one system that holds data, not the union of both.
     return [f"{_coding_system(sid)}|{sid}" for sid in schema_ids_for(data_type)]
 
 
