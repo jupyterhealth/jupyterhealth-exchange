@@ -13,6 +13,7 @@ from .utils import (
     add_observations,
     add_patient_to_study,
     assert_valid_fhir_bundle,
+    coding_system_for,
     create_study,
     fetch_paginated,
 )
@@ -292,3 +293,57 @@ def test_get_observation_access(api_client, patient, hr_study):
         assert r.status_code == 200, f"{r.status_code} != 200, {r.text}"
     observations = r.json()["entry"]
     assert len(observations) == 6
+
+
+def _token(code: Code) -> str:
+    return f"{coding_system_for(code)}|{code.value}"
+
+
+def _codes(bundle: dict) -> set[str]:
+    return {entry["resource"]["code"]["coding"][0]["code"] for entry in bundle.get("entry", [])}
+
+
+def test_get_observation_code_single_token(api_client, patient):
+    add_observations(patient=patient, code=Code.HeartRate, n=3)
+    add_observations(patient=patient, code=Code.BloodPressure, n=2)
+
+    r = api_client.get("/FHIR/R5/Observation", {"patient": patient.id, "code": _token(Code.HeartRate)})
+
+    assert r.status_code == 200, r.text
+    assert r.json()["total"] == 3
+    assert _codes(r.json()) == {Code.HeartRate.value}
+
+
+def test_get_observation_code_comma_or(api_client, patient):
+    # FHIR search: comma-separated values in one param OR together.
+    add_observations(patient=patient, code=Code.HeartRate, n=3)
+    add_observations(patient=patient, code=Code.BloodPressure, n=2)
+    add_observations(patient=patient, code=Code.BloodGlucose, n=4)
+
+    r = api_client.get(
+        "/FHIR/R5/Observation",
+        {"patient": patient.id, "code": f"{_token(Code.HeartRate)},{_token(Code.BloodPressure)}"},
+    )
+
+    assert r.status_code == 200, r.text
+    assert r.json()["total"] == 5
+    assert _codes(r.json()) == {Code.HeartRate.value, Code.BloodPressure.value}
+
+
+def test_get_observation_code_comma_or_summary_count(api_client, patient):
+    add_observations(patient=patient, code=Code.HeartRate, n=3)
+    add_observations(patient=patient, code=Code.BloodPressure, n=2)
+    add_observations(patient=patient, code=Code.BloodGlucose, n=4)
+
+    r = api_client.get(
+        "/FHIR/R5/Observation",
+        {
+            "patient": patient.id,
+            "code": f"{_token(Code.HeartRate)},{_token(Code.BloodPressure)}",
+            "_summary": "count",
+        },
+    )
+
+    assert r.status_code == 200, r.text
+    assert r.json()["total"] == 5
+    assert r.json()["entry"] == []

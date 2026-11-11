@@ -110,10 +110,17 @@ def _canonical_search_kwargs(request):
         kwargs["patient_identifier_system"] = system
         kwargs["patient_identifier_value"] = value
     if code:
-        system, _, value = code.partition("|")
-        kwargs["coding_system"] = system
-        kwargs["coding_code"] = value
+        # FHIR search: comma-separated token values OR together, each one a system|code
+        # (a bare code has no system), so pass them as a list of pairs.
+        kwargs["coding_pairs"] = [_split_coding(piece) for piece in code.split(",") if piece.strip()]
     return kwargs
+
+
+def _split_coding(token):
+    if "|" in token:
+        system, _, value = token.strip().partition("|")
+        return system, value
+    return None, token.strip()
 
 
 # US Core date-comparator prefixes -> Django ORM lookups (issue #585).
