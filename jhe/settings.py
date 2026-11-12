@@ -76,6 +76,14 @@ CSRF_TRUSTED_ORIGINS = [SITE_URL]
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# HTTP Strict Transport Security, sent by SecurityMiddleware on HTTPS responses only. Off (0)
+# unless a deployment sets it; a deployment behind an HTTPS-only load balancer sets
+# SECURE_HSTS_SECONDS=31536000. Subdomains are included only when asked, since the value also
+# binds every other host under the domain.
+SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "0"))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv("SECURE_HSTS_INCLUDE_SUBDOMAINS", "").strip().lower() in ("1", "true", "yes")
+SECURE_HSTS_PRELOAD = False
+
 INSTALLED_APPS = [
     "core.apps.CoreConfig",
     "django.contrib.admin",
