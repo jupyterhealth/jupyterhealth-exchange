@@ -40,8 +40,15 @@ if not SECRET_KEY:
         )
     SECRET_KEY = get_random_secret_key()
 
+
+def env_flag(name: str) -> bool:
+    """A boolean from the environment: 1, true, yes or on (any case) is true; unset, empty or
+    anything else is false. `bool(os.getenv(...))` made `DEBUG=false` true."""
+    return os.getenv(name, "").strip().lower() in ("1", "true", "yes", "on")
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.getenv("DEBUG"))
+DEBUG = env_flag("DEBUG")
 
 SITE_URL = os.getenv("SITE_URL", "http://localhost:8000").rstrip("/")
 OAUTH2_CALLBACK_PATH = "/auth/callback"
