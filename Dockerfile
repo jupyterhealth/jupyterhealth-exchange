@@ -33,6 +33,15 @@ RUN --mount=type=cache,target=${XDG_CACHE_DIR} \
 ARG TARGETARCH
 ADD --chmod=755 https://github.com/aptible/supercronic/releases/download/v0.2.29/supercronic-linux-${TARGETARCH} /usr/local/bin/supercronic
 
+# A database CA bundle, for deployments that verify the Postgres server's certificate
+# (DB_SSLMODE=verify-full with DB_SSLROOTCERT=/etc/ssl/certs/db-ca-bundle.pem). The managed
+# services publish theirs as a PEM file; pass its URL at build time. Unset: nothing is added.
+ARG DB_CA_BUNDLE_URL=""
+RUN if [ -n "$DB_CA_BUNDLE_URL" ]; then \
+      python -c "import urllib.request; urllib.request.urlretrieve('$DB_CA_BUNDLE_URL', '/etc/ssl/certs/db-ca-bundle.pem')" \
+   && test -s /etc/ssl/certs/db-ca-bundle.pem; \
+    fi
+
 COPY . /code
 RUN python manage.py collectstatic --no-input
 
