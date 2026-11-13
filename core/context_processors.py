@@ -24,18 +24,31 @@ SAML2_SINGLE_SOCIAL_APP_CACHE_KEY = "saml2_single_social_app"
 
 
 @lru_cache(maxsize=1)
-def _get_oidc_client_id():
+def _cached_oidc_client_id() -> str:
+    """The client id, cached for the process once found. Not finding it raises, and lru_cache
+    does not cache exceptions: a fresh install whose `JHE Admin UI` application is created
+    after the first request recovers on the next one, without a restart."""
     Application = get_application_model()
-    try:
-        client_id = Application.objects.filter(name="JHE Admin UI").values_list("client_id", flat=True).first()
-    except Exception:
-        logger.exception("Error looking up OAuth2 client ID for 'JHE Admin UI'")
-        client_id = None
+    client_id = Application.objects.filter(name="JHE Admin UI").values_list("client_id", flat=True).first()
     if client_id is None:
+        raise LookupError("JHE Admin UI")
+    return client_id
+
+
+def _get_oidc_client_id():
+    try:
+        return _cached_oidc_client_id()
+    except LookupError:
         logger.error(
             "Unable to load the OAuth2 client ID for 'JHE Admin UI' from the database. Make sure it is defined in Applications via the django admin interface (/admin/)."
         )
-    return client_id
+        return None
+    except Exception:
+        logger.exception("Error looking up OAuth2 client ID for 'JHE Admin UI'")
+        return None
+
+
+_get_oidc_client_id.cache_clear = _cached_oidc_client_id.cache_clear
 
 
 def _saml2_enabled():
