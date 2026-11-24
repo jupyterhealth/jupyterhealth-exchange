@@ -3,3 +3,11 @@ fly.toml
 .env
 docs/
 tests/
+# Local-only state that should never enter an image build context
+.venv/
+node_modules/
+**/node_modules/
+mcp_server/.venv/
+local/
+staticfiles/
+htmlcov/

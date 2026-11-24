@@ -1,0 +1,133 @@
+# Local development stack for JupyterHealth Exchange.
+#
+#   docker compose build
+#   docker compose up
+#
+# then browse to http://localhost:8000 and log in as manager_mary@example.com / Jhe1234!
+# (or admin@example.com / Jhe1234! for Django admin at /admin).
+#
+# This file is for development only. Production builds the same Dockerfile but runs it
+# via fly.toml (gunicorn, `migrate` as a release command); nothing here affects that.
+#
+# Host ports default to 8000 (JHE), 5432 (Postgres) and 8401 (MCP). Override any of them
+# with JHE_PORT / JHE_DB_PORT / MCP_PORT in your shell, e.g.
+#   JHE_PORT=8010 docker compose up
+# JHE listens on the same port inside the container, and SITE_URL follows it, so seeded
+# redirect URIs and invitation links stay correct.
+#
+# The `mcp` service is behind a compose profile and off by default:
+#   COMPOSE_PROFILES=mcp docker compose up
+#
+# Data lives in ./local/ (gitignored) and survives `docker compose down`: the database
+# and the dev OIDC signing key the entrypoint generates on first boot.
+# scripts/dev/reset.sh wipes the database and re-seeds.
+
+name: jhe
+
+x-jhe-env-files: &jhe-env-files
+  # Later files override earlier ones. See compose/environment/README.md.
+  - path: compose/environment/jhe.env
+  - path: compose/environment/local.secret.env
+    required: false
+
+x-jhe-environment: &jhe-environment
+  # These depend on the published ports, so they can't live in a static env file.
+  SITE_URL: http://localhost:${JHE_PORT:-8000}
+  MCP_OAUTH_REDIRECT_URI: http://localhost:${MCP_PORT:-8401}/oauth/callback
+
+services:
+  db:
+    image: postgres:16 # matches CI (.github/workflows/be_test.yml)
+    env_file:
+      - path: compose/environment/db.env
+    volumes:
+      - ./local/db:/var/lib/postgresql/data
+    ports:
+      # Published so host tools (psql, a GUI, `uv run manage.py ...`) can reach it.
+      - "127.0.0.1:${JHE_DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  jhe:
+    build: .
+    image: jhe-dev:local
+    pull_policy: never # local-only image: build it, never look for it in a registry
+    # Dev-only entrypoint: migrate, then seed if the database is empty.
+    entrypoint: ["sh", "/code/compose/jhe-entrypoint.sh"]
+    command: ["python", "manage.py", "runserver", "0.0.0.0:${JHE_PORT:-8000}"]
+    env_file: *jhe-env-files
+    environment:
+      <<: *jhe-environment
+    ports:
+      - "127.0.0.1:${JHE_PORT:-8000}:${JHE_PORT:-8000}"
+    volumes:
+      # The repo, so code and template edits reload without a rebuild. This shadows the
+      # image's build-time collectstatic; with DEBUG=1 runserver serves static files
+      # straight from the app directories instead.
+      - .:/code
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # /health needs no DB or auth. It only passes once the entrypoint has finished
+      # migrating/seeding and runserver is up, so other services can wait on it.
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:${JHE_PORT:-8000}/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 300s # first boot runs the full seed
+      start_interval: 2s
+    restart: unless-stopped
+
+  cron:
+    # Same image and code as `jhe`; runs ow_poll every 15 min like Fly's cron process.
+    # ow_poll exits immediately unless the `module.ow` setting is on.
+    # No `build:` here: `jhe` builds jhe-dev:local and this service reuses it.
+    image: jhe-dev:local
+    pull_policy: never
+    # Same entrypoint as `jhe`, for the OIDC key it exports. Waiting for `jhe` to be healthy
+    # (below) means the key exists and the migrate inside it is a no-op.
+    entrypoint: ["sh", "/code/compose/jhe-entrypoint.sh"]
+    command: ["supercronic", "/code/deploy/crontab"]
+    env_file: *jhe-env-files
+    environment:
+      <<: *jhe-environment
+    volumes:
+      - .:/code
+    depends_on:
+      jhe:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mcp:
+    profiles: ["mcp"] # off by default; see the header
+    build: ./mcp_server
+    image: jhe-mcp-dev:local
+    pull_policy: never # local-only image: build it, never look for it in a registry
+    env_file:
+      - path: compose/environment/mcp.env
+    environment:
+      # Server-to-server calls go over the compose network...
+      JHE_BASE_URL: http://jhe:${JHE_PORT:-8000}
+      # ...but the browser is sent to the authorize endpoint, so that one must be the
+      # host-published address.
+      JHE_AUTHORIZE_ENDPOINT: http://localhost:${JHE_PORT:-8000}/o/authorize/
+      MCP_RESOURCE_URL: http://localhost:${MCP_PORT:-8401}
+      MCP_HTTP_PORT: ${MCP_PORT:-8401}
+    ports:
+      - "127.0.0.1:${MCP_PORT:-8401}:${MCP_PORT:-8401}"
+    depends_on:
+      jhe:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:${MCP_PORT:-8401}/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+      start_interval: 2s
+    restart: unless-stopped

@@ -159,3 +159,6 @@ mcp_server/*.egg-info/
 
 # local-only dev review notes (may contain dev tokens)
 LOCAL_REVIEW*.md
+
+# docker compose dev stack: personal credentials (see compose/environment/README.md)
+compose/environment/local.secret.env
