@@ -151,8 +151,11 @@ class PatientInvitation(models.Model):
             claims=json.dumps({}),
         )
 
+        # The first redemption starts the re-use window (`last_updated`). A re-use inside it saves
+        # nothing, so the window runs from the first use and closes on time however often the
+        # link is opened.
         if not recently_redeemed:
             invitation.status = PatientInvitation.Status.REDEEMED
-        invitation.save()
+            invitation.save()
 
         return invitation, grant
