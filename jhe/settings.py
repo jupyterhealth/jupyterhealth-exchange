@@ -22,8 +22,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env file. The docker compose stack sets JHE_IGNORE_DOTENV:
+# it bind-mounts the repo, so a .env meant for running on the host would otherwise leak in.
+if os.getenv("JHE_IGNORE_DOTENV", "").strip().lower() not in ("1", "true", "yes"):
+    load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
