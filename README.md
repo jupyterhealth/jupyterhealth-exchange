@@ -160,6 +160,18 @@ Entities are based on the [HL7 FHIR model](https://build.fhir.org/), a widely us
 | **Oura**<br>`ieee:physical-activity:1.0`<br>`ieee:sleep-episode:1.0`<br>`ieee:sleep-stage-summary:1.0`<br>`ieee:time-in-bed:1.0`<br>`ieee:total-sleep-time:1.0`<br>`omh:body-height:2.0`<br>`omh:body-weight:3.0`<br>`omh:heart-rate:2.0`<br>`omh:oxygen-saturation:2.0`<br>`omh:respiratory-rate:2.0` | **Open Wearables** | Invitation Link |
 | – | – | Patient Access<br/>(E-mail one-time code) |
 
+## Running in Production
+
+The web app must be served over HTTPS for any hostname other than localhost (the browser OIDC
+client requires it). The image serves plain HTTP and expects a reverse proxy or load balancer
+to terminate TLS and send `X-Forwarded-Proto`, which the settings honour. Settings a deployment
+behind such a proxy sets through the environment:
+
+| Variable | Purpose |
+| --- | --- |
+| `SITE_URL` | The public URL. `ALLOWED_HOSTS` (comma-separated) defaults to its host name. |
+| `SECURE_HSTS_SECONDS` | Sends `Strict-Transport-Security` on HTTPS responses (`31536000` for a year); off when unset. `SECURE_HSTS_INCLUDE_SUBDOMAINS=true` extends it to subdomains. |
+
 ## Contributing
 
 See [doc](https://jupyterhealth.github.io/software-documentation/) for test requirements, coding standards, and PR checklist.
