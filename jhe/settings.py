@@ -220,6 +220,17 @@ WSGI_APPLICATION = "jhe.wsgi.application"
 
 DB_USER_SECRET_NAME = os.environ.get("DATABASE_USER_SECRET_NAME", "DATABASE_USER")
 DB_PASSWORD_SECRET_NAME = os.environ.get("DATABASE_PASSWORD_SECRET_NAME", "DATABASE_PASSWORD")
+
+
+def database_tls_options(sslmode: str | None, sslrootcert: str | None) -> dict[str, str]:
+    """libpq's TLS settings for the connection. Unset, libpq's default applies (`prefer`: TLS if
+    the server offers it, the server's certificate never checked). `DB_SSLMODE=verify-full`
+    with `DB_SSLROOTCERT` naming the server's CA bundle makes the client verify the certificate
+    and that it names the host, which is what makes this hop authenticated and not only
+    encrypted. The managed Postgres services publish their CA bundles as plain PEM files."""
+    return {k: v for k, v in (("sslmode", sslmode), ("sslrootcert", sslrootcert)) if v}
+
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -228,6 +239,7 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
         "PORT": os.getenv("DB_PORT"),
+        "OPTIONS": database_tls_options(os.getenv("DB_SSLMODE"), os.getenv("DB_SSLROOTCERT")),
     }
 }
 
