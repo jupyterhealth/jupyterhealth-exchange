@@ -10,6 +10,7 @@ from .fhir_aux_resource import (
     parse_fhir_source_id,
 )
 from .fhir_source import FhirSource
+from .invite_code import InviteCode, InviteCodeOrganization
 from .jhe_client import JheClient
 from .jhe_setting import JheSetting
 from .jhe_user import JheUser, JheUserManager
@@ -39,6 +40,8 @@ __all__ = [
     "JheSetting",
     "JheUser",
     "JheUserManager",
+    "InviteCode",
+    "InviteCodeOrganization",
     "Observation",
     "ObservationIdentifier",
     "Organization",

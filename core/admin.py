@@ -11,6 +11,8 @@ from core.models import (
     EhrVendor,
     FhirAuxResource,
     FhirSource,
+    InviteCode,
+    InviteCodeOrganization,
     JheClient,
     JheSetting,
     JheUser,
@@ -36,9 +38,9 @@ from core.models import (
 
 @admin.register(JheUser)
 class JheUserAdmin(admin.ModelAdmin):
-    list_display = ("email", "first_name", "last_name", "is_staff", "is_active")
+    list_display = ("email", "first_name", "last_name", "is_staff", "is_active", "invite_code")
     search_fields = ("email", "first_name", "last_name")
-    list_filter = ("is_staff", "is_active", "is_superuser")
+    list_filter = ("is_staff", "is_active", "is_superuser", "invite_code")
     # The groups / user_permissions M2M tables were dropped (migration 0011), so the default
     # admin machinery crashes when it touches them. Hide the fields and route every delete path
     # through the model's safe JheUser.delete() (which never references those tables).
@@ -64,6 +66,20 @@ class OrganizationAdmin(admin.ModelAdmin):
     list_display = ("name", "type", "part_of", "id")
     search_fields = ("name",)
     list_filter = ("type",)
+
+
+@admin.register(InviteCode)
+class InviteCodeAdmin(admin.ModelAdmin):
+    list_display = ("label", "code", "enabled", "created")
+    search_fields = ("code", "organization__name")
+    list_filter = ("enabled",)
+
+
+@admin.register(InviteCodeOrganization)
+class InviteCodeOrganizationAdmin(admin.ModelAdmin):
+    list_display = ("invite_code", "organization", "role")
+    search_fields = ("invite_code__code", "organization__name")
+    list_filter = ("invite_code", "organization", "role")
 
 
 class ProfileAdminMixin:
